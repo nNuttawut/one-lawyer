@@ -1,20 +1,25 @@
 import React from "react";
-import Layout from "./ui/component/main/Layout";
-import SignIn from "./pages/SignIn";
+import "./assets/styles/main.css";
+import "./assets/styles/responsive.css";
+import { HashRouter, useLocation } from "react-router-dom";
+import SignIn from "./component/pages/SignIn";
+import Main from "./component/ui/Main";
 
 function App() {
   const token = false;
 
-  if (!token) {
-    return (
-      <>
-        <SignIn />
-      </>
-    );
-  }
+  // if (!token) {
+  //   return (
+  //     <>
+  //       <SignIn />
+  //     </>
+  //   );
+  // }
   return (
     <>
-      <Layout />
+      <HashRouter>
+        <Main />
+      </HashRouter>
     </>
   );
 }

@@ -10,12 +10,12 @@ import {
   Modal,
   Spin,
 } from "antd";
-import logo from "../assets/images/logo.png";
+import logo from "../../assets/images/logo.png";
 // import axios from "axios";
 // import { useDispatch } from "react-redux";
 // import { addUser } from "../redux/User";
 // import { addToken } from "../redux/User";
-import "../css/Media.css";
+// import "../css/Media.css";
 
 // function onChange(checked) {
 //   console.log(`switch to ${checked}`);
