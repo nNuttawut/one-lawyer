@@ -99,10 +99,8 @@ export default function SignIn() {
                 <Row justify={"center"} className="main1">
                   <aside>
                     <div>
-                      <Row justify={"center"}>
-                        <Col span={24}>
-                          <img src={logo} width={"700px"} alt="" />
-                        </Col>
+                      <Row justify="center">
+                        <img src={logo} width={"60%"} alt="logo" />
                       </Row>
                     </div>
                     <div>
@@ -192,20 +190,20 @@ export default function SignIn() {
             </Spin>
           </Row>
         </Row>
+        <Footer justify={"center"}>
+          <p className="copyright" style={{ color: "#002766" }}>
+            <b>Copyright © </b>
+            <u>
+              <a
+                href="https://www.facebook.com/calleasing.kkn"
+                style={{ color: "#002766" }}
+              >
+                <b>One Leasing 2023</b>
+              </a>
+            </u>
+          </p>
+        </Footer>
       </Content>
-      <Footer justify={"center"}>
-        <p className="copyright" style={{ color: "#002766" }}>
-          <b>Copyright © </b>
-          <u>
-            <a
-              href="https://www.facebook.com/calleasing.kkn"
-              style={{ color: "#002766" }}
-            >
-              <b>One Leasing 2023</b>
-            </a>
-          </u>
-        </p>
-      </Footer>
     </Layout>
   );
 }

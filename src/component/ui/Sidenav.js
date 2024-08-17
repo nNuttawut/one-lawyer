@@ -1,11 +1,15 @@
 import { Menu } from "antd";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  HomeOutlined as HomeOutlinedIcon,
-  ShoppingCartOutlined as ShoppingCartOutlinedIcon,
+  HomeOutlined,
+  UsergroupAddOutlined,
   ShoppingOutlined,
-  DollarOutlined,
-  BarsOutlined,
+  SearchOutlined,
+  BarcodeOutlined,
+  FileTextOutlined,
+  AuditOutlined,
+  NotificationOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 import drawerHeader from "../../assets/images/logo.png";
 
@@ -18,44 +22,65 @@ function Sidenav({ color, onClick }) {
       key: 1,
       pageName: "dashboard",
       path: "/dashboard",
-      icon: <HomeOutlinedIcon />,
+      icon: <HomeOutlined />,
       title: "หน้าแรก",
     },
     {
       key: 2,
-      pageName: "orders",
-      path: "/orders",
-      icon: <ShoppingCartOutlinedIcon />,
-      title: "ขายสินค้า",
+      pageName: "debtor",
+      path: "/debtor",
+      icon: <UsergroupAddOutlined />,
+      title: "ลูกหนี้มีปัญหา",
     },
     {
       key: 3,
-      pageName: "myorders",
-      path: "/myorders",
-      icon: <ShoppingOutlined />,
-      title: "รายการขายของฉัน",
+      pageName: "pre-lawsuit-filed",
+      path: "/pre-lawsuit-filed",
+      icon: <AuditOutlined />,
+      title: "เตรียมส่งฟ้อง",
     },
     {
       key: 4,
-      pageName: "toi-jee",
-      path: "/toi-jee",
-      icon: <DollarOutlined />,
-      title: "งานโต่ยจี๊",
+      pageName: "investigate-assets",
+      path: "/Investigate-assets",
+      icon: <SearchOutlined />,
+      title: "สืบทรัพย์ลูกหนี้",
     },
     {
       key: 5,
-      pageName: "toi-jee-list",
-      path: "/toi-jee-list",
-      icon: <BarsOutlined />,
-      title: "รายการบิลงานโต๋ยจี๊",
+      pageName: "send-to-enforcement",
+      path: "/send-to-enforcement",
+      icon: <ShoppingOutlined />,
+      title: "ส่งบังคับคดี",
     },
-    // {
-    //   key: 4,
-    //   pageName: "ticket-config",
-    //   path: "/ticket-config",
-    //   icon: <ShoppingCartOutlinedIcon />,
-    //   title: "เลือกโต๊ะงานง่วนเซียว",
-    // },
+    {
+      key: 6,
+      pageName: "sale-announcement",
+      path: "/sale-announcement",
+      icon: <NotificationOutlined />,
+      title: "ประกาศขายทรัพย์",
+    },
+    {
+      key: 7,
+      pageName: "debt-payment",
+      path: "/debt-payment",
+      icon: <BarcodeOutlined />,
+      title: "ชำระหนี้/ประนอมหนี้",
+    },
+    {
+      key: 8,
+      pageName: "disbursement",
+      path: "/disbursement",
+      icon: <WalletOutlined />,
+      title: "งบเบิกจ่าย",
+    },
+    {
+      key: 9,
+      pageName: "report",
+      path: "/report",
+      icon: <FileTextOutlined />,
+      title: "รายงาน",
+    },
   ];
 
   const handleClick = (value) => {
@@ -89,7 +114,7 @@ function Sidenav({ color, onClick }) {
   return (
     <>
       <div style={{ justifyContent: "center", display: "flex" }}>
-        <img src={drawerHeader} width={100} alt="" />
+        <img src={drawerHeader} width={100} alt="drawerHeader" />
       </div>
       <hr />
       <Menu theme="light" mode="inline">
