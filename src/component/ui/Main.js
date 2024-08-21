@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Layout, Drawer } from "antd";
+import { Layout, Drawer, theme } from "antd";
 import { COLOR } from "../../utils/theme";
 import { Container, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -54,11 +54,11 @@ function Main() {
           onCollapse={(collapsed, type) => {
             console.log(collapsed, type);
           }}
-          trigger={null}
+          trigger={true}
           width={280}
           theme="light"
           className={`sider-primary ant-layout-sider-primary`}
-          style={{ background: "transparent" }}
+          style={{ backgroundColor: "white" }}
         >
           <Sidenav color={COLOR.primary} onClick={setTitleName} />
         </Sider>
@@ -67,14 +67,11 @@ function Main() {
             <Header onPress={openDrawer} title={titleName} />
           </AntHeader>
 
-          <Content style={{ padding: 24 }} className="content-ant">
-            {isMediumUp ? (
-              <Container>
-                <Router />
-              </Container>
-            ) : (
-              <Router />
-            )}
+          <Content
+            style={{ paddingLeft: 16, paddingRight: 16 }}
+            className="content-ant"
+          >
+            {isMediumUp ? <Router /> : <Router />}
           </Content>
           {/* <Footer /> */}
         </Layout>

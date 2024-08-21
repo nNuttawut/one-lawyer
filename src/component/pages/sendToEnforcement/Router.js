@@ -1,12 +1,12 @@
 import React from "react";
 
 import { Routes, Route } from "react-router-dom";
-import SendToEnfocement from "./SendToEnfocement";
+import Main from "./Main";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<SendToEnfocement />}></Route>
+      <Route path="/" element={<Main />}></Route>
     </Routes>
   );
 }

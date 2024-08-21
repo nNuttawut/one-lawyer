@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import DashboardRoute from "../pages/dashboard/Router";
-import DebtorRoute from "../pages/debtor/Router";
+import BadDebtRoute from "../pages/badDebt/Router";
 import DebtPaymentRoute from "../pages/debtPayment/Router";
 import DisbursementRoute from "../pages/disbursement/Router";
 import InvestigateAssetsRoute from "../pages/investigateAssets/Router";
@@ -9,11 +9,15 @@ import PreLawsuitFiledRoute from "../pages/preLawsuitFiled/Router";
 import ReportRoute from "../pages/report/Router";
 import SaleAnnouncementRoute from "../pages/saleAnnouncement/Router";
 import SendToEnforcementRoute from "../pages/sendToEnforcement/Router";
+import NegotiateRoute from "../pages/negotiate/Router";
+import ImportData from "../pages/importData/Router";
+import NotificationRouter from "../pages/notifications/Router";
+import DetailStatusRouter from "../pages/detailStatus/Router";
 export default function Router() {
   return (
     <Routes>
       <Route path="/dashboard/*" element={<DashboardRoute />} />
-      <Route path="/debtor/*" element={<DebtorRoute />} />
+      <Route path="/bad-debt/*" element={<BadDebtRoute />} />
       <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
       <Route path="/disbursement/*" element={<DisbursementRoute />} />
       <Route
@@ -27,6 +31,10 @@ export default function Router() {
         path="/send-to-enforcement/*"
         element={<SendToEnforcementRoute />}
       />
+      <Route path="/negotiate/*" element={<NegotiateRoute />} />
+      <Route path="/import-data/*" element={<ImportData />} />
+      <Route path="/notifications/*" element={<NotificationRouter />} />
+      <Route path="/detail-status/*" element={<DetailStatusRouter />} />
     </Routes>
   );
 }

@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { Button, Modal } from "antd";
+import { Badge, Button, Modal } from "antd";
 import {
   UserOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
   LogoutOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import "../../assets/styles/Sidenav.css";
 
-function Header({ title, onPress }) {
+function Header({ title, onPress, onClick }) {
   // const navigate = useNavigate();
   // const dispatch = useDispatch();
   useEffect(() => window.scrollTo(0, 0));
@@ -100,6 +101,7 @@ function Header({ title, onPress }) {
             >
               <MenuUnfoldOutlined fontSize="large" />
             </Button>
+
             <IconButton
               color="inherit"
               id="basic-button"
@@ -110,6 +112,11 @@ function Header({ title, onPress }) {
             >
               <UserOutlined fontSize="large" />
             </IconButton>
+            <a href="#/notifications">
+              <Badge count={5}>
+                <BellOutlined />
+              </Badge>
+            </a>
             <Menu
               id="basic-menu"
               anchorEl={anchorEl}
