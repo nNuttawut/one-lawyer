@@ -6,22 +6,23 @@ import SignIn from "./component/pages/SignIn";
 import Main from "./component/ui/Main";
 
 function App() {
-  const token = false;
+  const token = true;
 
-  // if (!token) {
-  //   return (
-  //     <>
-  //       <SignIn />
-  //     </>
-  //   );
-  // }
-  return (
-    <>
-      <HashRouter>
-        <Main />
-      </HashRouter>
-    </>
-  );
+  if (!token) {
+    return (
+      <>
+        <SignIn />
+      </>
+    );
+  } else {
+    return (
+      <>
+        <HashRouter>
+          <Main />
+        </HashRouter>
+      </>
+    );
+  }
 }
 
 export default App;
