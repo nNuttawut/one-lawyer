@@ -1,12 +1,12 @@
 import React from "react";
 
 import { Routes, Route } from "react-router-dom";
-import Debtor from "./Debtor";
+import Main from "./Main";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Debtor />}></Route>
+      <Route path="/" element={<Main />}></Route>
     </Routes>
   );
 }

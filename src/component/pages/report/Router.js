@@ -1,12 +1,12 @@
 import React from "react";
 
 import { Routes, Route } from "react-router-dom";
-import Report from "./Report";
+import Main from "./Main";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Report />}></Route>
+      <Route path="/" element={<Main />}></Route>
     </Routes>
   );
 }
