@@ -56,7 +56,7 @@ function Header({ title, onPress, onClick }) {
             className="menu-start"
             style={{
               lineHeight: "32px",
-              color: "white",
+              color: "black",
               fontSize: "20px",
               marginLeft: "20px",
             }}
@@ -65,7 +65,7 @@ function Header({ title, onPress, onClick }) {
             className="menu-start"
             style={{
               lineHeight: "32px",
-              color: "white",
+              color: "black",
               fontSize: "20px",
               marginLeft: "20px",
             }}
@@ -75,12 +75,12 @@ function Header({ title, onPress, onClick }) {
             className="menu-start"
             style={{
               lineHeight: "32px",
-              color: "white",
+              color: "black",
               fontSize: "20px",
               marginLeft: "20px",
             }}
           >
-            <h5 style={{ color: "white" }}>LAWYER JOB V. 0.1 {title}</h5>
+            <h5 style={{ color: "white" }}>{title}</h5>
           </div>
         </div>
         <div
@@ -103,7 +103,6 @@ function Header({ title, onPress, onClick }) {
             </Button>
 
             <IconButton
-              color="inherit"
               id="basic-button"
               // aria-controls={openMenuItem ? "basic-menu" : undefined}
               // aria-haspopup="true"

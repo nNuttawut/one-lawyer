@@ -1,7 +1,9 @@
-import { Col, Row, Space, Table, Tag, DatePicker, Card } from "antd";
+import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
+import { EditOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -12,6 +14,7 @@ const Main = () => {
       title: "เลขสัญญา",
       dataIndex: "contno",
       key: "key",
+      align: "center",
       render: (text) => (
         <a
           onClick={() => {
@@ -23,32 +26,50 @@ const Main = () => {
       ),
     },
     {
-      title: "Age",
+      title: "เลขคดี",
       dataIndex: "age",
       key: "age",
+      align: "center",
     },
     {
-      title: "Address",
+      title: "สถานที่ฟ้อง",
       dataIndex: "address",
       key: "address",
+      align: "center",
     },
     {
-      title: "การจัดการ",
+      title: "สถานะ",
       key: "action",
       dataIndex: "tags",
+      align: "center",
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
-            let color = tag.length > 5 ? "geekblue" : "green";
-            if (tag === "loser") {
+            let color = tag !== "ขายแล้ว" ? "geekblue" : "green";
+            if (tag === "ไม่เจอทรัพย์") {
               color = "volcano";
             }
             return (
-              <Tag color={color} key={tag}>
+              <Tag color={color} key={tag} style={{ textAlign: "center" }}>
                 {tag.toUpperCase()}
+                <br />
+                {moment().format("DD/MM/YY")}
               </Tag>
             );
           })}
+        </>
+      ),
+    },
+    {
+      title: "การจัดการ",
+      dataIndex: "tags",
+      key: "acction",
+      align: "center",
+      render: (_, { tags }) => (
+        <>
+          <Button>
+            <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
+          </Button>
         </>
       ),
     },
@@ -57,24 +78,87 @@ const Main = () => {
   const data = [
     {
       key: "1",
-      contno: "John Brown",
-      age: 32,
+      contno: "8-00001",
+      age: 12345,
       address: "New York No. 1 Lake Park",
-      tags: ["nice", "developer"],
+      tags: ["ขายแล้ว"],
     },
     {
       key: "2",
-      contno: "Jim Green",
-      age: 42,
+      contno: "8-00002",
+      age: 122355,
       address: "London No. 1 Lake Park",
-      tags: ["loser"],
+      tags: ["กำลังประกาษ"],
     },
     {
       key: "3",
-      contno: "Joe Black",
-      age: 32,
+      contno: "8-00003",
+      age: 123455,
       address: "Sydney No. 1 Lake Park",
-      tags: ["cool", "teacher"],
+      tags: ["กำลังประกาษ"],
+    },
+    {
+      key: "4",
+      contno: "8-00004",
+      age: 12399,
+      address: "New York No. 1 Lake Park",
+      tags: ["ขายแล้ว"],
+    },
+    {
+      key: "2",
+      contno: "8-00005",
+      age: 123455,
+      address: "London No. 1 Lake Park",
+      tags: ["ขายแล้ว"],
+    },
+    {
+      key: "5",
+      contno: "8-00006",
+      age: 345523,
+      address: "Sydney No. 1 Lake Park",
+      tags: ["ขายแล้ว"],
+    },
+    {
+      key: "6",
+      contno: "8-00007",
+      age: 32435,
+      address: "New York No. 1 Lake Park",
+      tags: ["ขายแล้ว"],
+    },
+    {
+      key: "7",
+      contno: "8-00008",
+      age: 32145,
+      address: "London No. 1 Lake Park",
+      tags: ["กำลังประกาษ"],
+    },
+    {
+      key: "8",
+      contno: "8-00009",
+      age: 32145,
+      address: "Sydney No. 1 Lake Park",
+      tags: ["กำลังประกาษ"],
+    },
+    {
+      key: "9",
+      contno: "8-00010",
+      age: 22356,
+      address: "New York No. 1 Lake Park",
+      tags: ["กำลังประกาษ"],
+    },
+    {
+      key: "10",
+      contno: "8-00011",
+      age: 235662,
+      address: "London No. 1 Lake Park",
+      tags: ["กำลังประกาษ"],
+    },
+    {
+      key: "11",
+      contno: "8-000012",
+      age: 3293482,
+      address: "Sydney No. 1 Lake Park",
+      tags: ["ขายแล้ว"],
     },
   ];
   return (
@@ -96,7 +180,12 @@ const Main = () => {
             />
           </Col>
           <Col span={"24"}>
-            <Table columns={columns} dataSource={data} />
+            <Table
+              size="small"
+              columns={columns}
+              dataSource={data}
+              scroll={{ x: 850 }}
+            />
           </Col>
         </Row>
       </Card>

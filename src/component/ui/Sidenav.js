@@ -1,4 +1,4 @@
-import { Card, Menu } from "antd";
+import { Menu } from "antd";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   HomeOutlined,
@@ -14,32 +14,66 @@ import {
   ImportOutlined,
 } from "@ant-design/icons";
 import drawerHeader from "../../assets/images/logo.png";
+import { useState } from "react";
 
 function Sidenav({ color, onClick }) {
+  const [activeItem, setActiveItem] = useState(null);
+
   const { pathname } = useLocation();
   const page = pathname.replace("/", "");
 
   const menuList = [
     {
-      key: 1,
+      key: "sub1",
+      label: "Navigation One",
       pageName: "dashboard",
       path: "/dashboard",
       icon: <HomeOutlined />,
       title: "หน้าแรก",
     },
     {
-      key: 3,
+      key: 2,
       pageName: "pre-lawsuit-filed",
       path: "/pre-lawsuit-filed",
       icon: <FormOutlined />,
       title: "เตรียมส่งฟ้อง",
     },
     {
-      key: 4,
+      key: 3,
       pageName: "investigate-assets",
-      path: "/Investigate-assets",
+      path: "/investigate-assets",
       icon: <SearchOutlined />,
       title: "สืบทรัพย์ลูกหนี้",
+    },
+    {
+      key: 4,
+      pageName: "awaiting-judgment",
+      path: "/awaiting-judgment",
+      icon: <SearchOutlined />,
+      title: "ชั้นศาล",
+      children: [
+        {
+          key: 41,
+          icon: <SearchOutlined />,
+          pageName: "awaiting-judgment",
+          path: "/awaiting-judgment",
+          label: "รอพิพากษา",
+        },
+        {
+          key: 42,
+          icon: <SearchOutlined />,
+          pageName: "adjudge",
+          path: "/adjudge",
+          label: "คดีถึงที่สุด",
+        },
+        {
+          key: 43,
+          icon: <SearchOutlined />,
+          pageName: "report-court",
+          path: "/report-court",
+          label: "รายงาน",
+        },
+      ],
     },
     {
       key: 5,
@@ -84,14 +118,14 @@ function Sidenav({ color, onClick }) {
       title: "รายงาน",
     },
     {
-      key: 2,
+      key: 11,
       pageName: "bad-debt",
       path: "/bad-debt",
       icon: <UsergroupAddOutlined />,
       title: "หนี้สูญ",
     },
     {
-      key: 11,
+      key: 12,
       pageName: "import-data",
       path: "/import-data",
       icon: <ImportOutlined />,
@@ -105,8 +139,12 @@ function Sidenav({ color, onClick }) {
   };
 
   const renderMenuItem = (item) => {
+    console.log(item);
     return (
       <Menu.Item
+        style={{
+          width: 256,
+        }}
         key={item.key}
         onClick={() => {
           handleClick(item.title);
@@ -122,6 +160,30 @@ function Sidenav({ color, onClick }) {
             {item.icon}
           </span>
           <span className="label">{item.title}</span>
+          {item.children ? (
+            <>
+              <Menu>
+                <Menu.SubMenu>
+                  {item.children &&
+                    item.children.map((child) => (
+                      <Menu.Item
+                        key={child.key}
+                        onClick={() => {
+                          handleClick(child.label);
+                        }}
+                      >
+                        <NavLink to={child.path} key={child.key}>
+                          <span className="icon">
+                            <a style={{ marginRight: "30px" }}>{child.icon}</a>
+                            <a className="label">{child.label}</a>
+                          </span>
+                        </NavLink>
+                      </Menu.Item>
+                    ))}
+                </Menu.SubMenu>
+              </Menu>
+            </>
+          ) : null}
         </NavLink>
       </Menu.Item>
     );

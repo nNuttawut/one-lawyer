@@ -49,21 +49,21 @@ const Main = () => {
       contno: "John Brown",
       age: 32,
       address: "New York No. 1 Lake Park",
-      tags: ["nice", "developer"],
+      tags: ["พิมพ์"],
     },
     {
       key: "2",
       contno: "Jim Green",
       age: 42,
       address: "London No. 1 Lake Park",
-      tags: ["loser"],
+      tags: ["พิมพ์"],
     },
     {
       key: "3",
       contno: "Joe Black",
       age: 32,
       address: "Sydney No. 1 Lake Park",
-      tags: ["cool", "teacher"],
+      tags: ["พิมพ์"],
     },
   ];
   return (
