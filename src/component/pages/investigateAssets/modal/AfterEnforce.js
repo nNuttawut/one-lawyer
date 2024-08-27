@@ -4,16 +4,14 @@ import {
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Radio,
-  Select,
   Upload,
   Modal,
   Card,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
-const PreLawsuitDetail = ({ open, close }) => {
+const AfterEnforce = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
 
   console.log("PreLawsuitDetail");
@@ -34,13 +32,13 @@ const PreLawsuitDetail = ({ open, close }) => {
     return e?.fileList;
   };
   const handleChange = (value) => {
-    console.log(`selected ${value}`);
+    console.log(`Inputed ${value}`);
   };
 
   return (
     <>
       <Modal
-        title="สืบทรัพย์ก่อนฟ้อง"
+        title="สืบทรัพย์หลังฟ้อง"
         open={open}
         onOk={handleOk}
         confirmLoading={confirmLoading}
@@ -72,91 +70,43 @@ const PreLawsuitDetail = ({ open, close }) => {
               </Radio.Group>
             </Form.Item>
             <Form.Item label="จังหวัด">
-              <Select
+              <Input
                 style={{
                   width: 250,
                 }}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "ขอนแก่น",
-                  },
-                  {
-                    value: "lucy",
-                    label: "ชัยภูมิ",
-                  },
-                ]}
               />
             </Form.Item>
             <Form.Item label="อำเภอ">
-              <Select
+              <Input
                 style={{
                   width: 250,
                 }}
                 onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "เมืองขอนแก่น",
-                  },
-                  {
-                    value: "lucy",
-                    label: "ชุมแพ",
-                  },
-                  {
-                    value: "Yiminghe",
-                    label: "พล",
-                  },
-                  {
-                    value: "jack",
-                    label: "ค่าธรรมเนียมชั้นบังคับคดี",
-                  },
-                  {
-                    value: "lucy",
-                    label: "ค่าธรรมเนียมถอนหารบังคับคดี",
-                  },
-                  {
-                    value: "Yiminghe",
-                    label: "ค่าส่งหมายบังคับคดี",
-                  },
-                  {
-                    value: "jack",
-                    label: "ค่าตรวจสอบหลักทรัพย์",
-                  },
-                  {
-                    value: "lucy",
-                    label: "ค่าคัดโฉนด",
-                  },
-                  {
-                    value: "Yiminghe",
-                    label: "ค่าประกาศขายทอดตลาด",
-                  },
-                ]}
               />
             </Form.Item>
             <Form.Item label="ตำบล">
-              <Select
+              <Input
                 style={{
                   width: 250,
                 }}
                 onChange={handleChange}
-                options={[
-                  {
-                    value: "jack",
-                    label: "ศิลา",
-                  },
-                  {
-                    value: "lucy",
-                    label: "ในเมือง",
-                  },
-                ]}
               />
             </Form.Item>
             <Form.Item label="วันที่สืบทรัพย์">
               <DatePicker />
             </Form.Item>
-
+            <Form.Item
+              label="Upload"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+            >
+              <Upload action="/upload.do" listType="picture-card">
+                <button style={{ border: 0, background: "none" }} type="button">
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </button>
+              </Upload>
+            </Form.Item>
             <Form.Item label="หมายเหตุ">
               <TextArea rows={4} />
             </Form.Item>
@@ -166,4 +116,4 @@ const PreLawsuitDetail = ({ open, close }) => {
     </>
   );
 };
-export default PreLawsuitDetail;
+export default AfterEnforce;

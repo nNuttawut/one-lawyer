@@ -1,14 +1,15 @@
 import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState } from "react";
-import DetailModal from "../detailStatus/DetailModal";
-import { EditOutlined } from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
+import AfterEnforce from "./modal/AfterEnforce";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
   console.log(isModal);
   const { RangePicker } = DatePicker;
+
   const columns = [
     {
       title: "เลขสัญญา",
@@ -68,7 +69,12 @@ const Main = () => {
       render: (_, { tags }) => (
         <>
           <Button>
-            <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
+            <SearchOutlined
+              style={{ color: "orange", fontSize: "16px" }}
+              onClick={() => {
+                setIsModal(true);
+              }}
+            />
           </Button>
         </>
       ),
@@ -189,7 +195,7 @@ const Main = () => {
           </Col>
         </Row>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? <AfterEnforce open={isModal} close={setIsModal} /> : null}
     </>
   );
 };

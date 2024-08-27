@@ -107,7 +107,7 @@ const AddDisbursement = ({ open, close }) => {
                   },
                   {
                     value: "lucy",
-                    label: "ค่่าธรรมเนียมถอนหารบังคับคดี",
+                    label: "ค่าธรรมเนียมถอนหารบังคับคดี",
                   },
                   {
                     value: "Yiminghe",

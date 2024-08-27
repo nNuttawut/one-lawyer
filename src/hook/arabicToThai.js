@@ -16,6 +16,7 @@ const arabicToThai = () => {
     };
     return text.replace(/[0-9]/g, (match) => arabicToThai[match]);
   };
+  return [convertToThaiNumerals];
 };
 
 export default arabicToThai;

@@ -39,12 +39,12 @@ const CreateDocument = ({ open, close }) => {
   return (
     <>
       <Modal
-        title="สร้างคำร้อง"
+        title="สร้างคำฟ้องคดีผู้บริโภค"
         open={open}
         onOk={handleOk}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        width={"50%"}
+        width={"850"}
         footer={[
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
             ปิด
@@ -68,13 +68,12 @@ const CreateDocument = ({ open, close }) => {
             }}
           >
             <Form.Item label="">
-              <Radio.Group>
-                <Radio value="apple"> คดีดำ </Radio>
-                <Radio value="pear"> คดีแดง </Radio>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="คดีหมายเลขที่">
-              <Input />
+              <Form.Item label="หมายเลขคดีดำ">
+                <Input />
+              </Form.Item>
+              <Form.Item label="หมายเลขคดีแดง">
+                <Input />
+              </Form.Item>
             </Form.Item>
             <Form.Item label="ความ">
               <Select
@@ -82,6 +81,7 @@ const CreateDocument = ({ open, close }) => {
                   width: 250,
                 }}
                 onChange={handleChange}
+                defaultValue="jack"
                 options={[
                   {
                     value: "jack",
@@ -107,15 +107,29 @@ const CreateDocument = ({ open, close }) => {
               <InputNumber />
             </Form.Item>
 
-            <Form.Item label="วันที่">
+            <Form.Item label="วันที่ส่งฟ้อง">
               <DatePicker />
+            </Form.Item>
+            <Form.Item label="ศาล ณ จังหวัด">
+              <Select
+                style={{
+                  width: 250,
+                }}
+                onChange={handleChange}
+                options={[
+                  {
+                    value: "jack",
+                    label: "ขอนแก่น",
+                  },
+                  {
+                    value: "lucy",
+                    label: "กรุงเทพฯ",
+                  },
+                ]}
+              />
             </Form.Item>
             <Form.Item label="หมายเหตุ">
               <TextArea rows={4} />
-            </Form.Item>
-
-            <Form.Item label="ศาล ณ จังหวัด">
-              <Button>เลือกสถานที่</Button>
             </Form.Item>
           </Form>
         </Card>

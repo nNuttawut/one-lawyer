@@ -24,9 +24,9 @@ function Sidenav({ color, onClick }) {
 
   const menuList = [
     {
-      key: "sub1",
-      label: "Navigation One",
+      key: 1,
       pageName: "dashboard",
+      label: "dashboard",
       path: "/dashboard",
       icon: <HomeOutlined />,
       title: "หน้าแรก",
@@ -34,6 +34,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 2,
       pageName: "pre-lawsuit-filed",
+      label: "pre-lawsuit-filed",
       path: "/pre-lawsuit-filed",
       icon: <FormOutlined />,
       title: "เตรียมส่งฟ้อง",
@@ -41,6 +42,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 3,
       pageName: "investigate-assets",
+      label: "investigate-assets",
       path: "/investigate-assets",
       icon: <SearchOutlined />,
       title: "สืบทรัพย์ลูกหนี้",
@@ -48,6 +50,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 4,
       pageName: "awaiting-judgment",
+      label: "awaiting-judgment",
       path: "/awaiting-judgment",
       icon: <SearchOutlined />,
       title: "ชั้นศาล",
@@ -57,27 +60,28 @@ function Sidenav({ color, onClick }) {
           icon: <SearchOutlined />,
           pageName: "awaiting-judgment",
           path: "/awaiting-judgment",
-          label: "รอพิพากษา",
+          label: "awaiting-judgment",
         },
         {
           key: 42,
           icon: <SearchOutlined />,
           pageName: "adjudge",
           path: "/adjudge",
-          label: "คดีถึงที่สุด",
+          label: "adjudge",
         },
         {
           key: 43,
           icon: <SearchOutlined />,
           pageName: "report-court",
           path: "/report-court",
-          label: "รายงาน",
+          label: "report-court",
         },
       ],
     },
     {
       key: 5,
       pageName: "send-to-enforcement",
+      label: "send-to-enforcement",
       path: "/send-to-enforcement",
       icon: <AuditOutlined />,
       title: "ส่งบังคับคดี",
@@ -85,6 +89,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 6,
       pageName: "negotiate",
+      label: "negotiate",
       path: "/negotiate",
       icon: <ScheduleOutlined />,
       title: "เจรจาหนี้",
@@ -92,6 +97,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 7,
       pageName: "sale-announcement",
+      label: "sale-announcement",
       path: "/sale-announcement",
       icon: <NotificationOutlined />,
       title: "ประกาศขายทรัพย์",
@@ -99,6 +105,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 8,
       pageName: "debt-payment",
+      label: "debt-payment",
       path: "/debt-payment",
       icon: <BarcodeOutlined />,
       title: "ชำระหนี้/ประนอมหนี้",
@@ -106,6 +113,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 9,
       pageName: "disbursement",
+      label: "disbursement",
       path: "/disbursement",
       icon: <WalletOutlined />,
       title: "งบเบิกจ่าย",
@@ -113,6 +121,7 @@ function Sidenav({ color, onClick }) {
     {
       key: 10,
       pageName: "report",
+      label: "report",
       path: "/report",
       icon: <FileTextOutlined />,
       title: "รายงาน",
@@ -120,13 +129,15 @@ function Sidenav({ color, onClick }) {
     {
       key: 11,
       pageName: "bad-debt",
+      label: "bad-debt",
       path: "/bad-debt",
       icon: <UsergroupAddOutlined />,
-      title: "หนี้สูญ",
+      title: "ลูกหนี้สูญ",
     },
     {
       key: 12,
       pageName: "import-data",
+      label: "import-data",
       path: "/import-data",
       icon: <ImportOutlined />,
       title: "นำเข้าข้อมูล",
@@ -139,7 +150,6 @@ function Sidenav({ color, onClick }) {
   };
 
   const renderMenuItem = (item) => {
-    console.log(item);
     return (
       <Menu.Item
         style={{
@@ -162,7 +172,9 @@ function Sidenav({ color, onClick }) {
           <span className="label">{item.title}</span>
           {item.children ? (
             <>
-              <Menu>
+              <Menu
+              // mode="inline"
+              >
                 <Menu.SubMenu>
                   {item.children &&
                     item.children.map((child) => (
@@ -173,9 +185,14 @@ function Sidenav({ color, onClick }) {
                         }}
                       >
                         <NavLink to={child.path} key={child.key}>
-                          <span className="icon">
-                            <a style={{ marginRight: "30px" }}>{child.icon}</a>
-                            <a className="label">{child.label}</a>
+                          <span
+                            className="icon"
+                            style={{ marginRight: "20px" }}
+                          >
+                            <div style={{ marginRight: "20px" }}>
+                              {child.icon}
+                              {child.label}
+                            </div>
                           </span>
                         </NavLink>
                       </Menu.Item>
