@@ -13,6 +13,9 @@ import NegotiateRoute from "../pages/negotiate/Router";
 import ImportData from "../pages/importData/Router";
 import NotificationRouter from "../pages/notifications/Router";
 import DetailStatusRouter from "../pages/detailStatus/Router";
+import Adjudge from "../pages/court/Adjudge";
+import AwaitingJudgment from "../pages/court/AwaitingJudgment";
+import ReportCourt from "../pages/court/ReportCourt";
 export default function Router() {
   return (
     <Routes>
@@ -35,6 +38,10 @@ export default function Router() {
       <Route path="/import-data/*" element={<ImportData />} />
       <Route path="/notifications/*" element={<NotificationRouter />} />
       <Route path="/detail-status/*" element={<DetailStatusRouter />} />
+
+      <Route path="/adjudge/*" element={<Adjudge />} />
+      <Route path="/awaiting-judgment/*" element={<AwaitingJudgment />} />
+      <Route path="/report-court/*" element={<ReportCourt />} />
     </Routes>
   );
 }

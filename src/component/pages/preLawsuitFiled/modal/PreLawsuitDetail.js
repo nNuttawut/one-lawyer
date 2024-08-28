@@ -1,41 +1,31 @@
 import React, { useState } from "react";
 import {
   Button,
-  Cascader,
-  Checkbox,
-  ColorPicker,
   DatePicker,
   Form,
   Input,
   InputNumber,
   Radio,
   Select,
-  Slider,
-  Switch,
-  TreeSelect,
   Upload,
   Modal,
   Card,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
-const AddDisbursement = ({ open, close }) => {
+const PreLawsuitDetail = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [componentDisabled, setComponentDisabled] = useState(true);
-  const [modalText, setModalText] = useState("Content of the modal");
-  const showModal = () => {};
+
+  console.log("PreLawsuitDetail");
+
   const handleOk = () => {
-    setModalText("The modal will be closed after two seconds");
     setConfirmLoading(true);
-    setTimeout(() => {
-      setConfirmLoading(false);
-    }, 2000);
   };
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
   };
-  const { RangePicker } = DatePicker;
+
   const { TextArea } = Input;
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -50,12 +40,20 @@ const AddDisbursement = ({ open, close }) => {
   return (
     <>
       <Modal
-        title="ตั้งเบิกงบใช้จ่าย"
+        title="สืบทรัพย์ก่อนฟ้อง"
         open={open}
         onOk={handleOk}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        width={"50%"}
+        width={850}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            ปิด
+          </Button>,
+          <Button key="ok" onClick={handleOk} style={{ color: "green" }}>
+            ยืนยัน
+          </Button>,
+        ]}
       >
         <Card>
           <Form
@@ -66,23 +64,14 @@ const AddDisbursement = ({ open, close }) => {
               span: 14,
             }}
             layout="horizontal"
-            style={{
-              maxWidth: 600,
-            }}
           >
             <Form.Item label="">
               <Radio.Group>
-                <Radio value="apple"> สำรองจ่าย </Radio>
-                <Radio value="pear"> เบิกแล้ว </Radio>
+                <Radio value="apple"> เจอทรัพย์ </Radio>
+                <Radio value="pear"> ไม่เจอทรัพย์ </Radio>
               </Radio.Group>
             </Form.Item>
-            <Form.Item label="เลขที่อ้างอิง">
-              <Input />
-            </Form.Item>
-            <Form.Item label="เลขที่สัญญา">
-              <Input />
-            </Form.Item>
-            <Form.Item label="รายการ">
+            <Form.Item label="จังหวัด">
               <Select
                 style={{
                   width: 250,
@@ -91,15 +80,33 @@ const AddDisbursement = ({ open, close }) => {
                 options={[
                   {
                     value: "jack",
-                    label: "ค่าเนียมศาล",
+                    label: "ขอนแก่น",
                   },
                   {
                     value: "lucy",
-                    label: "ค่าส่งหมายเรียกและสำเนาคำฟ้อง",
+                    label: "ชัยภูมิ",
+                  },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item label="อำเภอ">
+              <Select
+                style={{
+                  width: 250,
+                }}
+                onChange={handleChange}
+                options={[
+                  {
+                    value: "jack",
+                    label: "เมืองขอนแก่น",
+                  },
+                  {
+                    value: "lucy",
+                    label: "ชุมแพ",
                   },
                   {
                     value: "Yiminghe",
-                    label: "ค่าฟ้องศาล",
+                    label: "พล",
                   },
                   {
                     value: "jack",
@@ -128,38 +135,30 @@ const AddDisbursement = ({ open, close }) => {
                 ]}
               />
             </Form.Item>
-            <Form.Item label="วันที่ขอเบิก">
+            <Form.Item label="ตำบล">
+              <Select
+                style={{
+                  width: 250,
+                }}
+                onChange={handleChange}
+                options={[
+                  {
+                    value: "jack",
+                    label: "ศิลา",
+                  },
+                  {
+                    value: "lucy",
+                    label: "ในเมือง",
+                  },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item label="วันที่สืบทรัพย์">
               <DatePicker />
             </Form.Item>
-            <Form.Item label="ยอดตั้งเบิก">
-              <InputNumber />
-            </Form.Item>
+
             <Form.Item label="หมายเหตุ">
               <TextArea rows={4} />
-            </Form.Item>
-            <Form.Item
-              label="Upload"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload action="/upload.do" listType="picture-card">
-                <button
-                  style={{
-                    border: 0,
-                    background: "none",
-                  }}
-                  type="button"
-                >
-                  <PlusOutlined />
-                  <div
-                    style={{
-                      marginTop: 8,
-                    }}
-                  >
-                    Upload
-                  </div>
-                </button>
-              </Upload>
             </Form.Item>
           </Form>
         </Card>
@@ -167,4 +166,4 @@ const AddDisbursement = ({ open, close }) => {
     </>
   );
 };
-export default AddDisbursement;
+export default PreLawsuitDetail;

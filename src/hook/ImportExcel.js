@@ -1,7 +1,7 @@
 import { Button, Upload } from "antd";
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadOutlined } from "@ant-design/icons";
+import { ImportOutlined } from "@ant-design/icons";
 
 function ImportExcel() {
   const [data, setData] = useState(null);
@@ -29,6 +29,7 @@ function ImportExcel() {
       }
     },
   };
+
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       handleFileUpload(file);
@@ -45,7 +46,9 @@ function ImportExcel() {
     <>
       <div>
         <Upload {...uploadProps} style={{ margin: "10px" }}>
-          <Button icon={<UploadOutlined />}>Upload</Button>
+          <Button style={{ color: "green" }} icon={<ImportOutlined />}>
+            import
+          </Button>
         </Upload>
         {data && (
           <div>

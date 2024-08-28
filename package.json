@@ -3,13 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^5.16.7",
+    "@react-pdf/renderer": "^3.4.4",
+>>>>>>> origin/newPlayer
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.20.0",
+    "axios": "^1.7.5",
     "echarts": "^5.5.1",
     "echarts-for-react": "^3.0.2",
+    "google-map-react": "^2.2.1",
+    "jspdf": "^2.5.1",
     "moment": "^2.30.1",
+    "pdfjs-dist": "^4.5.136",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1",
