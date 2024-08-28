@@ -1,5 +1,3 @@
-import React from "react";
-
 const arabicToThai = () => {
   const convertToThaiNumerals = (text) => {
     const arabicToThai = {

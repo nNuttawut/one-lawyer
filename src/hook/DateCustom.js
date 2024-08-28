@@ -1,8 +1,13 @@
-import React from "react";
 import moment from "moment";
 require("moment/locale/th");
 
 const DateCustom = () => {
+  const dateNow = () => {
+    const date = moment().add(543, "year").format("LL");
+    console.log(date);
+    return date;
+  };
+
   const convertDateThai = (value) => {
     const date = moment(value).add(543, "year").format("LL");
     console.log(date);
@@ -31,6 +36,7 @@ const DateCustom = () => {
     convertDateThaiYear,
     convertDateThaiMonth,
     convertDateThaiDate,
+    dateNow,
   ];
 };
 

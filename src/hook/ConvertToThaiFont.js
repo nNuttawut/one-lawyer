@@ -1,5 +1,3 @@
-import React from "react";
-
 const ConvertToThaiFont = () => {
   const convertToThaiFont = (text) => {
     const engToThai = {

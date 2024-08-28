@@ -1606,7 +1606,7 @@ const DocumentEnforce = ({ open, close }) => {
       pdf.text(
         `ให้จำเลยที่ ๑ ชำระดอกเบี้ยในอัตราร้อยละ ๑๕ ต่อปี จากต้นเงินจำนวน ${convertToThaiNumerals(
           currencyFormat(textData.amountTotal)
-        )} บาท นับจากวันฟ้อง`,
+        )} บาท นับจากวันฟ้องจน`,
         marginL + 54,
         pdfPositionY + 20
       );
@@ -1618,11 +1618,7 @@ const DocumentEnforce = ({ open, close }) => {
       );
 
       pdfPositionY += 20;
-      pdf.text(
-        `จนกว่าจะชำระเสร็จสิ้นแก่โจทก์`,
-        marginL + 42,
-        pdfPositionY + 20
-      );
+      pdf.text(`กว่าจะชำระเสร็จสิ้นแก่โจทก์`, marginL + 42, pdfPositionY + 20);
       pdf.line(
         marginL + 42,
         pdfPositionY + 23,
@@ -1738,7 +1734,7 @@ const DocumentEnforce = ({ open, close }) => {
       pdf.line(
         marginL + 120,
         pdfPositionY + 20,
-        marginL + 350,
+        marginL + 349,
         pdfPositionY + 20
       );
 
@@ -1757,7 +1753,7 @@ const DocumentEnforce = ({ open, close }) => {
       pdf.line(
         marginL + 120,
         pdfPositionY + 20,
-        marginL + 300,
+        marginL + 299,
         pdfPositionY + 20
       );
       pdfPositionY += 20;
@@ -1837,7 +1833,7 @@ const DocumentEnforce = ({ open, close }) => {
         onOk={""}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        width={"850"}
+        width={850}
         footer={[
           <Button
             key="cancel"

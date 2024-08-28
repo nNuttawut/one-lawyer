@@ -44,7 +44,7 @@ const CreateDocument = ({ open, close }) => {
         onOk={handleOk}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
-        width={"850"}
+        width={850}
         footer={[
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
             ปิด
