@@ -99,6 +99,7 @@ const DocumentEnforce = ({ open, close }) => {
     lostNoPay: 47,
     enforceDate: "2024-5-29",
     dueDate: "2022-05-05",
+    interestRate: 15,
   });
 
   useEffect(() => {
@@ -1442,7 +1443,9 @@ const DocumentEnforce = ({ open, close }) => {
       pdf.text(
         `เดือนละ ${convertToThaiNumerals(
           currencyFormat(textData.lostBenefits)
-        )} บาท พร้อมดอกเบี้ยในอัตราร้อยละ ๑๕ ต่อปี ของต้นเงินจำนวน ${convertToThaiNumerals(
+        )} บาท พร้อมดอกเบี้ยในอัตราร้อยละ ${convertToThaiNumerals(
+          currencyFormat(textData.interestRate)
+        )} ต่อปี ของต้นเงินจำนวน ${convertToThaiNumerals(
           currencyFormat(textData.amountTotal)
         )} บาท นับถัดจาก`,
         marginL + 42,

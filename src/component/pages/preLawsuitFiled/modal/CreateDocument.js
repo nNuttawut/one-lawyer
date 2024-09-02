@@ -105,7 +105,19 @@ const CreateDocument = ({ open, close }) => {
             <Form.Item label="จำนวนทุนทรัพย์">
               <InputNumber />
             </Form.Item>
-
+            <Form.Item label="อัตราดอกเบี้ย">
+              <Select
+                defaultValue="15"
+                style={{ width: 80 }}
+                onChange={handleChange}
+                options={[
+                  { value: "5", label: "5 %" },
+                  { value: "7.5", label: "7.5 %" },
+                  { value: "10", label: "10 %" },
+                  { value: "15", label: "15 %" },
+                ]}
+              />
+            </Form.Item>
             <Form.Item label="วันที่ส่งฟ้อง">
               <DatePicker />
             </Form.Item>
