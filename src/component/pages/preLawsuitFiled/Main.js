@@ -8,9 +8,10 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
-import PreLawsuitDetail from "./modal/PreLawsuitDetail";
 import CreateDocument from "./modal/CreateDocument";
 import DocumentEnforce from "./modal/DocumentEnforce";
+import MotionHoc from "../../../utils/MotionHoc";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -27,13 +28,13 @@ const Main = () => {
       key: "key",
       align: "center",
       render: (text) => (
-        <a
+        <Link
           onClick={() => {
             setIsModal(true);
           }}
         >
           {text}
-        </a>
+        </Link>
       ),
     },
     {
@@ -56,10 +57,7 @@ const Main = () => {
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
-            let color = tag !== "ยื่นฟ้อง" ? "geekblue" : "green";
-            if (tag === "ไม่เจอทรัพย์") {
-              color = "volcano";
-            }
+            let color = tag !== "ยื่นฟ้อง" ? "volcano" : "green";
             return (
               <Tag color={color} key={tag} style={{ textAlign: "center" }}>
                 {tag.toUpperCase()}
@@ -79,14 +77,6 @@ const Main = () => {
 
       render: () => (
         <>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalLaw(true);
-            }}
-          >
-            <SearchOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
           <Button
             style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
             onClick={() => {
@@ -128,21 +118,21 @@ const Main = () => {
       contno: "8-00003",
       age: 123455,
       address: "Sydney No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง", "ไม่เจอทรัพย์"],
+      tags: ["ยื่นฟ้อง"],
     },
     {
       key: "4",
       contno: "8-00004",
       age: 12399,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "2",
       contno: "8-00005",
       age: 123455,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "5",
@@ -156,42 +146,42 @@ const Main = () => {
       contno: "8-00007",
       age: 32435,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "7",
       contno: "8-00008",
       age: 32145,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "8",
       contno: "8-00009",
       age: 32145,
       address: "Sydney No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "9",
       contno: "8-00010",
       age: 22356,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "10",
       contno: "8-00011",
       age: 235662,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
     {
       key: "11",
       contno: "8-000012",
       age: 3293482,
       address: "Sydney No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ยังไม่ส่งฟ้อง"],
     },
   ];
   return (
@@ -223,9 +213,6 @@ const Main = () => {
         </Row>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {isModalLaw ? (
-        <PreLawsuitDetail open={isModalLaw} close={setIsModalLaw} />
-      ) : null}
       {isModalCreate ? (
         <CreateDocument open={isModalCreate} close={setIsModalCreate} />
       ) : null}
@@ -236,4 +223,5 @@ const Main = () => {
   );
 };
 
-export default Main;
+const PreLawsuitFiled = MotionHoc(Main);
+export default PreLawsuitFiled;

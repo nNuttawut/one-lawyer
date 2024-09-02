@@ -14,7 +14,7 @@ const DetailModal = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [modalText, setModalText] = useState("Content of the modal");
   const [status, setStatus] = useState({
-    notic: "finish",
+    Notice: "finish",
     investigateAssets: "finish",
     sendToEnforcement: "finish",
     enforcement: "finish",
@@ -39,7 +39,7 @@ const DetailModal = ({ open, close }) => {
   const handleStatusChange = (current) => {
     const newStatus = { ...status };
     if (current) {
-      newStatus.notic = newStatus.notic === "wait" ? "finish" : "wait";
+      newStatus.Notice = newStatus.Notice === "wait" ? "finish" : "wait";
       newStatus.investigateAssets =
         newStatus.investigateAssets === "wait" ? "finish" : "wait";
       newStatus.sendToEnforcement =
@@ -62,7 +62,7 @@ const DetailModal = ({ open, close }) => {
           items={[
             {
               title: "เตือน",
-              status: status.notic,
+              status: status.Notice,
               icon: <BellOutlined />,
             },
             {

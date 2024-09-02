@@ -1,20 +1,24 @@
 import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState } from "react";
-
+import DetailModal from "../detailStatus/DetailModal";
 import {
-  SearchOutlined,
   FileDoneOutlined,
   EditOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
+import MotionHoc from "../../../utils/MotionHoc";
+import CreateNotice from "./modal/CreateNotice";
+import DocumentNotice from "./modal/DocumentEnforce";
 import { Link } from "react-router-dom";
+import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 
-const ReportCourt = () => {
+const Main = () => {
   const [isModal, setIsModal] = useState(false);
-  const [isModalLaw, setIsModalLaw] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
+  const [isModalUpdate, setIsModalUpdate] = useState(false);
 
   const { RangePicker } = DatePicker;
 
@@ -48,14 +52,14 @@ const ReportCourt = () => {
     },
     {
       title: "สถานะ",
-      key: "action",
+      key: "status",
       dataIndex: "tags",
       align: "center",
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
-            let color = tag !== "ยื่นฟ้อง" ? "geekblue" : "green";
-            if (tag === "ไม่เจอทรัพย์") {
+            let color = tag !== "ครบกำหนดเมื่อ" ? "gray" : "green";
+            if (tag === "เลยกำหนดเมื่อ") {
               color = "volcano";
             }
             return (
@@ -80,26 +84,26 @@ const ReportCourt = () => {
           <Button
             style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
             onClick={() => {
-              setIsModalLaw(true);
-            }}
-          >
-            <SearchOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
               setIsModalCreate(true);
             }}
           >
             <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
           </Button>
           <Button
-            style={{ boxShadow: "0 4px 3px" }}
+            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
             onClick={() => {
               setIsModalDocument(true);
             }}
           >
-            <FileDoneOutlined style={{ color: "orange", fontSize: "16px" }} />
+            <FileDoneOutlined style={{ color: "green", fontSize: "16px" }} />
+          </Button>
+          <Button
+            style={{ boxShadow: "0 4px 3px" }}
+            onClick={() => {
+              setIsModalUpdate(true);
+            }}
+          >
+            <SyncOutlined style={{ color: "green", fontSize: "16px" }} />
           </Button>
         </>
       ),
@@ -112,84 +116,84 @@ const ReportCourt = () => {
       contno: "8-00001",
       age: 12345,
       address: "New York No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["เลยกำหนดเมื่อ"],
     },
     {
       key: "2",
       contno: "8-00002",
       age: 122355,
       address: "London No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "3",
       contno: "8-00003",
       age: 123455,
       address: "Sydney No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง", "ไม่เจอทรัพย์"],
+      tags: ["เลยกำหนดเมื่อ"],
     },
     {
       key: "4",
       contno: "8-00004",
       age: 12399,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["เลยกำหนดเมื่อ"],
     },
     {
       key: "2",
       contno: "8-00005",
       age: 123455,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "5",
       contno: "8-00006",
       age: 345523,
       address: "Sydney No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "6",
       contno: "8-00007",
       age: 32435,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "7",
       contno: "8-00008",
       age: 32145,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["เลยกำหนดเมื่อ"],
     },
     {
       key: "8",
       contno: "8-00009",
       age: 32145,
       address: "Sydney No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "9",
       contno: "8-00010",
       age: 22356,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
     {
       key: "10",
       contno: "8-00011",
       age: 235662,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["เลยกำหนด"],
     },
     {
       key: "11",
       contno: "8-000012",
       age: 3293482,
       address: "Sydney No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ครบกำหนดเมื่อ"],
     },
   ];
   return (
@@ -220,8 +224,19 @@ const ReportCourt = () => {
           </Col>
         </Row>
       </Card>
+      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModalCreate ? (
+        <CreateNotice open={isModalCreate} close={setIsModalCreate} />
+      ) : null}
+      {isModalDocument ? (
+        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
+      ) : null}
+      {isModalUpdate ? (
+        <UpdateStatusNotice open={isModalUpdate} close={setIsModalUpdate} />
+      ) : null}
     </>
   );
 };
 
-export default ReportCourt;
+const Notice = MotionHoc(Main);
+export default Notice;

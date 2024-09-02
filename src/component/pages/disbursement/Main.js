@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import AddDisbursement from "./modal/AddDisbursement";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [isModalDetail, setIsModalDetail] = useState(false);
@@ -17,13 +18,13 @@ const Main = () => {
       align: "center",
       key: "key",
       render: (text) => (
-        <a
+        <Link
           onClick={() => {
             setIsModalDetail(true);
           }}
         >
           {text}
-        </a>
+        </Link>
       ),
     },
     {

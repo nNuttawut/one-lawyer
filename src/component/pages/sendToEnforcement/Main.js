@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import { EditOutlined } from "@ant-design/icons";
 import moment from "moment";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -16,13 +17,13 @@ const Main = () => {
       key: "key",
       align: "center",
       render: (text) => (
-        <a
+        <Link
           onClick={() => {
             setIsModal(true);
           }}
         >
           {text}
-        </a>
+        </Link>
       ),
     },
     {

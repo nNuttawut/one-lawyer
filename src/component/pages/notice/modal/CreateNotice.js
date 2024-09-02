@@ -5,14 +5,16 @@ import {
   Form,
   Input,
   InputNumber,
-  Select,
   Modal,
   Card,
+  Cascader,
+  Radio,
 } from "antd";
 
-const CreateDocument = ({ open, close }) => {
+const CreateNotice = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [modalText, setModalText] = useState("Content of the modal");
+  const [defaultStatus, setDefaultStatus] = useState();
 
   console.log("CreateDocument");
 
@@ -35,10 +37,15 @@ const CreateDocument = ({ open, close }) => {
     console.log(`selected ${value}`);
   };
 
+  const onChange = (e) => {
+    setDefaultStatus(e.target.value);
+    console.log(defaultStatus);
+  };
+
   return (
     <>
       <Modal
-        title="สร้างคำฟ้องคดีผู้บริโภค"
+        title="สร้างโนติส"
         open={open}
         onOk={handleOk}
         confirmLoading={confirmLoading}
@@ -66,67 +73,42 @@ const CreateDocument = ({ open, close }) => {
               maxWidth: 600,
             }}
           >
-            <Form.Item label="">
-              <Form.Item label="หมายเลขคดีดำ">
-                <Input />
-              </Form.Item>
-              <Form.Item label="หมายเลขคดีแดง">
-                <Input />
-              </Form.Item>
-            </Form.Item>
-            <Form.Item label="ความ">
-              <Select
-                style={{
-                  width: 250,
-                }}
-                onChange={handleChange}
-                defaultValue="jack"
-                options={[
-                  {
-                    value: "jack",
-                    label: "แพ่ง",
-                  },
-                  {
-                    value: "lucy",
-                    label: "อาญา",
-                  },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item label="เรื่อง">
-              <Input />
-            </Form.Item>
+            <Radio.Group
+              onChange={onChange}
+              value={defaultStatus}
+              style={{ marginBottom: "10px" }}
+            >
+              <Radio value="hirePurchase">เช่าซื้อ</Radio>
+              <Radio value="mortgage">จำนอง</Radio>
+            </Radio.Group>
             <Form.Item label="ค่าติดตาม">
               <InputNumber />
             </Form.Item>
-            <Form.Item label="ค่าขาดประโยชน์">
-              <InputNumber />
-            </Form.Item>
-            <Form.Item label="จำนวนทุนทรัพย์">
+
+            <Form.Item label="จำนวนที่ต้องชำระ">
               <InputNumber />
             </Form.Item>
 
-            <Form.Item label="วันที่ส่งฟ้อง">
+            <Form.Item label="วันที่ออกจดหมาย">
               <DatePicker />
             </Form.Item>
-            <Form.Item label="ศาล ณ จังหวัด">
-              <Select
-                style={{
-                  width: 250,
-                }}
-                onChange={handleChange}
+            <Form.Item label="ที่อยู่">
+              <Cascader
                 options={[
                   {
-                    value: "jack",
-                    label: "ขอนแก่น",
-                  },
-                  {
-                    value: "lucy",
-                    label: "กรุงเทพฯ",
+                    value: "zhejiang",
+                    label: "Zhejiang",
+                    children: [
+                      {
+                        value: "hangzhou",
+                        label: "Hangzhou",
+                      },
+                    ],
                   },
                 ]}
               />
             </Form.Item>
+
             <Form.Item label="หมายเหตุ">
               <TextArea rows={4} />
             </Form.Item>
@@ -136,4 +118,4 @@ const CreateDocument = ({ open, close }) => {
     </>
   );
 };
-export default CreateDocument;
+export default CreateNotice;

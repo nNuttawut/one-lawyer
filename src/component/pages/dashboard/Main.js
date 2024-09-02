@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Card, Col, DatePicker, Flex, Progress, Row, Space } from "antd";
 import BarChartComponent from "./components/BarChartComponent";
 import PieChartComponent from "./components/PieChartComponent";
+import MotionHoc from "../../../utils/MotionHoc";
 
-export default function Main() {
+const Main = () => {
   const [debtor, setDebtor] = useState(100);
   const [preLawsuitFiled, setPreLawsuitFiled] = useState(3);
   const [investigateAssets, setInvestigateAssets] = useState(5);
@@ -69,4 +70,7 @@ export default function Main() {
       </Row>
     </>
   );
-}
+};
+const Dashboard = MotionHoc(Main);
+
+export default Dashboard;

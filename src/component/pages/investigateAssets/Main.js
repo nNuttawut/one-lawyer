@@ -1,9 +1,10 @@
 import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
 import AfterEnforce from "./modal/AfterEnforce";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -17,13 +18,13 @@ const Main = () => {
       key: "key",
       align: "center",
       render: (text) => (
-        <a
+        <Link
           onClick={() => {
             setIsModal(true);
           }}
         >
           {text}
-        </a>
+        </Link>
       ),
     },
     {

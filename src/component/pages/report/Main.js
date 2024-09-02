@@ -1,6 +1,7 @@
 import { Card, Col, DatePicker, Row, Space, Table, Tag } from "antd";
 import Search from "antd/es/transfer/search";
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const { RangePicker } = DatePicker;
@@ -9,7 +10,7 @@ const Main = () => {
       title: "เลขสัญญา",
       dataIndex: "contno",
       key: "key",
-      render: (text) => <a>{text}</a>,
+      render: (text) => <Link>{text}</Link>,
     },
     {
       title: "Age",

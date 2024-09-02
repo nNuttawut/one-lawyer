@@ -25,7 +25,10 @@ function Main() {
 
   return (
     <>
-      <Layout className={`layout-dashboard`}>
+      <Layout
+        className={`layout-dashboard`}
+        style={{ backgroundColor: "white" }}
+      >
         <Drawer
           title={false}
           placement="left"

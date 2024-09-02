@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal, Card } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
-import CreateDocument from "./CreateDocument";
+import CreateDocument from "./CreateNotice";
 import garuda from "../../../../assets/images/garuda_emblem.jpg";
 import bracket from "../../../../assets/images/bracket.png";
 import arabicToThai from "../../../../hook/arabicToThai";
@@ -11,7 +11,7 @@ import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 
-const DocumentEnforce = ({ open, close }) => {
+const DocumentNotice = ({ open, close }) => {
   const [convertToThaiNumerals] = arabicToThai();
   const [convertToThaiFont] = ConvertToThaiFont();
   const [
@@ -1852,4 +1852,4 @@ const DocumentEnforce = ({ open, close }) => {
     </>
   );
 };
-export default DocumentEnforce;
+export default DocumentNotice;

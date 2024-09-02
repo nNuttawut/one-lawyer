@@ -2,6 +2,7 @@ import { Col, Row, Space, Table, Tag, DatePicker, Card } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -14,13 +15,13 @@ const Main = () => {
       align: "center",
       key: "key",
       render: (text) => (
-        <a
+        <Link
           onClick={() => {
             setIsModal(true);
           }}
         >
           {text}
-        </a>
+        </Link>
       ),
     },
     {
