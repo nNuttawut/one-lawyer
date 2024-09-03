@@ -12,6 +12,7 @@ import {
   WalletOutlined,
   ScheduleOutlined,
   ImportOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import drawerHeader from "../../assets/images/logo.png";
 import { useState } from "react";
@@ -24,7 +25,7 @@ function Sidenav({ color, onClick }) {
 
   const menuList = [
     {
-      key: 1,
+      key: "1",
       pageName: "dashboard",
       label: "dashboard",
       path: "/dashboard",
@@ -32,7 +33,15 @@ function Sidenav({ color, onClick }) {
       title: "หน้าแรก",
     },
     {
-      key: 2,
+      key: "2",
+      pageName: "calendar",
+      label: "calendar",
+      path: "/calendar",
+      icon: <CalendarOutlined />,
+      title: "ปฏิทินนัดหมาย",
+    },
+    {
+      key: "3",
       pageName: "notice",
       label: "notice",
       path: "/notice",
@@ -40,7 +49,7 @@ function Sidenav({ color, onClick }) {
       title: "สร้าง โนติส",
     },
     {
-      key: 3,
+      key: "4",
       pageName: "pre-lawsuit-filed",
       label: "pre-lawsuit-filed",
       path: "/pre-lawsuit-filed",
@@ -48,7 +57,7 @@ function Sidenav({ color, onClick }) {
       title: "สร้างคำฟ้อง",
     },
     {
-      key: 4,
+      key: "5",
       pageName: "investigate-assets",
       label: "investigate-assets",
       path: "/investigate-assets",
@@ -56,7 +65,7 @@ function Sidenav({ color, onClick }) {
       title: "สืบทรัพย์ลูกหนี้",
     },
     {
-      key: 5,
+      key: "6",
       pageName: "awaiting-judgment",
       label: "awaiting-judgment",
       path: "/awaiting-judgment",
@@ -64,21 +73,21 @@ function Sidenav({ color, onClick }) {
       title: "ชั้นศาล",
       children: [
         {
-          key: 51,
+          key: "61",
           icon: <SearchOutlined />,
           pageName: "awaiting-judgment",
           path: "/awaiting-judgment",
           label: "รอพิพากษา",
         },
         {
-          key: 52,
+          key: "62",
           icon: <SearchOutlined />,
           pageName: "adjudge",
           path: "/adjudge",
           label: "คดีถึงที่สุด",
         },
         {
-          key: 53,
+          key: "63",
           icon: <SearchOutlined />,
           pageName: "report-court",
           path: "/report-court",
@@ -87,7 +96,7 @@ function Sidenav({ color, onClick }) {
       ],
     },
     {
-      key: 6,
+      key: "7",
       pageName: "send-to-enforcement",
       label: "send-to-enforcement",
       path: "/send-to-enforcement",
@@ -95,7 +104,7 @@ function Sidenav({ color, onClick }) {
       title: "ส่งบังคับคดี",
     },
     {
-      key: 7,
+      key: "8",
       pageName: "negotiate",
       label: "negotiate",
       path: "/negotiate",
@@ -103,7 +112,7 @@ function Sidenav({ color, onClick }) {
       title: "เจรจาหนี้",
     },
     {
-      key: 8,
+      key: "9",
       pageName: "sale-announcement",
       label: "sale-announcement",
       path: "/sale-announcement",
@@ -111,7 +120,7 @@ function Sidenav({ color, onClick }) {
       title: "ประกาศขายทรัพย์",
     },
     {
-      key: 9,
+      key: "10",
       pageName: "debt-payment",
       label: "debt-payment",
       path: "/debt-payment",
@@ -119,7 +128,7 @@ function Sidenav({ color, onClick }) {
       title: "ชำระหนี้/ประนอมหนี้",
     },
     {
-      key: 10,
+      key: "11",
       pageName: "disbursement",
       label: "disbursement",
       path: "/disbursement",
@@ -127,7 +136,7 @@ function Sidenav({ color, onClick }) {
       title: "งบเบิกจ่าย",
     },
     {
-      key: 11,
+      key: "12",
       pageName: "report",
       label: "report",
       path: "/report",
@@ -135,7 +144,7 @@ function Sidenav({ color, onClick }) {
       title: "รายงาน",
     },
     {
-      key: 12,
+      key: "13",
       pageName: "bad-debt",
       label: "bad-debt",
       path: "/bad-debt",
@@ -143,7 +152,7 @@ function Sidenav({ color, onClick }) {
       title: "ลูกหนี้สูญ",
     },
     {
-      key: 13,
+      key: "14",
       pageName: "import-data",
       label: "import-data",
       path: "/import-data",
