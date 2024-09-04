@@ -10,14 +10,18 @@ import {
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import "../../assets/styles/Sidenav.css";
 
+//use redux
+import { useSelector } from "react-redux";
+
 function Header({ title, onPress, onClick }) {
   // const navigate = useNavigate();
   // const dispatch = useDispatch();
   useEffect(() => window.scrollTo(0, 0));
-
   const [anchorEl, setAnchorEl] = useState(null);
-
   const openMenuItem = Boolean(anchorEl);
+  //use redux
+  const profileRedux = useSelector((state) => state.authReducer.profile);
+
   const handleClickMenuItem = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -126,12 +130,16 @@ function Header({ title, onPress, onClick }) {
                 "aria-labelledby": "basic-button",
               }}
             >
+              {" "}
               <MenuItem value={1} onClick={handleCloseMenuItem}>
+                <UserOutlined style={{ marginRight: "5px" }} />
+                {profileRedux.name}
+              </MenuItem>
+              <MenuItem value={2} onClick={handleCloseMenuItem}>
                 <SettingOutlined style={{ marginRight: "5px" }} />
                 เปลี่ยนรหัสผ่าน
               </MenuItem>
-
-              <MenuItem value={2} onClick={handleCloseMenuItem}>
+              <MenuItem value={3} onClick={handleCloseMenuItem}>
                 <LogoutOutlined style={{ marginRight: "5px" }} /> ออกจากระบบ
               </MenuItem>
             </Menu>

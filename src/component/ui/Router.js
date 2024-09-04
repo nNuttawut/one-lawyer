@@ -64,7 +64,7 @@ export default function Router() {
             <Route path="/awaiting-judgment/*" element={<AwaitingJudgment />} />
             <Route path="/report-court/*" element={<ReportCourt />} />
 
-            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/" element={<Calendar />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

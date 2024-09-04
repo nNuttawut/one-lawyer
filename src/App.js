@@ -1,9 +1,15 @@
 import React from "react";
 import "./assets/styles/main.css";
 import "./assets/styles/responsive.css";
-import { HashRouter, useLocation } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import SignIn from "./component/pages/SignIn";
 import Main from "./component/ui/Main";
+
+//redux setup
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+import rootReducer from "./redux/reducers/index";
+const store = createStore(rootReducer);
 
 function App() {
   const token = true;
@@ -17,9 +23,11 @@ function App() {
   } else {
     return (
       <>
-        <HashRouter>
-          <Main />
-        </HashRouter>
+        <Provider store={store}>
+          <HashRouter>
+            <Main />
+          </HashRouter>
+        </Provider>
       </>
     );
   }

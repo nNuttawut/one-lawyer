@@ -13,11 +13,11 @@ import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import { ImportOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import ImportExcel from "../../../hook/ImportExcel";
 import * as XLSX from "xlsx";
-
 import moment from "moment";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { updateData } from "../../../redux/action/DataImport";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -26,6 +26,9 @@ const Main = () => {
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
   const [data2, setData2] = useState(null);
+
+  //call redux action
+  const dispatch = useDispatch();
 
   console.log("data---->", data);
   console.log("array table---->", arrayTable);
@@ -158,6 +161,11 @@ const Main = () => {
     }
   };
 
+  const storeData = () => {
+    dispatch(updateData(arrayTable));
+    console.log("in store data");
+  };
+
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       handleFileUpload(file);
@@ -202,10 +210,16 @@ const Main = () => {
       dataIndex: "tags",
       key: "acction",
       align: "center",
-      render: (_, { tags }) => (
+      render: (_, record) => (
         <>
           <Button>
-            <PlusCircleOutlined style={{ color: "green", fontSize: "20px" }} />
+            <PlusCircleOutlined
+              style={{ color: "green", fontSize: "20px" }}
+              onClick={() => {
+                storeData(record);
+                console.log("data In", record);
+              }}
+            />
           </Button>
         </>
       ),

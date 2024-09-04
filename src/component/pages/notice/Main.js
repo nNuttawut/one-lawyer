@@ -14,14 +14,21 @@ import DocumentNotice from "./modal/DocumentEnforce";
 import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 
+//use redux
+import { useSelector } from "react-redux";
+
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
 
+  const profileRedux = useSelector((state) => state.authReducer.profile);
+  const dataRedux = useSelector((state) => state.dataImport.data);
   const { RangePicker } = DatePicker;
 
+  console.log(profileRedux.name);
+  console.log(dataRedux);
   const columns = [
     {
       title: "เลขสัญญา",
@@ -196,6 +203,7 @@ const Main = () => {
       tags: ["ครบกำหนดเมื่อ"],
     },
   ];
+
   return (
     <>
       <Card>

@@ -36,7 +36,7 @@ function Sidenav({ color, onClick }) {
       key: "2",
       pageName: "calendar",
       label: "calendar",
-      path: "/calendar",
+      path: "/",
       icon: <CalendarOutlined />,
       title: "ปฏิทินนัดหมาย",
     },
