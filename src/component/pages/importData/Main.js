@@ -210,7 +210,7 @@ const Main = () => {
       dataIndex: "tags",
       key: "acction",
       align: "center",
-      render: (_, record) => (
+      render: (text, record) => (
         <>
           <Button>
             <PlusCircleOutlined
