@@ -3,7 +3,7 @@ import Search from "antd/es/input/Search";
 import React, { useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import {
-  SearchOutlined,
+  SyncOutlined,
   FileDoneOutlined,
   EditOutlined,
 } from "@ant-design/icons";
@@ -12,10 +12,11 @@ import CreateDocument from "./modal/CreateDocument";
 import DocumentEnforce from "./modal/DocumentEnforce";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
+import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
-  const [isModalLaw, setIsModalLaw] = useState(false);
+  const [isModalUpdateStatus, setIsModalUpdateStatus] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
 
@@ -69,33 +70,6 @@ const Main = () => {
         </>
       ),
     },
-    {
-      title: "การจัดการ",
-      dataIndex: "tags",
-      key: "acction",
-      align: "center",
-
-      render: () => (
-        <>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalCreate(true);
-            }}
-          >
-            <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px" }}
-            onClick={() => {
-              setIsModalDocument(true);
-            }}
-          >
-            <FileDoneOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-        </>
-      ),
-    },
   ];
 
   const data = [
@@ -130,7 +104,7 @@ const Main = () => {
     {
       key: "2",
       contno: "8-00005",
-      age: 123455,
+      age: 123155,
       address: "London No. 1 Lake Park",
       tags: ["ยังไม่ส่งฟ้อง"],
     },
@@ -208,6 +182,43 @@ const Main = () => {
               columns={columns}
               dataSource={data}
               scroll={{ x: 850 }}
+              expandable={{
+                expandedRowRender: (record) => (
+                  <p style={{ margin: 0 }}>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
+                      onClick={() => {
+                        setIsModalCreate(true);
+                      }}
+                    >
+                      <EditOutlined
+                        style={{ color: "orange", fontSize: "16px" }}
+                      />
+                    </Button>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
+                      onClick={() => {
+                        setIsModalDocument(true);
+                      }}
+                    >
+                      <FileDoneOutlined
+                        style={{ color: "orange", fontSize: "16px" }}
+                      />
+                    </Button>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px" }}
+                      onClick={() => {
+                        setIsModalUpdateStatus(true);
+                      }}
+                    >
+                      <SyncOutlined
+                        style={{ color: "green", fontSize: "16px" }}
+                      />
+                    </Button>
+                  </p>
+                ),
+                rowExpandable: (record) => record.name !== "Not Expandable",
+              }}
             />
           </Col>
         </Row>
@@ -218,6 +229,12 @@ const Main = () => {
       ) : null}
       {isModalDocument ? (
         <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
+      ) : null}
+      {isModalUpdateStatus ? (
+        <UpdateStatusBlackNumber
+          open={isModalUpdateStatus}
+          close={setIsModalUpdateStatus}
+        />
       ) : null}
     </>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal, Card } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
-import CreateDocument from "./CreateNotice";
+import CreateDocument from "./CreateDocument";
 import garuda from "../../../../assets/images/garuda_emblem.jpg";
 import bracket from "../../../../assets/images/bracket.png";
 import arabicToThai from "../../../../hook/arabicToThai";
@@ -11,7 +11,7 @@ import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 
-const DocumentNotice = ({ open, close }) => {
+const AssignLawyer = ({ open, close }) => {
   const [convertToThaiNumerals] = arabicToThai();
   const [convertToThaiFont] = ConvertToThaiFont();
   const [
@@ -99,6 +99,7 @@ const DocumentNotice = ({ open, close }) => {
     lostNoPay: 47,
     enforceDate: "2024-5-29",
     dueDate: "2022-05-05",
+    interestRate: 15,
   });
 
   useEffect(() => {
@@ -1442,7 +1443,9 @@ const DocumentNotice = ({ open, close }) => {
       pdf.text(
         `เดือนละ ${convertToThaiNumerals(
           currencyFormat(textData.lostBenefits)
-        )} บาท พร้อมดอกเบี้ยในอัตราร้อยละ ๑๕ ต่อปี ของต้นเงินจำนวน ${convertToThaiNumerals(
+        )} บาท พร้อมดอกเบี้ยในอัตราร้อยละ ${convertToThaiNumerals(
+          currencyFormat(textData.interestRate)
+        )} ต่อปี ของต้นเงินจำนวน ${convertToThaiNumerals(
           currencyFormat(textData.amountTotal)
         )} บาท นับถัดจาก`,
         marginL + 42,
@@ -1852,4 +1855,4 @@ const DocumentNotice = ({ open, close }) => {
     </>
   );
 };
-export default DocumentNotice;
+export default AssignLawyer;

@@ -12,12 +12,17 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
 import DetailModal from "../detailStatus/DetailModal";
-import { ImportOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  ImportOutlined,
+  PlusCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import moment from "moment";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { updateData } from "../../../redux/action/DataImport";
+import FailedImport from "./modal/FailedImport";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -25,13 +30,12 @@ const Main = () => {
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
-  const [data2, setData2] = useState(null);
+  const [failedData, setFailedData] = useState();
+  const [isModalFailed, setIsModalFailed] = useState();
 
   //call redux action
   const dispatch = useDispatch();
 
-  console.log("data---->", data);
-  console.log("array table---->", arrayTable);
   const onQuery = () => {
     if (queryContno) {
       queryData(queryContno);
@@ -41,7 +45,7 @@ const Main = () => {
   const queryData = async () => {
     setLoading(true);
     // const tk = JSON.parse(token);
-    const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/loans/${queryContno}`;
+    const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/server/loans/${queryContno}`;
     const headers = {};
 
     await axios
@@ -51,7 +55,7 @@ const Main = () => {
       .then(async (resQuery) => {
         if (resQuery.data) {
           setArrayTable([resQuery.data]);
-          console.log(resQuery.data);
+          console.log("resQuery", resQuery.data);
           setLoading(false);
         } else {
           setArrayTable([]);
@@ -125,7 +129,7 @@ const Main = () => {
           return null;
         }
 
-        const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/loans/${contno}`;
+        const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/server/loans/${contno}`;
         const headers = {};
 
         return axios
@@ -141,6 +145,8 @@ const Main = () => {
           })
           .catch((err) => {
             console.error(err);
+            message.error(`ไม่มีเลขที่สัญญา ${contno} ที่ค้นหา`);
+            setFailedData({ ...failedData, setFailedData: contno });
             return null;
           });
       });
@@ -166,6 +172,28 @@ const Main = () => {
     console.log("in store data");
   };
 
+  const insertData = async (data) => {
+    console.log(data);
+    try {
+      const urlInsert =
+        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      const response = await axios.post(urlInsert, data, { headers });
+      if (response.data) {
+        console.log(response);
+        message.success("ยืนยันการอนุมัติสำเร็จ");
+      }
+    } catch (error) {
+      console.error(
+        "Error posting data:",
+        error.response ? error.response.data : error.message
+      );
+      message.error(`บันทึกไม่สำเร็จ: ${error.message}`);
+    }
+  };
+
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       handleFileUpload(file);
@@ -184,17 +212,20 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
+      render: (text, record) => (
+        <>{record.LOAN.CONTNO ? record.LOAN.CONTNO : null}</>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
-      dataIndex: "CUS_FNAME",
-      key: "CUS_FNAME",
+      dataIndex: "CUSTOMER",
+      key: "CUSTOMER",
       align: "center",
       render: (text, record) => (
         <>
-          {record.CUS_TNAME ? record.CUS_TNAME : null}{" "}
-          {record.CUS_FNAME ? record.CUS_FNAME : "-"}{" "}
-          {record.CUS_LNAME ? record.CUS_LNAME : null}
+          {record.CUSTOMER.SNAM ? record.CUSTOMER.SNAM : null}{" "}
+          {record.CUSTOMER.NAME1 ? record.CUSTOMER.NAME1 : null}{" "}
+          {record.CUSTOMER.NAME2 ? record.CUSTOMER.NAME2 : null}
         </>
       ),
     },
@@ -203,6 +234,9 @@ const Main = () => {
       dataIndex: "SDATE",
       key: "SDATE",
       align: "center",
+      render: (text, record) => (
+        <>{record.LOAN.SDATE ? record.LOAN.SDATE : null}</>
+      ),
     },
 
     {
@@ -216,7 +250,8 @@ const Main = () => {
             <PlusCircleOutlined
               style={{ color: "green", fontSize: "20px" }}
               onClick={() => {
-                storeData(record);
+                // storeData(record);
+                insertData(record);
                 console.log("data In", record);
               }}
             />
@@ -231,6 +266,14 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
+            <Button
+              style={{ color: "red" }}
+              onClick={() => {
+                setIsModalFailed(true);
+              }}
+            >
+              <CloseCircleOutlined style={{ fontSize: "16px" }} />
+            </Button>
             <Col span={"24"} style={{ textAlign: "end" }}>
               <Space direction="vertical" size={12}>
                 <Upload {...uploadProps} style={{ margin: "10px" }}>
@@ -263,6 +306,13 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModalFailed ? (
+        <FailedImport
+          open={isModalFailed}
+          close={setFailedData}
+          data={failedData}
+        />
+      ) : null}
     </>
   );
 };

@@ -62,17 +62,29 @@ const CreateDocument = ({ open, close }) => {
               span: 14,
             }}
             layout="horizontal"
-            style={{
-              maxWidth: 600,
-            }}
           >
-            <Form.Item label="">
-              <Form.Item label="หมายเลขคดีดำ">
-                <Input />
-              </Form.Item>
-              <Form.Item label="หมายเลขคดีแดง">
-                <Input />
-              </Form.Item>
+            <Form.Item label="โจทก์">
+              <Select
+                style={{
+                  width: 250,
+                }}
+                onChange={handleChange}
+                defaultValue="jack"
+                options={[
+                  {
+                    value: "jack",
+                    label: "วัน มันนี่",
+                  },
+                  {
+                    value: "lucy",
+                    label: "วัน ลิสซิ่ง",
+                  },
+                  {
+                    value: "lucy",
+                    label: "KSM",
+                  },
+                ]}
+              />
             </Form.Item>
             <Form.Item label="ความ">
               <Select
@@ -95,6 +107,9 @@ const CreateDocument = ({ open, close }) => {
             </Form.Item>
             <Form.Item label="เรื่อง">
               <Input />
+            </Form.Item>
+            <Form.Item label="ผิดชำระแล้วจำนวน">
+              <InputNumber />
             </Form.Item>
             <Form.Item label="ค่าติดตาม">
               <InputNumber />

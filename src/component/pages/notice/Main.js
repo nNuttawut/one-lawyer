@@ -1,6 +1,16 @@
-import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
+import {
+  Col,
+  Row,
+  Space,
+  Table,
+  Tag,
+  DatePicker,
+  Card,
+  Button,
+  message,
+} from "antd";
 import Search from "antd/es/input/Search";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import {
   FileDoneOutlined,
@@ -10,198 +20,136 @@ import {
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
-import DocumentNotice from "./modal/DocumentEnforce";
+import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 
 //use redux
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
-
+  const [arrayTable, setArrayTable] = useState();
+  const [dataArr, setDataArr] = useState();
   const profileRedux = useSelector((state) => state.authReducer.profile);
   const dataRedux = useSelector((state) => state.dataImport.data);
   const { RangePicker } = DatePicker;
+  const [loading, setLoading] = useState();
 
   console.log(profileRedux.name);
   console.log(dataRedux);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async (data) => {
+    setLoading(true);
+    console.log(data);
+    try {
+      const urlLoadData =
+        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      const response = await axios.get(urlLoadData, { headers });
+      if (response.data) {
+        let i = 1;
+        if (response.data) {
+          const newData = response.data.map((item) => ({
+            ...item,
+            key: i++,
+          }));
+
+          setArrayTable(newData);
+          setDataArr(newData);
+          console.log(newData);
+          setLoading(false);
+        }
+      } else {
+        setArrayTable([]);
+      }
+    } catch (error) {
+      console.error(
+        "Error posting data:",
+        error.response ? error.response.data : error.message
+      );
+      setLoading(false);
+      message.error(`ไม่พบข้อมูล: ${error.message}`);
+    }
+  };
+
   const columns = [
     {
-      title: "เลขสัญญา",
-      dataIndex: "contno",
+      title: "ลำดับ",
+      dataIndex: "key",
       key: "key",
       align: "center",
-      render: (text) => (
-        <Link
-          onClick={() => {
-            setIsModal(true);
-          }}
-        >
-          {text}
-        </Link>
+      width: "10%",
+      render: (text, object, key) => key + 1,
+      sorter: {
+        compare: (a, b) => a.key - b.key,
+        multiple: 5,
+      },
+    },
+    {
+      title: "เลขที่สัญญา",
+      dataIndex: "CONTNO",
+      key: "CONTNO",
+      align: "center",
+      render: (text, record) => (
+        <>{record.LOAN.CONTNO ? record.LOAN.CONTNO : null}</>
       ),
     },
     {
-      title: "เลขคดี",
-      dataIndex: "age",
-      key: "age",
+      title: "ชื่อ-นามสกุล",
+      dataIndex: "CUSTOMER",
+      key: "CUSTOMER",
       align: "center",
-    },
-    {
-      title: "สถานที่ฟ้อง",
-      dataIndex: "address",
-      key: "address",
-      align: "center",
-    },
-    {
-      title: "สถานะ",
-      key: "status",
-      dataIndex: "tags",
-      align: "center",
-      render: (_, { tags }) => (
+      render: (text, record) => (
         <>
-          {tags.map((tag) => {
-            let color = tag !== "ครบกำหนดเมื่อ" ? "gray" : "green";
-            if (tag === "เลยกำหนดเมื่อ") {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag} style={{ textAlign: "center" }}>
-                {tag.toUpperCase()}
-                <br />
-                {moment().format("DD/MM/YY")}
-              </Tag>
-            );
-          })}
+          {record.CUSTOMER.SNAM ? record.CUSTOMER.SNAM : null}{" "}
+          {record.CUSTOMER.NAME1 ? record.CUSTOMER.NAME1 : null}{" "}
+          {record.CUSTOMER.NAME2 ? record.CUSTOMER.NAME2 : null}
         </>
       ),
     },
     {
-      title: "การจัดการ",
-      dataIndex: "tags",
-      key: "acction",
+      title: "วันส่ง notice",
+      dataIndex: "SDATE",
+      key: "SDATE",
       align: "center",
-
-      render: () => (
-        <>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalCreate(true);
-            }}
-          >
-            <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalDocument(true);
-            }}
-          >
-            <FileDoneOutlined style={{ color: "green", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px" }}
-            onClick={() => {
-              setIsModalUpdate(true);
-            }}
-          >
-            <SyncOutlined style={{ color: "green", fontSize: "16px" }} />
-          </Button>
-        </>
+      render: (text, record) => (
+        <>{record.LOAN.SDATE ? record.LOAN.SDATE : null}</>
       ),
     },
-  ];
-
-  const data = [
-    {
-      key: "1",
-      contno: "8-00001",
-      age: 12345,
-      address: "New York No. 1 Lake Park",
-      tags: ["เลยกำหนดเมื่อ"],
-    },
-    {
-      key: "2",
-      contno: "8-00002",
-      age: 122355,
-      address: "London No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "3",
-      contno: "8-00003",
-      age: 123455,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["เลยกำหนดเมื่อ"],
-    },
-    {
-      key: "4",
-      contno: "8-00004",
-      age: 12399,
-      address: "New York No. 1 Lake Park",
-      tags: ["เลยกำหนดเมื่อ"],
-    },
-    {
-      key: "2",
-      contno: "8-00005",
-      age: 123455,
-      address: "London No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "5",
-      contno: "8-00006",
-      age: 345523,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "6",
-      contno: "8-00007",
-      age: 32435,
-      address: "New York No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "7",
-      contno: "8-00008",
-      age: 32145,
-      address: "London No. 1 Lake Park",
-      tags: ["เลยกำหนดเมื่อ"],
-    },
-    {
-      key: "8",
-      contno: "8-00009",
-      age: 32145,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "9",
-      contno: "8-00010",
-      age: 22356,
-      address: "New York No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
-    {
-      key: "10",
-      contno: "8-00011",
-      age: 235662,
-      address: "London No. 1 Lake Park",
-      tags: ["เลยกำหนด"],
-    },
-    {
-      key: "11",
-      contno: "8-000012",
-      age: 3293482,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["ครบกำหนดเมื่อ"],
-    },
+    // {
+    //   title: "สถานะ",
+    //   key: "status",
+    //   dataIndex: "tags",
+    //   align: "center",
+    //   render: ({ tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag !== "ครบกำหนดเมื่อ" ? "gray" : "green";
+    //         if (tag === "เลยกำหนดเมื่อ") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag} style={{ textAlign: "center" }}>
+    //             {tag.toUpperCase()}
+    //             <br />
+    //             {moment().format("DD/MM/YY")}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
   ];
 
   return (
@@ -226,8 +174,45 @@ const Main = () => {
             <Table
               size="small"
               columns={columns}
-              dataSource={data}
+              dataSource={arrayTable}
               scroll={{ x: 850 }}
+              expandable={{
+                expandedRowRender: (record) => (
+                  <p style={{ margin: 0 }}>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
+                      onClick={() => {
+                        setIsModalCreate(true);
+                      }}
+                    >
+                      <EditOutlined
+                        style={{ color: "orange", fontSize: "16px" }}
+                      />
+                    </Button>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
+                      onClick={() => {
+                        setIsModalDocument(true);
+                      }}
+                    >
+                      <FileDoneOutlined
+                        style={{ color: "green", fontSize: "16px" }}
+                      />
+                    </Button>
+                    <Button
+                      style={{ boxShadow: "0 4px 3px" }}
+                      onClick={() => {
+                        setIsModalUpdate(true);
+                      }}
+                    >
+                      <SyncOutlined
+                        style={{ color: "green", fontSize: "16px" }}
+                      />
+                    </Button>
+                  </p>
+                ),
+                rowExpandable: (record) => record.name !== "Not Expandable",
+              }}
             />
           </Col>
         </Row>
