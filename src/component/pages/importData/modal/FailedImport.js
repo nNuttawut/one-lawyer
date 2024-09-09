@@ -23,7 +23,6 @@ const FailedImport = ({ open, close, data }) => {
   }, [data]);
 
   const handleCancel = () => {
-    console.log("sssss");
     close(false);
   };
 
@@ -40,15 +39,13 @@ const FailedImport = ({ open, close, data }) => {
           </Button>,
         ]}
       >
-        <Card>
-          <List
-            size="small"
-            header={<b>เลขสัญญาที่ไม่มีในระบบ</b>}
-            bordered
-            dataSource={dataList}
-            renderItem={(item) => <List.Item>{item}</List.Item>}
-          />
-        </Card>
+        <List
+          size="small"
+          header={<b>เลขสัญญาที่ไม่มีในระบบ</b>}
+          bordered
+          dataSource={dataList}
+          renderItem={(item) => <List.Item>{item}</List.Item>}
+        />
       </Modal>
     </>
   );

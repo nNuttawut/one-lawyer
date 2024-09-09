@@ -19,13 +19,16 @@ import { updateData } from "../../../redux/action/DataImport";
 import LoadLawyers from "../../../hook/LoadLawyers";
 
 const AssignLawyers = () => {
+  //set hook
+  const [lawyersList, setLoadingData] = LoadLawyers();
+  const [lawyersOption, setLawyersOption] = useState();
+
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
-  const [dataArr, setDataArr] = useState(null);
-  const [failedData, setFailedData] = useState();
-  const [lawyersOption, setLawyersOption] = useState();
-  const [lawyersList, setLoadingData] = LoadLawyers();
+  const [dataArr, setDataArr] = useState();
+  const [dataSend, setDataSend] = useState([]);
+  const COMPANY = 1;
 
   const plainOptions = ["แพ่ง", "อาญา"];
   //call redux action
@@ -41,7 +44,12 @@ const AssignLawyers = () => {
   }, [lawyersList]);
 
   const setOption = () => {
-    const options = lawyersList.map((item) => ({
+    let companySelect = null;
+    if (COMPANY === 1) {
+      companySelect = lawyersList.filter((item) => item.COMPANY_ID === 1);
+    }
+
+    const options = companySelect.map((item) => ({
       value: item.id,
       label: item.NNAME,
     }));
@@ -74,26 +82,6 @@ const AssignLawyers = () => {
           }
         })
         .catch((err) => console.log("ไม่มีข้อมูล", err));
-
-      //   await axios
-      //     .get(urlLawyerList, {
-      //       headers: headers,
-      //     })
-      //     .then(async (res) => {
-      //       if (res.status === 200) {
-      //         let dataList = res.data.map((item) => item.NNAME);
-      //         setLawyersList(res.data);
-      //         console.log("res", res.data);
-      //         console.log("list-->", dataList);
-      //         setLoading(false);
-      //       } else {
-      //         setLawyersList([]);
-      //         message.error("ไม่มีข้อมูล");
-      //         console.log("res", res.data);
-      //         setLoading(false);
-      //       }
-      //     })
-      //     .catch((err) => console.log("ไม่มีข้อมูล", err));
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
@@ -107,16 +95,17 @@ const AssignLawyers = () => {
     console.log("in store data");
   };
 
-  const insertData = async (data) => {
+  const insertData = async () => {
     setLoading(true);
+    console.log(dataSend);
     try {
-      if (!data || data.length === 0) {
+      if (!dataSend || dataSend.length === 0) {
         message.error("ไม่มีเลขสัญญาที่นำเข้าระบบได้");
         setLoading(false);
         return;
       }
-      console.log("data--->", data);
-      const promises = data.map(async (item) => {
+      console.log("data--->", dataSend);
+      const promises = dataSend.map(async (item) => {
         const arrayData = item;
         console.log("contno-->", arrayData);
 
@@ -126,7 +115,7 @@ const AssignLawyers = () => {
         }
 
         const urlInsert =
-          "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
+          "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans/status";
         const headers = {
           "Content-Type": "application/json",
         };
@@ -134,18 +123,18 @@ const AssignLawyers = () => {
         const response = await axios
           .post(urlInsert, arrayData, { headers })
           .then((resQuery) => {
-            if (resQuery.data) {
+            if (resQuery.status === 200) {
+              message.success(`มอบหมายงานให้ทนายเสร็จสิ้น`);
               return resQuery.data;
             } else {
-              console.log(`ไม่มีเลขที่สัญญา ${arrayData} ที่ค้นหา`);
-              message.error(`ไม่มีเลขที่สัญญา ${arrayData} ที่ค้นหา`);
+              console.log(`ไม่สามารถมอบหมายงานได้`);
+              message.error(`ไม่สามารถมอบหมายงานได้`);
               return null;
             }
           })
           .catch((err) => {
             console.error(err);
-            message.error(`ไม่มีเลขที่สัญญา ${arrayData} ที่ค้นหา`);
-            setFailedData({ ...failedData, setFailedData: arrayData });
+            message.error(`ไม่สามารถมอบหมายงานได้`);
             return null;
           });
       });
@@ -160,10 +149,30 @@ const AssignLawyers = () => {
     }
   };
 
-  const onChange = (value) => {
-    console.log(`selected ${value}`);
+  const onChangeCheckbox = (value, contno) => {
+    console.log(`selected ${value} contno ${contno}`);
+    let DataChange = dataArr.filter((item) => item.LOAN.CONTNO === contno);
+    console.log(DataChange);
+    setDataSend(DataChange);
   };
 
+  const onChangeSelect = (value, contno, id) => {
+    console.log(`selected ${value} contno ${contno} id ${id}`);
+    let DataChange = dataArr.filter((item) => item.LOAN.CONTNO === contno);
+    console.log(DataChange);
+
+    setDataSend((prevFailedData) => [
+      ...prevFailedData,
+      {
+        MAIN_STATUS_ID: 1,
+        USER_ID: value,
+        LOAN_ID: id,
+        MEMO: null,
+      },
+    ]);
+  };
+
+  console.log(dataSend);
   const search = (event) => {
     console.log("query--->", event.target.value);
     onSearch(event.target.value);
@@ -206,7 +215,7 @@ const AssignLawyers = () => {
         <Checkbox.Group
           options={plainOptions}
           defaultValue={"แพ่ง"}
-          onChange={onChange}
+          onChange={(value) => onChangeCheckbox(value, record.LOAN.CONTNO)}
         />
       ),
     },
@@ -217,12 +226,13 @@ const AssignLawyers = () => {
       render: (text, record) => (
         <>
           <Select
-            showSearch
             placeholder="เลือกทนายรับงาน"
             optionFilterProp="label"
-            onChange={onChange}
-            onSearch={onSearch}
+            onChange={(value) =>
+              onChangeSelect(value, record.LOAN.CONTNO, record.LOAN.id)
+            }
             options={lawyersOption}
+            style={{ width: "100%" }}
           />
         </>
       ),
@@ -240,7 +250,7 @@ const AssignLawyers = () => {
                   style={{ color: "green", fontSize: "20px" }}
                   onClick={() => {
                     // storeData(record);
-                    // insertData(arrayTable);
+                    insertData(arrayTable);
                   }}
                 />
               </Button>

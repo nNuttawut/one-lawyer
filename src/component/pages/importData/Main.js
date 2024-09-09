@@ -33,9 +33,7 @@ const Main = () => {
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
   const [failedData, setFailedData] = useState([]);
-  const [deleteData, setDeleteDate] = useState();
   const [isModalFailed, setIsModalFailed] = useState(false);
-  const { Option } = Select;
 
   //call redux action
   const dispatch = useDispatch();
@@ -89,7 +87,7 @@ const Main = () => {
       queryMultiData();
     }
   }, [data]);
-  console.log("dd--->", failedData);
+
   const handleFileUpload = (file) => {
     const reader = new FileReader();
 
