@@ -7,9 +7,12 @@ import ReportCourt from "./ReportCourt";
 export default function Router() {
   return (
     <Routes>
-      <Route path="/awaiting-judgment" element={<AwaitingJudgment />}></Route>
-      <Route path="/adjudge" element={<Adjudge />}></Route>
-      <Route path="/report-court" element={<ReportCourt />}></Route>
+      <Route
+        path="court/awaiting-judgment"
+        element={<AwaitingJudgment />}
+      ></Route>
+      <Route path="court/adjudge" element={<Adjudge />}></Route>
+      <Route path="court/report-court" element={<ReportCourt />}></Route>
     </Routes>
   );
 }

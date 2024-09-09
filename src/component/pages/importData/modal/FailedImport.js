@@ -12,27 +12,18 @@ import {
 } from "antd";
 
 const FailedImport = ({ open, close, data }) => {
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState("Content of the modal");
   const [dataList, setDataList] = useState();
 
   useEffect(() => {
     if (!data) {
       console.log("no data");
     } else {
-      //   setDataList(data);
+      setDataList(data);
     }
   }, [data]);
 
-  const handleOk = () => {
-    setModalText("The modal will be closed after two seconds");
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setConfirmLoading(false);
-    }, 2000);
-  };
   const handleCancel = () => {
-    console.log("Clicked cancel button");
+    console.log("sssss");
     close(false);
   };
 
@@ -41,15 +32,18 @@ const FailedImport = ({ open, close, data }) => {
       <Modal
         title="นำเข้าไม่สำเร็จ"
         open={open}
-        onOk={handleOk}
-        confirmLoading={confirmLoading}
-        onCancel={handleCancel}
         width={850}
+        onCancel={handleCancel}
+        footer={[
+          <Button style={{ color: "red" }} onClick={handleCancel}>
+            ปิด
+          </Button>,
+        ]}
       >
         <Card>
           <List
             size="small"
-            header={<div>เลขสัญญาที่ไม่มีในระบบ</div>}
+            header={<b>เลขสัญญาที่ไม่มีในระบบ</b>}
             bordered
             dataSource={dataList}
             renderItem={(item) => <List.Item>{item}</List.Item>}

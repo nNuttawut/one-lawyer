@@ -54,7 +54,7 @@ function Sidenav({ color, onClick }) {
       label: "pre-lawsuit-filed",
       path: "/pre-lawsuit-filed",
       icon: <FormOutlined />,
-      title: "สร้างคำฟ้อง",
+      title: "ส่วนฟ้อง",
     },
     {
       key: "5",
@@ -76,21 +76,21 @@ function Sidenav({ color, onClick }) {
           key: "61",
           icon: <SearchOutlined />,
           pageName: "awaiting-judgment",
-          path: "/awaiting-judgment",
+          path: "court/awaiting-judgment",
           label: "รอพิพากษา",
         },
         {
           key: "62",
           icon: <SearchOutlined />,
           pageName: "adjudge",
-          path: "/adjudge",
+          path: "court/adjudge",
           label: "คดีถึงที่สุด",
         },
         {
           key: "63",
           icon: <SearchOutlined />,
           pageName: "report-court",
-          path: "/report-court",
+          path: "court/report-court",
           label: "รายงาน",
         },
       ],
@@ -101,7 +101,7 @@ function Sidenav({ color, onClick }) {
       label: "send-to-enforcement",
       path: "/send-to-enforcement",
       icon: <AuditOutlined />,
-      title: "ส่งบังคับคดี",
+      title: "ส่วนบังคับคดี",
     },
     {
       key: "8",
@@ -153,11 +153,27 @@ function Sidenav({ color, onClick }) {
     },
     {
       key: "14",
-      pageName: "import-data",
-      label: "import-data",
-      path: "/import-data",
+      pageName: "import",
+      label: "import",
+      path: "/import",
       icon: <ImportOutlined />,
       title: "นำเข้าข้อมูล",
+      children: [
+        {
+          key: "141",
+          icon: <ImportOutlined />,
+          pageName: "import-data",
+          path: "import/import-data",
+          label: "นำข้อมูลเข้า",
+        },
+        {
+          key: "142",
+          icon: <ImportOutlined />,
+          pageName: "assign-lawyers",
+          path: "import/assign-lawyers",
+          label: "มอบหมายงาน",
+        },
+      ],
     },
   ];
 

@@ -21,6 +21,7 @@ import Calendar from "../pages/calendar/CalendarMain";
 import { AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import AssignLawyers from "../pages/importData/AssignLawyers";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -56,13 +57,17 @@ export default function Router() {
               element={<SendToEnforcementRoute />}
             />
             <Route path="/negotiate/*" element={<NegotiateRoute />} />
-            <Route path="/import-data/*" element={<ImportData />} />
+            <Route path="import/import-data/*" element={<ImportData />} />
             <Route path="/notifications/*" element={<NotificationRouter />} />
             <Route path="/detail-status/*" element={<DetailStatusRouter />} />
 
-            <Route path="/adjudge/*" element={<Adjudge />} />
-            <Route path="/awaiting-judgment/*" element={<AwaitingJudgment />} />
-            <Route path="/report-court/*" element={<ReportCourt />} />
+            <Route path="court/adjudge/*" element={<Adjudge />} />
+            <Route
+              path="court/awaiting-judgment/*"
+              element={<AwaitingJudgment />}
+            />
+            <Route path="court/report-court/*" element={<ReportCourt />} />
+            <Route path="import/assign-lawyers/*" element={<AssignLawyers />} />
 
             <Route path="/" element={<Calendar />} />
           </Routes>

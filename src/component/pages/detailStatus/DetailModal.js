@@ -23,7 +23,6 @@ const DetailModal = ({ open, close }) => {
     pay: "wait",
   });
 
-  const showModal = () => {};
   const handleOk = () => {
     setModalText("The modal will be closed after two seconds");
     setConfirmLoading(true);

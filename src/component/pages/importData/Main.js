@@ -8,17 +8,19 @@ import {
   message,
   Spin,
   Upload,
+  Select,
+  Popconfirm,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
 import DetailModal from "../detailStatus/DetailModal";
 import {
-  ImportOutlined,
+  DeleteOutlined,
   PlusCircleOutlined,
   CloseCircleOutlined,
+  ImportOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
-import moment from "moment";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { updateData } from "../../../redux/action/DataImport";
@@ -30,8 +32,10 @@ const Main = () => {
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
-  const [failedData, setFailedData] = useState();
-  const [isModalFailed, setIsModalFailed] = useState();
+  const [failedData, setFailedData] = useState([]);
+  const [deleteData, setDeleteDate] = useState();
+  const [isModalFailed, setIsModalFailed] = useState(false);
+  const { Option } = Select;
 
   //call redux action
   const dispatch = useDispatch();
@@ -47,23 +51,35 @@ const Main = () => {
     // const tk = JSON.parse(token);
     const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/server/loans/${queryContno}`;
     const headers = {};
-
-    await axios
-      .get(urlQueryData, {
-        headers: headers,
-      })
-      .then(async (resQuery) => {
-        if (resQuery.data) {
-          setArrayTable([resQuery.data]);
-          console.log("resQuery", resQuery.data);
-          setLoading(false);
-        } else {
-          setArrayTable([]);
-          message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
-          setLoading(false);
-        }
-      })
-      .catch((err) => console.log(err));
+    try {
+      await axios
+        .get(urlQueryData, {
+          headers: headers,
+        })
+        .then(async (resQuery) => {
+          if (resQuery.status === 200) {
+            setArrayTable([resQuery.data]);
+            console.log("resQuery", resQuery.data);
+            setLoading(false);
+          } else {
+            setArrayTable([]);
+            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
+            console.log("ไม่มีเลขที่สัญญาที่ค้นหา");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status === 404) {
+            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
+          }
+        });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -73,7 +89,7 @@ const Main = () => {
       queryMultiData();
     }
   }, [data]);
-
+  console.log("dd--->", failedData);
   const handleFileUpload = (file) => {
     const reader = new FileReader();
 
@@ -113,12 +129,6 @@ const Main = () => {
         setLoading(false);
         return;
       }
-      // const data2 = [
-      //   { CONTNO: "2-0009600" },
-      //   { CONTNO: "2-0007259" },
-      //   { CONTNO: "8-0011957" },
-      //   // { CONTNO: "2-0010781" },
-      // ];
 
       const promises = data.map(async (item) => {
         const contno = item.CONTNO;
@@ -135,18 +145,19 @@ const Main = () => {
         return axios
           .get(urlQueryData, { headers: headers })
           .then((resQuery) => {
-            if (resQuery.data) {
+            if (resQuery.status === 200) {
               return resQuery.data;
             } else {
-              console.log(`ไม่มีเลขที่สัญญา ${contno} ที่ค้นหา`);
-              message.error(`ไม่มีเลขที่สัญญา ${contno} ที่ค้นหา`);
+              console.log(`ไม่มีเลขที่สัญญาที่ค้นหา`);
+              message.error(`ไม่มีเลขที่สัญญาที่ค้นหา ${contno}`);
+              setFailedData((prevFailedData) => [...prevFailedData, contno]);
               return null;
             }
           })
           .catch((err) => {
             console.error(err);
-            message.error(`ไม่มีเลขที่สัญญา ${contno} ที่ค้นหา`);
-            setFailedData({ ...failedData, setFailedData: contno });
+            message.error(`ไม่มีเลขที่สัญญาที่ค้นหา ${contno}`);
+            setFailedData((prevFailedData) => [...prevFailedData, contno]);
             return null;
           });
       });
@@ -172,25 +183,63 @@ const Main = () => {
     console.log("in store data");
   };
 
-  const insertData = async (data) => {
-    console.log(data);
+  const insertData = async () => {
+    setLoading(true);
     try {
-      const urlInsert =
-        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const response = await axios.post(urlInsert, data, { headers });
-      if (response.data) {
-        console.log(response);
-        message.success("ยืนยันการอนุมัติสำเร็จ");
+      if (!arrayTable || arrayTable.length === 0) {
+        message.error("ไม่มีเลขสัญญา");
+        setLoading(false);
+        return;
       }
+      console.log("data--->", arrayTable);
+      const promises = arrayTable.map(async (item) => {
+        const arrayData = item;
+        console.log("contno-->", arrayData);
+
+        if (!arrayData) {
+          message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
+          return null;
+        }
+
+        const urlInsert =
+          "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
+        const headers = {
+          "Content-Type": "application/json",
+        };
+
+        const response = await axios
+          .post(urlInsert, arrayData, { headers })
+          .then((resQuery) => {
+            if (resQuery.data !== "Duplicate Contract No.") {
+              message.success(`นำเข้าข้อมูลสำเร็จ`);
+              console.log(resQuery.data);
+              return resQuery.data;
+            } else {
+              if (resQuery.data === "Duplicate Contract No.") {
+                console.log(`ข้อมูลซ้ำกัน`);
+                message.error(`ข้อมูลซ้ำกัน ${arrayData.LOAN.CONTNO}`);
+                return null;
+              }
+              console.log(`ไม่มีเลขที่สัญญา ${arrayData.LOAN.CONTNO}`);
+              message.error(`ไม่มีเลขที่สัญญา ${arrayData.LOAN.CONTNO}`);
+              return null;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error(`ไม่มีเลขที่สัญญา ${arrayData} ที่ค้นหา`);
+            setFailedData({ ...failedData, setFailedData: arrayData });
+            return null;
+          });
+      });
+
+      const response = await Promise.all(promises);
+      console.log("results", response);
     } catch (error) {
-      console.error(
-        "Error posting data:",
-        error.response ? error.response.data : error.message
-      );
-      message.error(`บันทึกไม่สำเร็จ: ${error.message}`);
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -204,6 +253,38 @@ const Main = () => {
       }
     },
     showUploadList: true, // Hide upload list
+  };
+
+  const confirm = (e) => {
+    console.log("eeeee", e);
+    let deleteItem = arrayTable.filter((item) => {
+      if (item.LOAN.CONTNO !== e.LOAN.CONTNO) {
+        return { item };
+      }
+    });
+
+    setArrayTable(deleteItem);
+    console.log("deleteItem", deleteItem);
+
+    message.success(`ลบสัญญาเรียบร้อย ${e.LOAN.CONTNO}`);
+  };
+  const cancel = (e) => {
+    console.log(e);
+    message.error("ยกเลิกการลบสัญญา");
+  };
+
+  const confirmInsert = () => {
+    insertData(arrayTable);
+  };
+  const cancelInsert = () => {
+    message.error("ยกเลิกการนำเข้าข้อมูล");
+  };
+
+  const confirmModal = () => {
+    setIsModalFailed(true);
+  };
+  const cancelModal = () => {
+    message.error("ไม่ดูข้อมูลที่ค้นหาไม่เจอ");
   };
 
   const columns = [
@@ -230,32 +311,24 @@ const Main = () => {
       ),
     },
     {
-      title: "วันที่ทำสัญญา",
-      dataIndex: "SDATE",
-      key: "SDATE",
-      align: "center",
-      render: (text, record) => (
-        <>{record.LOAN.SDATE ? record.LOAN.SDATE : null}</>
-      ),
-    },
-
-    {
       title: "การจัดการ",
-      dataIndex: "tags",
-      key: "acction",
       align: "center",
       render: (text, record) => (
         <>
-          <Button>
-            <PlusCircleOutlined
-              style={{ color: "green", fontSize: "20px" }}
-              onClick={() => {
-                // storeData(record);
-                insertData(record);
-                console.log("data In", record);
-              }}
-            />
-          </Button>
+          <Popconfirm
+            title="ลบสัญญา"
+            description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
+            onConfirm={() => {
+              confirm(record);
+            }}
+            onCancel={cancel}
+            okText="ยืนยัน"
+            cancelText="ยกเลิก"
+          >
+            <Button style={{ fontSize: "16px", color: "red" }}>
+              <DeleteOutlined />
+            </Button>
+          </Popconfirm>
         </>
       ),
     },
@@ -266,18 +339,44 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Button
-              style={{ color: "red" }}
-              onClick={() => {
-                setIsModalFailed(true);
-              }}
-            >
-              <CloseCircleOutlined style={{ fontSize: "16px" }} />
-            </Button>
-            <Col span={"24"} style={{ textAlign: "end" }}>
+            <Col span={"12"} style={{ textAlign: "start" }}>
+              <Popconfirm
+                title="นำเข้าข้อมูล"
+                description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
+                onConfirm={confirmInsert}
+                onCancel={cancelInsert}
+                okText="ยืนยัน"
+                cancelText="ยกเลิก"
+              >
+                <Button style={{ marginRight: "10px" }}>
+                  <PlusCircleOutlined
+                    style={{ color: "green", fontSize: "16px" }}
+                    onClick={() => {
+                      // storeData(record);
+                    }}
+                  />
+                </Button>
+              </Popconfirm>
+              <Popconfirm
+                title="เลขสัญญาที่ค้นหาไม่เจอ"
+                description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่"
+                onConfirm={confirmModal}
+                onCancel={cancelModal}
+                okText="ตกลง"
+                cancelText="ยกเลิก"
+              >
+                <Button style={{ color: "red" }}>
+                  <CloseCircleOutlined style={{ fontSize: "16px" }} />
+                </Button>
+              </Popconfirm>
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end" }}>
               <Space direction="vertical" size={12}>
-                <Upload {...uploadProps} style={{ margin: "10px" }}>
-                  <Button style={{ color: "green" }} icon={<ImportOutlined />}>
+                <Upload {...uploadProps}>
+                  <Button
+                    style={{ color: "green", marginRight: "5px" }}
+                    icon={<ImportOutlined />}
+                  >
                     import
                   </Button>
                 </Upload>
@@ -309,7 +408,7 @@ const Main = () => {
       {isModalFailed ? (
         <FailedImport
           open={isModalFailed}
-          close={setFailedData}
+          close={setIsModalFailed}
           data={failedData}
         />
       ) : null}
