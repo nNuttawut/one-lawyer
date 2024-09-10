@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 const LoadLawyers = () => {
   const [lawyersList, setLawyersList] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [loadLawyerJobs, setLoadLawyerJobs] = useState([]);
+  const [lawyerJobs, setLawyerJobs] = useState([]);
 
   useEffect(() => {
     if (loadingData) {
@@ -35,9 +37,31 @@ const LoadLawyers = () => {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     }
+
+    const urlJob = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans/notics/count`;
+
+    try {
+      await axios
+        .get(urlJob, {
+          headers: headers,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            setLoadLawyerJobs(res.data);
+            console.log("setDataCheck", res.data);
+          } else {
+            message.error("ไม่มีข้อมูล");
+            console.log("ไม่มีข้อมูล");
+          }
+        })
+        .catch((err) => console.log("ไม่มีข้อมูล", err));
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    }
   };
 
-  return [lawyersList, setLoadingData];
+  return [lawyersList, setLoadingData, loadLawyerJobs];
 };
 
 export default LoadLawyers;

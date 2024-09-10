@@ -3,12 +3,17 @@ import { Button, Modal, Card } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
 import CreateDocument from "./CreateNotice";
+import garuda from "../../../../assets/images/garuda_emblem.jpg";
+import arabicToThai from "../../../../hook/arabicToThai";
+import ConvertToThaiFont from "../../../../hook/ConvertToThaiFont";
 import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { Input } from "antd";
 
-const DocumentNotice = ({ open, close }) => {
+const TextEdit = ({ open, close }) => {
+  const [convertToThaiNumerals] = arabicToThai();
+  const [convertToThaiFont] = ConvertToThaiFont();
   const [
     convertDateThai,
     convertDateThaiYear,
@@ -17,6 +22,7 @@ const DocumentNotice = ({ open, close }) => {
   ] = DateCustom();
   const [currencyFormat] = CurrencyFormat();
 
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [textData, setTaxtData] = useState({
     numberBlack: "ผบE๓๗๐๖ /๒๕๖๗",
@@ -94,24 +100,17 @@ const DocumentNotice = ({ open, close }) => {
     enforceDate: "2024-5-29",
     dueDate: "2022-05-05",
   });
+  const [textToJson, setTextTojson] = useState();
+  const [textToString, setTextToString] = useState();
   const { TextArea } = Input;
 
-  const [dataText, setDataText] = useState({
-    company: "ฝ่ายกฎหมาย บริษัท วัน มันนี่ จำกัด",
-    address:
-      "1/24 ถนน มิตรภาพ ตำบล ในเมือง อำเภอ เมืองขอนแก่น จังหวัดขอนแก่น 41250 โทร ",
-    telephon: "097-0933735",
-    date: "25/8/2567",
-    case: "บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา",
-    toCustomer: "นางพัชราพร มณีเลิส",
-    toGuarantor: "นายจิราธิวัฒน์ ใจตรง",
-    type: "รถไถ",
-    brand: "ฟอร์ด",
-    engineNumber: "SE917217",
-    licensePlate: "ตค 4406",
-    provicePlate: "อำนาจเจริญ",
-    companyBy: "",
-  });
+  const [userInput, setUserInput] = useState("");
+
+  const handleInputChange = (e) => {
+    setUserInput(e.target.value);
+    setTextTojson(JSON.stringify(userInput)); //แปลงส่ง
+    setTextToString(JSON.parse(textToJson)); //แปลงใช้
+  };
 
   useEffect(() => {
     calLostBenefits();
@@ -169,6 +168,10 @@ const DocumentNotice = ({ open, close }) => {
       let pdfPositionYCenter = 0;
       const marginL = pdfConfig.margin.l;
       const marginC = pdfConfig.margin.c;
+      let textNumber =
+        "ที่ ๑ มีหน้าที่ส่งรถยนต์คืนโจทย์ก็ได้มีหนังสือบอกกล่าวให้จำเลยทั้งสามชำระหนี้ค่างวดรถยนต์ที่ค้างชำระภายใน";
+      const textWidthNumber = pdf.getTextWidth(textNumber);
+      console.log("textWidthNumber--->", textWidthNumber); //661.800000000001
       const imageWidth = 75; // Adjust width to fit your needs
       const imageHeight = 94; // Adjust height to fit your needs
       const textX = marginL;
@@ -176,29 +179,62 @@ const DocumentNotice = ({ open, close }) => {
       const underlineY = textY + 5; // Position for the underline
       pdf.setLineWidth(0.3);
 
-      //กรอบหน้า เส้นแนวนอนบน
-      pdf.line(10, 10, 10 + 416, 10);
-      //กรอบหน้า เส้นแนวนอนกลาง
-      pdf.line(10, 55, 10 + 416, 55);
-      //กรอบหน้า เส้นแนวล่าง
-      pdf.line(10, 610, 10 + 416, 610);
-
-      //กรอบหน้า เส้นแนวตั้งซ้าย
-      const x1 = 10;
-      const y1 = 10;
-      const l1 = 10 + 600; // Length of the line
-      pdf.line(x1, y1, x1, l1);
-      //กรอบหน้า เส้นแนวตั้งขวา
-      const x2 = 426;
-      const y2 = 10;
-      const l2 = 10 + 600; // Length of the line
-      pdf.line(x2, y2, x2, l2);
+      //ตราครุฑ
+      const imageUrl = garuda; // Replace with your image URL or base64
+      pdfPositionYCenter += 35;
+      pdf.addImage(
+        imageUrl,
+        "PNG",
+        marginC,
+        pdfPositionYCenter,
+        imageWidth,
+        imageHeight
+      );
+      pdfPositionYCenter += imageHeight + 10; // Add a margin below the image
 
       pdfPositionY += 56; // เว้นบรรทัด
       pdf.setFont("THSarabunNew", "normal"); // Set font family
       pdf.setFontSize(pdfConfig.typo.small); // Set font size
       pdf.setTextColor("black"); // Set font color with hex color code
       pdfPositionY += pdfConfig.typo.small;
+      pdfPositionY += 50;
+      pdf.text(`${userInput}`, marginL + 42, pdfPositionY + 10);
+
+      // page 2
+      pdf.addPage();
+      pdfPositionY = 58; // เว้นบรรทัด
+      pdf.setFont("THSarabunNew", "normal"); // Set font family
+      pdf.setFontSize(pdfConfig.typo.small); // Set font size
+      pdf.setTextColor("black"); // Set font color with hex color code
+      pdf.text("- 2 -", marginC + 40, pdfPositionY); // Add text to pdf
+      pdfPositionY += 10;
+
+      // page 3
+      pdf.addPage();
+      pdfPositionY = 58; // เว้นบรรทัด
+      pdf.setFont("THSarabunNew", "normal"); // Set font family
+      pdf.setFontSize(pdfConfig.typo.small); // Set font size
+      pdf.setTextColor("black"); // Set font color with hex color code
+      pdf.text("- 3 -", marginC + 40, pdfPositionY); // Add text to pdf
+      pdfPositionY += 10;
+
+      // page 4
+      pdf.addPage();
+      pdfPositionY = 58; // เว้นบรรทัด
+      pdf.setFont("THSarabunNew", "normal"); // Set font family
+      pdf.setFontSize(pdfConfig.typo.small); // Set font size
+      pdf.setTextColor("black"); // Set font color with hex color code
+      pdf.text("- 4 -", marginC + 40, pdfPositionY); // Add text to pdf
+      pdfPositionY += 10;
+
+      // page 5
+      pdf.addPage();
+      pdfPositionY = 58; // เว้นบรรทัด
+      pdf.setFont("THSarabunNew", "normal"); // Set font family
+      pdf.setFontSize(pdfConfig.typo.small); // Set font size
+      pdf.setTextColor("black"); // Set font color with hex color code
+      pdf.text("- 5 -", marginC + 40, pdfPositionY); // Add text to pdf
+      pdfPositionY += 10;
 
       // Add footer with date and page number
       setTimeout(() => {
@@ -249,6 +285,7 @@ const DocumentNotice = ({ open, close }) => {
         title="คำฟ้องคดีผู้บริโภค"
         open={open}
         onOk={""}
+        confirmLoading={confirmLoading}
         onCancel={handleCancel}
         width={719}
         footer={[
@@ -265,11 +302,19 @@ const DocumentNotice = ({ open, close }) => {
             พิมพ์
           </Button>,
         ]}
-      ></Modal>
+      >
+        <TextArea
+          rows={21}
+          value={userInput}
+          onChange={handleInputChange}
+          placeholder="กรอกข้อความที่นี่"
+          style={{ width: "700.78px" }}
+        />
+      </Modal>
       {isModalCreate ? (
         <CreateDocument open={isModalCreate} close={setIsModalCreate} />
       ) : null}
     </>
   );
 };
-export default DocumentNotice;
+export default TextEdit;

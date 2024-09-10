@@ -14,7 +14,6 @@ import {
 const CreateNotice = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [modalText, setModalText] = useState("Content of the modal");
-  const [defaultStatus, setDefaultStatus] = useState();
 
   console.log("CreateDocument");
 
@@ -32,15 +31,6 @@ const CreateNotice = ({ open, close }) => {
   };
 
   const { TextArea } = Input;
-
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const onChange = (e) => {
-    setDefaultStatus(e.target.value);
-    console.log(defaultStatus);
-  };
 
   return (
     <>
@@ -63,7 +53,7 @@ const CreateNotice = ({ open, close }) => {
         <Card>
           <Form
             labelCol={{
-              span: 4,
+              span: 10,
             }}
             wrapperCol={{
               span: 14,
@@ -73,14 +63,6 @@ const CreateNotice = ({ open, close }) => {
               maxWidth: 600,
             }}
           >
-            <Radio.Group
-              onChange={onChange}
-              value={defaultStatus}
-              style={{ marginBottom: "10px" }}
-            >
-              <Radio value="hirePurchase">เช่าซื้อ</Radio>
-              <Radio value="mortgage">จำนอง</Radio>
-            </Radio.Group>
             <Form.Item label="ค่าติดตาม">
               <InputNumber />
             </Form.Item>
