@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal, Card } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
+import "../../../../assets/font/THSarabunNew-bold";
 import CreateDocument from "./CreateNotice";
 import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { Input } from "antd";
 
-const DocumentNotice = ({ open, close }) => {
+const DocumentNotice = ({ open, close, contno }) => {
   const [
     convertDateThai,
     convertDateThaiYear,
@@ -101,16 +102,23 @@ const DocumentNotice = ({ open, close }) => {
     address:
       "1/24 ถนน มิตรภาพ ตำบล ในเมือง อำเภอ เมืองขอนแก่น จังหวัดขอนแก่น 41250 โทร ",
     telephon: "097-0933735",
-    date: "25/8/2567",
+    dateCreate: "6/5/2567",
     case: "บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา",
     toCustomer: "นางพัชราพร มณีเลิส",
-    toGuarantor: "นายจิราธิวัฒน์ ใจตรง",
+    toGuarantor: ["นายจิราธิวัฒน์}] ใจตรง"],
     type: "รถไถ",
     brand: "ฟอร์ด",
     engineNumber: "SE917217",
     licensePlate: "ตค 4406",
     provicePlate: "อำนาจเจริญ",
-    companyBy: "",
+    companyByOld: "",
+    companyByNew: "",
+    sDate: "25/3/2564",
+    buyPrice: 205800,
+    uPay: 3430,
+    tNoPay: 60,
+    LPAYDDate: "5/5/2564",
+    NCSHPRC: 38612,
   });
 
   useEffect(() => {
@@ -194,11 +202,20 @@ const DocumentNotice = ({ open, close }) => {
       const l2 = 10 + 600; // Length of the line
       pdf.line(x2, y2, x2, l2);
 
-      pdfPositionY += 56; // เว้นบรรทัด
-      pdf.setFont("THSarabunNew", "normal"); // Set font family
+      pdf.setFont("THSarabunNew", "bold"); // Set font family
       pdf.setFontSize(pdfConfig.typo.small); // Set font size
       pdf.setTextColor("black"); // Set font color with hex color code
       pdfPositionY += pdfConfig.typo.small;
+      pdf.text(` ${dataText.company}`, marginC, pdfPositionY + 10);
+      pdfPositionY += 20; // เว้นบรรทัด
+
+      pdf.setFont("THSarabunNew", "normal");
+      pdf.text(
+        ` ${dataText.address}   ${dataText.telephon}`,
+        marginL + 50,
+        pdfPositionY + 10
+      );
+      pdfPositionY += 20; // เว้นบรรทัด
 
       // Add footer with date and page number
       setTimeout(() => {
@@ -232,7 +249,7 @@ const DocumentNotice = ({ open, close }) => {
         // Download PDF file
       }, 0);
 
-      pdf.save(`คำฟ้องคดีผู้บริโภค.pdf`);
+      pdf.save(`notice ${contno}.pdf`);
     } catch (err) {
       console.error(err);
     }
@@ -246,7 +263,7 @@ const DocumentNotice = ({ open, close }) => {
   return (
     <>
       <Modal
-        title="คำฟ้องคดีผู้บริโภค"
+        title="notice"
         open={open}
         onOk={""}
         onCancel={handleCancel}

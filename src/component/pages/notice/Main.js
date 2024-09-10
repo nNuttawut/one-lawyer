@@ -52,7 +52,7 @@ const Main = () => {
     console.log(data);
     try {
       const urlLoadData =
-        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
+        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/jobs";
       const headers = {
         "Content-Type": "application/json",
       };
@@ -64,7 +64,7 @@ const Main = () => {
             ...item,
             key: i++,
           }));
-
+          console.log(newData);
           setArrayTable(newData);
           setDataArr(newData);
           console.log(newData);
@@ -101,30 +101,28 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => (
-        <>{record.LOAN.CONTNO ? record.LOAN.CONTNO : null}</>
-      ),
+      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
     },
     {
       title: "ชื่อ-นามสกุล",
-      dataIndex: "CUSTOMER",
-      key: "CUSTOMER",
+      dataIndex: "CUSTOMER_TNAM",
+      key: "CUSTOMER_TNAM",
       align: "center",
       render: (text, record) => (
         <>
-          {record.CUSTOMER.SNAM ? record.CUSTOMER.SNAM : null}{" "}
-          {record.CUSTOMER.NAME1 ? record.CUSTOMER.NAME1 : null}{" "}
-          {record.CUSTOMER.NAME2 ? record.CUSTOMER.NAME2 : null}
+          {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
+          {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
+          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
         </>
       ),
     },
     {
       title: "วันส่ง notice",
-      dataIndex: "SDATE",
-      key: "SDATE",
+      dataIndex: "",
+      key: "",
       align: "center",
       render: (text, record) => (
-        <>{record.LOAN.SDATE ? record.LOAN.SDATE : null}</>
+        <>{/* {record.LOAN.SDATE ? record.LOAN.SDATE : null} */}</>
       ),
     },
     // {
