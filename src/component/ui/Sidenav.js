@@ -13,12 +13,13 @@ import {
   ScheduleOutlined,
   ImportOutlined,
   CalendarOutlined,
+  CaretRightOutlined,
 } from "@ant-design/icons";
 import drawerHeader from "../../assets/images/logo.png";
 import { useState } from "react";
 
 function Sidenav({ color, onClick }) {
-  const [activeItem, setActiveItem] = useState(null);
+  const [openKeys, setOpenKeys] = useState([]);
 
   const { pathname } = useLocation();
   const page = pathname.replace("/", "");
@@ -74,21 +75,21 @@ function Sidenav({ color, onClick }) {
       children: [
         {
           key: "61",
-          icon: <SearchOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "awaiting-judgment",
           path: "court/awaiting-judgment",
           label: "รอพิพากษา",
         },
         {
           key: "62",
-          icon: <SearchOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "adjudge",
           path: "court/adjudge",
           label: "คดีถึงที่สุด",
         },
         {
           key: "63",
-          icon: <SearchOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "report-court",
           path: "court/report-court",
           label: "รายงาน",
@@ -161,14 +162,14 @@ function Sidenav({ color, onClick }) {
       children: [
         {
           key: "141",
-          icon: <ImportOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "import-data",
           path: "import/import-data",
           label: "นำข้อมูลเข้า",
         },
         {
           key: "142",
-          icon: <ImportOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "assign-lawyers",
           path: "import/assign-lawyers",
           label: "มอบหมายงาน",
@@ -182,12 +183,48 @@ function Sidenav({ color, onClick }) {
     onClick(value);
   };
 
+  const handleOpenChange = (keys) => {
+    const latestOpenKey = keys.find((key) => openKeys.indexOf(key) === -1);
+    setOpenKeys(latestOpenKey ? [latestOpenKey] : []);
+  };
+
   const renderMenuItem = (item) => {
-    return (
+    return item.children ? (
+      <Menu.SubMenu
+        key={item.key}
+        title={<span className="label">{item.title}</span>}
+        icon={
+          <div>
+            <span className="icon">{item.icon}</span>
+          </div>
+        }
+      >
+        {item.children.map((child) => (
+          <Menu.Item
+            key={child.key}
+            onClick={() => {
+              handleClick(child.label);
+            }}
+          >
+            <NavLink to={child.path}>
+              <span
+                className="icon"
+                style={{
+                  marginLeft: "24px",
+                  height: "24px",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {child.icon}
+              </span>
+              <span style={{ fontSize: 13 }}>{child.label}</span>
+            </NavLink>
+          </Menu.Item>
+        ))}
+      </Menu.SubMenu>
+    ) : (
       <Menu.Item
-        style={{
-          width: 256,
-        }}
         key={item.key}
         onClick={() => {
           handleClick(item.title);
@@ -198,41 +235,17 @@ function Sidenav({ color, onClick }) {
             className="icon"
             style={{
               background: page === item.pageName ? color : "",
+              height: "30px",
+              display: "flex",
+              alignItems: "center",
+              marginLeft: "12px",
             }}
           >
             {item.icon}
           </span>
-          <span className="label">{item.title}</span>
-          {item.children ? (
-            <>
-              <Menu
-              // mode="inline"
-              >
-                <Menu.SubMenu>
-                  {item.children &&
-                    item.children.map((child) => (
-                      <Menu.Item
-                        key={child.key}
-                        onClick={() => {
-                          handleClick(child.label);
-                        }}
-                      >
-                        <NavLink to={child.path} key={child.key}>
-                          <span
-                            className="icon"
-                            style={{ marginRight: "20px" }}
-                          >
-                            <div style={{ marginRight: "20px" }}>
-                              {child.icon} {child.label}
-                            </div>
-                          </span>
-                        </NavLink>
-                      </Menu.Item>
-                    ))}
-                </Menu.SubMenu>
-              </Menu>
-            </>
-          ) : null}
+          <span className="label" style={{ marginLeft: "10px" }}>
+            {item.title}
+          </span>
         </NavLink>
       </Menu.Item>
     );
@@ -250,7 +263,17 @@ function Sidenav({ color, onClick }) {
       </div>
       <hr />
 
-      <Menu theme="light" mode="inline">
+      <Menu
+        theme="light"
+        mode="inline"
+        openKeys={openKeys}
+        onOpenChange={handleOpenChange}
+        // triggerSubMenuAction="click"
+        // inlineCollapsed={true}
+        style={{
+          width: 256,
+        }}
+      >
         {menuList.map((item) => renderMenuItem(item))}
       </Menu>
     </>
