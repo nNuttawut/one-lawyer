@@ -8,7 +8,6 @@ import {
   message,
   Spin,
   Upload,
-  Select,
   Popconfirm,
 } from "antd";
 import Search from "antd/es/input/Search";
@@ -22,11 +21,11 @@ import {
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { updateData } from "../../../redux/action/DataImport";
+// import { useDispatch } from "react-redux";
+// import { updateData } from "../../../redux/action/DataImport";
 import FailedImport from "./modal/FailedImport";
 
-const Main = () => {
+const ImportData = () => {
   const [isModal, setIsModal] = useState(false);
   const [queryContno, setQueryContno] = useState();
   const [loading, setLoading] = useState(false);
@@ -36,7 +35,7 @@ const Main = () => {
   const [isModalFailed, setIsModalFailed] = useState(false);
 
   //call redux action
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const onQuery = () => {
     if (queryContno) {
@@ -120,6 +119,7 @@ const Main = () => {
 
   const queryMultiData = async () => {
     setLoading(true);
+    let failed = 0;
 
     try {
       if (!data || data.length === 0) {
@@ -147,14 +147,14 @@ const Main = () => {
               return resQuery.data;
             } else {
               console.log(`ไม่มีเลขที่สัญญาที่ค้นหา`);
-              message.error(`ไม่มีเลขที่สัญญาที่ค้นหา ${contno}`);
+              failed += 1;
               setFailedData((prevFailedData) => [...prevFailedData, contno]);
               return null;
             }
           })
           .catch((err) => {
             console.error(err);
-            message.error(`ไม่มีเลขที่สัญญาที่ค้นหา ${contno}`);
+            failed += 1;
             setFailedData((prevFailedData) => [...prevFailedData, contno]);
             return null;
           });
@@ -173,16 +173,22 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
+      if (data.length !== failed) {
+        message.error(`เลขที่สัญญาที่ค้นหาไม่เจอโปรดเข้าไปดูที่ เครื่องหมาย x`);
+      }
     }
   };
 
-  const storeData = () => {
-    dispatch(updateData(arrayTable));
-    console.log("in store data");
-  };
+  //redux
+  // const storeData = () => {
+  //   dispatch(updateData(arrayTable));
+  //   console.log("in store data");
+  // };
 
   const insertData = async () => {
     setLoading(true);
+    let duplicate = 0;
+    let success = 0;
     try {
       if (!arrayTable || arrayTable.length === 0) {
         message.error("ไม่มีเลขสัญญา");
@@ -205,27 +211,26 @@ const Main = () => {
           "Content-Type": "application/json",
         };
 
-        const response = await axios
+        await axios
           .post(urlInsert, arrayData, { headers })
           .then((resQuery) => {
             if (resQuery.data !== "Duplicate Contract No.") {
-              message.success(`นำเข้าข้อมูลสำเร็จ`);
+              success += 1;
               console.log(resQuery.data);
               return resQuery.data;
             } else {
               if (resQuery.data === "Duplicate Contract No.") {
-                console.log(`ข้อมูลซ้ำกัน`);
-                message.error(`ข้อมูลซ้ำกัน ${arrayData.LOAN.CONTNO}`);
+                console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+                duplicate += 1;
                 return null;
               }
-              console.log(`ไม่มีเลขที่สัญญา ${arrayData.LOAN.CONTNO}`);
-              message.error(`ไม่มีเลขที่สัญญา ${arrayData.LOAN.CONTNO}`);
+              console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
               return null;
             }
           })
           .catch((err) => {
             console.error(err);
-            message.error(`ไม่มีเลขที่สัญญา ${arrayData} ที่ค้นหา`);
+            message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
             setFailedData({ ...failedData, setFailedData: arrayData });
             return null;
           });
@@ -238,6 +243,14 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
+      if (success > 0) {
+        message.success(`นำเข้าข้อมูลสำเร็จ`);
+        setArrayTable([]);
+      }
+      if (duplicate > 0) {
+        message.error(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+        setArrayTable([]);
+      }
     }
   };
 
@@ -375,7 +388,7 @@ const Main = () => {
                     style={{ color: "green", marginRight: "5px" }}
                     icon={<ImportOutlined />}
                   >
-                    import
+                    import Excel
                   </Button>
                 </Upload>
               </Space>
@@ -414,4 +427,4 @@ const Main = () => {
   );
 };
 
-export default Main;
+export default ImportData;

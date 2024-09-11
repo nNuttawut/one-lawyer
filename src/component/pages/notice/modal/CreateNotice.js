@@ -1,29 +1,12 @@
 import React, { useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Card,
-  Cascader,
-  Radio,
-} from "antd";
+import { Button, DatePicker, Form, Input, Modal, Card, Select } from "antd";
 
 const CreateNotice = ({ open, close }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState("Content of the modal");
 
   console.log("CreateDocument");
 
-  const handleOk = () => {
-    setModalText("The modal will be closed after two seconds");
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setConfirmLoading(false);
-    }, 2000);
-  };
+  const handleOk = () => {};
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -38,7 +21,6 @@ const CreateNotice = ({ open, close }) => {
         title="สร้างโนติส"
         open={open}
         onOk={handleOk}
-        confirmLoading={confirmLoading}
         onCancel={handleCancel}
         width={850}
         footer={[
@@ -63,34 +45,30 @@ const CreateNotice = ({ open, close }) => {
               maxWidth: 600,
             }}
           >
-            <Form.Item label="ค่าติดตาม">
-              <InputNumber />
-            </Form.Item>
-
-            <Form.Item label="จำนวนที่ต้องชำระ">
-              <InputNumber />
-            </Form.Item>
-
             <Form.Item label="วันที่ออกจดหมาย">
-              <DatePicker />
-            </Form.Item>
-            <Form.Item label="ที่อยู่">
-              <Cascader
+              <Select
+                showSearch
+                style={{
+                  width: 200,
+                }}
+                placeholder="เลือกบริษัท"
+                optionFilterProp="value"
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? "")
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? "").toLowerCase())
+                }
                 options={[
                   {
-                    value: "zhejiang",
-                    label: "Zhejiang",
-                    children: [
-                      {
-                        value: "hangzhou",
-                        label: "Hangzhou",
-                      },
-                    ],
+                    value: "1",
+                    label: "วันมันนี่",
                   },
                 ]}
               />
             </Form.Item>
-
+            <Form.Item label="วันที่ออกจดหมาย">
+              <DatePicker />
+            </Form.Item>
             <Form.Item label="หมายเหตุ">
               <TextArea rows={4} />
             </Form.Item>

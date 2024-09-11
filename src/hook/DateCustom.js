@@ -3,7 +3,7 @@ require("moment/locale/th");
 
 const DateCustom = () => {
   const dateNow = () => {
-    const date = moment().add(543, "year").format("LL");
+    const date = moment().format();
     console.log(date);
     return date;
   };

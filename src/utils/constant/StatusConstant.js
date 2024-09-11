@@ -1,14 +1,15 @@
 export const listStatus = {
-  NOTICE: [1, "ส่งจดหมายเตือน"],
-  COMPLAINT: [2, "ส่งคำฟ้อง"],
-  AWAITING_JUDMENT: [3, "รอพิพากษา"],
-  ADJUDGE: [4, "คดีถึงที่สุด"],
-  CIVIL: [5, "บังคับคดี"],
-  CRIMINAL: [6, "สืบทรัพย์"],
-  ENFORCEMENT: [7, "เจรจาทรัพย์"],
-  PAYMENT: [8, "ทำยอม/ชำระ"],
-  SUCCESS: [9, "สำเร็จ"],
-  BAD_DEBTOR: [10, "ลูกหนี้สูญ"],
+  ASSIGN_LAWYERS: [1, "แจกงานทนาย"],
+  NOTICE: [2, "ส่งจดหมายเตือน"],
+  COMPLAINT: [3, "ส่งคำฟ้อง"],
+  AWAITING_JUDMENT: [4, "รอพิพากษา"],
+  ADJUDGE: [5, "คดีถึงที่สุด"],
+  CIVIL: [6, "บังคับคดี"],
+  CRIMINAL: [7, "สืบทรัพย์"],
+  ENFORCEMENT: [8, "เจรจาทรัพย์"],
+  PAYMENT: [9, "ทำยอม/ชำระ"],
+  SUCCESS: [10, "สำเร็จ"],
+  BAD_DEBTOR: [11, "ลูกหนี้สูญ"],
 };
 
 export const getSelectOptions = (list) =>
@@ -19,13 +20,14 @@ export const getSelectOptions = (list) =>
 
 export const optionsSatus = [...getSelectOptions(listStatus)];
 
-export const NOTICE = 1;
-export const COMPLAINT = 2;
-export const AWAITING_JUDMENT = 3;
-export const ADJUDGE = 4;
-export const CIVIL = 5;
-export const CRIMINAL = 6;
-export const ENFORCEMENT = 7;
-export const PAYMENT = 8;
-export const SUCCESS = 9;
-export const BAD_DEBTOR = 10;
+export const ASSIGN_LAWYERS = 1;
+export const NOTICE = 2;
+export const COMPLAINT = 3;
+export const AWAITING_JUDMENT = 4;
+export const ADJUDGE = 5;
+export const CIVIL = 6;
+export const CRIMINAL = 7;
+export const ENFORCEMENT = 8;
+export const PAYMENT = 9;
+export const SUCCESS = 10;
+export const BAD_DEBTOR = 11;

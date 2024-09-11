@@ -10,7 +10,7 @@ import ReportRoute from "../pages/report/Router";
 import SaleAnnouncementRoute from "../pages/saleAnnouncement/Router";
 import SendToEnforcementRoute from "../pages/sendToEnforcement/Router";
 import NegotiateRoute from "../pages/negotiate/Router";
-import ImportData from "../pages/importData/Router";
+import ImportData from "../pages/manageData/ImportData";
 import NotificationRouter from "../pages/notifications/Router";
 import DetailStatusRouter from "../pages/detailStatus/Router";
 import Adjudge from "../pages/court/Adjudge";
@@ -21,7 +21,8 @@ import Calendar from "../pages/calendar/CalendarMain";
 import { AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import AssignLawyers from "../pages/importData/AssignLawyers";
+import AssignLawyers from "../pages/manageData/AssignLawyers";
+import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -57,7 +58,6 @@ export default function Router() {
               element={<SendToEnforcementRoute />}
             />
             <Route path="/negotiate/*" element={<NegotiateRoute />} />
-            <Route path="import/import-data/*" element={<ImportData />} />
             <Route path="/notifications/*" element={<NotificationRouter />} />
             <Route path="/detail-status/*" element={<DetailStatusRouter />} />
 
@@ -67,7 +67,15 @@ export default function Router() {
               element={<AwaitingJudgment />}
             />
             <Route path="court/report-court/*" element={<ReportCourt />} />
-            <Route path="import/assign-lawyers/*" element={<AssignLawyers />} />
+            <Route
+              path="manage-data/assign-lawyers/*"
+              element={<AssignLawyers />}
+            />
+            <Route
+              path="manage-data/change-lawyers-jobs/*"
+              element={<ChangeLawyersJob />}
+            />
+            <Route path="manage-data/import-data/*" element={<ImportData />} />
 
             <Route path="/" element={<Calendar />} />
           </Routes>
