@@ -16,7 +16,7 @@ import DetailStatusRouter from "../pages/detailStatus/Router";
 import Adjudge from "../pages/court/Adjudge";
 import AwaitingJudgment from "../pages/court/AwaitingJudgment";
 import ReportCourt from "../pages/court/ReportCourt";
-import Notice from "../pages/notice/Main";
+import Notice from "../pages/notice/MainNotice";
 import Calendar from "../pages/calendar/CalendarMain";
 import { AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";

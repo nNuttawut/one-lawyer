@@ -13,6 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
 import DetailModal from "../detailStatus/DetailModal";
+import MotionHoc from "../../../utils/MotionHoc";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
@@ -21,11 +22,20 @@ import {
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
-// import { useDispatch } from "react-redux";
-// import { updateData } from "../../../redux/action/DataImport";
+import { useDispatch } from "react-redux";
+import { updateData } from "../../../redux/action/DataImport";
 import FailedImport from "./modal/FailedImport";
+import {
+  GET_LOAN_FROM_SERVER_IBM,
+  POST_LOAN_IN_LAWYERS_DB,
+  HEADERS_EXPORT,
+  baseUrl,
+} from "../../API/apiUrls";
+import { useSelector } from "react-redux";
 
-const ImportData = () => {
+const Main = () => {
+  const profileRedux = useSelector((state) => state.authReducer.profile);
+  const dataRedux = useSelector((state) => state.dataImport.data);
   const [isModal, setIsModal] = useState(false);
   const [queryContno, setQueryContno] = useState();
   const [loading, setLoading] = useState(false);
@@ -34,8 +44,11 @@ const ImportData = () => {
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
 
-  //call redux action
-  // const dispatch = useDispatch();
+  // call redux action
+  const dispatch = useDispatch();
+
+  console.log(profileRedux.id);
+  console.log(profileRedux.role);
 
   const onQuery = () => {
     if (queryContno) {
@@ -43,15 +56,24 @@ const ImportData = () => {
       console.log("queryContno--->", queryContno);
     }
   };
+
+  useEffect(() => {
+    if (!data) {
+      console.log("no data");
+    } else {
+      queryMultiData();
+    }
+  }, [data]);
+
   const queryData = async () => {
     setLoading(true);
     // const tk = JSON.parse(token);
-    const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/server/loans/${queryContno}`;
-    const headers = {};
+    console.log("queryData ImportData");
+
     try {
       await axios
-        .get(urlQueryData, {
-          headers: headers,
+        .get(baseUrl + GET_LOAN_FROM_SERVER_IBM + queryContno, {
+          HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
@@ -79,48 +101,10 @@ const ImportData = () => {
     }
   };
 
-  useEffect(() => {
-    if (!data) {
-      console.log("no data");
-    } else {
-      queryMultiData();
-    }
-  }, [data]);
-
-  const handleFileUpload = (file) => {
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-      const workbook = XLSX.read(event.target.result, { type: "binary" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(sheet);
-      let filteredData = [];
-
-      const columnName = "เลขสัญญา";
-      sheetData.forEach((row) => {
-        if (row[columnName] !== undefined) {
-          const trimmedValue =
-            typeof row[columnName] === "string"
-              ? row[columnName].trim()
-              : row[columnName];
-          filteredData.push({
-            CONTNO: trimmedValue,
-          });
-        }
-      });
-
-      setData(filteredData);
-    };
-
-    reader.readAsBinaryString(file);
-    return false; // Prevent automatic upload
-  };
-
   const queryMultiData = async () => {
     setLoading(true);
     let failed = 0;
-
+    console.log("queryMultiData ImportData");
     try {
       if (!data || data.length === 0) {
         message.error("ไม่มีข้อมูลสำหรับการค้นหา");
@@ -130,18 +114,14 @@ const ImportData = () => {
 
       const promises = data.map(async (item) => {
         const contno = item.CONTNO;
-        console.log(contno);
 
         if (!contno) {
           message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
           return null;
         }
 
-        const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/server/loans/${contno}`;
-        const headers = {};
-
         return axios
-          .get(urlQueryData, { headers: headers })
+          .get(baseUrl + GET_LOAN_FROM_SERVER_IBM + contno, { HEADERS_EXPORT })
           .then((resQuery) => {
             if (resQuery.status === 200) {
               return resQuery.data;
@@ -174,12 +154,42 @@ const ImportData = () => {
     } finally {
       setLoading(false);
       if (data.length !== failed) {
-        message.error(`เลขที่สัญญาที่ค้นหาไม่เจอโปรดเข้าไปดูที่ เครื่องหมาย x`);
+        message.error(`เลขที่สัญญาที่ค้นหาไม่เจอโปรดเข้าไปดูที่ เครื่องหมาย ⓧ`);
       }
     }
   };
 
-  //redux
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const workbook = XLSX.read(event.target.result, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const sheetData = XLSX.utils.sheet_to_json(sheet);
+      let filteredData = [];
+
+      const columnName = "เลขสัญญา";
+      sheetData.forEach((row) => {
+        if (row[columnName] !== undefined) {
+          const trimmedValue =
+            typeof row[columnName] === "string"
+              ? row[columnName].trim()
+              : row[columnName];
+          filteredData.push({
+            CONTNO: trimmedValue,
+          });
+        }
+      });
+
+      setData(filteredData);
+    };
+
+    reader.readAsBinaryString(file);
+    return false; // Prevent automatic upload
+  };
+
+  // redux
   // const storeData = () => {
   //   dispatch(updateData(arrayTable));
   //   console.log("in store data");
@@ -189,30 +199,25 @@ const ImportData = () => {
     setLoading(true);
     let duplicate = 0;
     let success = 0;
+    console.log("post data");
     try {
       if (!arrayTable || arrayTable.length === 0) {
         message.error("ไม่มีเลขสัญญา");
         setLoading(false);
         return;
       }
-      console.log("data--->", arrayTable);
+
       const promises = arrayTable.map(async (item) => {
         const arrayData = item;
-        console.log("contno-->", arrayData);
 
         if (!arrayData) {
           message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
           return null;
         }
-
-        const urlInsert =
-          "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans";
-        const headers = {
-          "Content-Type": "application/json",
-        };
-
         await axios
-          .post(urlInsert, arrayData, { headers })
+          .post(baseUrl + POST_LOAN_IN_LAWYERS_DB, arrayData, {
+            HEADERS_EXPORT,
+          })
           .then((resQuery) => {
             if (resQuery.data !== "Duplicate Contract No.") {
               success += 1;
@@ -256,6 +261,9 @@ const ImportData = () => {
 
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
+      setTimeout(() => {
+        message.warning(`ไม่สามารถ import สัญญาได้เกิน 50 สัญญาต่อครั้ง`);
+      }, 1000);
       handleFileUpload(file);
       if (file.status !== "uploading") {
         console.log(file, fileList);
@@ -347,84 +355,94 @@ const ImportData = () => {
 
   return (
     <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"12"} style={{ textAlign: "start" }}>
-              <Popconfirm
-                title="นำเข้าข้อมูล"
-                description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
-                onConfirm={confirmInsert}
-                onCancel={cancelInsert}
-                okText="ยืนยัน"
-                cancelText="ยกเลิก"
-              >
-                <Button style={{ marginRight: "10px" }}>
-                  <PlusCircleOutlined
-                    style={{ color: "green", fontSize: "16px" }}
-                    onClick={() => {
-                      // storeData(record);
-                    }}
-                  />
-                </Button>
-              </Popconfirm>
-              <Popconfirm
-                title="เลขสัญญาที่ค้นหาไม่เจอ"
-                description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
-                onConfirm={confirmModal}
-                onCancel={cancelModal}
-                okText="ตกลง"
-                cancelText="ยกเลิก"
-              >
-                <Button style={{ color: "red" }}>
-                  <CloseCircleOutlined style={{ fontSize: "16px" }} />
-                </Button>
-              </Popconfirm>
-            </Col>
-            <Col span={"12"} style={{ textAlign: "end" }}>
-              <Space direction="vertical" size={12}>
-                <Upload {...uploadProps}>
-                  <Button
-                    style={{ color: "green", marginRight: "5px" }}
-                    icon={<ImportOutlined />}
+      {profileRedux.role === "admin" || profileRedux.role === "bell" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col span={"12"} style={{ textAlign: "start" }}>
+                  <Popconfirm
+                    title="นำเข้าข้อมูล"
+                    description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
+                    onConfirm={confirmInsert}
+                    onCancel={cancelInsert}
+                    okText="ยืนยัน"
+                    cancelText="ยกเลิก"
                   >
-                    import Excel
-                  </Button>
-                </Upload>
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onSearch={onQuery}
-                enterButton
-                onChange={(e) => setQueryContno(e.target.value)}
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                style={{ marginTop: "10px" }}
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {isModalFailed ? (
-        <FailedImport
-          open={isModalFailed}
-          close={setIsModalFailed}
-          data={failedData}
-        />
-      ) : null}
+                    <Button style={{ marginRight: "10px" }}>
+                      <PlusCircleOutlined
+                        style={{ color: "green", fontSize: "16px" }}
+                        onClick={() => {
+                          // storeData(record);
+                        }}
+                      />
+                    </Button>
+                  </Popconfirm>
+                  <Popconfirm
+                    title="เลขสัญญาที่ค้นหาไม่เจอ"
+                    description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
+                    onConfirm={confirmModal}
+                    onCancel={cancelModal}
+                    okText="ตกลง"
+                    cancelText="ยกเลิก"
+                  >
+                    <Button style={{ color: "red" }}>
+                      <CloseCircleOutlined style={{ fontSize: "16px" }} />
+                    </Button>
+                  </Popconfirm>
+                </Col>
+                <Col span={"12"} style={{ textAlign: "end" }}>
+                  <Space direction="vertical" size={12}>
+                    <Upload {...uploadProps}>
+                      <Button
+                        style={{ color: "green", marginRight: "5px" }}
+                        icon={<ImportOutlined />}
+                      >
+                        import Excel
+                      </Button>
+                    </Upload>
+                  </Space>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    onSearch={onQuery}
+                    enterButton
+                    onChange={(e) => setQueryContno(e.target.value)}
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
+                  />
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    style={{ marginTop: "10px" }}
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+          {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+          {isModalFailed ? (
+            <FailedImport
+              open={isModalFailed}
+              close={setIsModalFailed}
+              data={failedData}
+            />
+          ) : null}
+        </>
+      ) : (
+        <Card>
+          {" "}
+          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+        </Card>
+      )}
     </>
   );
 };
 
+const ImportData = MotionHoc(Main);
 export default ImportData;

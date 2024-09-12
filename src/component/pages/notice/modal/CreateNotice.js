@@ -1,79 +1,183 @@
-import React, { useState } from "react";
-import { Button, DatePicker, Form, Input, Modal, Card, Select } from "antd";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Modal,
+  Card,
+  Select,
+  Spin,
+  message,
+  Popconfirm,
+} from "antd";
+import { optionsCompanyList } from "../../../../utils/constant/CompanySelect";
+import { useState } from "react";
+import { NOTICE } from "../../../../utils/constant/StatusConstant";
+import axios from "axios";
+import { baseUrl, HEADERS_EXPORT, POST_STATUS } from "../../../API/apiUrls";
+import moment from "moment";
 
-const CreateNotice = ({ open, close }) => {
-  const [confirmLoading, setConfirmLoading] = useState(false);
+const CreateNotice = ({ open, close, data }) => {
+  const [loading, setLoading] = useState(false);
+  const [preData, setPreData] = useState();
+  const { TextArea } = Input;
 
-  console.log("CreateDocument");
+  const sendStatus = async (data) => {
+    if (data) {
+      setLoading(true);
+      try {
+        await axios
+          .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+              message.success("อัพเดทข้อมูลสำเร็จ");
+              setLoading(false);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+      } finally {
+        setLoading(false);
+        handleCancel();
+      }
+    } else {
+      message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
+    }
+  };
 
-  const handleOk = () => {};
-
+  console.log("data", data);
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
   };
 
-  const { TextArea } = Input;
+  const onChangeSelect = (value) => {
+    console.log(`selected ${value} `);
+    setPreData({ ...preData, company: value });
+  };
+
+  const onChange = (date, dateString) => {
+    console.log(date, dateString);
+    setPreData({ ...preData, dateNotice: dateString });
+  };
+
+  const onChangeInput = (value) => {
+    console.log(value);
+  };
+
+  const onFinish = (values) => {
+    console.log("Success:", values);
+    const postData = {
+      MAIN_STATUS_ID: NOTICE,
+      LOAN_ID: data.id,
+      USER_ID: data.LAWYER_ID,
+      LOAN_TYPE_ID: data.LOAN_TYPE_ID,
+      LAW_TYPE_ID: data.LAW_TYPE_ID,
+      MEMO: values.memo,
+      updated_date: moment(preData.dateNotice).format("YYYY-MM-DD"),
+    };
+
+    console.log(postData);
+    sendStatus(postData);
+  };
+
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+    message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
 
   return (
     <>
       <Modal
         title="สร้างโนติส"
         open={open}
-        onOk={handleOk}
         onCancel={handleCancel}
-        width={850}
-        footer={[
-          <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
-            ปิด
-          </Button>,
-          <Button key="cancel" onClick={handleOk} style={{ color: "green" }}>
-            บันทึก
-          </Button>,
-        ]}
+        width={650}
+        footer={null}
       >
-        <Card>
-          <Form
-            labelCol={{
-              span: 10,
-            }}
-            wrapperCol={{
-              span: 14,
-            }}
-            layout="horizontal"
-            style={{
-              maxWidth: 600,
-            }}
-          >
-            <Form.Item label="วันที่ออกจดหมาย">
-              <Select
-                showSearch
-                style={{
-                  width: 200,
-                }}
-                placeholder="เลือกบริษัท"
-                optionFilterProp="value"
-                filterSort={(optionA, optionB) =>
-                  (optionA?.label ?? "")
-                    .toLowerCase()
-                    .localeCompare((optionB?.label ?? "").toLowerCase())
-                }
-                options={[
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Card>
+            <Form
+              labelCol={{
+                span: 5,
+              }}
+              wrapperCol={{
+                span: 24,
+              }}
+              layout="horizontal"
+              style={{
+                maxWidth: 600,
+              }}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              initialValues={{ memo: "" }}
+            >
+              <Form.Item
+                label="บริษัทที่ออกหนังสือ"
+                name="company"
+                rules={[
                   {
-                    value: "1",
-                    label: "วันมันนี่",
+                    required: true,
+                    message: "โปรดเลือกข้อมูล",
                   },
                 ]}
-              />
-            </Form.Item>
-            <Form.Item label="วันที่ออกจดหมาย">
-              <DatePicker />
-            </Form.Item>
-            <Form.Item label="หมายเหตุ">
-              <TextArea rows={4} />
-            </Form.Item>
-          </Form>
-        </Card>
+              >
+                <Select
+                  showSearch
+                  style={{
+                    width: 200,
+                  }}
+                  placeholder="เลือกบริษัท"
+                  optionFilterProp="value"
+                  options={optionsCompanyList}
+                  onChange={(value) => onChangeSelect(value)}
+                />
+              </Form.Item>
+              <Form.Item
+                label="วันที่ออกหนังสือ"
+                name="dateNotice"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดเลือกข้อมูล",
+                  },
+                ]}
+              >
+                <DatePicker onChange={onChange} />
+              </Form.Item>
+              <Form.Item label="หมายเหตุ" name="memo">
+                <TextArea
+                  rows={5}
+                  onChange={(e) => onChangeInput(e.target.value)}
+                />
+              </Form.Item>
+              <div style={{ textAlign: "center" }}>
+                <Button
+                  onClick={handleCancel}
+                  style={{ color: "red", marginRight: "20px" }}
+                >
+                  ปิด
+                </Button>
+
+                <Button style={{ color: "green" }} htmlType="submit">
+                  บันทึก
+                </Button>
+              </div>
+            </Form>
+          </Card>
+        </Spin>
       </Modal>
     </>
   );

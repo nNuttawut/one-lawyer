@@ -26,20 +26,27 @@ import {
 } from "../../../utils/constant/LoanTypeConstant";
 import { ASSIGN_LAWYERS } from "../../../utils/constant/StatusConstant";
 import moment from "moment";
+import {
+  POST_STATUS,
+  HEADERS_EXPORT,
+  GET_JOB_IN_PROGRESS,
+  baseUrl,
+} from "../../API/apiUrls";
+import { useSelector } from "react-redux";
+import MotionHoc from "../../../utils/MotionHoc";
 
-const AssignLawyers = () => {
+const Main = () => {
   //set hook
   const [lawyersList, setLoadingData, loadLawyerJobs] = LoadLawyers();
   const [lawyersOption, setLawyersOption] = useState();
+  //redux set
+  const profileRedux = useSelector((state) => state.authReducer.profile);
 
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const [dataSend, setDataSend] = useState([]);
-  const [dataJobs, setDataJob] = useState();
-  const [dataFilter, setDataFilter] = useState();
-  const [dataCheck, setDataCheck] = useState();
 
   const COMPANY = 1;
   const defaultValue = [1];
@@ -55,12 +62,14 @@ const AssignLawyers = () => {
   useEffect(() => {
     setOption();
   }, [lawyersList]);
+
   const setOption = () => {
     let companySelect = null;
     if (COMPANY === 1) {
       companySelect = lawyersList.filter((item) => item.COMPANY_ID === 1);
+    } else {
+      companySelect = lawyersList.filter((item) => item.COMPANY_ID === 2);
     }
-
     const options = companySelect.map((item) => ({
       value: item.id,
       label: item.NNAME,
@@ -71,12 +80,11 @@ const AssignLawyers = () => {
   const loadData = async () => {
     setLoading(true);
     // const tk = JSON.parse(token);
-    const urlQueryData = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/jobs`;
-    const headers = {};
+    console.log("loadData AssignLawyers");
     try {
       await axios
-        .get(urlQueryData, {
-          headers: headers,
+        .get(baseUrl + GET_JOB_IN_PROGRESS, {
+          HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
@@ -125,10 +133,10 @@ const AssignLawyers = () => {
         setLoading(false);
         return;
       }
-      console.log("data--->", dataSend);
+
       const promises = dataSend.map(async (item) => {
         const arrayData = item;
-        console.log("contno-->", arrayData);
+
         if (
           !arrayData.MAIN_STATUS_ID ||
           !arrayData.USER_ID ||
@@ -139,13 +147,8 @@ const AssignLawyers = () => {
           message.warning(`พบข้อมูลกรอกไม่ครบโปร`);
           return null;
         } else {
-          const urlInsert =
-            "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans/status";
-          const headers = {
-            "Content-Type": "application/json",
-          };
           await axios
-            .post(urlInsert, arrayData, { headers })
+            .post(baseUrl + POST_STATUS, arrayData, { HEADERS_EXPORT })
             .then((resQuery) => {
               if (resQuery.status === 200) {
                 setSucess += 1;
@@ -183,52 +186,42 @@ const AssignLawyers = () => {
     let filteredData;
     try {
       filteredData = dataArr.find((item) => item.id === data.LOAN_ID);
-      console.log("insertDataOne data-->", data.LOAN_ID);
-      console.log("filteredData--->", filteredData);
-      const urlInsert =
-        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans/status";
-      const headers = {
-        "Content-Type": "application/json",
-      };
-
       const dataToUpdate = {
         ...filteredData,
         MAIN_STATUS_ID: 1,
       };
       handleChangeStatus(dataToUpdate);
-      // await axios
-      //   .post(urlInsert, data, { headers })
-      //   .then((resQuery) => {
-      //     if (resQuery.status === 200) {
-      //       const dataToUpdate = {
-      //         ...filteredData,
-      //         MAIN_STATUS_ID: 1,
-      //       };
-      //       handleChangeStatus(dataToUpdate);
-      //       return resQuery.data;
-      //     } else {
-      //       console.log(`ไม่สามารถมอบหมายงานได้`);
-      //       message.error(`ไม่สามารถมอบหมายงานได้`);
-      //       return null;
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     console.error(err);
-      //     message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
-      //     return null;
-      //   });
+      await axios
+        .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
+        .then((resQuery) => {
+          if (resQuery.status === 200) {
+            const dataToUpdate = {
+              ...filteredData,
+              MAIN_STATUS_ID: 1,
+            };
+            handleChangeStatus(dataToUpdate);
+            return resQuery.data;
+          } else {
+            console.log(`ไม่สามารถมอบหมายงานได้`);
+            message.error(`ไม่สามารถมอบหมายงานได้`);
+            return null;
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
+          return null;
+        });
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("พบข้อมูลกรอกไม่ครบ");
     } finally {
       setLoading(false);
-      // message.success(
-      //   `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
-      // );
+      message.success(
+        `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
+      );
     }
   };
-
-  console.log(dataSend);
   const onChangeSelect = (value, contno, id) => {
     console.log(`selected ${value} contno ${contno} id ${id}`);
     onApporvedData(value, contno, id);
@@ -309,7 +302,6 @@ const AssignLawyers = () => {
 
   const confirmInsertOne = (id) => {
     const data = dataSend.find((item) => item.LOAN_ID === id);
-    console.log("confirmInsertOne", data);
     insertDataOne(data);
   };
 
@@ -340,14 +332,11 @@ const AssignLawyers = () => {
     const dataChangeSatatus = dataSend.filter(
       (item) => item.LOAN_ID !== data.id
     );
-    console.log("dataSend--->", dataSend);
-    console.log("dataChangeSatatus--->", dataChangeSatatus);
-    console.log("daata--->", data);
-    console.log("result--->", result);
+
+    setDataSend(dataChangeSatatus);
     setDataArr(result);
     const newData = result.filter((item) => item.MAIN_STATUS_ID === null);
     setArrayTable(newData);
-    console.log("newData--->", newData);
   };
 
   // random ทนาย
@@ -474,51 +463,63 @@ const AssignLawyers = () => {
 
   return (
     <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"12"} style={{ textAlign: "start" }}>
-              <Popconfirm
-                title="มอบงานให้ทนาย"
-                description="คุณต้องการนมอบหมายงานให้ทนายตามข้อมูลในตารางหรือไม่ ?"
-                onConfirm={confirmInsert}
-                onCancel={cancelInsert}
-                okText="ยืนยัน"
-                cancelText="ยกเลิก"
-              >
-                <Button>
-                  <PlusCircleOutlined
-                    style={{ color: "green", fontSize: "20px" }}
+      {profileRedux.role === "admin" ||
+      profileRedux.role === "bell" ||
+      profileRedux.role === "lawyer" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col span={"12"} style={{ textAlign: "start" }}>
+                  <Popconfirm
+                    title="มอบงานให้ทนาย"
+                    description="คุณต้องการนมอบหมายงานให้ทนายตามข้อมูลในตารางหรือไม่ ?"
+                    onConfirm={confirmInsert}
+                    onCancel={cancelInsert}
+                    okText="ยืนยัน"
+                    cancelText="ยกเลิก"
+                  >
+                    <Button>
+                      <PlusCircleOutlined
+                        style={{ color: "green", fontSize: "20px" }}
+                      />
+                    </Button>
+                  </Popconfirm>
+                </Col>
+                <Col span={"12"} style={{ textAlign: "end" }}>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    enterButton
+                    onChange={search}
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
                   />
-                </Button>
-              </Popconfirm>
-            </Col>
-            <Col span={"12"} style={{ textAlign: "end" }}>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                enterButton
-                onChange={search}
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                style={{ marginTop: "10px" }}
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    style={{ marginTop: "10px" }}
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+          {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+        </>
+      ) : (
+        <Card>
+          {" "}
+          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+        </Card>
+      )}
     </>
   );
 };
 
+const AssignLawyers = MotionHoc(Main);
 export default AssignLawyers;

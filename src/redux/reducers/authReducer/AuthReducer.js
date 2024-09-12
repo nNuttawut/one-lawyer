@@ -1,5 +1,5 @@
 const initState = {
-  profile: { id: 1, name: "nuttawut", role: "admin" },
+  profile: { id: 2, name: "nuttawut", role: "admin" },
 };
 
 const authReducer = (state = initState, acction) => {

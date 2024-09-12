@@ -8,6 +8,7 @@ import {
   Card,
   Button,
   message,
+  Spin,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
@@ -23,10 +24,16 @@ import CreateNotice from "./modal/CreateNotice";
 import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
+import {
+  baseUrl,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
+  HEADERS_EXPORT,
+} from "../../API/apiUrls";
 
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { ASSIGN_LAWYERS, NOTICE } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -36,12 +43,11 @@ const Main = () => {
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const profileRedux = useSelector((state) => state.authReducer.profile);
-  const dataRedux = useSelector((state) => state.dataImport.data);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
+  const [dataModal, setDataModal] = useState();
 
-  console.log(profileRedux.name);
-  console.log(dataRedux);
+  console.log(profileRedux.id);
 
   useEffect(() => {
     loadData();
@@ -51,23 +57,21 @@ const Main = () => {
     setLoading(true);
     console.log(data);
     try {
-      const urlLoadData =
-        "https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/jobs";
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const response = await axios.get(urlLoadData, { headers });
+      const response = await axios.get(
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ASSIGN_LAWYERS,
+        {
+          HEADERS_EXPORT,
+        }
+      );
       if (response.data) {
         let i = 1;
         if (response.data) {
+          console.log(response.data);
           const newData = response.data.map((item) => ({
             ...item,
             key: i++,
           }));
-          console.log(newData);
-          setArrayTable(newData);
-          setDataArr(newData);
-          console.log(newData);
+          filterDataLawyer(newData);
           setLoading(false);
         }
       } else {
@@ -81,6 +85,27 @@ const Main = () => {
       setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
+  };
+
+  const filterDataLawyer = (data) => {
+    const newData = data.filter(
+      (item) =>
+        (item.LAWYER_ID === profileRedux.id &&
+          item.STATUS_ID === ASSIGN_LAWYERS) ||
+        item.MAIN_STATUS_ID === NOTICE
+    );
+    setArrayTable(newData);
+    setDataArr(newData);
+  };
+
+  const search = (event) => {
+    console.log("query--->", event.target.value);
+    onSearch(event.target.value);
+  };
+
+  const onSearch = (value) => {
+    let result = dataArr.filter((item) => item.CONTNO.includes(value));
+    setArrayTable(result);
   };
 
   const columns = [
@@ -153,77 +178,99 @@ const Main = () => {
   return (
     <>
       <Card>
-        <Row>
-          <Col span={"24"} style={{ textAlign: "end" }}>
-            <Space direction="vertical" size={12}>
-              <RangePicker size="large" style={{ marginRight: "10px" }} />
-            </Space>
-            <Search
-              placeholder="ค้นหาสัญญา"
-              onSearch={"onSearch"}
-              enterButton
-              style={{
-                width: 200,
-              }}
-              size="large"
-            />
-          </Col>
-          <Col span={"24"}>
-            <Table
-              size="small"
-              columns={columns}
-              dataSource={arrayTable}
-              scroll={{ x: 850 }}
-              expandable={{
-                expandedRowRender: (record) => (
-                  <p style={{ margin: 0 }}>
-                    <Button
-                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-                      onClick={() => {
-                        setIsModalCreate(true);
-                      }}
-                    >
-                      <EditOutlined
-                        style={{ color: "orange", fontSize: "16px" }}
-                      />
-                    </Button>
-                    <Button
-                      style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-                      onClick={() => {
-                        setIsModalDocument(true);
-                      }}
-                    >
-                      <FileDoneOutlined
-                        style={{ color: "green", fontSize: "16px" }}
-                      />
-                    </Button>
-                    <Button
-                      style={{ boxShadow: "0 4px 3px" }}
-                      onClick={() => {
-                        setIsModalUpdate(true);
-                      }}
-                    >
-                      <SyncOutlined
-                        style={{ color: "green", fontSize: "16px" }}
-                      />
-                    </Button>
-                  </p>
-                ),
-                rowExpandable: (record) => record.name !== "Not Expandable",
-              }}
-            />
-          </Col>
-        </Row>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker size="large" style={{ marginRight: "10px" }} />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      <Button
+                        style={{
+                          boxShadow: "0 4px 3px",
+                          marginRight: "10px",
+                        }}
+                        onClick={() => {
+                          setIsModalCreate(true);
+                          setDataModal(record);
+                        }}
+                      >
+                        <EditOutlined
+                          style={{ color: "orange", fontSize: "16px" }}
+                        />
+                      </Button>
+                      {record.MAIN_STATUS_ID === 2 ? (
+                        <>
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalDocument(true);
+                            }}
+                          >
+                            <FileDoneOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                          <Button
+                            style={{ boxShadow: "0 4px 3px" }}
+                            onClick={() => {
+                              setIsModalUpdate(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </>
+                      ) : null}
+                    </p>
+                  ),
+                  rowExpandable: (record) => record.name !== "Not Expandable",
+                }}
+              />
+            </Col>
+          </Row>
+        </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
       {isModalCreate ? (
-        <CreateNotice open={isModalCreate} close={setIsModalCreate} />
+        <CreateNotice
+          open={isModalCreate}
+          close={setIsModalCreate}
+          data={dataModal}
+        />
       ) : null}
       {isModalDocument ? (
         <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
       ) : null}
       {isModalUpdate ? (
-        <UpdateStatusNotice open={isModalUpdate} close={setIsModalUpdate} />
+        <UpdateStatusNotice
+          open={isModalUpdate}
+          close={setIsModalUpdate}
+          data={dataModal}
+        />
       ) : null}
     </>
   );

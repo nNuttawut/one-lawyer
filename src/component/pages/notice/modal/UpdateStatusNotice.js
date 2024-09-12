@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   DatePicker,
@@ -13,64 +13,79 @@ import {
   TreeSelect,
   Radio,
   Steps,
+  message,
 } from "antd";
 import {
-  SmileOutlined,
-  FormOutlined,
   BellOutlined,
-  AuditOutlined,
   SearchOutlined,
-  NotificationOutlined,
-  ScheduleOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
+import axios from "axios";
+import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
 
-const UpdateStatusNotice = ({ open, close }) => {
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [modalText, setModalText] = useState("Content of the modal");
+const UpdateStatusNotice = ({ open, close, data }) => {
   const [defaultStatus, setDefaultStatus] = useState("enforce");
-  const [status, setStatus] = useState({
-    Notice: "finish",
-    preEnforcement: "wait",
-  });
-
-  console.log("CreateDocument");
-
-  const handleOk = () => {
-    setModalText("The modal will be closed after two seconds");
-    setConfirmLoading(true);
-    setTimeout(() => {
-      setConfirmLoading(false);
-    }, 2000);
-  };
+  const [status, setStatus] = useState();
+  const [loading, setLoading] = useState(false);
+  const { TextArea } = Input;
+  const { dataFormat, setDataFormat } = useState();
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
   };
 
-  const { TextArea } = Input;
-
   const handleChange = (value) => {
     console.log(`selected ${value}`);
   };
 
-  const handleStatusChange = (current) => {
-    const newStatus = { ...status };
-    if (current) {
-      newStatus.Notice = newStatus.Notice === "wait" ? "finish" : "wait";
-      newStatus.investigateAssets =
-        newStatus.investigateAssets === "wait" ? "finish" : "wait";
-      newStatus.sendToEnforcement =
-        newStatus.sendToEnforcement === "wait" ? "finish" : "wait";
-      newStatus.enforcement =
-        newStatus.enforcement === "wait" ? "finish" : "wait";
+  const sendStatus = async () => {
+    if (status === 2) {
+      setLoading(true);
+      try {
+        await axios
+          .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+              message.success("อัพเดทข้อมูลสำเร็จ");
+              setLoading(false);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+      } finally {
+        setLoading(false);
+        handleCancel();
+      }
+    } else {
+      message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
     }
   };
+
+  const handleStatusChange = (current) => {
+    console.log(current);
+    setStatus(current);
+    if (current === 2) {
+    }
+  };
+
   const onChange = (e) => {
     setDefaultStatus(e.target.value);
     console.log(defaultStatus);
   };
-  console.log(defaultStatus);
+
   const FormDisabledDemo = () => {
     return (
       <>
@@ -163,16 +178,22 @@ const UpdateStatusNotice = ({ open, close }) => {
           <Card style={{ marginTop: "10px" }}>
             <Steps
               responsive={true}
-              percent={50}
+              onChange={handleStatusChange}
               items={[
                 {
                   title: "ส่งโนติส",
-                  status: status.Notice,
+                  status: "finish",
                   icon: <BellOutlined />,
                 },
                 {
+                  title: "เวลาดำเนินการเหลือ",
+                  status: "process",
+                  subTitle: "8 วัน",
+                  icon: <LoadingOutlined />,
+                },
+                {
                   title: "เตรียมส่งฟ้อง",
-                  status: status.preEnforcement,
+                  status: "wait",
                   icon: <SearchOutlined />,
                 },
               ]}
@@ -188,15 +209,13 @@ const UpdateStatusNotice = ({ open, close }) => {
       <Modal
         title="เปลี่ยนสถานะ"
         open={open}
-        onOk={handleOk}
-        confirmLoading={confirmLoading}
         onCancel={handleCancel}
         width={850}
         footer={[
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
             ปิด
           </Button>,
-          <Button key="cancel" onClick={handleOk} style={{ color: "green" }}>
+          <Button key="ok" onClick={sendStatus()} style={{ color: "green" }}>
             บันทึก
           </Button>,
         ]}

@@ -1,6 +1,12 @@
 import { message } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import {
+  baseUrl,
+  GET_JOB_COUNT,
+  GET_LAWYERS_LIST,
+  HEADERS_EXPORT,
+} from "../component/API/apiUrls";
 
 const LoadLawyers = () => {
   const [lawyersList, setLawyersList] = useState([]);
@@ -15,12 +21,12 @@ const LoadLawyers = () => {
   }, [loadingData]);
 
   const loadData = async () => {
-    const urlLawyerList = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/users/lawyers`;
-    const headers = {};
+    console.log("loadData LoadLawyers");
+
     try {
       await axios
-        .get(urlLawyerList, {
-          headers: headers,
+        .get(baseUrl + GET_LAWYERS_LIST, {
+          HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -38,17 +44,15 @@ const LoadLawyers = () => {
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     }
 
-    const urlJob = `https://shark-app-j9jc9.ondigitalocean.app/lawyer/dev/api/loans/notics/count`;
-
     try {
       await axios
-        .get(urlJob, {
-          headers: headers,
+        .get(baseUrl + GET_JOB_COUNT, {
+          HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
             setLoadLawyerJobs(res.data);
-            console.log("setDataCheck", res.data);
+            console.log("data in", res.data);
           } else {
             message.error("ไม่มีข้อมูล");
             console.log("ไม่มีข้อมูล");

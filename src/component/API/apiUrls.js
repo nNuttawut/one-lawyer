@@ -1,0 +1,50 @@
+//ดีงข้อมูลจาก server ibm
+const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans/";
+
+//ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
+const GET_ALL_LOAN = "/lawyer/dev/api/loans";
+
+///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
+const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
+
+//ดึง users ในระบบ
+const GET_LAWYERS_LIST = "/lawyer/dev/api/users/lawyers";
+
+//ดึงจำนวนงานที่ users รับงาน
+const GET_JOB_COUNT = "/lawyer/dev/api/loans/notics/count";
+
+//ดึงจำนานงานที่กำลังดำเนินการ
+const GET_JOB_IN_PROGRESS = "/lawyer/dev/api/jobs";
+
+//ดึงจำนานงานที่กำลังดำเนินการตามสถานะ
+const GET_JOB_IN_PROGRESS_BY_STATUS = "/lawyer/dev/api/jobs/";
+
+//นำข้อมูลเข้า db lawyers
+const POST_LOAN_IN_LAWYERS_DB = "/lawyer/dev/api/loans";
+
+//เปลี่ยนสถานะสัญญา
+const POST_STATUS = "/lawyer/dev/api/loans/status";
+
+//อัพเดทสถานะสัญญา
+const PUT_STATUS = "/lawyer/dev/api/loans/status";
+
+const HEADERS_EXPORT = {
+  "Content-Type": "application/json",
+};
+
+const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
+
+export {
+  GET_LOAN_FROM_SERVER_IBM,
+  GET_ALL_LOAN,
+  GET_LOAN_BY_CONTNO,
+  GET_LAWYERS_LIST,
+  GET_JOB_COUNT,
+  GET_JOB_IN_PROGRESS,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
+  POST_LOAN_IN_LAWYERS_DB,
+  POST_STATUS,
+  PUT_STATUS,
+  HEADERS_EXPORT,
+  baseUrl,
+};
