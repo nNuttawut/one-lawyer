@@ -20,10 +20,7 @@ import {
 } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
-import CreateNotice from "./modal/CreateNotice";
-import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
-import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS_BY_STATUS,
@@ -33,8 +30,11 @@ import {
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import { INDICT } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
+import CreateDocument from "./modal/CreateDocument";
+import DocumentEnforce from "./modal/DocumentEnforce";
+import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -62,7 +62,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + INDICT,
         {
           HEADERS_EXPORT,
         }
@@ -94,7 +94,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === NOTICE
+          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === INDICT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -145,8 +145,7 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    console.log("dataArr", dataArr);
-    if (data) {
+    if (data !== 0) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -154,11 +153,10 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log("result", result);
+      console.log(result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
-      console.log("arr", arr);
-      setArrayTable(arr);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID === INDICT);
+      setArrayTable("arr", arr);
     } else {
       loadData();
       console.log("handleUpdateData loadData");
@@ -220,7 +218,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่ง notice",
+      title: "วันนัดพิจารณาคดี",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -314,7 +312,7 @@ const Main = () => {
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
       {isModalCreate ? (
-        <CreateNotice
+        <CreateDocument
           open={isModalCreate}
           close={setIsModalCreate}
           dataDefualt={dataModal}
@@ -322,10 +320,10 @@ const Main = () => {
         />
       ) : null}
       {isModalDocument ? (
-        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
+        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
       ) : null}
       {isModalUpdate ? (
-        <UpdateStatusNotice
+        <UpdateStatusBlackNumber
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}
@@ -336,5 +334,5 @@ const Main = () => {
   );
 };
 
-const Notice = MotionHoc(Main);
-export default Notice;
+const PreLawsuitFiled = MotionHoc(Main);
+export default PreLawsuitFiled;

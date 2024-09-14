@@ -64,10 +64,10 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               console.log("resQuery", res.data);
               funcUpdateStatus({
                 ...dataDefualt,
-                MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
+                MAIN_STATUS_ID: data.MAIN_STATUS_ID,
                 DATE: moment().format("YYYY-MM-DD"),
               });
-              message.success("อัพเดทข้อมูลสำเร็จ");
+              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
               setLoading(false);
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
