@@ -158,7 +158,7 @@ function Sidenav({ color, onClick }) {
       label: "manage-data",
       path: "/manage-data",
       icon: <ImportOutlined />,
-      title: "นำเข้าข้อมูล",
+      title: "จัดการข้อมูล",
       children: [
         {
           key: "141",

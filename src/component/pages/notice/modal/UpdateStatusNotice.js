@@ -1,46 +1,60 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
   Modal,
   Card,
-  Cascader,
-  Checkbox,
-  Select,
-  TreeSelect,
   Radio,
   Steps,
   message,
+  Input,
+  Form,
+  Spin,
 } from "antd";
 import {
   BellOutlined,
-  SearchOutlined,
+  AuditOutlined,
   LoadingOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
+import { FINISH, INDICT } from "../../../../utils/constant/StatusConstant";
+import moment from "moment";
+import TextArea from "antd/es/input/TextArea";
 
-const UpdateStatusNotice = ({ open, close, data }) => {
-  const [defaultStatus, setDefaultStatus] = useState("enforce");
-  const [status, setStatus] = useState();
+const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+  const [defaultRadio, setDefaultRadio] = useState("enforce");
+  const [status, setStatus] = useState({
+    process: "process",
+    preEnforce: "wait",
+    prePay: "wait",
+  });
   const [loading, setLoading] = useState(false);
-  const { TextArea } = Input;
-  const { dataFormat, setDataFormat } = useState();
+  const [memoText, setMemoText] = useState("");
+  const [countDate, setCountDate] = useState();
+
+  useEffect(() => {
+    if (dataDefualt.DATE) {
+      const recordDate = moment(dataDefualt.DATE);
+      const toDay = moment().startOf("day");
+      const toDate = moment(recordDate).add(30, "days");
+      const daysDifference = toDay.diff(toDate, "days");
+      console.log("toDate", toDate);
+      console.log("daysDifference", daysDifference);
+      setCountDate(daysDifference);
+    }
+  }, []);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
   };
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const sendStatus = async () => {
-    if (status === 2) {
+  const sendStatus = async (data) => {
+    if (
+      (status.preEnforce === "finish" && defaultRadio === "enforce") ||
+      (status.prePay === "finish" && defaultRadio === "pay")
+    ) {
       setLoading(true);
       try {
         await axios
@@ -48,6 +62,11 @@ const UpdateStatusNotice = ({ open, close, data }) => {
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
+              funcUpdateStatus({
+                ...dataDefualt,
+                MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
+                DATE: moment().format("YYYY-MM-DD"),
+              });
               message.success("อัพเดทข้อมูลสำเร็จ");
               setLoading(false);
             } else {
@@ -58,7 +77,7 @@ const UpdateStatusNotice = ({ open, close, data }) => {
           })
           .catch((err) => {
             console.log(err);
-            if (err.status === 404) {
+            if (err.status === 400) {
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
@@ -76,104 +95,103 @@ const UpdateStatusNotice = ({ open, close, data }) => {
 
   const handleStatusChange = (current) => {
     console.log(current);
-    setStatus(current);
-    if (current === 2) {
+    if (current === 2 && defaultRadio === "enforce") {
+      setStatus({
+        process: "finish",
+        preEnforce: "finish",
+        prePay: "wait",
+      });
+    } else if (current === 2 && defaultRadio === "pay") {
+      setStatus({
+        process: "finish",
+        preEnforce: "wait",
+        prePay: "finish",
+      });
+    } else {
+      setStatus({
+        process: "process",
+        preEnforce: "wait",
+        prePay: "wait",
+      });
     }
   };
 
-  const onChange = (e) => {
-    setDefaultStatus(e.target.value);
-    console.log(defaultStatus);
+  const onChangeInput = (e) => {
+    const value = e.target.value;
+    console.log(value);
+    setMemoText(value);
   };
 
-  const FormDisabledDemo = () => {
+  const handleOk = () => {
+    let statusSelect = null;
+    if (defaultRadio === "enforce") {
+      statusSelect = INDICT;
+    } else {
+      statusSelect = FINISH;
+    }
+    console.log("statusSelect", statusSelect);
+    const postData = {
+      MAIN_STATUS_ID: statusSelect,
+      LOAN_ID: dataDefualt.id,
+      USER_ID: dataDefualt.LAWYER_ID,
+      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+      MEMO: memoText,
+      DATE: null,
+    };
+    console.log(postData);
+    sendStatus(postData);
+  };
+
+  console.log(dataDefualt);
+
+  const onChange = (e) => {
+    setDefaultRadio(e.target.value);
+    if (e) {
+      setStatus({
+        process: "process",
+        preEnforce: "wait",
+        prePay: "wait",
+      });
+    }
+  };
+
+  const FormDisabled = () => {
     return (
       <>
         <Radio.Group
           onChange={onChange}
           defaultValue="enforce"
-          value={defaultStatus}
+          value={defaultRadio}
         >
           <Radio value="enforce">เตรียมฟ้อง</Radio>
-          <Radio value="pay">ทำยอม/ชำระหนี้</Radio>
+          <Radio value="pay">เจรจาจ่าย</Radio>
         </Radio.Group>
-        {defaultStatus === "pay" ? (
-          <Form
-            labelCol={{
-              span: 4,
-            }}
-            wrapperCol={{
-              span: 14,
-            }}
-            layout="horizontal"
-            style={{
-              maxWidth: 600,
-            }}
-          >
-            <Form.Item label="Checkbox" name="disabled" valuePropName="checked">
-              <Checkbox>Checkbox</Checkbox>
-            </Form.Item>
-            <Form.Item label="Radio">
-              <Radio.Group>
-                <Radio value="apple"> Apple </Radio>
-                <Radio value="pear"> Pear </Radio>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="Input">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Select">
-              <Select>
-                <Select.Option value="demo">Demo</Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="TreeSelect">
-              <TreeSelect
-                treeData={[
-                  {
-                    title: "Light",
-                    value: "light",
-                    children: [
-                      {
-                        title: "Bamboo",
-                        value: "bamboo",
-                      },
-                    ],
-                  },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item label="Cascader">
-              <Cascader
-                options={[
-                  {
-                    value: "zhejiang",
-                    label: "Zhejiang",
-                    children: [
-                      {
-                        value: "hangzhou",
-                        label: "Hangzhou",
-                      },
-                    ],
-                  },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item label="DatePicker">
-              <DatePicker />
-            </Form.Item>
-
-            <Form.Item label="InputNumber">
-              <InputNumber />
-            </Form.Item>
-            <Form.Item label="TextArea">
-              <TextArea rows={4} />
-            </Form.Item>
-
-            <Form.Item label="Button">
-              <Button>Button</Button>
-            </Form.Item>
-          </Form>
+        {defaultRadio === "pay" ? (
+          <Card style={{ marginTop: "10px" }}>
+            <Steps
+              responsive={true}
+              onChange={handleStatusChange}
+              items={[
+                {
+                  title: "ส่งโนติส",
+                  status: "finish",
+                  icon: <BellOutlined />,
+                },
+                {
+                  title: "เวลาดำเนินการเหลือ",
+                  status: status.process,
+                  description: `เกินกำหนด: ${countDate} วัน`,
+                  icon: <LoadingOutlined />,
+                },
+                {
+                  title: "กลับมาจ่ายปกติ",
+                  status: status.prePay,
+                  icon: <DollarOutlined />,
+                },
+              ]}
+            />
+          </Card>
         ) : (
           <Card style={{ marginTop: "10px" }}>
             <Steps
@@ -187,14 +205,14 @@ const UpdateStatusNotice = ({ open, close, data }) => {
                 },
                 {
                   title: "เวลาดำเนินการเหลือ",
-                  status: "process",
-                  subTitle: "8 วัน",
+                  status: status.process,
+                  description: `เกินกำหนด: ${countDate} วัน`,
                   icon: <LoadingOutlined />,
                 },
                 {
                   title: "เตรียมส่งฟ้อง",
-                  status: "wait",
-                  icon: <SearchOutlined />,
+                  status: status.preEnforce,
+                  icon: <AuditOutlined />,
                 },
               ]}
             />
@@ -215,14 +233,24 @@ const UpdateStatusNotice = ({ open, close, data }) => {
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
             ปิด
           </Button>,
-          <Button key="ok" onClick={sendStatus()} style={{ color: "green" }}>
+          <Button key="ok" onClick={handleOk} style={{ color: "green" }}>
             บันทึก
           </Button>,
         ]}
       >
-        <Card>
-          <FormDisabledDemo />
-        </Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Card>
+            <FormDisabled />
+          </Card>
+          <div style={{ marginTop: "10px" }}>
+            <TextArea
+              rows={5}
+              placeholder="หมายเหตุ"
+              value={memoText}
+              onChange={onChangeInput}
+            />
+          </div>
+        </Spin>
       </Modal>
     </>
   );

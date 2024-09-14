@@ -33,9 +33,12 @@ import {
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { ASSIGN_LAWYERS, NOTICE } from "../../../utils/constant/StatusConstant";
+import { NOTICE } from "../../../utils/constant/StatusConstant";
+import DateCustom from "../../../hook/DateCustom";
 
 const Main = () => {
+  const [convertDateThai] = DateCustom();
+
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
@@ -46,6 +49,7 @@ const Main = () => {
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
+  const [tableLength, setTableLength] = useState(0);
 
   console.log(profileRedux.id);
 
@@ -58,7 +62,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ASSIGN_LAWYERS,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
         {
           HEADERS_EXPORT,
         }
@@ -66,7 +70,6 @@ const Main = () => {
       if (response.data) {
         let i = 1;
         if (response.data) {
-          console.log(response.data);
           const newData = response.data.map((item) => ({
             ...item,
             key: i++,
@@ -88,14 +91,20 @@ const Main = () => {
   };
 
   const filterDataLawyer = (data) => {
-    const newData = data.filter(
-      (item) =>
-        (item.LAWYER_ID === profileRedux.id &&
-          item.STATUS_ID === ASSIGN_LAWYERS) ||
-        item.MAIN_STATUS_ID === NOTICE
-    );
-    setArrayTable(newData);
-    setDataArr(newData);
+    if (Array.isArray(data)) {
+      const newData = data.filter(
+        (item) =>
+          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === NOTICE
+      );
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log(newData);
+      console.log("Length of filtered data:", newData.length);
+    } else {
+      console.error("data is not an array or is undefined");
+      setTableLength(0);
+    }
   };
 
   const search = (event) => {
@@ -106,6 +115,73 @@ const Main = () => {
   const onSearch = (value) => {
     let result = dataArr.filter((item) => item.CONTNO.includes(value));
     setArrayTable(result);
+  };
+
+  const onSearchByDate = (startDate, endDate) => {
+    console.log(endDate[0]);
+    console.log(endDate[1]);
+
+    const start = moment(endDate[0], "YYYY-MM-DD");
+    const end = moment(endDate[1], "YYYY-MM-DD");
+
+    const timestampStart = start.valueOf();
+    const timestampEnd = end.valueOf();
+
+    if (startDate && endDate) {
+      const selectSearch = dataArr.filter((item) => {
+        const date = moment(item.DATE, "YYYY-MM-DD");
+        const itemDate = date.valueOf();
+        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
+          return item;
+        } else {
+          return null;
+        }
+      });
+      setArrayTable(selectSearch);
+    } else {
+      setArrayTable(dataArr);
+    }
+  };
+
+  const handleUpdateData = (data) => {
+    console.log("data---->update", data);
+    if (data !== 0) {
+      const result = dataArr.map((item) => {
+        if (item.id === data.id) {
+          return { ...data };
+        } else {
+          return { ...item };
+        }
+      });
+      console.log(result);
+      setDataArr(result);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      setArrayTable("arr", arr);
+    } else {
+      loadData();
+      console.log("handleUpdateData loadData");
+    }
+  };
+
+  //ทำ render record ของตาราถ้าใช้ logic เยอะ
+  const renderDate = (record) => {
+    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
+    if (!record.DATE) {
+      return null;
+    }
+    const recordDate = moment(record.DATE);
+    const today = moment().startOf("day");
+    const daysDifference = today.diff(recordDate, "days");
+    let color = daysDifference > 30 ? "red" : "green";
+    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
+    return (
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
+        {formattedDate}
+        <br />
+        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
+      </Tag>
+    );
   };
 
   const columns = [
@@ -143,36 +219,9 @@ const Main = () => {
     },
     {
       title: "วันส่ง notice",
-      dataIndex: "",
-      key: "",
       align: "center",
-      render: (text, record) => (
-        <>{/* {record.LOAN.SDATE ? record.LOAN.SDATE : null} */}</>
-      ),
+      render: (record) => <>{renderDate(record)}</>,
     },
-    // {
-    //   title: "สถานะ",
-    //   key: "status",
-    //   dataIndex: "tags",
-    //   align: "center",
-    //   render: ({ tags }) => (
-    //     <>
-    //       {tags.map((tag) => {
-    //         let color = tag !== "ครบกำหนดเมื่อ" ? "gray" : "green";
-    //         if (tag === "เลยกำหนดเมื่อ") {
-    //           color = "volcano";
-    //         }
-    //         return (
-    //           <Tag color={color} key={tag} style={{ textAlign: "center" }}>
-    //             {tag.toUpperCase()}
-    //             <br />
-    //             {moment().format("DD/MM/YY")}
-    //           </Tag>
-    //         );
-    //       })}
-    //     </>
-    //   ),
-    // },
   ];
 
   return (
@@ -180,9 +229,13 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"24"} style={{ textAlign: "end" }}>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Space direction="vertical" size={12}>
-                <RangePicker size="large" style={{ marginRight: "10px" }} />
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
               </Space>
               <Search
                 placeholder="ค้นหาสัญญา"
@@ -200,24 +253,27 @@ const Main = () => {
                 columns={columns}
                 dataSource={arrayTable}
                 scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      <Button
-                        style={{
-                          boxShadow: "0 4px 3px",
-                          marginRight: "10px",
-                        }}
-                        onClick={() => {
-                          setIsModalCreate(true);
-                          setDataModal(record);
-                        }}
-                      >
-                        <EditOutlined
-                          style={{ color: "orange", fontSize: "16px" }}
-                        />
-                      </Button>
-                      {record.MAIN_STATUS_ID === 2 ? (
+                      {!record.DATE ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalCreate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                      {record.DATE ? (
                         <>
                           <Button
                             style={{
@@ -259,7 +315,8 @@ const Main = () => {
         <CreateNotice
           open={isModalCreate}
           close={setIsModalCreate}
-          data={dataModal}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
         />
       ) : null}
       {isModalDocument ? (
@@ -269,7 +326,8 @@ const Main = () => {
         <UpdateStatusNotice
           open={isModalUpdate}
           close={setIsModalUpdate}
-          data={dataModal}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
         />
       ) : null}
     </>

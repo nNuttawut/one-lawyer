@@ -8,30 +8,35 @@ import {
   Select,
   Spin,
   message,
-  Popconfirm,
 } from "antd";
 import { optionsCompanyList } from "../../../../utils/constant/CompanySelect";
 import { useState } from "react";
 import { NOTICE } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
-import { baseUrl, HEADERS_EXPORT, POST_STATUS } from "../../../API/apiUrls";
+import { baseUrl, HEADERS_EXPORT, PUT_STATUS } from "../../../API/apiUrls";
 import moment from "moment";
 
-const CreateNotice = ({ open, close, data }) => {
+const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
   const { TextArea } = Input;
 
   const sendStatus = async (data) => {
+    console.log("data-->", data);
     if (data) {
       setLoading(true);
       try {
         await axios
-          .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
               message.success("อัพเดทข้อมูลสำเร็จ");
+              funcUpdateStatus({
+                ...dataDefualt,
+                MAIN_STATUS_ID: NOTICE,
+                DATE: data.DATE,
+              });
               setLoading(false);
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
@@ -57,7 +62,7 @@ const CreateNotice = ({ open, close, data }) => {
     }
   };
 
-  console.log("data", data);
+  console.log("data", dataDefualt);
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
@@ -80,16 +85,13 @@ const CreateNotice = ({ open, close, data }) => {
   const onFinish = (values) => {
     console.log("Success:", values);
     const postData = {
-      MAIN_STATUS_ID: NOTICE,
-      LOAN_ID: data.id,
-      USER_ID: data.LAWYER_ID,
-      LOAN_TYPE_ID: data.LOAN_TYPE_ID,
-      LAW_TYPE_ID: data.LAW_TYPE_ID,
+      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+      USER_ID: dataDefualt.LAWYER_ID,
+      LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
-      updated_date: moment(preData.dateNotice).format("YYYY-MM-DD"),
+      DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
     };
-
-    console.log(postData);
+    console.log("postData", postData);
     sendStatus(postData);
   };
 
@@ -111,7 +113,7 @@ const CreateNotice = ({ open, close, data }) => {
           <Card>
             <Form
               labelCol={{
-                span: 5,
+                span: 6,
               }}
               wrapperCol={{
                 span: 24,

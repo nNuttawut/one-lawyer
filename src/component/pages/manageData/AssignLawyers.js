@@ -24,7 +24,7 @@ import {
   optionsLone,
   HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
-import { ASSIGN_LAWYERS } from "../../../utils/constant/StatusConstant";
+import { NOTICE } from "../../../utils/constant/StatusConstant";
 import moment from "moment";
 import {
   POST_STATUS,
@@ -47,6 +47,9 @@ const Main = () => {
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const [dataSend, setDataSend] = useState([]);
+  const [dataToTable, setDataToTable] = useState([]);
+  const [dataFunc, setDataFunc] = useState(null);
+  const [tableLength, setTableLength] = useState(0);
 
   const COMPANY = 1;
   const defaultValue = [1];
@@ -116,6 +119,7 @@ const Main = () => {
     const newData = value.filter((item) => item.MAIN_STATUS_ID === null);
     setArrayTable(newData);
     setDataArr(newData);
+    setTableLength(newData.length);
   };
   //set redux
   // const storeData = () => {
@@ -151,7 +155,10 @@ const Main = () => {
             .post(baseUrl + POST_STATUS, arrayData, { HEADERS_EXPORT })
             .then((resQuery) => {
               if (resQuery.status === 200) {
+                console.log(resQuery.data);
+                console.log("arrayData.LOAN_ID", arrayData.LOAN_ID);
                 setSucess += 1;
+                setDataToTable((pre) => [...pre, { id: arrayData.LOAN_ID }]);
                 return resQuery.data;
               } else {
                 console.log(`ไม่สามารถมอบหมายงานได้`);
@@ -162,22 +169,26 @@ const Main = () => {
             .catch((err) => {
               console.error(err);
               message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
+              setSucess = 999;
               return null;
             });
         }
       });
       const results = await Promise.all(promises);
-      console.log("results", results);
+      console.log("results Promise", results);
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("พบข้อมูลกรอกไม่ครบ");
     } finally {
       setLoading(false);
-      if (setSucess === dataSend.length && setSucess !== 5555) {
+      if (setSucess === dataSend.length && setSucess === 1) {
         message.success(`มอบหมายงานให้ทนายเสร็จสิ้น ${dataSend.length} สัญญา`);
       }
+      setDataFunc(1);
       setDataSend([]);
-      loadData();
+      if (setSucess === 999) {
+        reloadPage();
+      }
     }
   };
 
@@ -262,13 +273,13 @@ const Main = () => {
 
       // เพิ่มข้อมูลใหม่เข้า array
       const newItem = {
-        MAIN_STATUS_ID: ASSIGN_LAWYERS,
+        MAIN_STATUS_ID: NOTICE,
         USER_ID: userId,
         LOAN_ID: id,
         LOAN_TYPE_ID: lawType,
         LAW_TYPE_ID: loanType,
         MEMO: null,
-        updated_date: moment().format("yyyy-MM-DD"),
+        DATE: null,
       };
 
       // Return อัพเดท array
@@ -321,6 +332,7 @@ const Main = () => {
     onApporvedData(null, null, loanId, setValue, null);
   };
 
+  //ไว้เปลี่ยน สถานะและ set table แบบ ค่าเดียว
   const handleChangeStatus = (data) => {
     const result = dataArr.map((item) => {
       if (item.id === data.id) {
@@ -337,6 +349,30 @@ const Main = () => {
     setDataArr(result);
     const newData = result.filter((item) => item.MAIN_STATUS_ID === null);
     setArrayTable(newData);
+  };
+
+  const reloadPage = () => {
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    if (dataFunc) {
+      console.log("dataFunc In", dataFunc);
+      handleChangeStatusAll();
+    } else {
+      console.log("dataFunc out", dataFunc);
+    }
+  }, [dataFunc]);
+
+  //ไว้เปลี่ยน สถานะและ set table แบบ หลายค่า
+  const handleChangeStatusAll = () => {
+    console.log(dataToTable);
+
+    const idsToFilterOut = dataToTable.map((item) => item.id);
+    const newData = dataArr.filter((item) => !idsToFilterOut.includes(item.id));
+
+    setArrayTable(newData);
+    console.log("newData", newData);
   };
 
   // random ทนาย
@@ -504,6 +540,7 @@ const Main = () => {
                     columns={columns}
                     dataSource={arrayTable}
                     scroll={{ x: 850 }}
+                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
                   />
                 </Col>
               </Row>
