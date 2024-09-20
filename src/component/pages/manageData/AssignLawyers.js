@@ -13,7 +13,7 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
-import DetailModal from "../detailStatus/DetailModal";
+import DetailModal from "../detail/DetailModal";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useDispatch } from "react-redux";
@@ -130,38 +130,62 @@ const Main = () => {
   const insertDataAll = async () => {
     setLoading(true);
     let setSucess = 0;
+    let i = 0;
+    console.log("dataSend all", dataSend);
     try {
       if (!dataSend || dataSend.length === 0) {
-        message.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+        message.error("กรุณาเลือกทนาย");
         setSucess = 5555;
         setLoading(false);
         return;
       }
 
       const promises = dataSend.map(async (item) => {
-        const arrayData = item;
+        let arrayData = item;
+        console.log("arrayData", arrayData);
 
-        if (
-          !arrayData.MAIN_STATUS_ID ||
-          !arrayData.USER_ID ||
-          !arrayData.LOAN_ID ||
-          !arrayData.LOAN_TYPE_ID ||
-          !arrayData.LAW_TYPE_ID
-        ) {
-          message.warning(`พบข้อมูลกรอกไม่ครบโปร`);
-          return null;
+        if (arrayData) {
+          if (arrayData) {
+            if (arrayData.LAW_TYPE_ID && arrayData.LOAN_TYPE_ID) {
+              arrayData = dataSend;
+              console.log(
+                "arrayData.LAW_TYPE_ID && arrayData.LOAN_TYPE_ID",
+                arrayData
+              );
+            }
+            if (!arrayData.LAW_TYPE_ID) {
+              arrayData = {
+                ...arrayData,
+                LAW_TYPE_ID: 1,
+              };
+              console.log("!arrayData.LAW_TYPE_ID", arrayData);
+            }
+            if (!arrayData.LOAN_TYPE_ID) {
+              arrayData = {
+                ...arrayData,
+                LOAN_TYPE_ID: 1,
+              };
+              console.log("!arrayData.LOAN_TYPE_ID", arrayData);
+            }
+          }
+        }
+        console.log("arrayData---->ALL", arrayData);
+        if (!arrayData.USER_ID) {
+          message.warning(`พบข้อมูลกรอกไม่ครบ`, arrayData.LOAN_ID);
+          setTimeout(() => {
+            reloadPage();
+          }, 1000);
         } else {
           await axios
             .post(baseUrl + POST_STATUS, arrayData, { HEADERS_EXPORT })
             .then((resQuery) => {
-              if (resQuery.status === 200) {
-                console.log(resQuery.data);
+              if (resQuery.status === 201) {
                 console.log("arrayData.LOAN_ID", arrayData.LOAN_ID);
                 setSucess += 1;
                 setDataToTable((pre) => [...pre, { id: arrayData.LOAN_ID }]);
                 return resQuery.data;
               } else {
-                console.log(`ไม่สามารถมอบหมายงานได้`);
+                console.log(`ไม่สามารถมอบหมายงานได้`, arrayData.LOAN_ID);
                 message.error(`ไม่สามารถมอบหมายงานได้`);
                 return null;
               }
@@ -181,56 +205,80 @@ const Main = () => {
       message.error("พบข้อมูลกรอกไม่ครบ");
     } finally {
       setLoading(false);
-      if (setSucess === dataSend.length && setSucess === 1) {
+      if (setSucess === dataSend.length) {
         message.success(`มอบหมายงานให้ทนายเสร็จสิ้น ${dataSend.length} สัญญา`);
       }
-      setDataFunc(1);
+      i += 1;
       setDataSend([]);
+      setDataFunc(i);
       if (setSucess === 999) {
         reloadPage();
       }
     }
   };
 
-  const insertDataOne = async (data) => {
+  const insertDataOne = async (id) => {
     setLoading(true);
+    const data = dataSend.find((item) => item.LOAN_ID === id);
     let filteredData;
-    try {
-      filteredData = dataArr.find((item) => item.id === data.LOAN_ID);
-      const dataToUpdate = {
-        ...filteredData,
-        MAIN_STATUS_ID: 1,
-      };
-      handleChangeStatus(dataToUpdate);
-      await axios
-        .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
-        .then((resQuery) => {
-          if (resQuery.status === 200) {
-            const dataToUpdate = {
-              ...filteredData,
-              MAIN_STATUS_ID: 1,
-            };
-            handleChangeStatus(dataToUpdate);
-            return resQuery.data;
-          } else {
-            console.log(`ไม่สามารถมอบหมายงานได้`);
-            message.error(`ไม่สามารถมอบหมายงานได้`);
+    let setSucess = 0;
+    let dataApprove = data;
+    if (data) {
+      if (data) {
+        console.log(data);
+        if (!data.LAW_TYPE_ID) {
+          dataApprove = {
+            ...dataApprove,
+            LAW_TYPE_ID: 1,
+          };
+        }
+        if (!data.LOAN_TYPE_ID) {
+          dataApprove = {
+            ...dataApprove,
+            LOAN_TYPE_ID: 1,
+          };
+        }
+        if (data.LAW_TYPE_ID && data.LOAN_TYPE_ID) {
+          dataApprove = data;
+        }
+      }
+      console.log("dataApprove", dataApprove);
+      try {
+        filteredData = dataArr.find((item) => item.id === id);
+        await axios
+          .post(baseUrl + POST_STATUS, dataApprove, { HEADERS_EXPORT })
+          .then((resQuery) => {
+            if (resQuery.status === 201) {
+              const dataToUpdate = {
+                ...filteredData,
+                MAIN_STATUS_ID: 1,
+              };
+              setSucess += 1;
+              handleChangeStatus(dataToUpdate);
+              return resQuery.data;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
             return null;
+          });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        message.error("กรุณาเลือกทนาย");
+      } finally {
+        setLoading(false);
+        console.log(dataApprove, setSucess);
+        if (data) {
+          if (data.USER_ID && setSucess > 0) {
+            message.success(
+              `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
+            );
           }
-        })
-        .catch((err) => {
-          console.error(err);
-          message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
-          return null;
-        });
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      message.error("พบข้อมูลกรอกไม่ครบ");
-    } finally {
-      setLoading(false);
-      message.success(
-        `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
-      );
+        }
+      }
+    } else {
+      message.error(`กรุณาเลือกทนาย`);
     }
   };
   const onChangeSelect = (value, contno, id) => {
@@ -242,10 +290,7 @@ const Main = () => {
     console.log(
       `selected ${userId} contno ${contno} id ${id} lawType ${lawType} loanType ${loanType}`
     );
-    if (userId) {
-      lawType = 1;
-      loanType = 1;
-    }
+
     if (!userId) {
       let setUser = dataSend
         .filter((item) => item.LOAN_ID === id)
@@ -265,19 +310,20 @@ const Main = () => {
         .filter((item) => item.LOAN_ID === id)
         .map((item) => Number(item.LOAN_TYPE_ID));
       loanType = setLaonType[0];
+      console.log("setLaonType", setLaonType);
+      console.log("loanType", loanType);
     }
 
     setDataSend((prevFailedData) => {
       // สร้างอาร์เรย์ใหม่โดยไม่รวม item LOAN_ID เหมือนกัน
       const updatedData = prevFailedData.filter((item) => item.LOAN_ID !== id);
-
       // เพิ่มข้อมูลใหม่เข้า array
       const newItem = {
         MAIN_STATUS_ID: NOTICE,
         USER_ID: userId,
         LOAN_ID: id,
-        LOAN_TYPE_ID: lawType,
-        LAW_TYPE_ID: loanType,
+        LOAN_TYPE_ID: loanType,
+        LAW_TYPE_ID: lawType,
         MEMO: null,
         DATE: null,
       };
@@ -287,6 +333,7 @@ const Main = () => {
     });
   };
 
+  console.log("onApporvedData", dataSend);
   const search = (event) => {
     console.log("query--->", event.target.value);
     onSearch(event.target.value);
@@ -307,13 +354,13 @@ const Main = () => {
   const confirmInsert = () => {
     insertDataAll();
   };
+
   const cancelInsert = () => {
     message.error("ยกเลิกการมอบงาน");
   };
 
   const confirmInsertOne = (id) => {
-    const data = dataSend.find((item) => item.LOAN_ID === id);
-    insertDataOne(data);
+    insertDataOne(id);
   };
 
   const cancel = (e) => {

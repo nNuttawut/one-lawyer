@@ -20,10 +20,7 @@ import {
 } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
-import CreateNotice from "./modal/CreateNotice";
-import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
-import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS_BY_STATUS,
@@ -32,9 +29,10 @@ import {
 
 //use redux
 import { useSelector } from "react-redux";
+
 import axios from "axios";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
+import { ENFORCEMENT } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -50,8 +48,7 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-
-  console.log(profileRedux.id);
+  const [dataStore, setDataStore] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -62,7 +59,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ENFORCEMENT,
         {
           HEADERS_EXPORT,
         }
@@ -75,6 +72,8 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
+          console.log(newData);
+
           setLoading(false);
         }
       } else {
@@ -94,7 +93,8 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === NOTICE
+          item.LAWYER_ID === profileRedux.id &&
+          item.MAIN_STATUS_ID === ENFORCEMENT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -145,8 +145,7 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    console.log("dataArr", dataArr);
-    if (data) {
+    if (data !== 0) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -154,9 +153,9 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log("result", result);
+      console.log(result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID === ENFORCEMENT);
       console.log("arr", arr);
       setArrayTable(arr);
     } else {
@@ -174,14 +173,10 @@ const Main = () => {
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
-
     return (
-      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
-        <br />
-        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
       </Tag>
     );
   };
@@ -220,7 +215,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่ง notice",
+      title: "วันส่งฟ้องคดี",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -261,6 +256,7 @@ const Main = () => {
                     <p style={{ margin: 0 }}>
                       {!record.DATE ? (
                         <Button
+                          name="create"
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
@@ -278,6 +274,7 @@ const Main = () => {
                       {record.DATE ? (
                         <>
                           <Button
+                            name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
@@ -291,6 +288,7 @@ const Main = () => {
                             />
                           </Button>
                           <Button
+                            name="updateStatus"
                             style={{ boxShadow: "0 4px 3px" }}
                             onClick={() => {
                               setIsModalUpdate(true);
@@ -313,8 +311,8 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {isModalCreate ? (
-        <CreateNotice
+      {/* {isModalCreate ? (
+        <CreateDocument
           open={isModalCreate}
           close={setIsModalCreate}
           dataDefualt={dataModal}
@@ -322,19 +320,19 @@ const Main = () => {
         />
       ) : null}
       {isModalDocument ? (
-        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
+        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
       ) : null}
       {isModalUpdate ? (
-        <UpdateStatusNotice
+        <UpdateStatusBlackNumber
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null}
+      ) : null} */}
     </>
   );
 };
 
-const Notice = MotionHoc(Main);
-export default Notice;
+const MainEnforcement = MotionHoc(Main);
+export default MainEnforcement;

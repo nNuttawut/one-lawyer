@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Modal,
-  Card,
-  Radio,
-  Steps,
-  message,
-  Input,
-  Form,
-  Spin,
-} from "antd";
+import { Button, Modal, Card, Radio, Steps, message, Spin } from "antd";
 import {
   BellOutlined,
   AuditOutlined,
@@ -60,7 +50,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         await axios
           .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
           .then(async (res) => {
-            if (res.status === 200) {
+            if (res.status === 201) {
               console.log("resQuery", res.data);
               funcUpdateStatus({
                 ...dataDefualt,
@@ -89,7 +79,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         handleCancel();
       }
     } else {
-      message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
+      message.error("โปรดเปลี่ยนสถานะข้อมูลและกดบันทึกอีกครั้ง");
     }
   };
 
@@ -176,7 +166,6 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 {
                   title: "ส่งโนติส",
                   status: "finish",
-                  icon: <BellOutlined />,
                 },
                 {
                   title: "เวลาดำเนินการเหลือ",
@@ -201,7 +190,6 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 {
                   title: "ส่งโนติส",
                   status: "finish",
-                  icon: <BellOutlined />,
                 },
                 {
                   title: "เวลาดำเนินการเหลือ",

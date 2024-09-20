@@ -28,11 +28,22 @@ const POST_STATUS = "/lawyer/dev/api/loans/status";
 //อัพเดทสถานะสัญญา
 const PUT_STATUS = "/lawyer/dev/api/loans/status";
 
+//ดึงข้อมูลแบบคำฟ้อง
+const GET_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits/`;
+//อัพเดทข้อมูลคำฟ้อง
+const PUT_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits`;
+
+//ดึงข้อมูลสืบทรัพย์
+const GET_INVESTIGATE_BY_ID = `/lawyer/dev/api/investigate-properties/`;
+//สร้างข้อมูลสืบทรัพย์
+const POST_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
+//อัพเดทข้อมูลสืบทรัพย์
+const PUT_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
+
+const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 const HEADERS_EXPORT = {
   "Content-Type": "application/json",
 };
-
-const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 
 export {
   GET_LOAN_FROM_SERVER_IBM,
@@ -47,4 +58,9 @@ export {
   PUT_STATUS,
   HEADERS_EXPORT,
   baseUrl,
+  GET_LAWSUIT_DETAIL,
+  PUT_LAWSUIT_DETAIL,
+  GET_INVESTIGATE_BY_ID,
+  POST_INVESTIGATE,
+  PUT_INVESTIGATE,
 };

@@ -20,20 +20,20 @@ import {
 } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
-import CreateNotice from "./modal/CreateNotice";
-import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
-import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 import {
   baseUrl,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
+  GET_JOB_IN_PROGRESS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  AWAITING_JUDMENT,
+  FINISH,
+} from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 
 const Main = () => {
@@ -61,12 +61,9 @@ const Main = () => {
     setLoading(true);
     console.log(data);
     try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
-        {
-          HEADERS_EXPORT,
-        }
-      );
+      const response = await axios.get(baseUrl + GET_JOB_IN_PROGRESS, {
+        HEADERS_EXPORT,
+      });
       if (response.data) {
         let i = 1;
         if (response.data) {
@@ -93,8 +90,7 @@ const Main = () => {
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
       const newData = data.filter(
-        (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === NOTICE
+        (item) => item.MAIN_STATUS_ID >= AWAITING_JUDMENT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -156,7 +152,11 @@ const Main = () => {
       });
       console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      const arr = result.filter(
+        (item) =>
+          item.MAIN_STATUS_ID >= AWAITING_JUDMENT ||
+          item.MAIN_STATUS_ID <= FINISH
+      );
       console.log("arr", arr);
       setArrayTable(arr);
     } else {
@@ -313,7 +313,7 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {isModalCreate ? (
+      {/* {isModalCreate ? (
         <CreateNotice
           open={isModalCreate}
           close={setIsModalCreate}
@@ -331,10 +331,10 @@ const Main = () => {
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null}
+      ) : null} */}
     </>
   );
 };
 
-const Notice = MotionHoc(Main);
-export default Notice;
+const InvestigateAssetsAfter = MotionHoc(Main);
+export default InvestigateAssetsAfter;

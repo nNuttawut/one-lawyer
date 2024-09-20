@@ -14,6 +14,7 @@ import {
   ImportOutlined,
   CalendarOutlined,
   CaretRightOutlined,
+  SnippetsOutlined,
 } from "@ant-design/icons";
 import drawerHeader from "../../assets/images/logo.png";
 import { useState } from "react";
@@ -64,13 +65,29 @@ function Sidenav({ color, onClick }) {
       path: "/investigate-assets",
       icon: <SearchOutlined />,
       title: "สืบทรัพย์ลูกหนี้",
+      children: [
+        {
+          key: "51",
+          icon: <CaretRightOutlined />,
+          pageName: "awaiting-judgment",
+          path: "investigate-assets/before-indict",
+          label: "ก่อนฟ้อง",
+        },
+        {
+          key: "52",
+          icon: <CaretRightOutlined />,
+          pageName: "adjudge",
+          path: "investigate-assets/after-indict",
+          label: "หลังฟ้อง",
+        },
+      ],
     },
     {
       key: "6",
       pageName: "awaiting-judgment",
       label: "awaiting-judgment",
       path: "/awaiting-judgment",
-      icon: <SearchOutlined />,
+      icon: <SnippetsOutlined />,
       title: "ชั้นศาล",
       children: [
         {
@@ -83,12 +100,19 @@ function Sidenav({ color, onClick }) {
         {
           key: "62",
           icon: <CaretRightOutlined />,
-          pageName: "adjudge",
-          path: "court/adjudge",
-          label: "คดีถึงที่สุด",
+          pageName: "judgement",
+          path: "court/judgement",
+          label: "พิพากษา",
         },
         {
           key: "63",
+          icon: <CaretRightOutlined />,
+          pageName: "adjudge",
+          path: "court/case-is-final",
+          label: "คดีถึงที่สุด",
+        },
+        {
+          key: "64",
           icon: <CaretRightOutlined />,
           pageName: "report-court",
           path: "court/report-court",
@@ -96,21 +120,22 @@ function Sidenav({ color, onClick }) {
         },
       ],
     },
+
     {
       key: "7",
+      pageName: "debt-payment",
+      label: "debt-payment",
+      path: "/debt-payment",
+      icon: <BarcodeOutlined />,
+      title: "ทำยอม/รีสัญญา",
+    },
+    {
+      key: "8",
       pageName: "send-to-enforcement",
       label: "send-to-enforcement",
       path: "/send-to-enforcement",
       icon: <AuditOutlined />,
       title: "ส่วนบังคับคดี",
-    },
-    {
-      key: "8",
-      pageName: "negotiate",
-      label: "negotiate",
-      path: "/negotiate",
-      icon: <ScheduleOutlined />,
-      title: "เจรจาหนี้",
     },
     {
       key: "9",
@@ -122,11 +147,11 @@ function Sidenav({ color, onClick }) {
     },
     {
       key: "10",
-      pageName: "debt-payment",
-      label: "debt-payment",
-      path: "/debt-payment",
-      icon: <BarcodeOutlined />,
-      title: "ชำระหนี้/ประนอมหนี้",
+      pageName: "negotiate",
+      label: "negotiate",
+      path: "/negotiate",
+      icon: <ScheduleOutlined />,
+      title: "เจรจาหนี้",
     },
     {
       key: "11",
@@ -176,7 +201,7 @@ function Sidenav({ color, onClick }) {
         },
         {
           key: "143",
-          icon: <ImportOutlined />,
+          icon: <CaretRightOutlined />,
           pageName: "change-lawyers-jobs",
           path: "manage-data/change-lawyers-jobs",
           label: "เปลี่ยนทนาย",

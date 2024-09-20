@@ -12,7 +12,7 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
-import DetailModal from "../detailStatus/DetailModal";
+import DetailModal from "../detail/DetailModal";
 import {
   FileDoneOutlined,
   EditOutlined,
@@ -50,8 +50,7 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-
-  console.log(profileRedux.id);
+  const [dataStore, setDataStore] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -75,6 +74,8 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
+          console.log(newData);
+
           setLoading(false);
         }
       } else {
@@ -156,7 +157,8 @@ const Main = () => {
       console.log(result);
       setDataArr(result);
       const arr = result.filter((item) => item.MAIN_STATUS_ID === INDICT);
-      setArrayTable("arr", arr);
+      console.log("arr", arr);
+      setArrayTable(arr);
     } else {
       loadData();
       console.log("handleUpdateData loadData");
@@ -172,14 +174,10 @@ const Main = () => {
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
-
     return (
-      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
-        <br />
-        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
       </Tag>
     );
   };
@@ -218,7 +216,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันนัดพิจารณาคดี",
+      title: "วันส่งฟ้องคดี",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -259,6 +257,7 @@ const Main = () => {
                     <p style={{ margin: 0 }}>
                       {!record.DATE ? (
                         <Button
+                          name="create"
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
@@ -276,6 +275,7 @@ const Main = () => {
                       {record.DATE ? (
                         <>
                           <Button
+                            name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
@@ -289,6 +289,7 @@ const Main = () => {
                             />
                           </Button>
                           <Button
+                            name="updateStatus"
                             style={{ boxShadow: "0 4px 3px" }}
                             onClick={() => {
                               setIsModalUpdate(true);

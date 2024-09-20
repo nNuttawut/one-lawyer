@@ -84,15 +84,15 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    const postData = {
+    const putData = {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
       DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
     };
-    console.log("postData", postData);
-    sendStatus(postData);
+    console.log("putDataData", putData);
+    sendStatus(putData);
   };
 
   const onFinishFailed = (errorInfo) => {

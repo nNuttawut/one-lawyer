@@ -12,7 +12,7 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
-import DetailModal from "../detailStatus/DetailModal";
+import DetailModal from "../detail/DetailModal";
 import MotionHoc from "../../../utils/MotionHoc";
 import {
   DeleteOutlined,
@@ -219,7 +219,7 @@ const Main = () => {
             HEADERS_EXPORT,
           })
           .then((resQuery) => {
-            if (resQuery.data !== "Duplicate Contract No.") {
+            if (resQuery.status === 201) {
               success += 1;
               console.log(resQuery.data);
               return resQuery.data;

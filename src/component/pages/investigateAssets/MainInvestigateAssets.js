@@ -1,21 +1,15 @@
 import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useState } from "react";
-
-import {
-  SearchOutlined,
-  FileDoneOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
+import AfterEnforce from "./modal/AfterEnforce";
 import { Link } from "react-router-dom";
+import MotionHoc from "../../../utils/MotionHoc";
 
-const Adjudge = () => {
+const Main = () => {
   const [isModal, setIsModal] = useState(false);
-  const [isModalLaw, setIsModalLaw] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-
+  console.log(isModal);
   const { RangePicker } = DatePicker;
 
   const columns = [
@@ -54,7 +48,7 @@ const Adjudge = () => {
       render: (_, { tags }) => (
         <>
           {tags.map((tag) => {
-            let color = tag !== "ยื่นฟ้อง" ? "geekblue" : "green";
+            let color = tag !== "เจอทรัพย์" ? "geekblue" : "green";
             if (tag === "ไม่เจอทรัพย์") {
               color = "volcano";
             }
@@ -74,32 +68,15 @@ const Adjudge = () => {
       dataIndex: "tags",
       key: "acction",
       align: "center",
-
-      render: () => (
+      render: (_, { tags }) => (
         <>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalLaw(true);
-            }}
-          >
-            <SearchOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px", marginRight: "10px" }}
-            onClick={() => {
-              setIsModalCreate(true);
-            }}
-          >
-            <EditOutlined style={{ color: "orange", fontSize: "16px" }} />
-          </Button>
-          <Button
-            style={{ boxShadow: "0 4px 3px" }}
-            onClick={() => {
-              setIsModalDocument(true);
-            }}
-          >
-            <FileDoneOutlined style={{ color: "orange", fontSize: "16px" }} />
+          <Button>
+            <SearchOutlined
+              style={{ color: "orange", fontSize: "16px" }}
+              onClick={() => {
+                setIsModal(true);
+              }}
+            />
           </Button>
         </>
       ),
@@ -112,21 +89,21 @@ const Adjudge = () => {
       contno: "8-00001",
       age: 12345,
       address: "New York No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["เจอทรัพย์"],
     },
     {
       key: "2",
       contno: "8-00002",
       age: 122355,
       address: "London No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["เจอทรัพย์"],
     },
     {
       key: "3",
       contno: "8-00003",
       age: 123455,
       address: "Sydney No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง", "ไม่เจอทรัพย์"],
+      tags: ["เจอทรัพย์"],
     },
     {
       key: "4",
@@ -140,14 +117,14 @@ const Adjudge = () => {
       contno: "8-00005",
       age: 123455,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ไม่เจอทรัพย์"],
     },
     {
       key: "5",
       contno: "8-00006",
       age: 345523,
       address: "Sydney No. 1 Lake Park",
-      tags: ["ยื่นฟ้อง"],
+      tags: ["เจอทรัพย์"],
     },
     {
       key: "6",
@@ -161,7 +138,7 @@ const Adjudge = () => {
       contno: "8-00008",
       age: 32145,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ไม่เจอทรัพย์"],
     },
     {
       key: "8",
@@ -175,14 +152,14 @@ const Adjudge = () => {
       contno: "8-00010",
       age: 22356,
       address: "New York No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ไม่เจอทรัพย์"],
     },
     {
       key: "10",
       contno: "8-00011",
       age: 235662,
       address: "London No. 1 Lake Park",
-      tags: ["สืบทรัพย์"],
+      tags: ["ไม่เจอทรัพย์"],
     },
     {
       key: "11",
@@ -220,8 +197,10 @@ const Adjudge = () => {
           </Col>
         </Row>
       </Card>
+      {isModal ? <AfterEnforce open={isModal} close={setIsModal} /> : null}
     </>
   );
 };
 
-export default Adjudge;
+const MainInvestigateAssets = MotionHoc(Main);
+export default MainInvestigateAssets;

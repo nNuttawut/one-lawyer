@@ -8,12 +8,12 @@ import InvestigateAssetsRoute from "../pages/investigateAssets/Router";
 import PreLawsuitFiledRoute from "../pages/preLawsuitFiled/Router";
 import ReportRoute from "../pages/report/Router";
 import SaleAnnouncementRoute from "../pages/saleAnnouncement/Router";
-import SendToEnforcementRoute from "../pages/sendToEnforcement/Router";
+import EnforcementRoute from "../pages/enforcement/Router";
 import NegotiateRoute from "../pages/negotiate/Router";
 import ImportData from "../pages/manageData/ImportData";
 import NotificationRouter from "../pages/notifications/Router";
-import DetailStatusRouter from "../pages/detailStatus/Router";
-import Adjudge from "../pages/court/Adjudge";
+import DetailStatusRouter from "../pages/detail/Router";
+import CaseIsFinal from "../pages/court/CaseIsFinal";
 import AwaitingJudgment from "../pages/court/AwaitingJudgment";
 import ReportCourt from "../pages/court/ReportCourt";
 import Notice from "../pages/notice/MainNotice";
@@ -23,6 +23,9 @@ import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import AssignLawyers from "../pages/manageData/AssignLawyers";
 import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
+import InvestigateAssetsBefore from "../pages/investigateAssets/InvestigateAssetsBefore";
+import InvestigateAssetsAfter from "../pages/investigateAssets/InvestigateAssetsAfter";
+import Judgement from "../pages/court/Judgement";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -44,6 +47,15 @@ export default function Router() {
               path="/investigate-assets/*"
               element={<InvestigateAssetsRoute />}
             />
+
+            <Route
+              path="investigate-assets/before-indict/*"
+              element={<InvestigateAssetsBefore />}
+            />
+            <Route
+              path="investigate-assets/after-indict/*"
+              element={<InvestigateAssetsAfter />}
+            />
             <Route
               path="/pre-lawsuit-filed/*"
               element={<PreLawsuitFiledRoute />}
@@ -55,13 +67,14 @@ export default function Router() {
             />
             <Route
               path="/send-to-enforcement/*"
-              element={<SendToEnforcementRoute />}
+              element={<EnforcementRoute />}
             />
             <Route path="/negotiate/*" element={<NegotiateRoute />} />
             <Route path="/notifications/*" element={<NotificationRouter />} />
             <Route path="/detail-status/*" element={<DetailStatusRouter />} />
 
-            <Route path="court/adjudge/*" element={<Adjudge />} />
+            <Route path="court/case-is-final/*" element={<CaseIsFinal />} />
+            <Route path="court/judgement/*" element={<Judgement />} />
             <Route
               path="court/awaiting-judgment/*"
               element={<AwaitingJudgment />}

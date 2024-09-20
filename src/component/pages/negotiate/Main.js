@@ -1,7 +1,7 @@
 import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState } from "react";
-import DetailModal from "../detailStatus/DetailModal";
+import DetailModal from "../detail/DetailModal";
 import { EditOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { Link } from "react-router-dom";
