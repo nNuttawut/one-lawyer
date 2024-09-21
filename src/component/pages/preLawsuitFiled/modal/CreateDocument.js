@@ -11,10 +11,6 @@ import {
   Spin,
 } from "antd";
 import {
-  interest,
-  optionsInterest,
-} from "../../../../utils/constant/ Interest";
-import {
   baseUrl,
   GET_LAWSUIT_DETAIL,
   GET_LOAN_BY_CONTNO,

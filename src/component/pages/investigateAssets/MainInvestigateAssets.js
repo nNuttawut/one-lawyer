@@ -3,7 +3,7 @@ import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
-import AfterEnforce from "./modal/AfterEnforce";
+
 import { Link } from "react-router-dom";
 import MotionHoc from "../../../utils/MotionHoc";
 
@@ -197,7 +197,6 @@ const Main = () => {
           </Col>
         </Row>
       </Card>
-      {isModal ? <AfterEnforce open={isModal} close={setIsModal} /> : null}
     </>
   );
 };

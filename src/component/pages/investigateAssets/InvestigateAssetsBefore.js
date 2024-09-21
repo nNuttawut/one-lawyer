@@ -30,14 +30,16 @@ import {
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { INDICT, NOTICE } from "../../../utils/constant/StatusConstant";
+import { NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
+import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
+  const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
+    useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -147,7 +149,7 @@ const Main = () => {
       });
       console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID <= NOTICE);
       console.log("arr", arr);
       setArrayTable(arr);
     } else {
@@ -211,7 +213,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่ง notice",
+      title: "วันที่สืบทรัพย์",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -257,7 +259,7 @@ const Main = () => {
                             marginRight: "10px",
                           }}
                           onClick={() => {
-                            setIsModalCreate(true);
+                            setIsModalInvestigateAssetsDetail(true);
                             setDataModal(record);
                           }}
                         >
@@ -304,15 +306,15 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {/* {isModalCreate ? (
-        <CreateNotice
-          open={isModalCreate}
-          close={setIsModalCreate}
+      {isModalInvestigateAssetsDetail ? (
+        <InvestigateAssetsDetail
+          open={isModalInvestigateAssetsDetail}
+          close={setIsModalInvestigateAssetsDetail}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
-      {isModalDocument ? (
+      {/* {isModalDocument ? (
         <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
       ) : null}
       {isModalUpdate ? (
