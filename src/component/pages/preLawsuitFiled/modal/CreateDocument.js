@@ -66,10 +66,6 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setIsModal(false);
   };
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
-
   const loadData = async () => {
     setLoading(true);
     try {
@@ -107,7 +103,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const sendStatus = async (status, data) => {
     setLoading(true);
     try {
-      console.log(status);
+      console.log("status", status);
       await axios
         .put(baseUrl + PUT_STATUS, status, { HEADERS_EXPORT })
         .then(async (res) => {
@@ -125,7 +121,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-      console.log(data);
+      console.log("data", data);
       await axios
         .put(baseUrl + PUT_LAWSUIT_DETAIL, data, { HEADERS_EXPORT })
         .then(async (res) => {
@@ -159,14 +155,14 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    console.log(dataStore);
-
     const putData = {
       ...dataLoadLawSuit,
       subject: values.subject,
       provincial_court: values.court,
       tracking_fee: parseInt(values.trackingFee.replace(/,/g, "")),
-      intigation_founds: dataForm.intigationFounds,
+      litigation_funds: dataForm.intigationFounds,
+      suspension_amount: parseFloat(dataForm.suspensionAmount),
+      interest_rate: null,
     };
 
     const putStatus = {
@@ -182,7 +178,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       subject: values.subject,
       provincial_court: values.court,
       tracking_fee: parseInt(values.trackingFee.replace(/,/g, "")),
-      intigation_founds: dataForm.intigationFounds,
+      litigation_funds: dataForm.intigationFounds,
       MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
       LOAN_ID: dataDefualt.id,
       USER_ID: dataDefualt.LAWYER_ID,
@@ -257,6 +253,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChangeSuspensionAmount = (value) => {
     let inputValue = value;
+    console.log(value);
     isNotNumber(inputValue.replace(/,/g, ""));
     if (inputValue.length >= 4) {
       var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
@@ -280,7 +277,11 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     }
     let result = dataForm?.amountTotalCal - parseInt(value.replace(/,/g, ""));
-    setDataForm((prev) => ({ ...prev, intigationFounds: result }));
+    setDataForm((prev) => ({
+      ...prev,
+      intigationFounds: result,
+      suspensionAmount: parseFloat(value.replace(/,/g, "")),
+    }));
   };
 
   const handleLossPay = (value) => {
