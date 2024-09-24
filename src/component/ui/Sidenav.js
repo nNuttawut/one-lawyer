@@ -16,7 +16,8 @@ import {
   CaretRightOutlined,
   SnippetsOutlined,
 } from "@ant-design/icons";
-import drawerHeader from "../../assets/images/logo.png";
+// import drawerHeader from "../../assets/images/logo.png";
+import drawerHeader from "../../assets/images/logoLogin.png";
 import { useState } from "react";
 
 function Sidenav({ color, onClick }) {
@@ -291,7 +292,7 @@ function Sidenav({ color, onClick }) {
           display: "flex",
         }}
       >
-        <img src={drawerHeader} width={70} alt="drawerHeader" />
+        <img src={drawerHeader} width={"70%"} alt="drawerHeader" />
       </div>
       <hr />
 

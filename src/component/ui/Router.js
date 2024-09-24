@@ -26,6 +26,8 @@ import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
 import InvestigateAssetsBefore from "../pages/investigateAssets/InvestigateAssetsBefore";
 import InvestigateAssetsAfter from "../pages/investigateAssets/InvestigateAssetsAfter";
 import Judgement from "../pages/court/Judgement";
+import Profile from "../pages/Profile";
+import ChangePassword from "../pages/ChangePassword";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -89,7 +91,8 @@ export default function Router() {
               element={<ChangeLawyersJob />}
             />
             <Route path="manage-data/import-data/*" element={<ImportData />} />
-
+            <Route path="/chang-password" element={<ChangePassword />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/" element={<Calendar />} />
           </Routes>
         </AnimatePresence>

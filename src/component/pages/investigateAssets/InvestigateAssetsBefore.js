@@ -24,13 +24,19 @@ import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS,
+  GET_LAWSUIT_DETAIL,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  AWAITING_JUDMENT,
+  ENFORCEMENT,
+  INDICT,
+  NOTICE,
+} from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 
@@ -49,6 +55,8 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
+  const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
+  const [dataLoadJob, setDataLoadJob] = useState(null);
 
   console.log(profileRedux.id);
 
@@ -59,36 +67,71 @@ const Main = () => {
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
+    let loadJob;
     try {
-      const response = await axios.get(baseUrl + GET_JOB_IN_PROGRESS, {
-        HEADERS_EXPORT,
-      });
-      if (response.data) {
-        let i = 1;
-        if (response.data) {
-          const newData = response.data.map((item) => ({
-            ...item,
-            key: i++,
-          }));
-          filterDataLawyer(newData);
-          setLoading(false);
+      const [lawsuitRes, jobInProgress] = await Promise.all([
+        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL}`, {
+          HEADERS_EXPORT,
+        }),
+        axios.get(`${baseUrl}${GET_JOB_IN_PROGRESS}`, {
+          HEADERS_EXPORT,
+        }),
+      ]);
+
+      if (jobInProgress.status === 200) {
+        if (jobInProgress.data) {
+          if (jobInProgress.data) {
+            setLoading(false);
+            setDataLoadJob(jobInProgress.data);
+            loadJob = jobInProgress.data;
+          }
+        } else {
+          setArrayTable([]);
+          message.error("ไม่พบข้อมูลเงิน");
         }
+      }
+      let i = 1;
+      if (lawsuitRes.status === 200) {
+        console.log("lawsuitRes", lawsuitRes.data);
+        const newData = lawsuitRes.data.map((item) => ({
+          ...item,
+          key: i++,
+        }));
+        setDataLoadLawSuit(lawsuitRes.data);
+        filterData(loadJob, newData);
       } else {
-        setArrayTable([]);
+        message.error("ไม่พบข้อมูลคดี");
       }
     } catch (error) {
-      console.error(
-        "Error posting data:",
-        error.response ? error.response.data : error.message
-      );
-      setLoading(false);
+      console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
+  console.log("dataArr", dataArr);
 
-  const filterDataLawyer = (data) => {
+  const filterData = (data, dataLoad) => {
     if (Array.isArray(data)) {
-      const newData = data.filter((item) => item.MAIN_STATUS_ID <= NOTICE);
+      const mergedData = dataLoad.map((item) => {
+        const matchingLawsuit = data.filter(
+          (loan) => loan.id === item.LOAN_ID // ใช้ LOAN_ID หรือ id ตามต้องการ
+        );
+        // ถ้ามี matchingLawsuit จะรวมข้อมูล
+        return {
+          ...item,
+          ...(matchingLawsuit ? { lawsuitData: matchingLawsuit } : {}),
+        };
+      });
+
+      const newData = mergedData.filter(
+        (item) => item?.lawsuitData[0].MAIN_STATUS_ID <= INDICT
+      );
+      console.log("newDataLawsuit 11", data);
+      console.log("newDataLawsuit 11", newData);
+      console.log("matchingLawsuit 11", mergedData);
+
+      console.log("mergedData", mergedData);
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);
@@ -149,9 +192,7 @@ const Main = () => {
       });
       console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID <= NOTICE);
-      console.log("arr", arr);
-      setArrayTable(arr);
+      setArrayTable(result);
     } else {
       loadData();
       console.log("handleUpdateData loadData");
@@ -159,22 +200,20 @@ const Main = () => {
   };
 
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
-  const renderDate = (record) => {
+  const renderDataAsset = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
+    console.log(record.investigate_before_status);
+    if (record.investigate_before_status === null) {
       return null;
     }
-    const recordDate = moment(record.DATE);
-    const today = moment().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "red" : "green";
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
+    console.log(record);
+
+    let color = record.investigate_before_status > 0 ? "green" : "red";
 
     return (
-      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
-        {formattedDate}
-        <br />
-        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
+      <Tag color={color} key={record.id} style={{ textAlign: "center" }}>
+        {record.investigate_before_status === 1 ? "เจอทรัพย์" : "ไม่เจอทรัพย์"}
       </Tag>
     );
   };
@@ -197,7 +236,11 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <>
+          {record.lawsuitData[0].CONTNO ? record.lawsuitData[0].CONTNO : null}
+        </>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -206,16 +249,22 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <>
-          {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
-          {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
-          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
+          {record.lawsuitData[0].CUSTOMER_TNAME
+            ? record.lawsuitData[0].CUSTOMER_TNAME
+            : null}{" "}
+          {record.lawsuitData[0].CUSTOMER_FNAME
+            ? record.lawsuitData[0].CUSTOMER_FNAME
+            : null}{" "}
+          {record.lawsuitData[0].CUSTOMER_LNAME
+            ? record.lawsuitData[0].CUSTOMER_LNAME
+            : null}
         </>
       ),
     },
     {
-      title: "วันที่สืบทรัพย์",
+      title: "สถานะการสืบทรัพย์",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      render: (record) => <>{renderDataAsset(record)}</>,
     },
   ];
 
@@ -252,50 +301,38 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {/* {!record.investigate_before_status ? ( */}
+                      <Button
+                        style={{
+                          boxShadow: "0 4px 3px",
+                          marginRight: "10px",
+                        }}
+                        onClick={() => {
+                          setIsModalInvestigateAssetsDetail(true);
+                          setDataModal(record);
+                        }}
+                      >
+                        <EditOutlined
+                          style={{ color: "orange", fontSize: "16px" }}
+                        />
+                      </Button>
+                      {/* ) : ( */}
+                      <>
                         <Button
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
                           }}
                           onClick={() => {
-                            setIsModalInvestigateAssetsDetail(true);
-                            setDataModal(record);
+                            setIsModalDocument(true);
                           }}
                         >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
+                          <FileDoneOutlined
+                            style={{ color: "green", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : null}
-                      {record.DATE ? (
-                        <>
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </>
-                      ) : null}
+                      </>
+                      {/* )} */}
                     </p>
                   ),
                   rowExpandable: (record) => record.name !== "Not Expandable",
@@ -316,9 +353,9 @@ const Main = () => {
       ) : null}
       {/* {isModalDocument ? (
         <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
-      {isModalUpdate ? (
-        <UpdateStatusNotice
+      ) : null} */}
+      {/* {isModalUpdate ? (
+        <UpdateStatusInvestigateAssets
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}

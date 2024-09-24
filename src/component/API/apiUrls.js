@@ -8,7 +8,7 @@ const GET_ALL_LOAN = "/lawyer/dev/api/loans";
 const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
 
 //ดึง users ในระบบ
-const GET_LAWYERS_LIST = "/lawyer/dev/api/users/lawyers";
+const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
 
 //ดึงจำนวนงานที่ users รับงาน
 const GET_JOB_COUNT = "/lawyer/dev/api/loans/notics/count";
@@ -40,6 +40,8 @@ const POST_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
 //อัพเดทข้อมูลสืบทรัพย์
 const PUT_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
 
+const LOG_IN = `/lawyer/dev/api/login`;
+const REGISTER = `/lawyer/dev/api/register`;
 const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 const HEADERS_EXPORT = {
   "Content-Type": "application/json",
@@ -63,4 +65,6 @@ export {
   GET_INVESTIGATE_BY_ID,
   POST_INVESTIGATE,
   PUT_INVESTIGATE,
+  LOG_IN,
+  REGISTER,
 };

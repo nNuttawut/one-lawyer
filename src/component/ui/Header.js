@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Badge, Button, Modal } from "antd";
+import { Badge, Button, message, Modal } from "antd";
 import {
   UserOutlined,
   MenuUnfoldOutlined,
@@ -12,6 +12,7 @@ import "../../assets/styles/Sidenav.css";
 
 //use redux
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function Header({ title, onPress, onClick }) {
   // const navigate = useNavigate();
@@ -19,8 +20,11 @@ function Header({ title, onPress, onClick }) {
   useEffect(() => window.scrollTo(0, 0));
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenuItem = Boolean(anchorEl);
+  const navigate = useNavigate();
+
   //use redux
   const profileRedux = useSelector((state) => state.authReducer.profile);
+  const userName = localStorage.getItem("USERNAME");
 
   const handleClickMenuItem = (event) => {
     setAnchorEl(event.currentTarget);
@@ -29,22 +33,47 @@ function Header({ title, onPress, onClick }) {
     setAnchorEl(null);
   };
 
+  const signOut = () => {
+    console.log("signOut on-->");
+    localStorage.removeItem("USER_ID");
+    localStorage.removeItem("USERNAME");
+    localStorage.removeItem("TNAME");
+    localStorage.removeItem("FNAME");
+    localStorage.removeItem("LNAME");
+    localStorage.removeItem("NNAME");
+    localStorage.removeItem("LICENCE_NO_LAWYERS");
+    localStorage.removeItem("COMPANY_ID");
+    localStorage.removeItem("ROLE_ID");
+    localStorage.removeItem("ACTIVE_STATUS");
+    localStorage.removeItem("TOKEN");
+    window.location.reload();
+    message.success("ออกจากระบบสำเร็จ");
+  };
+
   const handleSelectedMenuItem = (event) => {
     console.log(event.target.value);
     switch (event.target.value) {
       case 1:
-        // navigate("/myorders");
+        navigate("/profile");
         break;
       case 2:
+        navigate("/chang-password");
+        break;
+      case 3:
         Modal.confirm({
           title: "ออกจากระบบ",
           content: "คุณต้องการออกจากระบบหรือไม่?",
           centered: true,
+          okText: "ตกลง",
+          cancelText: "ยกเลิก",
           onOk() {
-            // dispatch(addToken(null));
-            // navigate("/login");
+            signOut();
+          },
+          onCancel() {
+            console.log("Cancel");
           },
         });
+
         break;
       default:
         break;
@@ -133,7 +162,7 @@ function Header({ title, onPress, onClick }) {
               {" "}
               <MenuItem value={1} onClick={handleCloseMenuItem}>
                 <UserOutlined style={{ marginRight: "5px" }} />
-                {profileRedux.name}
+                {userName}
               </MenuItem>
               <MenuItem value={2} onClick={handleCloseMenuItem}>
                 <SettingOutlined style={{ marginRight: "5px" }} />
@@ -144,9 +173,6 @@ function Header({ title, onPress, onClick }) {
               </MenuItem>
             </Menu>
           </div>
-          {/* <Link to="/myorders" className="btn-sign-in">
-            <ShoppingOutlined />
-          </Link> */}
         </div>
       </div>
     </>

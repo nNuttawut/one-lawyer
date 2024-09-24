@@ -68,10 +68,16 @@ const Main = () => {
 
   const setOption = () => {
     let companySelect = null;
+    console.log("lawyersList", lawyersList);
+
     if (COMPANY === 1) {
-      companySelect = lawyersList.filter((item) => item.COMPANY_ID === 1);
+      companySelect = lawyersList.filter(
+        (item) => item.COMPANY_ID === 1 && item.ROLE_ID === 3
+      );
     } else {
-      companySelect = lawyersList.filter((item) => item.COMPANY_ID === 2);
+      companySelect = lawyersList.filter(
+        (item) => item.COMPANY_ID === 2 && item.ROLE_ID === 3
+      );
     }
     const options = companySelect.map((item) => ({
       value: item.id,
