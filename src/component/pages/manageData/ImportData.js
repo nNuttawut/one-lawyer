@@ -43,12 +43,9 @@ const Main = () => {
   const [data, setData] = useState(null);
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
-
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
   // call redux action
   const dispatch = useDispatch();
-
-  console.log(profileRedux.id);
-  console.log(profileRedux.role);
 
   const onQuery = () => {
     if (queryContno) {
@@ -355,7 +352,7 @@ const Main = () => {
 
   return (
     <>
-      {profileRedux.role === "admin" || profileRedux.role === "bell" ? (
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
         <>
           <Card>
             <Spin spinning={loading} size="large" tip=" Loading... ">

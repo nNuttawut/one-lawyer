@@ -33,7 +33,11 @@ import { useSelector } from "react-redux";
 
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import { ENFORCEMENT, NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  ENFORCEMENT,
+  NOTICE,
+  PAYMENT,
+} from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -91,7 +95,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID >= NOTICE
+          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID >= PAYMENT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -152,7 +156,7 @@ const Main = () => {
       });
       console.log(result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID >= NOTICE);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID >= PAYMENT);
       console.log("arr", arr);
       setArrayTable(arr);
     } else {

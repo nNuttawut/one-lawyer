@@ -1,23 +1,15 @@
 import React, { useState } from "react";
 import { Button, Row, Col, Form, Input, Card, Checkbox, message } from "antd";
-import { Container, useMediaQuery } from "@mui/material";
+import { Container } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 
-import { useTheme } from "@mui/material/styles";
-import { useDispatch } from "react-redux";
 import logo from "../../assets/images/logoLogin.png";
 import axios from "axios";
 import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../API/apiUrls";
 
 export default function LogIn() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMediumUp = useMediaQuery(theme.breakpoints.up("md"));
-  const [openOTPModal, setOpenOTPModal] = useState(false);
-  const [otpToken, setOtpToken] = useState({});
-  const [serverToken, setServerToken] = useState("");
-  const [onFailure, setOnFailure] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const postLogin = async (postData) => {

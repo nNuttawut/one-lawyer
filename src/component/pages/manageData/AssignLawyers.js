@@ -50,6 +50,7 @@ const Main = () => {
   const [dataToTable, setDataToTable] = useState([]);
   const [dataFunc, setDataFunc] = useState(null);
   const [tableLength, setTableLength] = useState(0);
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
 
   const COMPANY = 1;
   const defaultValue = [1];
@@ -272,6 +273,7 @@ const Main = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         message.error("กรุณาเลือกทนาย");
+        setLoading(false);
       } finally {
         setLoading(false);
         console.log(dataApprove, setSucess);
@@ -285,6 +287,7 @@ const Main = () => {
       }
     } else {
       message.error(`กรุณาเลือกทนาย`);
+      setLoading(false);
     }
   };
   const onChangeSelect = (value, contno, id) => {
@@ -552,9 +555,7 @@ const Main = () => {
 
   return (
     <>
-      {profileRedux.role === "admin" ||
-      profileRedux.role === "bell" ||
-      profileRedux.role === "lawyer" ? (
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
         <>
           <Card>
             <Spin spinning={loading} size="large" tip=" Loading... ">

@@ -50,6 +50,8 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = localStorage.getItem("USER_ID");
 
   console.log(profileRedux.id);
 
@@ -94,7 +96,10 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === NOTICE
+          (item.LAWYER_ID === userId.id ||
+            ROLE_ID === "1" ||
+            ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === NOTICE
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -224,6 +229,15 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "ทนายที่รับผิดชอบ",
+            align: "center",
+            render: (record) => <>{record.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -259,7 +273,7 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {!record.DATE && userId === record.LAWYER_ID ? (
                         <Button
                           style={{
                             boxShadow: "0 4px 3px",
@@ -275,7 +289,7 @@ const Main = () => {
                           />
                         </Button>
                       ) : null}
-                      {record.DATE ? (
+                      {record.DATE && userId === record.LAWYER_ID ? (
                         <>
                           <Button
                             style={{
