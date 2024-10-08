@@ -9,9 +9,10 @@ import {
   Button,
   message,
   Spin,
+  Tooltip,
 } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import {
   FileDoneOutlined,
@@ -33,10 +34,12 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import { AWAITING_JUDMENT } from "../../../utils/constant/StatusConstant";
+import UpdateStatusAwaitingJudgment from "./modal/UpdateStatusAwaitingJudgment";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
@@ -49,10 +52,23 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
+  const [arrow, setArrow] = useState("Show");
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
 
   const loadData = async (data) => {
     setLoading(true);
@@ -93,7 +109,10 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id &&
+          (item.LAWYER_ID === userId.id ||
+            ROLE_ID === "1" ||
+            ROLE_ID === "2" ||
+            ROLE_ID === "3") &&
           item.MAIN_STATUS_ID === AWAITING_JUDMENT
       );
       setArrayTable(newData);
@@ -166,23 +185,6 @@ const Main = () => {
     }
   };
 
-  //ทำ render record ของตาราถ้าใช้ logic เยอะ
-  const renderDate = (record) => {
-    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
-      return null;
-    }
-    const recordDate = moment(record.DATE);
-    const today = moment().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
-    return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
-        {formattedDate}
-      </Tag>
-    );
-  };
-
   const columns = [
     {
       title: "ลำดับ",
@@ -217,9 +219,14 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "วันนัดพิจารณาคดี",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      sorter: (a, b) => moment(a.DATE).unix() - moment(b.DATE).unix(),
+      render: (record) => (
+        <Tag color="orange" style={{ textAlign: "center" }}>
+          {convertDateThai(record.DATE)}
+        </Tag>
+      ),
     },
   ];
 
@@ -256,26 +263,9 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
-                        <Button
-                          name="create"
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
                       {record.DATE ? (
                         <>
-                          <Button
+                          {/* <Button
                             name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
@@ -288,24 +278,30 @@ const Main = () => {
                             <FileDoneOutlined
                               style={{ color: "green", fontSize: "16px" }}
                             />
-                          </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
+                          </Button> */}
+                          <Tooltip
+                            placement="bottom"
+                            title="บันทึกคำพิพากษา!"
+                            arrow={mergedArrow}
                           >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
+                            <Button
+                              name="updateStatus"
+                              style={{ boxShadow: "0 4px 3px" }}
+                              onClick={() => {
+                                setIsModalUpdate(true);
+                                setDataModal(record);
+                              }}
+                            >
+                              <EditOutlined
+                                style={{ color: "orange", fontSize: "16px" }}
+                              />
+                            </Button>
+                          </Tooltip>
                         </>
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
                 }}
               />
             </Col>
@@ -323,15 +319,15 @@ const Main = () => {
       ) : null}
       {isModalDocument ? (
         <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
+      ) : null} */}
       {isModalUpdate ? (
-        <UpdateStatusBlackNumber
+        <UpdateStatusAwaitingJudgment
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null} */}
+      ) : null}
     </>
   );
 };

@@ -16,8 +16,6 @@ import React, { useState, useEffect } from "react";
 import DetailModal from "../detail/DetailModal";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { updateData } from "../../../redux/action/DataImport";
 import LoadLawyers from "../../../hook/LoadLawyers";
 import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 import {
@@ -25,23 +23,18 @@ import {
   HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
 import { NOTICE } from "../../../utils/constant/StatusConstant";
-import moment from "moment";
 import {
   POST_STATUS,
   HEADERS_EXPORT,
   GET_JOB_IN_PROGRESS,
   baseUrl,
 } from "../../API/apiUrls";
-import { useSelector } from "react-redux";
 import MotionHoc from "../../../utils/MotionHoc";
 
 const Main = () => {
   //set hook
-  const [lawyersList, setLoadingData, loadLawyerJobs] = LoadLawyers();
+  const [lawyersList, setLoadingData] = LoadLawyers();
   const [lawyersOption, setLawyersOption] = useState();
-  //redux set
-  const profileRedux = useSelector((state) => state.authReducer.profile);
-
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -50,9 +43,9 @@ const Main = () => {
   const [dataToTable, setDataToTable] = useState([]);
   const [dataFunc, setDataFunc] = useState(null);
   const [tableLength, setTableLength] = useState(0);
-  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const roleId = localStorage.getItem("ROLE_ID");
+  const companyId = localStorage.getItem("COMPANY_ID");
 
-  const COMPANY = 1;
   const defaultValue = [1];
 
   //call redux action
@@ -64,20 +57,27 @@ const Main = () => {
   }, [setLoadingData]);
 
   useEffect(() => {
-    setOption();
+    if (lawyersList) {
+      setOption();
+    }
   }, [lawyersList]);
 
   const setOption = () => {
     let companySelect = null;
-    console.log("lawyersList", lawyersList);
 
-    if (COMPANY === 1) {
+    if (companyId === "1" || companyId === "2") {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 1 && item.ROLE_ID === 3
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 2 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const options = companySelect.map((item) => ({
@@ -153,21 +153,21 @@ const Main = () => {
 
         if (arrayData) {
           if (arrayData) {
-            if (arrayData.LAW_TYPE_ID && arrayData.LOAN_TYPE_ID) {
+            if (arrayData?.LAW_TYPE_ID && arrayData?.LOAN_TYPE_ID) {
               arrayData = dataSend;
               console.log(
                 "arrayData.LAW_TYPE_ID && arrayData.LOAN_TYPE_ID",
                 arrayData
               );
             }
-            if (!arrayData.LAW_TYPE_ID) {
+            if (!arrayData?.LAW_TYPE_ID) {
               arrayData = {
                 ...arrayData,
                 LAW_TYPE_ID: 1,
               };
               console.log("!arrayData.LAW_TYPE_ID", arrayData);
             }
-            if (!arrayData.LOAN_TYPE_ID) {
+            if (!arrayData?.LOAN_TYPE_ID) {
               arrayData = {
                 ...arrayData,
                 LOAN_TYPE_ID: 1,
@@ -245,7 +245,7 @@ const Main = () => {
             LOAN_TYPE_ID: 1,
           };
         }
-        if (data.LAW_TYPE_ID && data.LOAN_TYPE_ID) {
+        if (data?.LAW_TYPE_ID && data?.LOAN_TYPE_ID) {
           dataApprove = data;
         }
       }
@@ -342,7 +342,6 @@ const Main = () => {
     });
   };
 
-  console.log("onApporvedData", dataSend);
   const search = (event) => {
     console.log("query--->", event.target.value);
     onSearch(event.target.value);
@@ -555,7 +554,7 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
+      {roleId === "1" || roleId === "2" ? (
         <>
           <Card>
             <Spin spinning={loading} size="large" tip=" Loading... ">

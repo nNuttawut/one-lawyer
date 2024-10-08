@@ -29,18 +29,11 @@ import {
 
 //use redux
 import { useSelector } from "react-redux";
-import UpdateStatus from "./modal/UpdateStatus";
 import axios from "axios";
+import { FINISH, NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
-import {
-  ENFORCEMENT,
-  NEGOTIATE,
-  NOTICE,
-  SELL_ASSETS,
-} from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
-  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
@@ -54,7 +47,8 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataStore, setDataStore] = useState(null);
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
 
   useEffect(() => {
     loadData();
@@ -65,7 +59,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NEGOTIATE,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS,
         {
           HEADERS_EXPORT,
         }
@@ -77,13 +71,7 @@ const Main = () => {
             ...item,
             key: i++,
           }));
-
-          setArrayTable(newData);
-          setDataArr(newData);
-          setTableLength(newData.length);
-          // filterDataLawyer(newData);
-          console.log(newData);
-
+          filterDataLawyer(newData);
           setLoading(false);
         }
       } else {
@@ -99,19 +87,19 @@ const Main = () => {
     }
   };
 
-  // const filterDataLawyer = (data) => {
-  //   if (Array.isArray(data)) {
-  //     const newData = data.filter((item) => item.MAIN_STATUS_ID === NEGOTIATE);
-  //     setArrayTable(newData);
-  //     setDataArr(newData);
-  //     setTableLength(newData.length);
-  //     console.log(newData);
-  //     console.log("Length of filtered data:", newData.length);
-  //   } else {
-  //     console.error("data is not an array or is undefined");
-  //     setTableLength(0);
-  //   }
-  // };
+  const filterDataLawyer = (data) => {
+    if (Array.isArray(data)) {
+      const newData = data.filter((item) => item.MAIN_STATUS_ID === FINISH);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log(newData);
+      console.log("Length of filtered data:", newData.length);
+    } else {
+      console.error("data is not an array or is undefined");
+      setTableLength(0);
+    }
+  };
 
   const search = (event) => {
     console.log("query--->", event.target.value);
@@ -137,7 +125,7 @@ const Main = () => {
       const selectSearch = dataArr.filter((item) => {
         const date = moment(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
-        if (itemDate >= timestampStart && itemDate >= ENFORCEMENT) {
+        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
         } else {
           return null;
@@ -151,7 +139,8 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    if (data !== 0) {
+    console.log("dataArr", dataArr);
+    if (data) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -159,9 +148,9 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log(result);
+      console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID >= ENFORCEMENT);
+      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
       console.log("arr", arr);
       setArrayTable(arr);
     } else {
@@ -179,10 +168,14 @@ const Main = () => {
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
+    let color = daysDifference > 30 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
+        <br />
+        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
       </Tag>
     );
   };
@@ -221,10 +214,20 @@ const Main = () => {
       ),
     },
     {
-      title: "วันเจราจา",
+      title: "วันที่ปิด",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    //ทำ logic record
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "ทนายที่รับผิดชอบ",
+            align: "center",
+            render: (record) => <>{record.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -260,18 +263,50 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      <Button
-                        name="updateStatus"
-                        style={{ boxShadow: "0 4px 3px" }}
-                        onClick={() => {
-                          setIsModalUpdate(true);
-                          setDataModal(record);
-                        }}
-                      >
-                        <EditOutlined
-                          style={{ color: "green", fontSize: "16px" }}
-                        />
-                      </Button>
+                      {!record.DATE && userId === record.LAWYER_ID ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalCreate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                      {record.DATE && userId === record.LAWYER_ID ? (
+                        <>
+                          {/* <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalDocument(true);
+                            }}
+                          >
+                            <FileDoneOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button> */}
+                          <Button
+                            style={{ boxShadow: "0 4px 3px" }}
+                            onClick={() => {
+                              setIsModalUpdate(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </>
+                      ) : null}
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,
@@ -282,28 +317,9 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {/* {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null} */}
-      {isModalUpdate ? (
-        <UpdateStatus
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
     </>
   );
 };
 
-const MainNegotiate = MotionHoc(Main);
-export default MainNegotiate;
+const FinalCase = MotionHoc(Main);
+export default FinalCase;

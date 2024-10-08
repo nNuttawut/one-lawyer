@@ -216,7 +216,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "วันนัดชำระครั้งแรก",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },

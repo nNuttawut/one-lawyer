@@ -29,24 +29,14 @@ import {
 
 //use redux
 import { useSelector } from "react-redux";
-import UpdateStatus from "./modal/UpdateStatus";
+
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import {
-  ENFORCEMENT,
-  NEGOTIATE,
-  NOTICE,
-  SELL_ASSETS,
-} from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
-  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const profileRedux = useSelector((state) => state.authReducer.profile);
@@ -65,7 +55,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NEGOTIATE,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS,
         {
           HEADERS_EXPORT,
         }
@@ -77,11 +67,7 @@ const Main = () => {
             ...item,
             key: i++,
           }));
-
-          setArrayTable(newData);
-          setDataArr(newData);
-          setTableLength(newData.length);
-          // filterDataLawyer(newData);
+          filterDataLawyer(newData);
           console.log(newData);
 
           setLoading(false);
@@ -99,19 +85,19 @@ const Main = () => {
     }
   };
 
-  // const filterDataLawyer = (data) => {
-  //   if (Array.isArray(data)) {
-  //     const newData = data.filter((item) => item.MAIN_STATUS_ID === NEGOTIATE);
-  //     setArrayTable(newData);
-  //     setDataArr(newData);
-  //     setTableLength(newData.length);
-  //     console.log(newData);
-  //     console.log("Length of filtered data:", newData.length);
-  //   } else {
-  //     console.error("data is not an array or is undefined");
-  //     setTableLength(0);
-  //   }
-  // };
+  const filterDataLawyer = (data) => {
+    if (Array.isArray(data)) {
+      const newData = data.filter((item) => item);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log(newData);
+      console.log("Length of filtered data:", newData.length);
+    } else {
+      console.error("data is not an array or is undefined");
+      setTableLength(0);
+    }
+  };
 
   const search = (event) => {
     console.log("query--->", event.target.value);
@@ -137,7 +123,7 @@ const Main = () => {
       const selectSearch = dataArr.filter((item) => {
         const date = moment(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
-        if (itemDate >= timestampStart && itemDate >= ENFORCEMENT) {
+        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
         } else {
           return null;
@@ -149,26 +135,28 @@ const Main = () => {
     }
   };
 
-  const handleUpdateData = (data) => {
-    console.log("data---->update", data);
-    if (data !== 0) {
-      const result = dataArr.map((item) => {
-        if (item.id === data.id) {
-          return { ...data };
-        } else {
-          return { ...item };
-        }
-      });
-      console.log(result);
-      setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID >= ENFORCEMENT);
-      console.log("arr", arr);
-      setArrayTable(arr);
-    } else {
-      loadData();
-      console.log("handleUpdateData loadData");
-    }
-  };
+  // const handleUpdateData = (data) => {
+  //   console.log("data---->update", data);
+  //   if (data !== 0) {
+  //     const result = dataArr.map((item) => {
+  //       if (item.id === data.id) {
+  //         return { ...data };
+  //       } else {
+  //         return { ...item };
+  //       }
+  //     });
+  //     console.log(result);
+  //     setDataArr(result);
+  //     const arr = result.filter(
+  //       (item) => item.MAIN_STATUS_ID === CASE_IS_FINAL
+  //     );
+  //     console.log("arr", arr);
+  //     setArrayTable(arr);
+  //   } else {
+  //     loadData();
+  //     console.log("handleUpdateData loadData");
+  //   }
+  // };
 
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDate = (record) => {
@@ -207,23 +195,21 @@ const Main = () => {
       align: "center",
       render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
     },
+
     {
-      title: "ชื่อ-นามสกุล",
-      dataIndex: "CUSTOMER_TNAM",
-      key: "CUSTOMER_TNAM",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
-          {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
-          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
-        </>
-      ),
-    },
-    {
-      title: "วันเจราจา",
+      title: "วันที่สำเร็จ",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+    },
+    {
+      title: "จำนวนเงิน",
+      align: "center",
+      render: (record) => <>{renderDate(record)}</>,
+    },
+    {
+      title: "ทนายที่รับผิดชอบ",
+      align: "center",
+      render: (record) => <>{record.LAWYER_NNAME}</>,
     },
   ];
 
@@ -260,21 +246,52 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      <Button
-                        name="updateStatus"
-                        style={{ boxShadow: "0 4px 3px" }}
-                        onClick={() => {
-                          setIsModalUpdate(true);
-                          setDataModal(record);
-                        }}
-                      >
-                        <EditOutlined
-                          style={{ color: "green", fontSize: "16px" }}
-                        />
-                      </Button>
+                      {!record.DATE ? (
+                        <Button
+                          name="create"
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setDataModal(record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                      {record.DATE ? (
+                        <>
+                          <Button
+                            name="formPrint"
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {}}
+                          >
+                            <FileDoneOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                          <Button
+                            name="updateStatus"
+                            style={{ boxShadow: "0 4px 3px" }}
+                            onClick={() => {
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </>
+                      ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  rowExpandable: (record) => record.name !== "Not Expandable",
                 }}
               />
             </Col>
@@ -282,28 +299,9 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-      {/* {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null} */}
-      {isModalUpdate ? (
-        <UpdateStatus
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
     </>
   );
 };
 
-const MainNegotiate = MotionHoc(Main);
-export default MainNegotiate;
+const CommissionInvestigate = MotionHoc(Main);
+export default CommissionInvestigate;

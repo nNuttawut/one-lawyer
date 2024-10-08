@@ -35,14 +35,17 @@ import DateCustom from "../../../hook/DateCustom";
 import CreateDocument from "./modal/CreateDocument";
 import DocumentEnforce from "./modal/DocumentEnforce";
 import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
+import EditFrom from "./modal/EditForm";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
+  const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const profileRedux = useSelector((state) => state.authReducer.profile);
@@ -95,7 +98,11 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === INDICT
+          (item.LAWYER_ID === userId.id ||
+            ROLE_ID === "1" ||
+            ROLE_ID === "2" ||
+            ROLE_ID === "3") &&
+          item.MAIN_STATUS_ID === INDICT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -274,7 +281,7 @@ const Main = () => {
                       ) : null}
                       {record.DATE ? (
                         <>
-                          <Button
+                          {/* <Button
                             name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
@@ -287,7 +294,22 @@ const Main = () => {
                             <FileDoneOutlined
                               style={{ color: "green", fontSize: "16px" }}
                             />
-                          </Button>
+                          </Button> */}
+                          {/* <Button
+                            name="create"
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalEdit(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <EditOutlined
+                              style={{ color: "blue", fontSize: "16px" }}
+                            />
+                          </Button> */}
                           <Button
                             name="updateStatus"
                             style={{ boxShadow: "0 4px 3px" }}
@@ -327,6 +349,14 @@ const Main = () => {
         <UpdateStatusBlackNumber
           open={isModalUpdate}
           close={setIsModalUpdate}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEdit ? (
+        <EditFrom
+          open={isModalEdit}
+          close={setIsModalEdit}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />

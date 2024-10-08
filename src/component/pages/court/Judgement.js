@@ -32,11 +32,16 @@ import { useSelector } from "react-redux";
 
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
+import {
+  CASE_IS_FINAL,
+  JUDGEMENT,
+} from "../../../utils/constant/StatusConstant";
+import UpdateJudgement from "./modal/UpdateJudgement";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
@@ -93,7 +98,10 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id &&
+          (item.LAWYER_ID === userId.id ||
+            ROLE_ID === "1" ||
+            ROLE_ID === "2" ||
+            ROLE_ID === "3") &&
           item.MAIN_STATUS_ID === JUDGEMENT
       );
       setArrayTable(newData);
@@ -172,11 +180,18 @@ const Main = () => {
     }
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
+    const toDate = moment(recordDate).add(45, "days");
+    const daysDifference = today.diff(toDate, "days");
+    console.log("daysDifference", daysDifference);
+
+    let color = daysDifference > 0 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
+        <br />
+        {daysDifference > 1 ? <span>ครบกำหนด {daysDifference} วัน</span> : null}
       </Tag>
     );
   };
@@ -215,7 +230,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "วันที่พิพากษา",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -254,56 +269,26 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
-                        <Button
-                          name="create"
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                      {record.DATE ? (
-                        <>
-                          <Button
-                            name="formPrint"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </>
-                      ) : null}
+                      <Button
+                        name="updateStatus"
+                        style={{ boxShadow: "0 4px 3px" }}
+                        onClick={() => {
+                          setIsModalUpdate(true);
+                          setDataModal(record);
+                        }}
+                      >
+                        <SyncOutlined
+                          style={{ color: "green", fontSize: "16px" }}
+                        />
+                      </Button>
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => {
+                    const recordDate = moment(record.DATE);
+                    const today = moment().startOf("day");
+                    const daysDifference = today.diff(recordDate, "days");
+                    return daysDifference > 45;
+                  },
                 }}
               />
             </Col>
@@ -321,15 +306,15 @@ const Main = () => {
       ) : null}
       {isModalDocument ? (
         <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
+      ) : null} */}
       {isModalUpdate ? (
-        <UpdateStatusBlackNumber
+        <UpdateJudgement
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null} */}
+      ) : null}
     </>
   );
 };

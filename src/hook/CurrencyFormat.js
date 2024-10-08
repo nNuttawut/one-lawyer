@@ -36,7 +36,7 @@ const CurrencyFormat = () => {
   return [
     currencyFormat,
     currencyFormatComma,
-    currencyFormatNoPoint,
+    currencyFormatPoint,
     currencyFormatNoPoint,
   ];
 };

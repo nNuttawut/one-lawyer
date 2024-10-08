@@ -13,6 +13,7 @@ import {
   baseUrl,
   GET_LAWSUIT_DETAIL,
   GET_LOAN_BY_CONTNO,
+  GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
@@ -22,7 +23,7 @@ import moment from "moment";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import DocumentEnforce from "./DocumentEnforce";
 
-const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
@@ -30,17 +31,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const { TextArea } = Input;
   const [dataStore, setDataStore] = useState();
-  const [dataForm, setDataForm] = useState({
-    dateCourt: "",
-    trackingFee: 0,
-    lossBenefit: 0,
-    suspensionAmount: 0,
-    memo: "",
-    nopay: 0,
-    idLawsuit: null,
-    intigationFounds: 0,
-    amountTotalCal: 0,
-  });
+  const [dataForm, setDataForm] = useState({});
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
     CurrencyFormat();
@@ -54,6 +45,38 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   }, [isModal]);
 
+  useEffect(() => {
+    if (dataLoadLawSuit) {
+      const newFormData = new FormData();
+      newFormData.append(
+        "date",
+        moment(dataLoadLawSuit.DATE).format("YYYY-MM-DD")
+      );
+      const dateValue = newFormData.get("date");
+      console.log(newFormData.get("date"));
+      // จะแสดงผลเป็น 5
+      //   setDataForm({
+      //     dateCourt: "",
+      //     court: dataLoadLawSuit.provincial_court,
+      //     trackingFee: dataLoadLawSuit.tracking_fee,
+      //     subject: dataLoadLawSuit.subject,
+      //     lossBenefit: 0,
+      //     suspensionAmount: 0,
+      //     memo: "",
+      //     nopay: 0,
+      //     idLawsuit: null,
+      //     intigationFounds: 0,
+      //     amountTotalCal: 0,
+      //   });
+      form.setFieldsValue({
+        courtDate: dateValue,
+        court: dataLoadLawSuit.lawsuit.provincial_court,
+        trackingFee: dataLoadLawSuit.lawsuit.tracking_fee,
+        subject: dataLoadLawSuit.lawsuit.subject,
+      });
+    }
+  }, [dataLoadLawSuit]);
+
   const handleOk = () => {};
 
   const handleCancel = () => {
@@ -65,28 +88,19 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [lawsuitRes, loanRes] = await Promise.all([
-        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL}${dataDefualt.id}`, {
+      const response = await axios.get(
+        baseUrl + GET_WORK_LOG_DETAIL_BY_ID + dataDefualt.WORK_LOG_ID,
+        {
           HEADERS_EXPORT,
-        }),
-        axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
-        }),
-      ]);
+        }
+      );
 
-      if (lawsuitRes.status === 200) {
-        console.log("lawsuitRes", lawsuitRes.data);
-        setDataLoadLawSuit(lawsuitRes.data);
-        setDataStore(lawsuitRes.data);
+      if (response.status === 200) {
+        console.log("lawsuitRes", response.data);
+        setDataLoadLawSuit(response.data);
+        setDataStore(response.data);
       } else {
         message.error("ไม่พบข้อมูลคดี");
-      }
-
-      if (loanRes.status === 200) {
-        console.log("loanRes", loanRes.data);
-        setDataLoadLoan(loanRes.data);
-      } else {
-        message.error("ไม่พบข้อมูลเงิน");
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -484,4 +498,4 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     </>
   );
 };
-export default CreateDocument;
+export default EditFrom;

@@ -9,20 +9,76 @@ import {
   Spin,
   message,
 } from "antd";
-import { optionsCompanyList } from "../../../../utils/constant/CompanySelect";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NOTICE } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
-import { baseUrl, HEADERS_EXPORT, PUT_STATUS } from "../../../API/apiUrls";
+import {
+  baseUrl,
+  GET_LAWSUIT_DETAIL,
+  GET_LAWSUIT_DETAIL_BY_ID,
+  HEADERS_EXPORT,
+  PUT_LAWSUIT_DETAIL,
+  PUT_STATUS,
+} from "../../../API/apiUrls";
 import moment from "moment";
+import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
   const { TextArea } = Input;
+  const [companiesList, setLoadingData] = LoadCompanies();
+  const [companiesOption, setCompaniesOption] = useState(null);
+  const [lawsuitData, setLawsuitData] = useState(null);
 
-  const sendStatus = async (data) => {
-    console.log("data-->", data);
+  useEffect(() => {
+    loadData();
+    setLoadingData(true);
+  }, [setLoadingData]);
+
+  useEffect(() => {
+    setOption();
+  }, [companiesList]);
+
+  const setOption = () => {
+    const options = companiesList.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+    }));
+    setCompaniesOption(options);
+  };
+
+  const loadData = async (data) => {
+    setLoading(true);
+    console.log(data);
+    try {
+      const response = await axios.get(
+        baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefualt.LAWSUIT_ID,
+        {
+          HEADERS_EXPORT,
+        }
+      );
+      if (response.data) {
+        setLawsuitData(response.data);
+        console.log(response.data);
+
+        setLoading(false);
+      } else {
+      }
+    } catch (error) {
+      console.error(
+        "Error posting data:",
+        error.response ? error.response.data : error.message
+      );
+      setLoading(false);
+      message.error(`ไม่พบข้อมูล: ${error.message}`);
+    }
+  };
+  console.log(lawsuitData);
+
+  const sendStatus = async (data, lawsuit) => {
+    console.log("data-->", data, lawsuit);
     if (data) {
       setLoading(true);
       try {
@@ -31,6 +87,22 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+
+        await axios
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, { HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");
               funcUpdateStatus({
                 ...dataDefualt,
@@ -62,7 +134,6 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  console.log("data", dataDefualt);
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
@@ -70,7 +141,6 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
-    setPreData({ ...preData, company: value });
   };
 
   const onChange = (date, dateString) => {
@@ -81,6 +151,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const onChangeInput = (value) => {
     console.log(value);
   };
+  console.log("dataDefualt", dataDefualt);
 
   const onFinish = (values) => {
     console.log("Success:", values);
@@ -91,8 +162,12 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       MEMO: values.memo,
       DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
     };
+    const putLawsuit = {
+      ...lawsuitData,
+      COMPANY_ID: parseInt(values.company),
+    };
     console.log("putDataData", putData);
-    sendStatus(putData);
+    sendStatus(putData, putLawsuit);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -124,7 +199,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               }}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
-              initialValues={{ memo: "" }}
+              initialValues={{ memo: null }}
             >
               <Form.Item
                 label="บริษัทที่ออกหนังสือ"
@@ -139,11 +214,11 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 <Select
                   showSearch
                   style={{
-                    width: 200,
+                    width: 250,
                   }}
                   placeholder="เลือกบริษัท"
                   optionFilterProp="value"
-                  options={optionsCompanyList}
+                  options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                 />
               </Form.Item>

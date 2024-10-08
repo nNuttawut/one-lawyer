@@ -8,7 +8,11 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
-import { FINISH, INDICT } from "../../../../utils/constant/StatusConstant";
+import {
+  FINISH,
+  INDICT,
+  NEGOTIATE,
+} from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
 
@@ -117,7 +121,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     if (defaultRadio === "enforce") {
       statusSelect = INDICT;
     } else {
-      statusSelect = FINISH;
+      statusSelect = NEGOTIATE;
     }
     console.log("statusSelect", statusSelect);
     const postData = {
@@ -132,8 +136,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(postData);
     sendStatus(postData);
   };
-
-  console.log(dataDefualt);
+  console.log("dataDefualt", dataDefualt);
 
   const onChange = (e) => {
     setDefaultRadio(e.target.value);

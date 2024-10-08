@@ -163,7 +163,7 @@ const UpdateStatusBlackNumber = ({
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
       MEMO: values.memo,
-      DATE: null,
+      DATE: dataForm.considerationDate,
     };
 
     console.log(postStatus);
@@ -195,7 +195,7 @@ const UpdateStatusBlackNumber = ({
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           initialValues={{
-            memo: "",
+            memo: null,
             suspensionAmount: 0,
           }}
         >

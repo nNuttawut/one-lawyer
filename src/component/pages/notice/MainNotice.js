@@ -26,6 +26,7 @@ import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 import {
   baseUrl,
+  GET_JOB_IN_PROGRESS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -51,9 +52,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
-  const userId = localStorage.getItem("USER_ID");
-
-  console.log(profileRedux.id);
+  const userId = parseInt(localStorage.getItem("USER_ID"));
 
   useEffect(() => {
     loadData();
@@ -98,7 +97,8 @@ const Main = () => {
         (item) =>
           (item.LAWYER_ID === userId.id ||
             ROLE_ID === "1" ||
-            ROLE_ID === "2") &&
+            ROLE_ID === "2" ||
+            ROLE_ID === "3") &&
           item.MAIN_STATUS_ID === NOTICE
       );
       setArrayTable(newData);
@@ -179,9 +179,8 @@ const Main = () => {
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "red" : "green";
+    let color = daysDifference > 30 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
-
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
@@ -229,6 +228,7 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    //ทำ logic record
     ...(ROLE_ID === "1" || ROLE_ID === "2"
       ? [
           {
@@ -291,7 +291,7 @@ const Main = () => {
                       ) : null}
                       {record.DATE && userId === record.LAWYER_ID ? (
                         <>
-                          <Button
+                          {/* <Button
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
@@ -303,7 +303,7 @@ const Main = () => {
                             <FileDoneOutlined
                               style={{ color: "green", fontSize: "16px" }}
                             />
-                          </Button>
+                          </Button> */}
                           <Button
                             style={{ boxShadow: "0 4px 3px" }}
                             onClick={() => {
@@ -319,7 +319,7 @@ const Main = () => {
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
                 }}
               />
             </Col>

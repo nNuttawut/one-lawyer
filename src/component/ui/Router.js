@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import DashboardRoute from "../pages/dashboard/Router";
-import BadDebtRoute from "../pages/badDebt/Router";
 import DebtPaymentRoute from "../pages/debtPayment/Router";
 import DisbursementRoute from "../pages/disbursement/Router";
 import InvestigateAssetsRoute from "../pages/investigateAssets/Router";
@@ -28,6 +27,9 @@ import InvestigateAssetsAfter from "../pages/investigateAssets/InvestigateAssets
 import Judgement from "../pages/court/Judgement";
 import Profile from "../pages/Profile";
 import ChangePassword from "../pages/ChangePassword";
+import FinalCase from "../pages/finalCase/MainFinal";
+import CommissionLaw from "../pages/commission/CommissionLaw";
+import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -41,7 +43,7 @@ export default function Router() {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/dashboard/*" element={<DashboardRoute />} />
-            <Route path="/bad-debt/*" element={<BadDebtRoute />} />
+            <Route path="/final-case/*" element={<FinalCase />} />
             <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
             <Route path="/disbursement/*" element={<DisbursementRoute />} />
             <Route path="/notice/*" element={<Notice />} />
@@ -94,6 +96,14 @@ export default function Router() {
             <Route path="/chang-password" element={<ChangePassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/" element={<Calendar />} />
+            <Route
+              path="commission/commission-law/*"
+              element={<CommissionLaw />}
+            />
+            <Route
+              path="commission/commission-investigate/*"
+              element={<CommissionInvestigate />}
+            />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

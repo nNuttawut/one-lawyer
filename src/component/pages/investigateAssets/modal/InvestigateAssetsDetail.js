@@ -576,7 +576,7 @@ const InvestigateAssetsDetail = ({
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         initialValues={{
-          memo: "",
+          memo: null,
           suspensionAmount: 0,
         }}
       >

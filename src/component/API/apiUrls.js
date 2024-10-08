@@ -7,9 +7,6 @@ const GET_ALL_LOAN = "/lawyer/dev/api/loans";
 ///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
 const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
 
-//ดึง users ในระบบ
-const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
-
 //ดึงจำนวนงานที่ users รับงาน
 const GET_JOB_COUNT = "/lawyer/dev/api/loans/notics/count";
 
@@ -30,8 +27,10 @@ const PUT_STATUS = "/lawyer/dev/api/loans/status";
 
 //ดึงข้อมูลแบบคำฟ้อง
 const GET_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits/`;
+const GET_LAWSUIT_LIST = `/lawyer/dev/api/lawsuits`;
 //อัพเดทข้อมูลคำฟ้อง
 const PUT_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits`;
+const GET_LAWSUIT_DETAIL_BY_ID = `/lawyer/dev/api/lawsuits/detail/`;
 
 //ดึงข้อมูลสืบทรัพย์
 const GET_INVESTIGATE_BY_ID = `/lawyer/dev/api/investigate-properties/`;
@@ -39,6 +38,27 @@ const GET_INVESTIGATE_BY_ID = `/lawyer/dev/api/investigate-properties/`;
 const POST_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
 //อัพเดทข้อมูลสืบทรัพย์
 const PUT_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
+//ข้อมูลทั้งหมดของ id
+const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/dev/api/worklogs/`;
+
+//คำพิพากษา
+const POST_JUDGE = `/lawyer/dev/api/judgements`;
+const PUT_JUDGE = `/lawyer/dev/api/judgements`;
+const GET_JUDGE_BY_ID = `/lawyer/dev/api/judgements/`;
+
+//ข้อมูลจำเลย
+const POST_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
+const PUT_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
+const GET_JUDGE_DEFENDANTS_BY_ID = `/lawyer/dev/api/judgement-defendants/`;
+
+//ข้อมูลจทำยอม
+const POST_AGREEMENTS = `/lawyer/dev/api/agreements/`;
+const PUT_AGREEMENTS = `/lawyer/dev/api/agreements`;
+const GET_AGREEMENTS_BY_ID = `/lawyer/dev/api/agreements/`;
+
+//ดึง users ในระบบ
+const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
+const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
 
 const LOG_IN = `/lawyer/dev/api/login`;
 const REGISTER = `/lawyer/dev/api/register`;
@@ -67,4 +87,17 @@ export {
   PUT_INVESTIGATE,
   LOG_IN,
   REGISTER,
+  GET_WORK_LOG_DETAIL_BY_ID,
+  POST_JUDGE,
+  PUT_JUDGE,
+  GET_JUDGE_BY_ID,
+  POST_JUDGE_DEFENDANTS,
+  PUT_JUDGE_DEFENDANTS,
+  GET_JUDGE_DEFENDANTS_BY_ID,
+  GET_COMPANIES_LIST,
+  POST_AGREEMENTS,
+  PUT_AGREEMENTS,
+  GET_AGREEMENTS_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_LIST,
 };

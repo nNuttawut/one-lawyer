@@ -85,10 +85,11 @@ const Main = () => {
             setLoading(false);
             setDataLoadJob(jobInProgress.data);
             loadJob = jobInProgress.data;
+            console.log("loadJob", loadJob);
           }
         } else {
           setArrayTable([]);
-          message.error("ไม่พบข้อมูลเงิน");
+          message.error("ไม่พบข้อมูล");
         }
       }
       let i = 1;
@@ -105,12 +106,11 @@ const Main = () => {
       }
     } catch (error) {
       console.error("Error loading data:", error);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
+      // message.error(`ไม่พบข้อมูล: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
-  console.log("dataArr", dataArr);
 
   const filterData = (data, dataLoad) => {
     if (Array.isArray(data)) {
@@ -124,10 +124,12 @@ const Main = () => {
           ...(matchingLawsuit ? { lawsuitData: matchingLawsuit } : {}),
         };
       });
+      console.log(mergedData);
 
       const newData = mergedData.filter(
-        (item) => item?.lawsuitData[0].MAIN_STATUS_ID > JUDGEMENT
+        (item) => item?.lawsuitData[0]?.MAIN_STATUS_ID >= JUDGEMENT
       );
+
       console.log("newDataLawsuit 11", data);
       console.log("newDataLawsuit 11", newData);
       console.log("matchingLawsuit 11", mergedData);
