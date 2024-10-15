@@ -144,7 +144,10 @@ function Header({ title, onPress, onClick }) {
             >
               <UserOutlined fontSize="large" />
             </IconButton>
-            <a href="#/notifications">
+            <a
+              style={{ marginTop: "5px", marginRight: "5px" }}
+              href="#/notifications"
+            >
               <Badge count={5}>
                 <BellOutlined />
               </Badge>

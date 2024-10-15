@@ -28,15 +28,13 @@ import {
 } from "../../API/apiUrls";
 
 //use redux
-import { useSelector } from "react-redux";
-
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import {
   CASE_IS_FINAL,
   JUDGEMENT,
 } from "../../../utils/constant/StatusConstant";
-import UpdateJudgement from "./modal/UpdateJudgement";
+import UpdateCaseIsFinal from "./modal/UpdateCaseIsFinal";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -48,7 +46,6 @@ const Main = () => {
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
@@ -287,7 +284,7 @@ const Main = () => {
                     const recordDate = moment(record.DATE);
                     const today = moment().startOf("day");
                     const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference > 45;
+                    return daysDifference < 20; // กลับมาแก้เป็น > 15
                   },
                 }}
               />
@@ -308,7 +305,7 @@ const Main = () => {
         <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
       ) : null} */}
       {isModalUpdate ? (
-        <UpdateJudgement
+        <UpdateCaseIsFinal
           open={isModalUpdate}
           close={setIsModalUpdate}
           dataDefualt={dataModal}

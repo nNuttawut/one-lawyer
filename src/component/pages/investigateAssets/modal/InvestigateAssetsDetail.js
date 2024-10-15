@@ -13,12 +13,13 @@ import {
   Checkbox,
   Space,
   Tooltip,
-  Cascader,
 } from "antd";
 import {
   baseUrl,
+  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
+  POST_STATUS,
   PUT_INVESTIGATE,
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
@@ -26,29 +27,35 @@ import axios from "axios";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import CeckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import LoadLawyers from "../../../../hook/LoadLawyers";
-import { JUDGEMENT } from "../../../../utils/constant/StatusConstant";
+import GeoThailand from "../../../../hook/GeoThailand";
+import { ENFORCEMENT } from "../../../../utils/constant/StatusConstant";
 
 const InvestigateAssetsDetail = ({
   open,
   close,
   dataDefualt,
   funcUpdateStatus,
+  investigate,
 }) => {
   const [form] = Form.useForm();
   const [setupGovernmentOfficerList, governmentOfficers] =
     CeckGovermentOfficer();
   const [currencyFormatNoPoint, currencyFormatComma] = CurrencyFormat();
-  const [lawyersOption, setLawyersOption] = useState();
   const [assistantOption, setAssistantOption] = useState();
-  const [lawyersList, setLoadingData, loadLawyerJobs] = LoadLawyers();
+  const [lawyersList, setLoadingData] = LoadLawyers();
+  const [
+    setLoadingDataProvice,
+    setLoadingDataDistrict,
+    setLoadingDataSubDistrict,
+    setLoadingDataZipcode,
+    dataProvice,
+    dataDistrict,
+    dataSubDistrict,
+    dataZipcode,
+    setDataSearch,
+  ] = GeoThailand();
   const { TextArea } = Input;
-
-  const status = dataDefualt.lawsuitData[0].MAIN_STATUS_ID;
-  //   const status = 2;
-  const COMPANY = 1;
-
-  console.log("status", status);
-
+  const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
@@ -60,6 +67,10 @@ const InvestigateAssetsDetail = ({
   const [investigateDateValue, setInvestigateDateValue] = useState(null);
   const [averageStatus, setAverageStatus] = useState(null);
   const [sequestrateStatus, setSequestrateStatus] = useState(null);
+  const [dataProviceList, setDataProviceList] = useState(null);
+  const [dataDistrictList, setDataDistrictList] = useState(null);
+  const [dataSubDistrictList, setDataSubDistrictList] = useState(null);
+  const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const optionsInvestigate = [
     { label: "ไม่เจอทรัพย์", value: 0 },
     { label: "เจอทรัพย์", value: 1 },
@@ -77,45 +88,7 @@ const InvestigateAssetsDetail = ({
     { label: "ไม่พอเฉลี่ย", value: 0 },
     { label: "พอเฉลี่ย", value: 1 },
   ];
-  //   const options = [
-  //     {
-  //       value: "zhejiang",
-  //       label: "Zhejiang",
-  //       children: [
-  //         {
-  //           value: "hangzhou",
-  //           label: "Hangzhou",
-  //           children: [
-  //             {
-  //               value: "xihu",
-  //               label: "West Lake",
-  //             },
-  //             {
-  //               value: "xiasha",
-  //               label: "Xia Sha",
-  //               disabled: true,
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       value: "jiangsu",
-  //       label: "Jiangsu",
-  //       children: [
-  //         {
-  //           value: "nanjing",
-  //           label: "Nanjing",
-  //           children: [
-  //             {
-  //               value: "zhonghuamen",
-  //               label: "Zhong Hua men",
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     },
-  //   ];
+  console.log("data--->", dataDefualt);
 
   useEffect(() => {
     setIsModal(open);
@@ -123,22 +96,34 @@ const InvestigateAssetsDetail = ({
       loadData();
       setLoadingData(true);
       console.log("loadData", dataDefualt);
-      if (status < 2) {
+      if (investigate === "before") {
         setDataType("ก่อนฟ้อง");
       } else {
         setDataType("หลังฟ้อง");
       }
+      setLoadingDataProvice(true);
     }
   }, [isModal]);
 
   useEffect(() => {
-    setOption();
-  }, [lawyersList]);
+    if (lawyersList) {
+      setOptionAssistant();
+    }
+    if (dataProvice) {
+      setOptionProvice();
+    }
+    if (dataDistrict) {
+      setOptionDistrict();
+    }
+    if (dataSubDistrict) {
+      setOptionSubDistrict();
+    }
+  }, [lawyersList, dataProvice, dataDistrict, dataSubDistrict]);
 
-  const setOption = () => {
+  const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
-    if (COMPANY === 1) {
+    if (COMPANY === "1") {
       companySelectAssistant = lawyersList.filter(
         (item) => item.COMPANY_ID === 1 && item.ROLE_ID === 4
       );
@@ -152,6 +137,32 @@ const InvestigateAssetsDetail = ({
       label: item.NNAME,
     }));
     setAssistantOption(optionsAssistant);
+  };
+
+  const setOptionProvice = () => {
+    const optionsProvice = dataProvice.map((item) => ({
+      value: item.provinceId,
+      label: item.provinceName,
+    }));
+    setDataProviceList(optionsProvice);
+  };
+
+  const setOptionDistrict = () => {
+    console.log("dataDistrict", dataDistrict);
+    const optionsDistrict = dataDistrict.map((item) => ({
+      value: item.districtId,
+      label: item.districtName,
+    }));
+    setDataDistrictList(optionsDistrict);
+  };
+
+  const setOptionSubDistrict = () => {
+    console.log("dataDistrict", dataSubDistrict);
+    const optionsSubDistrict = dataSubDistrict.map((item) => ({
+      value: item.subdistrictId,
+      label: item.subdistrictName,
+    }));
+    setDataSubDistrictList(optionsSubDistrict);
   };
 
   const mergedArrow = useMemo(() => {
@@ -176,7 +187,7 @@ const InvestigateAssetsDetail = ({
     setLoading(true);
     try {
       await axios
-        .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefualt.lawsuitData[0].CONTNO, {
+        .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefualt.CONTNO, {
           HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
@@ -185,6 +196,20 @@ const InvestigateAssetsDetail = ({
             setupGovernmentOfficerList(resQuery.data);
             listGovermentList(resQuery.data);
             console.log("loanRes", resQuery.data);
+          } else {
+            message.error("ไม่พบข้อมูล");
+          }
+        })
+        .catch((err) => console.log("ไม่มีข้อมูล", err));
+
+      await axios
+        .get(baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefualt.LAWSUIT_ID, {
+          HEADERS_EXPORT,
+        })
+        .then(async (resQuery) => {
+          if (resQuery.status === 200) {
+            console.log("resQuery--->", resQuery.data);
+            setDataLoadLawSuit(resQuery.data);
           } else {
             message.error("ไม่พบข้อมูล");
           }
@@ -211,13 +236,14 @@ const InvestigateAssetsDetail = ({
   const sendStatus = async (
     postDataInvestigate,
     putDataLawsuit,
-    investigateStatus,
-    statusResult
+    statusResult,
+    postStatus
   ) => {
     setLoading(true);
+
     try {
       if (statusResult === 1) {
-        console.log("status", putDataLawsuit);
+        console.log("investigateStatus ", postDataInvestigate);
         await axios
           .post(baseUrl + PUT_INVESTIGATE, postDataInvestigate, {
             HEADERS_EXPORT,
@@ -237,18 +263,44 @@ const InvestigateAssetsDetail = ({
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
+        await axios
+          .post(baseUrl + POST_STATUS, postStatus, {
+            HEADERS_EXPORT,
+          })
+          .then(async (res) => {
+            if (res.status === 201) {
+              console.log("resQuery", res);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
       }
-      console.log("data", putDataLawsuit, investigateStatus);
+      console.log("putDataLawsuit", putDataLawsuit);
       await axios
         .put(baseUrl + PUT_LAWSUIT_DETAIL, putDataLawsuit, { HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("resQuery", res.data);
             message.success("อัพเดทข้อมูลสำเร็จ");
-            funcUpdateStatus({
-              ...dataDefualt,
-              [investigateStatus]: statusResult,
-            });
+            if (investigate === "before") {
+              funcUpdateStatus({
+                ...dataDefualt,
+                INVESTIGATE_BEFORE_STATUS: statusResult,
+              });
+            } else {
+              funcUpdateStatus({
+                ...dataDefualt,
+                INVESTIGATE_AFTER_ID: statusResult,
+              });
+            }
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
@@ -274,8 +326,9 @@ const InvestigateAssetsDetail = ({
     console.log("Success:", values);
     let putDataLawsuit;
     let postDataInvestigate;
+    let postStatus;
     let investigateStatus =
-      status < JUDGEMENT
+      investigate === "before"
         ? "investigate_before_status"
         : "investigate_after_status";
 
@@ -283,57 +336,78 @@ const InvestigateAssetsDetail = ({
 
     if (values.investigateAssetsResult === 0) {
       putDataLawsuit = {
-        ...dataDefualt,
+        ...dataLoadLawSuit,
         government_officer_number: governmentOfficerLength,
         [investigateStatus]: values.investigateAssetsResult,
         investigate_mark: values.memo,
       };
     } else {
       putDataLawsuit = {
-        ...dataDefualt,
+        ...dataLoadLawSuit,
         government_officer_number: governmentOfficerLength,
         [investigateStatus]: values.investigateAssetsResult,
         investigate_mark: values.memo,
       };
+
       postDataInvestigate = {
-        LAWSUIT_ID: dataDefualt.id,
+        LAWSUIT_ID: dataDefualt.LAWSUIT_ID,
         owner: values?.ownerAsset ? values?.ownerAsset : null,
         possessor: values.possessorAsset,
         estimated_price: parseInt(values.estimatedPrice.replace(/,/g, "")),
         property_type_id: values.assetPropotyType,
         investigator_user_id: values.investigatorAsset,
         deed_number: values.deed,
-        sub_district: values.assetSubDistrict,
-        district: values.assetDistrict,
+        sub_District: values.assetSubDistrict,
+        District: values.assetDistrict,
         province: values.assetProvince,
-        zipcode: values.assetZipCode,
+        zipcode: dataZipcode ? dataZipcode[0]?.zipCode : null,
         mortgagee: values?.mortgagee ? values?.mortgagee : null,
-        sequestrate_status: values?.sequestrateStatus
-          ? values?.sequestrateStatus
-          : null,
+        sequestrate_status:
+          values?.sequestrateStatus === 1
+            ? values?.sequestrateStatus
+            : values?.sequestrateStatus === 0
+            ? values?.sequestrateStatus
+            : null,
         preference_creditor: values?.preferenceCreditor
           ? values?.preferenceCreditor
           : null,
         mortgage_balance: values?.mortgageBalance
           ? parseInt(values?.mortgageBalance.replace(/,/g, ""))
           : null,
-        average_status: values.averageStatus,
+        average_status:
+          values.averageStatus === 1
+            ? values.averageStatus
+            : values.averageStatus === 0
+            ? values.averageStatus
+            : null,
         lawyer_seize_id: null,
         seize_status: null,
         seize_status_mark: null,
         legal_execution_office: null,
         sale_announcement_mark: null,
+        investigate_property_type_id: investigate === "before" ? 1 : 2,
+      };
+
+      postStatus = {
+        MAIN_STATUS_ID: ENFORCEMENT,
+        LOAN_ID: dataDefualt.id,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: investigateDateValue,
       };
     }
+    console.log("postStatus---->", postStatus);
 
     console.log("putDataLawsuit--->", putDataLawsuit);
-    console.log("post---->", postDataInvestigate);
+    console.log("postDataInvestigate---->", postDataInvestigate);
 
     sendStatus(
       postDataInvestigate,
       putDataLawsuit,
-      investigateStatus,
-      values.investigateAssetsResult
+      values.investigateAssetsResult,
+      postStatus
     );
   };
 
@@ -359,48 +433,6 @@ const InvestigateAssetsDetail = ({
   const onChangeInputpossessorAsset = (value) => {
     console.log(value);
   };
-
-  const onChangeInputAssetSubDistrict = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputAssetDistrict = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputAssetProvince = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputAssetZipCode = (value) => {
-    console.log(value);
-  };
-
-  //      const addressAssetCascader = (value) => {
-  //       return (
-  //         <>
-  //           <Cascader
-  //             options={options}
-  //             onChange={onChange}
-  //             placeholder="กรุณาเลือกที่ตั้งทรัพย์"
-  //             showSearch={{
-  //               filter,
-  //             }}
-  //             onSearch={(value) => console.log(value)}
-  //           />
-  //         </>
-  //       );
-  //     };
-
-  //   const onChange = (value, selectedOptions) => {
-  //     console.log(value, selectedOptions);
-  //   };
-
-  //   const filter = (inputValue, path) =>
-  //     path.some(
-  //       (option) =>
-  //         option.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1
-  //     );
 
   function isNotNumber(value) {
     const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
@@ -562,6 +594,33 @@ const InvestigateAssetsDetail = ({
     setSequestrateStatus(value);
   };
 
+  const onChangeSelectProviceAsset = (value) => {
+    console.log(`selected provice ${value}`);
+    setDataSearch({ provice: value });
+    form.setFieldsValue({
+      assetDistrict: null,
+      assetSubDistrict: null,
+      assetZipCode: null,
+    });
+  };
+
+  const onChangeSelectDistrictAsset = (value) => {
+    console.log(`selected District ${value}`);
+    setDataSearch({ District: value });
+    form.setFieldsValue({
+      assetSubDistrict: null,
+      assetZipCode: null,
+    });
+  };
+
+  const onChangeSelectSubDistrictAsset = (value) => {
+    console.log(`selected subDistrict${value}`);
+    setDataSearch({ subDistrict: value });
+    form.setFieldsValue({
+      assetZipCode: null,
+    });
+  };
+
   const formDataSetBefore = () => {
     return (
       <Form
@@ -582,9 +641,8 @@ const InvestigateAssetsDetail = ({
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
           <p>
-            {governmentOfficers
-              ? `${dataDefualt?.lawsuitData[0].CONTNO}/${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`
-              : "-"}
+            {`${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+            ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
           </p>
         </Form.Item>
         <Form.Item
@@ -693,17 +751,21 @@ const InvestigateAssetsDetail = ({
               />
             </Form.Item>
             <Form.Item
-              label="ตำบล"
-              name="assetSubDistrict"
+              label="จังหวัด"
+              name="assetProvince"
               rules={[
                 {
                   required: true,
-                  message: "กรุณาระบุตำบล !",
+                  message: "กรุณาระบุจังหวัด !",
                 },
               ]}
             >
-              <Input
-                onChange={(e) => onChangeInputAssetSubDistrict(e.target.value)}
+              <Select
+                placeholder="เลือกจังหวัด"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectProviceAsset(value)}
+                options={dataProviceList}
+                style={{ width: "100%" }}
               />
             </Form.Item>
             <Form.Item
@@ -716,58 +778,38 @@ const InvestigateAssetsDetail = ({
                 },
               ]}
             >
-              <Input
-                onChange={(e) => onChangeInputAssetDistrict(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item
-              label="จังหวัด"
-              name="assetProvince"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุจังหวัด !",
-                },
-              ]}
-            >
-              <Input
-                onChange={(e) => onChangeInputAssetProvince(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item
-              label="รหัสไปษณีย์"
-              name="assetZipCode"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุรหัสไปษณีย์ !",
-                },
-              ]}
-            >
-              <Input
-                type="number"
-                maxLength={"5"}
-                onChange={(e) => {
-                  e.target.value.length < 6
-                    ? onChangeInputAssetZipCode(e.target.value)
-                    : message.error("กรอกได้แค่ 5 ตัวเท่านั้น");
-                }}
+              <Select
+                placeholder="เลือกอำเภอ"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectDistrictAsset(value)}
+                options={dataDistrictList}
+                style={{ width: "100%" }}
               />
             </Form.Item>
 
-            {/* <Form.Item
-              label="สถานที่ตั้งทรัพย์"
-              name="addressAsset"
+            <Form.Item
+              label="ตำบล"
+              name="assetSubDistrict"
               rules={[
                 {
                   required: true,
-                  message: "กรุณาระบุสถานที่ !",
+                  message: "กรุณาระบุตำบล !",
                 },
               ]}
             >
-              {addressAssetCascader()}
-            </Form.Item> */}
-            {dataDefualt.lawsuitData[0].MAIN_STATUS_ID > JUDGEMENT ? (
+              <Select
+                placeholder="เลือกตำบล"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectSubDistrictAsset(value)}
+                options={dataSubDistrictList}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+
+            <Form.Item label="รหัสไปษณีย์" name="assetZipCode">
+              <p>{dataZipcode ? dataZipcode[0]?.zipCode : "เลือกตำบลก่อน"}</p>
+            </Form.Item>
+            {investigate === "after" ? (
               <>
                 <Form.Item
                   label="ผู้ถือกรรมสิทธิ์"

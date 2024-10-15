@@ -59,13 +59,25 @@ const GET_AGREEMENTS_BY_ID = `/lawyer/dev/api/agreements/`;
 //ดึง users ในระบบ
 const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
 const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
+const GET_ROLE_LIST = "/lawyer/dev/api/roles";
+const GET_USERS_LIST = "/lawyer/dev/api/users";
+const GET_BY_ID = "/lawyer/dev/api/users/";
 
+//post
 const LOG_IN = `/lawyer/dev/api/login`;
 const REGISTER = `/lawyer/dev/api/register`;
+const POST_USER = `/lawyer/dev/api/users`;
+
 const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 const HEADERS_EXPORT = {
   "Content-Type": "application/json",
 };
+
+//get GeoThailand
+const GET_PROVICE = `https://eua-i67f6gaaqa-as.a.run.app/Api/provinces`;
+const GET_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/districted/`;
+const GET_SUB_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/subdistricted/`;
+const GET_ZIPCODE = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
 
 export {
   GET_LOAN_FROM_SERVER_IBM,
@@ -100,4 +112,12 @@ export {
   GET_AGREEMENTS_BY_ID,
   GET_LAWSUIT_DETAIL_BY_ID,
   GET_LAWSUIT_LIST,
+  GET_ROLE_LIST,
+  GET_USERS_LIST,
+  GET_BY_ID,
+  POST_USER,
+  GET_PROVICE,
+  GET_DISTRICT,
+  GET_SUB_DISTRICT,
+  GET_ZIPCODE,
 };

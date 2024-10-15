@@ -136,7 +136,6 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(postData);
     sendStatus(postData);
   };
-  console.log("dataDefualt", dataDefualt);
 
   const onChange = (e) => {
     setDefaultRadio(e.target.value);

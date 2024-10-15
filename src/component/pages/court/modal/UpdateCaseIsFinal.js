@@ -18,15 +18,14 @@ import {
   GET_JUDGE_BY_ID,
   PUT_JUDGE,
 } from "../../../API/apiUrls";
-import { CASE_IS_FINAL } from "../../../../utils/constant/StatusConstant";
+import { INVIGATE } from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
 
-const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [status, setStatus] = useState({
     process: "process",
-    enforce: "wait",
-    prePay: "wait",
+    caseIsFinal: "wait",
   });
   const [loading, setLoading] = useState(false);
   const [memoText, setMemoText] = useState("");
@@ -40,9 +39,9 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       loadData();
       const recordDate = moment(dataDefualt.DATE);
       const toDay = moment().startOf("day");
-      const toDate = moment(recordDate).add(45, "days");
+      const toDate = moment(recordDate).add(15, "days");
       const daysDifference = toDay.diff(toDate, "days");
-      const daySub = daysDifference + 45;
+      // const daySub = daysDifference + 15;
       console.log("toDate", toDate);
       setCountDate(daysDifference);
     }
@@ -76,7 +75,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const sendStatus = async (statusData, dataJudgement) => {
-    if (status.enforce === "finish") {
+    if (status.caseIsFinal === "finish") {
       setLoading(true);
       try {
         await axios
@@ -133,18 +132,17 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       message.error("โปรดเปลี่ยนสถานะข้อมูลและกดบันทึกอีกครั้ง");
     }
   };
-
   const handleStatusChange = (current) => {
     console.log(current);
     if (current === 2) {
       setStatus({
         process: "finish",
-        enforce: "finish",
+        caseIsFinal: "finish",
       });
     } else {
       setStatus({
         process: "process",
-        enforce: "wait",
+        caseIsFinal: "wait",
       });
     }
   };
@@ -156,10 +154,10 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const handleOk = () => {
-    if (status.enforce === "finish") {
+    if (status.caseIsFinal === "finish") {
       if (urlFileSave) {
         const postData = {
-          MAIN_STATUS_ID: CASE_IS_FINAL,
+          MAIN_STATUS_ID: INVIGATE,
           LOAN_ID: dataDefualt.id,
           USER_ID: dataDefualt.LAWYER_ID,
           LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
@@ -169,8 +167,8 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         };
         const putJudgement = {
           ...dataLoadJudgement,
-          enforce_case_date: dateEnforceCase,
-          enforce_case_filepath: urlFileSave,
+          final_case_date: dateEnforceCase,
+          final_case_filepath: urlFileSave,
         };
         console.log("postData", postData);
         console.log("putJudgement", putJudgement);
@@ -200,7 +198,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             onChange={handleStatusChange}
             items={[
               {
-                title: "พิพากษา",
+                title: "ออกหมายตั้ง",
                 status: "finish",
               },
               {
@@ -210,8 +208,8 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 icon: <LoadingOutlined />,
               },
               {
-                title: "ออกหมายตั้ง",
-                status: status.enforce,
+                title: "คดีถึงที่สุด",
+                status: status.caseIsFinal,
                 icon: <AuditOutlined />,
               },
             ]}
@@ -265,4 +263,4 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     </>
   );
 };
-export default UpdateJudgement;
+export default UpdateCaseIsFinal;

@@ -14,7 +14,6 @@ import { NOTICE } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL,
   GET_LAWSUIT_DETAIL_BY_ID,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,

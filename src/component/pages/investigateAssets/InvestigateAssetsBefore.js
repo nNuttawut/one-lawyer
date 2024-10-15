@@ -13,30 +13,20 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS,
-  GET_LAWSUIT_DETAIL,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import {
-  AWAITING_JUDMENT,
-  ENFORCEMENT,
-  INDICT,
-  NOTICE,
-} from "../../../utils/constant/StatusConstant";
+import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 
@@ -44,10 +34,6 @@ const Main = () => {
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
-  const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
-    useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const profileRedux = useSelector((state) => state.authReducer.profile);
@@ -57,7 +43,8 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadJob, setDataLoadJob] = useState(null);
-
+  const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
+    useState(false);
   console.log(profileRedux.id);
 
   useEffect(() => {
@@ -67,41 +54,27 @@ const Main = () => {
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
-    let loadJob;
-    try {
-      const [lawsuitRes, jobInProgress] = await Promise.all([
-        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL}`, {
-          HEADERS_EXPORT,
-        }),
-        axios.get(`${baseUrl}${GET_JOB_IN_PROGRESS}`, {
-          HEADERS_EXPORT,
-        }),
-      ]);
 
-      if (jobInProgress.status === 200) {
-        if (jobInProgress.data) {
-          if (jobInProgress.data) {
-            setLoading(false);
-            setDataLoadJob(jobInProgress.data);
-            loadJob = jobInProgress.data;
+    try {
+      await axios
+        .get(baseUrl + GET_JOB_IN_PROGRESS, {
+          HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          let i = 1;
+          if (res.status === 200) {
+            const newData = res.data.map((item) => ({
+              ...item,
+              key: i++,
+            }));
+            filterData(newData);
+            console.log("res Role", newData);
+          } else {
+            message.error("ไม่มีข้อมูล");
+            console.log("res Role", res.data);
           }
-        } else {
-          setArrayTable([]);
-          message.error("ไม่พบข้อมูลเงิน");
-        }
-      }
-      let i = 1;
-      if (lawsuitRes.status === 200) {
-        console.log("lawsuitRes", lawsuitRes.data);
-        const newData = lawsuitRes.data.map((item) => ({
-          ...item,
-          key: i++,
-        }));
-        setDataLoadLawSuit(lawsuitRes.data);
-        filterData(loadJob, newData);
-      } else {
-        message.error("ไม่พบข้อมูลคดี");
-      }
+        })
+        .catch((err) => console.log("ไม่มีข้อมูล", err));
     } catch (error) {
       console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
@@ -111,27 +84,12 @@ const Main = () => {
   };
   console.log("dataArr", dataArr);
 
-  const filterData = (data, dataLoad) => {
-    if (Array.isArray(data)) {
-      const mergedData = dataLoad.map((item) => {
-        const matchingLawsuit = data.filter(
-          (loan) => loan.id === item.LOAN_ID // ใช้ LOAN_ID หรือ id ตามต้องการ
-        );
-        // ถ้ามี matchingLawsuit จะรวมข้อมูล
-        return {
-          ...item,
-          ...(matchingLawsuit ? { lawsuitData: matchingLawsuit } : {}),
-        };
-      });
-
-      const newData = mergedData.filter(
-        (item) => item?.lawsuitData[0].MAIN_STATUS_ID <= INDICT
+  const filterData = (data) => {
+    if (data) {
+      const newData = data.filter(
+        (item) => item?.MAIN_STATUS_ID < JUDGEMENT && item?.MAIN_STATUS_ID
       );
-      console.log("newDataLawsuit 11", data);
       console.log("newDataLawsuit 11", newData);
-      console.log("matchingLawsuit 11", mergedData);
-
-      console.log("mergedData", mergedData);
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);
@@ -202,18 +160,18 @@ const Main = () => {
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDataAsset = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    console.log(record.investigate_before_status);
-    if (record.investigate_before_status === null) {
+    console.log(record.INVESTIGATE_BEFORE_STATUS);
+    if (record.INVESTIGATE_BEFORE_STATUS === null) {
       return null;
     }
 
     console.log(record);
 
-    let color = record.investigate_before_status > 0 ? "green" : "red";
+    let color = record.INVESTIGATE_BEFORE_STATUS ? "green" : "red";
 
     return (
       <Tag color={color} key={record.id} style={{ textAlign: "center" }}>
-        {record.investigate_before_status === 1 ? "เจอทรัพย์" : "ไม่เจอทรัพย์"}
+        {record.INVESTIGATE_BEFORE_STATUS ? "เจอทรัพย์" : "ไม่เจอทรัพย์"}
       </Tag>
     );
   };
@@ -236,11 +194,7 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => (
-        <>
-          {record.lawsuitData[0].CONTNO ? record.lawsuitData[0].CONTNO : null}
-        </>
-      ),
+      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -249,15 +203,9 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <>
-          {record.lawsuitData[0].CUSTOMER_TNAME
-            ? record.lawsuitData[0].CUSTOMER_TNAME
-            : null}{" "}
-          {record.lawsuitData[0].CUSTOMER_FNAME
-            ? record.lawsuitData[0].CUSTOMER_FNAME
-            : null}{" "}
-          {record.lawsuitData[0].CUSTOMER_LNAME
-            ? record.lawsuitData[0].CUSTOMER_LNAME
-            : null}
+          {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
+          {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
+          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
         </>
       ),
     },
@@ -265,6 +213,11 @@ const Main = () => {
       title: "สถานะการสืบทรัพย์",
       align: "center",
       render: (record) => <>{renderDataAsset(record)}</>,
+    },
+    {
+      title: "หมายเหตุ",
+      align: "center",
+      render: (record) => <>{record.MEMO}</>,
     },
   ];
 
@@ -301,7 +254,6 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {/* {!record.investigate_before_status ? ( */}
                       <Button
                         style={{
                           boxShadow: "0 4px 3px",
@@ -316,23 +268,6 @@ const Main = () => {
                           style={{ color: "orange", fontSize: "16px" }}
                         />
                       </Button>
-                      {/* ) : ( */}
-                      <>
-                        <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalDocument(true);
-                          }}
-                        >
-                          <FileDoneOutlined
-                            style={{ color: "green", fontSize: "16px" }}
-                          />
-                        </Button>
-                      </>
-                      {/* )} */}
                     </p>
                   ),
                   rowExpandable: (record) => record.name !== "Not Expandable",
@@ -349,19 +284,9 @@ const Main = () => {
           close={setIsModalInvestigateAssetsDetail}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
+          investigate={"before"}
         />
       ) : null}
-      {/* {isModalDocument ? (
-        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
-      ) : null} */}
-      {/* {isModalUpdate ? (
-        <UpdateStatusInvestigateAssets
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null} */}
     </>
   );
 };

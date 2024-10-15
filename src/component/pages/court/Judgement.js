@@ -180,7 +180,7 @@ const Main = () => {
     }
     const recordDate = moment(record.DATE);
     const today = moment().startOf("day");
-    const toDate = moment(recordDate).add(45, "days");
+    const toDate = moment(recordDate).add(30, "days");
     const daysDifference = today.diff(toDate, "days");
     console.log("daysDifference", daysDifference);
 
@@ -287,7 +287,7 @@ const Main = () => {
                     const recordDate = moment(record.DATE);
                     const today = moment().startOf("day");
                     const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference > 45;
+                    return daysDifference > 30;
                   },
                 }}
               />
