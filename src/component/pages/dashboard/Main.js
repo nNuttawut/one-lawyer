@@ -162,7 +162,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.assign ? 100 : dataPercent.assign.toFixed(2)
+                  !dataPercent.assign ? 0 : dataPercent.assign.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -175,7 +175,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.notice ? 100 : dataPercent.notice.toFixed(2)
+                  !dataPercent.notice ? 0 : dataPercent.notice.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -188,7 +188,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.indict ? 100 : dataPercent.indict.toFixed(2)
+                  !dataPercent.indict ? 0 : dataPercent.indict.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -202,7 +202,7 @@ const Main = () => {
               <Progress
                 percent={
                   !dataPercent.awaitingJudgement
-                    ? 100
+                    ? 0
                     : dataPercent.awaitingJudgement
                 }
                 percentPosition={{
@@ -216,9 +216,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.judgement
-                    ? 100
-                    : dataPercent.judgement.toFixed(2)
+                  !dataPercent.judgement ? 0 : dataPercent.judgement.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -231,7 +229,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.payment ? 100 : dataPercent.payment.toFixed(2)
+                  !dataPercent.payment ? 0 : dataPercent.payment.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -245,7 +243,7 @@ const Main = () => {
               <Progress
                 percent={
                   !dataPercent.caseInFinal
-                    ? 100
+                    ? 0
                     : dataPercent.caseInFinal.toFixed(2)
                 }
                 percentPosition={{
@@ -260,7 +258,7 @@ const Main = () => {
               <Progress
                 percent={
                   !dataPercent.investigate
-                    ? 100
+                    ? 0
                     : dataPercent.investigate.toFixed(2)
                 }
                 percentPosition={{
@@ -274,9 +272,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.judgement
-                    ? 100
-                    : dataPercent.judgement.toFixed(2)
+                  !dataPercent.judgement ? 0 : dataPercent.judgement.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -289,9 +285,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.negotiate
-                    ? 100
-                    : dataPercent.negotiate.toFixed(2)
+                  !dataPercent.negotiate ? 0 : dataPercent.negotiate.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
@@ -305,7 +299,7 @@ const Main = () => {
               <Progress
                 percent={
                   !dataPercent.sellAssets
-                    ? 100
+                    ? 0
                     : dataPercent.sellAssets.toFixed(2)
                 }
                 percentPosition={{
@@ -319,7 +313,7 @@ const Main = () => {
               </b>
               <Progress
                 percent={
-                  !dataPercent.finish ? 100 : dataPercent.finish.toFixed(2)
+                  !dataPercent.finish ? 0 : dataPercent.finish.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",
