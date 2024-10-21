@@ -30,6 +30,7 @@ import ChangePassword from "../pages/ChangePassword";
 import FinalCase from "../pages/finalCase/MainFinal";
 import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
+import ReadText from "../pages/guidebook/ReadText";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -95,7 +96,7 @@ export default function Router() {
             <Route path="manage-data/import-data/*" element={<ImportData />} />
             <Route path="/chang-password" element={<ChangePassword />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/" element={<Calendar />} />
+            <Route path="/calendar" element={<Calendar />} />
             <Route
               path="commission/commission-law/*"
               element={<CommissionLaw />}
@@ -104,6 +105,7 @@ export default function Router() {
               path="commission/commission-investigate/*"
               element={<CommissionInvestigate />}
             />
+            <Route path="guidbook/read-text/*" element={<ReadText />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

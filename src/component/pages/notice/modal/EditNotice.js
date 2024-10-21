@@ -23,6 +23,7 @@ import moment from "moment";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
   const { TextArea } = Input;
@@ -37,7 +38,15 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   useEffect(() => {
     setOption();
+    setDataDefualt();
   }, [companiesList]);
+
+  const setDataDefualt = () => {
+    form.setFieldsValue({
+      company: dataDefualt.COMPANY_ID,
+      dateNotice: moment(dataDefualt.DATE),
+    });
+  };
 
   const setOption = () => {
     const options = companiesList.map((item) => ({
@@ -74,7 +83,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
-  console.log(lawsuitData);
+  console.log("lawsuitData", lawsuitData);
 
   const sendStatus = async (data, lawsuit) => {
     console.log("data-->", data, lawsuit);
@@ -105,9 +114,8 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               message.success("อัพเดทข้อมูลสำเร็จ");
               funcUpdateStatus({
                 ...dataDefualt,
-                MAIN_STATUS_ID: NOTICE,
-                DATE: data.DATE,
                 COMPANY_ID: lawsuit.COMPANY_ID,
+                DATE: data.DATE,
               });
               setLoading(false);
             } else {
@@ -167,6 +175,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       COMPANY_ID: parseInt(values.company),
     };
     console.log("putDataData", putData);
+    console.log("putLawsuit", putLawsuit);
     sendStatus(putData, putLawsuit);
   };
 
@@ -175,10 +184,12 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
 
+  console.log("dataDefualt.DATE", dataDefualt.DATE);
+
   return (
     <>
       <Modal
-        title="สร้างโนติส"
+        title="แก้ไขโนติส"
         open={open}
         onCancel={handleCancel}
         width={650}
@@ -197,6 +208,8 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               style={{
                 maxWidth: 600,
               }}
+              form={form} // ตั้งค่า form ที่นี่
+              name="editNotice"
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               initialValues={{ memo: null }}
@@ -222,6 +235,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   onChange={(value) => onChangeSelect(value)}
                 />
               </Form.Item>
+
               <Form.Item
                 label="วันที่ออกหนังสือ"
                 name="dateNotice"
@@ -232,8 +246,15 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   },
                 ]}
               >
-                <DatePicker onChange={onChange} />
+                <DatePicker
+                  format={"YYYY-MM-DD"}
+                  defaultValue={
+                    dataDefualt.DATE ? moment(dataDefualt.DATE) : moment()
+                  }
+                  onChange={onChange}
+                />
               </Form.Item>
+
               <Form.Item label="หมายเหตุ" name="memo">
                 <TextArea
                   rows={5}

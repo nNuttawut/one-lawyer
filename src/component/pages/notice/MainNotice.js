@@ -17,6 +17,7 @@ import {
   FileDoneOutlined,
   EditOutlined,
   SyncOutlined,
+  FormOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
@@ -24,15 +25,14 @@ import CreateNotice from "./modal/CreateNotice";
 import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
+import EditNotice from "./modal/EditNotice";
 import {
   baseUrl,
-  GET_JOB_IN_PROGRESS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
 //use redux
-import { useSelector } from "react-redux";
 import axios from "axios";
 import { NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
@@ -44,15 +44,16 @@ const Main = () => {
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
+  const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -208,7 +209,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -284,26 +294,27 @@ const Main = () => {
                             setDataModal(record);
                           }}
                         >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
                       ) : null}
                       {record.DATE && userId === record.LAWYER_ID ? (
                         <>
-                          {/* <Button
+                          <Button
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
                             }}
                             onClick={() => {
-                              setIsModalDocument(true);
+                              setIsModalEdit(true);
+                              setDataModal(record);
                             }}
                           >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
+                            <EditOutlined
+                              style={{ color: "orange", fontSize: "16px" }}
                             />
-                          </Button> */}
+                          </Button>
                           <Button
                             style={{ boxShadow: "0 4px 3px" }}
                             onClick={() => {
@@ -326,7 +337,9 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {isModalCreate ? (
         <CreateNotice
           open={isModalCreate}
@@ -335,9 +348,17 @@ const Main = () => {
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
-      {isModalDocument ? (
-        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
+      {isModalEdit ? (
+        <EditNotice
+          open={isModalEdit}
+          close={setIsModalEdit}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
       ) : null}
+      {/* {isModalDocument ? (
+        <DocumentNotice open={isModalDocument} close={setIsModalDocument} />
+      ) : null} */}
       {isModalUpdate ? (
         <UpdateStatusNotice
           open={isModalUpdate}

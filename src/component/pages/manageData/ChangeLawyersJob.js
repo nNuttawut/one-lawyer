@@ -28,6 +28,7 @@ import {
   GET_LAWSUIT_LIST,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   //set hook
@@ -43,6 +44,7 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -176,7 +178,6 @@ const Main = () => {
     console.log(
       `selected ${userId} contno ${contno} id ${id} lawType ${lawType} `
     );
-    console.log(dataSend);
 
     const ownData = arrayTable.filter((item) => item.id === id);
     console.log("ownData", ownData);
@@ -199,7 +200,6 @@ const Main = () => {
       return [...updatedData, newItem];
     });
   };
-  console.log("datasend", dataSend);
 
   const search = (event) => {
     console.log("query--->", event.target.value);
@@ -308,7 +308,18 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            console.log("record", record);
+
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -422,7 +433,13 @@ const Main = () => {
               </Row>
             </Spin>
           </Card>
-          {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+          {isModal ? (
+            <DetailModal
+              open={isModal}
+              close={setIsModal}
+              dataRec={dataRecord}
+            />
+          ) : null}
         </>
       ) : (
         <Card>

@@ -23,7 +23,6 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_JOB_IN_PROGRESS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -33,11 +32,7 @@ import { useSelector } from "react-redux";
 
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import {
-  ENFORCEMENT,
-  NOTICE,
-  SELL_ASSETS,
-} from "../../../utils/constant/StatusConstant";
+import { NOTICE, SELL_ASSETS } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -54,6 +49,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -204,7 +200,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -315,7 +320,9 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {/* {isModalCreate ? (
         <CreateDocument
           open={isModalCreate}

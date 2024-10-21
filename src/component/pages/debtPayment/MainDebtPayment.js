@@ -54,6 +54,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -95,7 +96,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID >= PAYMENT
+          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === PAYMENT
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -200,7 +201,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -304,14 +314,16 @@ const Main = () => {
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => !record,
                 }}
               />
             </Col>
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {/* {isModalCreate ? (
         <CreateDocument
           open={isModalCreate}

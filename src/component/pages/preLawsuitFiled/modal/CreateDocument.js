@@ -286,10 +286,18 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     }
     let result = dataForm?.amountTotalCal - parseInt(value.replace(/,/g, ""));
+    let calculatedFee;
+    if (result < 300000) {
+      calculatedFee = 1000;
+    } else {
+      calculatedFee = result * 0.02;
+    }
+
     setDataForm((prev) => ({
       ...prev,
       intigationFounds: result,
       suspensionAmount: parseFloat(value.replace(/,/g, "")),
+      fee: calculatedFee,
     }));
   };
 

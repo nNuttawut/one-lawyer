@@ -68,6 +68,12 @@ const LOG_IN = `/lawyer/dev/api/login`;
 const REGISTER = `/lawyer/dev/api/register`;
 const POST_USER = `/lawyer/dev/api/users`;
 
+//all details
+const GET_DETAILS = `/lawyer/dev/api/all-details?contractNo=`;
+
+//delete status
+const DELETE_STATUS_BY_WORKLOG = `/lawyer/dev/api/worklogs/`;
+
 const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 const HEADERS_EXPORT = {
   "Content-Type": "application/json",
@@ -120,4 +126,6 @@ export {
   GET_DISTRICT,
   GET_SUB_DISTRICT,
   GET_ZIPCODE,
+  DELETE_STATUS_BY_WORKLOG,
+  GET_DETAILS,
 };

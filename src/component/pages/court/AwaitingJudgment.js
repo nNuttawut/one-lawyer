@@ -14,11 +14,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { FormOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -53,6 +49,7 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
   const [arrow, setArrow] = useState("Show");
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -203,7 +200,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -292,8 +298,8 @@ const Main = () => {
                                 setDataModal(record);
                               }}
                             >
-                              <EditOutlined
-                                style={{ color: "orange", fontSize: "16px" }}
+                              <FormOutlined
+                                style={{ color: "blue", fontSize: "16px" }}
                               />
                             </Button>
                           </Tooltip>
@@ -308,7 +314,9 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {/* {isModalCreate ? (
         <CreateDocument
           open={isModalCreate}

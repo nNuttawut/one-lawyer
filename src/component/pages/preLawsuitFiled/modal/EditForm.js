@@ -12,6 +12,7 @@ import {
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL,
+  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LOAN_BY_CONTNO,
   GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
@@ -41,41 +42,64 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     if (isModal) {
       loadData();
       setLawType();
-      console.log("loadData", dataDefualt);
+      console.log("dataDefualt", dataDefualt);
     }
   }, [isModal]);
 
   useEffect(() => {
-    if (dataLoadLawSuit) {
-      const newFormData = new FormData();
-      newFormData.append(
-        "date",
-        moment(dataLoadLawSuit.DATE).format("YYYY-MM-DD")
-      );
-      const dateValue = newFormData.get("date");
-      console.log(newFormData.get("date"));
-      // จะแสดงผลเป็น 5
-      //   setDataForm({
-      //     dateCourt: "",
-      //     court: dataLoadLawSuit.provincial_court,
-      //     trackingFee: dataLoadLawSuit.tracking_fee,
-      //     subject: dataLoadLawSuit.subject,
-      //     lossBenefit: 0,
-      //     suspensionAmount: 0,
-      //     memo: "",
-      //     nopay: 0,
-      //     idLawsuit: null,
-      //     intigationFounds: 0,
-      //     amountTotalCal: 0,
-      //   });
+    if (dataLoadLawSuit && dataLoadLoan) {
       form.setFieldsValue({
-        courtDate: dateValue,
-        court: dataLoadLawSuit.lawsuit.provincial_court,
-        trackingFee: dataLoadLawSuit.lawsuit.tracking_fee,
-        subject: dataLoadLawSuit.lawsuit.subject,
+        dateCourt: moment(dataDefualt.DATE),
+        court: dataLoadLawSuit?.provincial_court,
+        subject: dataLoadLawSuit?.subject,
+        trackingFee: currencyFormatNoPoint(dataLoadLawSuit?.tracking_fee),
+        suspensionAmount: currencyFormatNoPoint(
+          dataLoadLawSuit?.suspension_amount
+        ),
       });
+
+      let dateCurrent = moment(dataDefualt.DATE);
+      let lastPayDate = moment(dataLoadLoan?.LOAN?.LPAYD);
+
+      const differenceMonth = dateCurrent.diff(lastPayDate, "month");
+      const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
+        ? differenceMonth * dataLoadLoan?.LOAN?.TOT_UPAY
+        : 0;
+      setDataForm((prev) => ({
+        ...prev,
+        nopay: differenceMonth,
+        lossBenefit: lossBenefitValue,
+      }));
+
+      let balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
+      let result = balance + lossBenefitValue + dataLoadLawSuit?.tracking_fee;
+
+      let resultTotal = result - dataLoadLawSuit?.suspension_amount;
+
+      let calculatedFee;
+
+      if (resultTotal < 300000) {
+        calculatedFee = 1000;
+      } else {
+        calculatedFee = result * 0.02;
+      }
+
+      setDataForm((prev) => ({
+        ...prev,
+        intigationFounds: result,
+
+        fee: calculatedFee,
+      }));
+
+      setDataForm((prev) => ({
+        ...prev,
+        intigationFounds: resultTotal,
+        amountTotalCal: resultTotal,
+        suspensionAmount: dataLoadLawSuit?.suspension_amount,
+        fee: calculatedFee,
+      }));
     }
-  }, [dataLoadLawSuit]);
+  }, [dataLoadLawSuit, dataLoadLoan]);
 
   const handleOk = () => {};
 
@@ -89,7 +113,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        baseUrl + GET_WORK_LOG_DETAIL_BY_ID + dataDefualt.WORK_LOG_ID,
+        baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefualt.LAWSUIT_ID,
         {
           HEADERS_EXPORT,
         }
@@ -99,6 +123,19 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         console.log("lawsuitRes", response.data);
         setDataLoadLawSuit(response.data);
         setDataStore(response.data);
+      } else {
+        message.error("ไม่พบข้อมูลคดี");
+      }
+
+      const res = await axios.get(
+        baseUrl + GET_LOAN_BY_CONTNO + dataDefualt.CONTNO,
+        {
+          HEADERS_EXPORT,
+        }
+      );
+      if (res.status === 200) {
+        console.log("res--->", res.data);
+        setDataLoadLoan(res.data);
       } else {
         message.error("ไม่พบข้อมูลคดี");
       }
@@ -174,14 +211,17 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       suspension_amount: parseFloat(dataForm.suspensionAmount),
       interest_rate: null,
       fee: dataForm.fee,
+      MEMO: values.memo,
     };
 
     const putStatus = {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
-      MEMO: values.memo,
-      DATE: dataForm.dateCourt,
+      MEMO: values.memo ? values.memo : dataDefualt.MEMO,
+      DATE: dataForm.dateCourt
+        ? dataForm.dateCourt
+        : moment(dataDefualt.DATE).format("YYYY-MM-DD"),
     };
 
     setDataStore((prev) => ({
@@ -201,7 +241,9 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       suspensionAmount: dataForm.suspensionAmount,
       nopay: dataForm.nopay,
     }));
-    console.log(putData);
+
+    console.log("putData", putData);
+    console.log("putStatus", putStatus);
 
     sendStatus(putStatus, putData);
   };
@@ -224,7 +266,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const onChangeCourt = (date, dateString) => {
-    console.log(date, dateString);
+    console.log("date, dateString", date, dateString);
     setDataForm({ ...dataForm, dateCourt: dateString });
     handleLossPay(dateString);
   };
@@ -300,17 +342,27 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     }
     let result = dataForm?.amountTotalCal - parseInt(value.replace(/,/g, ""));
+
+    let calculatedFee;
+
+    if (result < 300000) {
+      calculatedFee = 1000;
+    } else {
+      calculatedFee = result * 0.02;
+    }
+
     setDataForm((prev) => ({
       ...prev,
       intigationFounds: result,
       suspensionAmount: parseFloat(value.replace(/,/g, "")),
+      fee: calculatedFee,
     }));
   };
 
   const handleLossPay = (value) => {
-    console.log("date", value);
     let dateCurrent = moment(value);
     let lastPayDate = moment(dataLoadLoan?.LOAN?.LPAYD);
+
     const differenceMonth = dateCurrent.diff(lastPayDate, "month");
     const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
       ? differenceMonth * dataLoadLoan?.LOAN?.TOT_UPAY
@@ -451,7 +503,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         </Form.Item>
         <Form.Item label="ค่าฤชา" name="fee">
           <p>
-            {dataForm.trackingFee
+            {dataForm.intigationFounds
               ? currencyFormatPoint(dataForm.fee) + " บาท"
               : "-"}
           </p>
@@ -481,7 +533,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   return (
     <>
       <Modal
-        title="สร้างคำฟ้องคดีผู้บริโภค"
+        title="แก้ไขคำฟ้องคดีผู้บริโภค"
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}

@@ -2,20 +2,19 @@ import { Menu } from "antd";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   HomeOutlined,
-  UsergroupAddOutlined,
   FormOutlined,
   SearchOutlined,
   BarcodeOutlined,
-  FileTextOutlined,
   AuditOutlined,
   NotificationOutlined,
-  WalletOutlined,
+  BookOutlined,
   ScheduleOutlined,
   ImportOutlined,
   CaretRightOutlined,
   SnippetsOutlined,
   DollarOutlined,
   CheckOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
@@ -40,7 +39,7 @@ function Sidenav({ color, onClick }) {
     //   key: "2",
     //   pageName: "calendar",
     //   label: "calendar",
-    //   path: "/",
+    //   path: "/calendar",
     //   icon: <CalendarOutlined />,
     //   title: "ปฏิทินนัดหมาย",
     // },
@@ -129,7 +128,7 @@ function Sidenav({ color, onClick }) {
       label: "negotiate",
       path: "/negotiate",
       icon: <ScheduleOutlined />,
-      title: "เจรจาหนี้",
+      title: "เจรจาทรัพย์",
     },
 
     {
@@ -240,6 +239,23 @@ function Sidenav({ color, onClick }) {
           pageName: "change-lawyers-jobs",
           path: "manage-data/change-lawyers-jobs",
           label: "เปลี่ยนทนาย",
+        },
+      ],
+    },
+    {
+      key: "15",
+      pageName: "import",
+      label: "guidbook",
+      path: "/guidbook",
+      icon: <BookOutlined />,
+      title: "คู่มือ",
+      children: [
+        {
+          key: "151",
+          icon: <CaretRightOutlined />,
+          pageName: "import-data",
+          path: "guidbook/read-text",
+          label: "วิธีแปลงรูปภาพเป็นตัวหนังสือ",
         },
       ],
     },

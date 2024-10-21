@@ -82,6 +82,7 @@ export default function LogIn() {
       <Container className="signin">
         <Row gutter={[24, 0]} justify="space-around">
           <Col
+            span={12}
             style={{
               // padding: 12,
               alignItems: "center",
@@ -92,11 +93,18 @@ export default function LogIn() {
             {" "}
             <img width={"100%"} src={logo} alt="Logo" />
           </Col>
-          <Col>
+          <Col
+            style={{
+              // padding: 12,
+              alignItems: "center",
+              justifyContent: "center",
+              display: "flex",
+            }}
+          >
             <Card
               title={<h4>เข้าสู่ระบบ</h4>}
               bordered="false"
-              style={{ marginTop: "50px" }}
+              style={{ marginTop: "20%", width: "100%" }}
             >
               <Form
                 onFinish={onFinish}

@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
+import { Link } from "react-router-dom";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -193,7 +194,19 @@ const Main = () => {
     } else if (record === 4) {
       return <Tag color="blue">พิพากษา</Tag>;
     } else if (record === 5) {
+      return <Tag color="violet">ทำยอม</Tag>;
+    } else if (record === 6) {
       return <Tag color="violet">คดีถึงที่สุด</Tag>;
+    } else if (record === 7) {
+      return <Tag color="violet">สืบทรัพย์หลังฟ้อง</Tag>;
+    } else if (record === 8) {
+      return <Tag color="violet">บังคับคดี</Tag>;
+    } else if (record === 9) {
+      return <Tag color="violet">เจรจาทรัพย์</Tag>;
+    } else if (record === 10) {
+      return <Tag color="violet">ขายทรัพย์</Tag>;
+    } else if (record === 11) {
+      return <Tag color="violet">สิ้นสุด</Tag>;
     }
   };
 
@@ -215,7 +228,15 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",

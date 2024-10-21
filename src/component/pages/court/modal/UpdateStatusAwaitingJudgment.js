@@ -319,6 +319,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ? parseInt(values.costPermonth1.replace(/,/g, ""))
           : null,
         cost_of_useleseness_month: values.costMonth1,
+        judge_number: 1,
       }));
       defendants.push(...govermentfinal1);
 
@@ -334,6 +335,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ? parseInt(values.costPermonth2.replace(/,/g, ""))
           : null,
         cost_of_useleseness_month: values.costMonth2,
+        judge_number: 2,
       }));
 
       defendants.push(...govermentfinal2);
@@ -387,6 +389,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         payment_status: null,
         payment_status_date: null,
         negotiator_id: dataDefualt.LAWYER_ID,
+        NEW_CONTNO: values.newContno ? values.newContno : null,
       };
     }
 
@@ -602,6 +605,10 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const onChangePaymentFile = (value) => {
+    console.log(value);
+  };
+
+  const onChangeNewContno = (value) => {
     console.log(value);
   };
 
@@ -1020,6 +1027,21 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
+          <Form.Item
+            label="เลขสัญญาใหม่"
+            name="newContno"
+            // rules={[
+            //   {
+            //     required: true,
+            //     message: "กรุณาใส่สัญญาใหม่ !",
+            //   },
+            // ]}
+          >
+            <Input
+              name="newContno"
+              onChange={(e) => onChangeNewContno(e.target.value)}
+            />
+          </Form.Item>
           <Form.Item
             label="ยินยอมชำระเงินจำนวน"
             name="paymentAmount"

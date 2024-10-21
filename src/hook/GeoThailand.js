@@ -23,6 +23,7 @@ const GeoThailand = () => {
     District: null,
     subDistrict: null,
   });
+  console.log("dataSearch", dataSearch);
 
   useEffect(() => {
     if (loadingDataProvice) {
@@ -40,7 +41,7 @@ const GeoThailand = () => {
         .then(async (res) => {
           if (res.status === 200) {
             setDataProvice(res.data);
-            console.log("res", res.data);
+            console.log("res--->", res.data);
           } else {
             message.error("ไม่มีข้อมูล");
             console.log("res", res.data);

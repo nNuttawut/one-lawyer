@@ -45,6 +45,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -193,18 +194,27 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
 
     {
       title: "วันที่สำเร็จ",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      // render: (record) => <>{renderDate(record)}</>,
     },
     {
       title: "จำนวนเงิน",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      // render: (record) => <>{renderDate(record)}</>,
     },
     {
       title: "ทนายที่รับผิดชอบ",
@@ -246,7 +256,7 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {/* {!record.DATE ? (
                         <Button
                           name="create"
                           style={{
@@ -288,17 +298,19 @@ const Main = () => {
                             />
                           </Button>
                         </>
-                      ) : null}
+                      ) : null} */}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => !record,
                 }}
               />
             </Col>
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
     </>
   );
 };

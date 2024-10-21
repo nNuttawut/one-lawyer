@@ -18,7 +18,7 @@ import {
   GET_JUDGE_BY_ID,
   PUT_JUDGE,
 } from "../../../API/apiUrls";
-import { INVIGATE } from "../../../../utils/constant/StatusConstant";
+import { INVESTIGATE } from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
 
@@ -157,7 +157,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     if (status.caseIsFinal === "finish") {
       if (urlFileSave) {
         const postData = {
-          MAIN_STATUS_ID: INVIGATE,
+          MAIN_STATUS_ID: INVESTIGATE,
           LOAN_ID: dataDefualt.id,
           USER_ID: dataDefualt.LAWYER_ID,
           LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,

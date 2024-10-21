@@ -13,7 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined } from "@ant-design/icons";
+import { FormOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -36,16 +36,15 @@ const Main = () => {
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadJob, setDataLoadJob] = useState(null);
+  const [dataRecord, setDataRecord] = useState();
   const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
     useState(false);
-  console.log(profileRedux.id);
 
   useEffect(() => {
     loadData();
@@ -82,7 +81,6 @@ const Main = () => {
       setLoading(false);
     }
   };
-  console.log("dataArr", dataArr);
 
   const filterData = (data) => {
     if (data) {
@@ -100,6 +98,7 @@ const Main = () => {
       setTableLength(0);
     }
   };
+  console.log(arrayTable);
 
   const search = (event) => {
     console.log("query--->", event.target.value);
@@ -194,7 +193,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -264,20 +272,22 @@ const Main = () => {
                           setDataModal(record);
                         }}
                       >
-                        <EditOutlined
-                          style={{ color: "orange", fontSize: "16px" }}
+                        <FormOutlined
+                          style={{ color: "blue", fontSize: "16px" }}
                         />
                       </Button>
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => !record.INVESTIGATE_BEFORE_ID,
                 }}
               />
             </Col>
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {isModalInvestigateAssetsDetail ? (
         <InvestigateAssetsDetail
           open={isModalInvestigateAssetsDetail}

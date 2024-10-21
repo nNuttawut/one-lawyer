@@ -13,11 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -53,7 +49,7 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataStore, setDataStore] = useState(null);
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -207,7 +203,16 @@ const Main = () => {
       dataIndex: "CONTNO",
       key: "CONTNO",
       align: "center",
-      render: (text, record) => <>{record.CONTNO ? record.CONTNO : null}</>,
+      render: (text, record) => (
+        <Link
+          onClick={() => {
+            setIsModal(true);
+            setDataRecord(record);
+          }}
+        >
+          {record.CONTNO ? record.CONTNO : null}
+        </Link>
+      ),
     },
     {
       title: "ชื่อ-นามสกุล",
@@ -274,8 +279,8 @@ const Main = () => {
                             setDataModal(record);
                           }}
                         >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
                       ) : null}
@@ -295,8 +300,8 @@ const Main = () => {
                               style={{ color: "green", fontSize: "16px" }}
                             />
                           </Button> */}
-                          {/* <Button
-                            name="create"
+                          <Button
+                            name="edit"
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
@@ -307,9 +312,9 @@ const Main = () => {
                             }}
                           >
                             <EditOutlined
-                              style={{ color: "blue", fontSize: "16px" }}
+                              style={{ color: "orange", fontSize: "16px" }}
                             />
-                          </Button> */}
+                          </Button>
                           <Button
                             name="updateStatus"
                             style={{ boxShadow: "0 4px 3px" }}
@@ -326,14 +331,16 @@ const Main = () => {
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
                 }}
               />
             </Col>
           </Row>
         </Spin>
       </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
       {isModalCreate ? (
         <CreateDocument
           open={isModalCreate}

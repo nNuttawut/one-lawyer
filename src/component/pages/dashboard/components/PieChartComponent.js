@@ -3,10 +3,107 @@ import * as echarts from "echarts/core";
 import { TooltipComponent, LegendComponent } from "echarts/components";
 import { PieChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
+import { message } from "antd";
+import axios from "axios";
+import {
+  baseUrl,
+  GET_JOB_IN_PROGRESS,
+  HEADERS_EXPORT,
+} from "../../../API/apiUrls";
+import {
+  AWAITING_JUDMENT,
+  BAD_DEBTOR,
+  CASE_IS_FINAL,
+  ENFORCEMENT,
+  FINISH,
+  INDICT,
+  INVESTIGATE,
+  JUDGEMENT,
+  NEGOTIATE,
+  NOTICE,
+  PAYMENT,
+  SELL_ASSETS,
+} from "../../../../utils/constant/StatusConstant";
+import WorkInProgress from "../../../../hook/WorkInProgress";
 
 echarts.use([TooltipComponent, LegendComponent, PieChart, CanvasRenderer]);
 const PieChartComponent = () => {
   const chartRef = useRef(null);
+  const [dataPie, setDataPie] = useState({
+    assign: 0,
+    notice: 0,
+    indict: 0,
+    awaitingJudgement: 0,
+    judgement: 0,
+    payment: 0,
+    caseInFinal: 0,
+    investigate: 0,
+    enforcement: 0,
+    negotiate: 0,
+    sellAssets: 0,
+    finish: 0,
+    badDebtor: 0,
+  });
+  const [dataLoad, setLoadingDataWork] = WorkInProgress();
+
+  useEffect(() => {
+    setLoadingDataWork(true);
+  }, []);
+
+  useEffect(() => {
+    if (dataLoad) {
+      filterData();
+    }
+  }, [dataLoad]);
+
+  const filterData = () => {
+    if (Array.isArray(dataLoad)) {
+      const newDataPie = { ...dataPie };
+
+      newDataPie.assign = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === null
+      ).length;
+      newDataPie.notice = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === NOTICE
+      ).length;
+      newDataPie.indict = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === INDICT
+      ).length;
+      newDataPie.awaitingJudgement = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === AWAITING_JUDMENT
+      ).length;
+      newDataPie.judgement = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === JUDGEMENT
+      ).length;
+      newDataPie.payment = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === PAYMENT
+      ).length;
+      newDataPie.caseInFinal = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === CASE_IS_FINAL
+      ).length;
+      newDataPie.investigate = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === INVESTIGATE
+      ).length;
+      newDataPie.enforcement = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === ENFORCEMENT
+      ).length;
+      newDataPie.negotiate = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === NEGOTIATE
+      ).length;
+      newDataPie.sellAssets = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === SELL_ASSETS
+      ).length;
+      newDataPie.finish = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === FINISH
+      ).length;
+      newDataPie.badDebtor = dataLoad.filter(
+        (item) => item.MAIN_STATUS_ID === BAD_DEBTOR
+      ).length;
+      setDataPie(newDataPie);
+    } else {
+      console.error("data is not an array or is undefined");
+    }
+  };
 
   useEffect(() => {
     const chartDom = chartRef.current;
@@ -17,12 +114,12 @@ const PieChartComponent = () => {
         trigger: "item",
       },
       legend: {
-        top: "5%",
+        top: "0.5%",
         left: "center",
       },
       series: [
         {
-          name: "Access From",
+          name: "กราฟบอกจำนวนเคส",
           type: "pie",
           radius: ["40%", "70%"],
           avoidLabelOverlap: false,
@@ -38,7 +135,7 @@ const PieChartComponent = () => {
           emphasis: {
             label: {
               show: true,
-              fontSize: 40,
+              fontSize: 20,
               fontWeight: "bold",
             },
           },
@@ -46,12 +143,19 @@ const PieChartComponent = () => {
             show: false,
           },
           data: [
-            { value: 1048, name: "เตรียมส่งฟ้อง" },
-            { value: 735, name: "สืบทรัพย์สำเร็จ" },
-            { value: 580, name: "ส่งบังคับคดี" },
-            { value: 484, name: "เจรจาหนี้" },
-            { value: 300, name: "ประกาศขายทรัพย์" },
-            { value: 580, name: "ประนอมหนี้" },
+            { value: dataPie.assign, name: "เตรียมมอบงานให้ทนาย" },
+            { value: dataPie.notice, name: "ส่งจดหมายเตือน" },
+            { value: dataPie.indict, name: "ส่งคำฟ้อง" },
+            { value: dataPie.awaitingJudgement, name: "รอพิพากษา" },
+            { value: dataPie.judgement, name: "พิพากษา" },
+            { value: dataPie.payment, name: "ทำยอม" },
+            { value: dataPie.caseInFinal, name: "คดีถึงที่สุด" },
+            { value: dataPie.investigate, name: "สืบทรัพย์" },
+            { value: dataPie.enforcement, name: "บังคับคดี" },
+            { value: dataPie.negotiate, name: "เจรจาทรัพย์" },
+            { value: dataPie.sellAssets, name: "ขายทรัพย์" },
+            { value: dataPie.finish, name: "คดีสิ้นสุด" },
+            { value: dataPie.badDebtor, name: "ลูกหนี้สูญ" },
           ],
         },
       ],
@@ -63,7 +167,7 @@ const PieChartComponent = () => {
     return () => {
       myChart.dispose();
     };
-  }, []);
+  }, [dataPie]);
 
   return <div ref={chartRef} style={{ height: 400, width: "100%" }} />;
 };

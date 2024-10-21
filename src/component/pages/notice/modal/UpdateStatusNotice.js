@@ -9,9 +9,9 @@ import {
 import axios from "axios";
 import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
 import {
-  FINISH,
   INDICT,
   NEGOTIATE,
+  PAYMENT,
 } from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
@@ -131,7 +131,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
       MEMO: memoText,
-      DATE: null,
+      DATE: statusSelect === INDICT ? null : moment().format("YYYY-MM-DD"),
     };
     console.log(postData);
     sendStatus(postData);
@@ -157,7 +157,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           value={defaultRadio}
         >
           <Radio value="enforce">เตรียมฟ้อง</Radio>
-          <Radio value="pay">เจรจาจ่าย</Radio>
+          <Radio value="pay">เจรจาหนี้</Radio>
         </Radio.Group>
         {defaultRadio === "pay" ? (
           <Card style={{ marginTop: "10px" }}>

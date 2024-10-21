@@ -357,8 +357,8 @@ const InvestigateAssetsDetail = ({
         property_type_id: values.assetPropotyType,
         investigator_user_id: values.investigatorAsset,
         deed_number: values.deed,
-        sub_District: values.assetSubDistrict,
-        District: values.assetDistrict,
+        sub_district: values.assetSubDistrict,
+        district: values.assetDistrict,
         province: values.assetProvince,
         zipcode: dataZipcode ? dataZipcode[0]?.zipCode : null,
         mortgagee: values?.mortgagee ? values?.mortgagee : null,
@@ -621,7 +621,7 @@ const InvestigateAssetsDetail = ({
     });
   };
 
-  const formDataSetBefore = () => {
+  const formDataSet = () => {
     return (
       <Form
         labelCol={{
@@ -931,7 +931,7 @@ const InvestigateAssetsDetail = ({
         footer={null}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Card>{formDataSetBefore()}</Card>
+          <Card>{formDataSet()}</Card>
         </Spin>
       </Modal>
     </>
