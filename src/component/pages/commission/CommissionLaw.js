@@ -206,11 +206,11 @@ const Main = () => {
       ),
     },
 
-    {
-      title: "วันที่สำเร็จ",
-      align: "center",
-      // render: (record) => <>{renderDate(record)}</>,
-    },
+    // {
+    //   title: "วันที่สำเร็จ",
+    //   align: "center",
+    //   // render: (record) => <>{renderDate(record)}</>,
+    // },
     {
       title: "จำนวนเงิน",
       align: "center",

@@ -206,11 +206,11 @@ const Main = () => {
       ),
     },
 
-    {
-      title: "วันที่สำเร็จ",
-      align: "center",
-      // render: (record) => <>{renderDate(record)}</>,
-    },
+    // {
+    //   title: "วันที่สำเร็จ",
+    //   align: "center",
+    //   // render: (record) => <>{renderDate(record)}</>,
+    // },
     {
       title: "จำนวนเงิน",
       align: "center",
@@ -219,7 +219,7 @@ const Main = () => {
     {
       title: "ผู้รับผิดชอบ",
       align: "center",
-      // render: (record) => <>{record.LAWYER_NNAME}</>,
+      render: (record) => <>{record.investigator_user_nickname}</>,
     },
   ];
 
