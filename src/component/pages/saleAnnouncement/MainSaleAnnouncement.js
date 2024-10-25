@@ -36,7 +36,8 @@ import { NOTICE, SELL_ASSETS } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
@@ -94,8 +95,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id &&
-          item.MAIN_STATUS_ID === SELL_ASSETS
+          (item.MAIN_STATUS_ID === SELL_ASSETS && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === SELL_ASSETS)
       );
       setArrayTable(newData);
       setDataArr(newData);

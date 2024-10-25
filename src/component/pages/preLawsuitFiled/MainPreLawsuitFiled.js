@@ -94,11 +94,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId.id ||
-            ROLE_ID === "1" ||
-            ROLE_ID === "2" ||
-            ROLE_ID === "3") &&
-          item.MAIN_STATUS_ID === INDICT
+          (item.MAIN_STATUS_ID === INDICT && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === INDICT)
       );
       setArrayTable(newData);
       setDataArr(newData);

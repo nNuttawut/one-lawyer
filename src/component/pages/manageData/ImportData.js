@@ -31,11 +31,8 @@ import {
   HEADERS_EXPORT,
   baseUrl,
 } from "../../API/apiUrls";
-import { useSelector } from "react-redux";
 
 const Main = () => {
-  const profileRedux = useSelector((state) => state.authReducer.profile);
-  const dataRedux = useSelector((state) => state.dataImport.data);
   const [isModal, setIsModal] = useState(false);
   const [queryContno, setQueryContno] = useState();
   const [loading, setLoading] = useState(false);
@@ -44,12 +41,14 @@ const Main = () => {
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const companyId = localStorage.getItem("COMPANY_ID");
+  const [tableLength, setTableLength] = useState(0);
   // call redux action
   const dispatch = useDispatch();
 
   const onQuery = () => {
     if (queryContno) {
-      queryData(queryContno);
+      queryData(queryContno.trim());
       console.log("queryContno--->", queryContno);
     }
   };
@@ -65,11 +64,17 @@ const Main = () => {
   const queryData = async () => {
     setLoading(true);
     // const tk = JSON.parse(token);
+    let companyUse;
     console.log("queryData ImportData");
-
+    if (companyId === "1" || companyId === "2") {
+      companyUse = "1";
+    } else {
+      companyUse = "2";
+    }
     try {
       await axios
-        .get(baseUrl + GET_LOAN_FROM_SERVER_IBM + queryContno, {
+        .get(baseUrl + GET_LOAN_FROM_SERVER_IBM, {
+          params: { contractNo: queryContno, company: companyUse },
           HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
@@ -101,6 +106,13 @@ const Main = () => {
   const queryMultiData = async () => {
     setLoading(true);
     let failed = 0;
+    let companyUse;
+    console.log("queryData ImportData");
+    if (companyId === "1" || companyId === "2") {
+      companyUse = "1";
+    } else {
+      companyUse = "2";
+    }
     console.log("queryMultiData ImportData");
     try {
       if (!data || data.length === 0) {
@@ -118,7 +130,10 @@ const Main = () => {
         }
 
         return axios
-          .get(baseUrl + GET_LOAN_FROM_SERVER_IBM + contno, { HEADERS_EXPORT })
+          .get(baseUrl + GET_LOAN_FROM_SERVER_IBM, {
+            params: { contractNo: contno, company: companyUse },
+            HEADERS_EXPORT,
+          })
           .then((resQuery) => {
             if (resQuery.status === 200) {
               return resQuery.data;
@@ -145,6 +160,7 @@ const Main = () => {
 
       // อัปเดตสถานะด้วยผลลัพธ์ที่กรองแล้ว
       setArrayTable(filteredResults);
+      setTableLength(filteredResults.length);
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
@@ -417,6 +433,9 @@ const Main = () => {
                     columns={columns}
                     dataSource={arrayTable}
                     scroll={{ x: 850 }}
+                    footer={() => (
+                      <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength}</p>
+                    )}
                   />
                 </Col>
               </Row>

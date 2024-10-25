@@ -95,11 +95,10 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId.id ||
-            ROLE_ID === "1" ||
-            ROLE_ID === "2" ||
-            ROLE_ID === "3") &&
-          item.MAIN_STATUS_ID === CASE_IS_FINAL
+          (item.MAIN_STATUS_ID === CASE_IS_FINAL &&
+            item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === CASE_IS_FINAL)
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -293,7 +292,7 @@ const Main = () => {
                     const recordDate = moment(record.DATE);
                     const today = moment().startOf("day");
                     const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference < 20; // กลับมาแก้เป็น > 15
+                    return daysDifference > 15; // กลับมาแก้เป็น > 15
                   },
                 }}
               />

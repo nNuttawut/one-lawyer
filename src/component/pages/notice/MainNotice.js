@@ -22,7 +22,6 @@ import {
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
-import DocumentNotice from "./modal/DocumentNotice";
 import { Link } from "react-router-dom";
 import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 import EditNotice from "./modal/EditNotice";
@@ -42,7 +41,6 @@ const Main = () => {
 
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -93,19 +91,20 @@ const Main = () => {
   };
 
   const filterDataLawyer = (data) => {
+    console.log("item.LAWYER_ID", data);
+    console.log("userId.id ", userId.id);
+
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId.id ||
-            ROLE_ID === "1" ||
-            ROLE_ID === "2" ||
-            ROLE_ID === "3") &&
-          item.MAIN_STATUS_ID === NOTICE
+          (item.MAIN_STATUS_ID === NOTICE && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === NOTICE)
       );
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);
-      console.log(newData);
+      console.log("newData", newData);
       console.log("Length of filtered data:", newData.length);
     } else {
       console.error("data is not an array or is undefined");

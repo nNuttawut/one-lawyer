@@ -44,6 +44,7 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -232,6 +233,7 @@ const Main = () => {
         <Link
           onClick={() => {
             setIsModal(true);
+            setDataRecord(record);
           }}
         >
           {record.CONTNO ? record.CONTNO : null}
@@ -273,44 +275,53 @@ const Main = () => {
       : []),
   ];
 
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (ROLE_ID === "1" || ROLE_ID === "2") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-    </>
-  );
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+      </>
+    );
+  } else {
+    return <b>ไม่มีสิทธ์เข้าถึง</b>;
+  }
 };
 
 const ReportCourt = MotionHoc(Main);

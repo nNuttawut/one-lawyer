@@ -14,7 +14,6 @@ import {
   SnippetsOutlined,
   DollarOutlined,
   CheckOutlined,
-  CalendarOutlined,
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
@@ -256,6 +255,13 @@ function Sidenav({ color, onClick }) {
           pageName: "import-data",
           path: "guidbook/read-text",
           label: "วิธีแปลงรูปภาพเป็นตัวหนังสือ",
+        },
+        {
+          key: "152",
+          icon: <CaretRightOutlined />,
+          pageName: "import-data",
+          path: "guidbook/test",
+          label: "ทดสอบอัพรูป",
         },
       ],
     },

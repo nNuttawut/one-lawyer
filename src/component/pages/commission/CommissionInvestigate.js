@@ -46,6 +46,8 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
   const [dataRecord, setDataRecord] = useState();
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
 
   useEffect(() => {
     loadData();
@@ -88,7 +90,10 @@ const Main = () => {
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter((item) => item);
+      const newData = data.filter(
+        (item) =>
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
+      );
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);

@@ -41,6 +41,7 @@ import {
 
 const Main = () => {
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
@@ -78,10 +79,10 @@ const Main = () => {
             key: i++,
           }));
 
-          setArrayTable(newData);
-          setDataArr(newData);
-          setTableLength(newData.length);
-          // filterDataLawyer(newData);
+          // setArrayTable(newData);
+          // setDataArr(newData);
+          // setTableLength(newData.length);
+          filterDataLawyer(newData);
           console.log(newData);
 
           setLoading(false);
@@ -99,19 +100,24 @@ const Main = () => {
     }
   };
 
-  // const filterDataLawyer = (data) => {
-  //   if (Array.isArray(data)) {
-  //     const newData = data.filter((item) => item.MAIN_STATUS_ID === NEGOTIATE);
-  //     setArrayTable(newData);
-  //     setDataArr(newData);
-  //     setTableLength(newData.length);
-  //     console.log(newData);
-  //     console.log("Length of filtered data:", newData.length);
-  //   } else {
-  //     console.error("data is not an array or is undefined");
-  //     setTableLength(0);
-  //   }
-  // };
+  const filterDataLawyer = (data) => {
+    if (Array.isArray(data)) {
+      const newData = data.filter(
+        (item) =>
+          (item.MAIN_STATUS_ID === NEGOTIATE && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === NEGOTIATE)
+      );
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log(newData);
+      console.log("Length of filtered data:", newData.length);
+    } else {
+      console.error("data is not an array or is undefined");
+      setTableLength(0);
+    }
+  };
 
   const search = (event) => {
     console.log("query--->", event.target.value);

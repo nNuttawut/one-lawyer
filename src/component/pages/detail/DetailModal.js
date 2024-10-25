@@ -342,25 +342,40 @@ const DetailModal = ({ open, close, dataRec }) => {
             <b>จำนวนงวด :</b> {loanData?.LOAN?.T_NOPAY} งวด
             <br />
             <b>ยอดกู้ไม่รวมดอก :</b>{" "}
-            {currencyFormatNoPoint(loanData?.LOAN?.NCSHPRC)} บาท
+            {loanData?.LOAN?.NCSHPRC
+              ? currencyFormatNoPoint(loanData?.LOAN?.NCSHPRC)
+              : null}{" "}
+            บาท
             <br />
             <b>จ่ายล่าสุดวันที่ :</b> {convertDateThai(loanData?.LOAN?.LPAYD)}{" "}
             <br />
             <b>ยอดที่จ่ายมาแล้ว :</b>{" "}
-            {currencyFormatNoPoint(loanData?.LOAN?.SMPAY)} บาท
+            {loanData?.LOAN?.SMPAY
+              ? currencyFormatNoPoint(loanData?.LOAN?.SMPAY)
+              : null}{" "}
+            บาท
             <br />
           </Col>
           <Col span={12}>
             <b>วันที่ทำสัญญา : </b> {convertDateThai(loanData?.LOAN?.SDATE)}{" "}
             <br />
-            <b>ค่างวด : </b> {currencyFormatNoPoint(loanData?.LOAN?.TOT_UPAY)}{" "}
+            <b>ค่างวด : </b>{" "}
+            {loanData?.LOAN?.TOT_UPAY
+              ? currencyFormatNoPoint(loanData?.LOAN?.TOT_UPAY)
+              : null}{" "}
             บาท
             <br />
             <b>ยอดกู้รวมดอก : </b>{" "}
-            {currencyFormatNoPoint(loanData?.LOAN?.TOTPRC)} บาท
+            {loanData?.LOAN?.TOTPRC
+              ? currencyFormatNoPoint(loanData?.LOAN?.TOTPRC)
+              : null}{" "}
+            บาท
             <br />
             <b>จำนวนที่จ่ายล่าสุด :</b>{" "}
-            {currencyFormatNoPoint(loanData?.LOAN?.LPAYA)} บาท
+            {loanData?.LOAN?.LPAYA
+              ? currencyFormatNoPoint(loanData?.LOAN?.LPAYA)
+              : null}{" "}
+            บาท
             <br />
             <b>จำนวนงวดที่ค้าง :</b> {loanData?.LOAN?.EXP_FRM} ถึง{" "}
             {loanData?.LOAN?.EXP_TO}
@@ -730,13 +745,20 @@ const DetailModal = ({ open, close, dataRec }) => {
             <Form.Item label="ค่าติดตาม" name="trackingFee">
               {" "}
               <p>
-                {currencyFormatNoPoint(dataDetail?.lawsuit?.tracking_fee)} บาท
+                {dataDetail?.lawsuit?.tracking_fee
+                  ? currencyFormatNoPoint(dataDetail?.lawsuit?.tracking_fee)
+                  : null}{" "}
+                บาท
               </p>
             </Form.Item>
             <Form.Item label="เบี้ยตั้งพัก" name="suspensionAmount">
               {" "}
               <p>
-                {currencyFormatNoPoint(dataDetail?.lawsuit?.suspension_amount)}{" "}
+                {dataDetail?.lawsuit?.suspension_amount
+                  ? currencyFormatNoPoint(
+                      dataDetail?.lawsuit?.suspension_amount
+                    )
+                  : null}{" "}
                 บาท
               </p>
             </Form.Item>
@@ -744,16 +766,28 @@ const DetailModal = ({ open, close, dataRec }) => {
               <p>{dataLawsuit.nopay} งวด</p>
             </Form.Item>
             <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
-              <p>{currencyFormatNoPoint(dataLawsuit.lossBenefit)} บาท</p>
+              <p>
+                {dataLawsuit?.lossBenefit
+                  ? currencyFormatNoPoint(dataLawsuit?.lossBenefit)
+                  : null}{" "}
+                บาท
+              </p>
             </Form.Item>
             <Form.Item label="จำนวนทุนทรัพย์" name="intigationFounds">
               <p>
-                {currencyFormatNoPoint(dataDetail?.lawsuit?.litigation_funds)}{" "}
+                {dataDetail?.lawsuit?.litigation_funds
+                  ? currencyFormatNoPoint(dataDetail?.lawsuit?.litigation_funds)
+                  : null}{" "}
                 บาท
               </p>
             </Form.Item>
             <Form.Item label="ค่าฤชา" name="fee">
-              <p>{currencyFormatPoint(dataDetail?.lawsuit?.fee)} บาท</p>
+              <p>
+                {dataDetail?.lawsuit?.fee
+                  ? currencyFormatPoint(dataDetail?.lawsuit?.fee)
+                  : null}{" "}
+                บาท
+              </p>
             </Form.Item>
             <Form.Item label="หมายเหตุ" name="memo">
               {" "}
@@ -790,22 +824,29 @@ const DetailModal = ({ open, close, dataRec }) => {
               </Form.Item>
               <Form.Item label="คำพิพากษา" name="judgement1">
                 {" "}
-                {currencyFormatNoPoint(dataDetail?.judge?.judgement)} บาท
+                {dataDetail?.judge?.judgement
+                  ? currencyFormatNoPoint(dataDetail?.judge?.judgement)
+                  : null}{" "}
+                บาท
               </Form.Item>
               <Form.Item label="ค่าขาดประโยชน์" name="costUnless1">
-                {currencyFormatNoPoint(
-                  dataDetail?.judge?.defendants[0]?.cost_of_uselessness
-                )}{" "}
+                {dataDetail?.judge?.defendants[0]?.cost_of_uselessness
+                  ? currencyFormatNoPoint(
+                      dataDetail?.judge?.defendants[0]?.cost_of_uselessness
+                    )
+                  : null}{" "}
                 บาท
               </Form.Item>
               <Form.Item label="ดอกเบี้ยคำพิพากษา" name="interestRate">
                 {(dataDetail?.judge?.interest_rate * 100).toFixed(1)}%
               </Form.Item>
               <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth1">
-                {currencyFormatNoPoint(
-                  dataDetail?.judge?.defendants[0]
-                    ?.cost_of_useleseness_per_month
-                )}{" "}
+                {dataDetail?.judge?.defendants[0]?.cost_of_useleseness_per_month
+                  ? currencyFormatNoPoint(
+                      dataDetail?.judge?.defendants[0]
+                        ?.cost_of_useleseness_per_month
+                    )
+                  : null}{" "}
                 บาท
               </Form.Item>
               <Form.Item label="จำนวนกี่เดือน" name="costMonth1">
@@ -816,10 +857,16 @@ const DetailModal = ({ open, close, dataRec }) => {
                 เดือน
               </Form.Item>
               <Form.Item label="ค่าติดตาม" name="trackingFeeEnforce">
-                {currencyFormatNoPoint(dataDetail?.judge?.tracking_fee)} บาท
+                {dataDetail?.judge?.tracking_fee
+                  ? currencyFormatNoPoint(dataDetail?.judge?.tracking_fee)
+                  : null}{" "}
+                บาท
               </Form.Item>
               <Form.Item label="ค่าทนายความ" name="lawyerFeeEnforce">
-                {currencyFormatNoPoint(dataDetail?.judge?.attorney_fees)} บาท
+                {dataDetail?.judge?.attorney_fees
+                  ? currencyFormatNoPoint(dataDetail?.judge?.attorney_fees)
+                  : null}{" "}
+                บาท
               </Form.Item>
               <Form.Item label="ไฟล์คำพิพากษา" name="judgementFile">
                 <a
@@ -849,15 +896,19 @@ const DetailModal = ({ open, close, dataRec }) => {
                   <Divider>คำพิพากษาจำเลยถัดไป </Divider>
                   <Form.Item label="ค่าขาดประโยชน์" name="costUnless2">
                     {" "}
-                    {currencyFormatNoPoint(
-                      judgeNumber2[0]?.cost_of_uselessness
-                    )}{" "}
+                    {judgeNumber2[0]?.cost_of_uselessness
+                      ? currencyFormatNoPoint(
+                          judgeNumber2[0]?.cost_of_uselessness
+                        )
+                      : null}{" "}
                     บาท
                   </Form.Item>
                   <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth2">
-                    {currencyFormatNoPoint(
-                      judgeNumber2[0]?.cost_of_useleseness_per_month
-                    )}{" "}
+                    {judgeNumber2[0]?.cost_of_useleseness_per_month
+                      ? currencyFormatNoPoint(
+                          judgeNumber2[0]?.cost_of_useleseness_per_month
+                        )
+                      : null}{" "}
                     บาท
                   </Form.Item>
                   <Form.Item label="จำนวนกี่เดือน" name="costMonth2">
@@ -940,9 +991,11 @@ const DetailModal = ({ open, close, dataRec }) => {
             </Form.Item>
 
             <Form.Item label="ราคาประเมิน" name="estimatedPrice">
-              {currencyFormatNoPoint(
-                dataDetail?.investigateProperty[0]?.estimated_price
-              )}{" "}
+              {dataDetail?.investigateProperty[0]?.estimated_price
+                ? currencyFormatNoPoint(
+                    dataDetail?.investigateProperty[0]?.estimated_price
+                  )
+                : null}{" "}
               บาท
             </Form.Item>
 
@@ -984,9 +1037,11 @@ const DetailModal = ({ open, close, dataRec }) => {
                 : "-"}
             </Form.Item>
             <Form.Item label="ยอดหนี้จำนอง" name="mortgageBalance">
-              {currencyFormatNoPoint(
-                dataDetail?.investigateProperty[0]?.mortgage_balance
-              )}{" "}
+              {dataDetail?.investigateProperty[0]?.mortgage_balance
+                ? currencyFormatNoPoint(
+                    dataDetail?.investigateProperty[0]?.mortgage_balance
+                  )
+                : null}{" "}
               บาท
             </Form.Item>
             <Form.Item label="พอเฉลี่ยหนี้" name="averageStatus">

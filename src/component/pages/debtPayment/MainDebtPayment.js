@@ -24,7 +24,6 @@ import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
@@ -55,6 +54,8 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const [dataStore, setDataStore] = useState(null);
   const [dataRecord, setDataRecord] = useState();
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
 
   useEffect(() => {
     loadData();
@@ -96,7 +97,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === profileRedux.id && item.MAIN_STATUS_ID === PAYMENT
+          (item.MAIN_STATUS_ID === PAYMENT && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === PAYMENT)
       );
       setArrayTable(newData);
       setDataArr(newData);

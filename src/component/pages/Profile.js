@@ -129,6 +129,13 @@ const Main = () => {
         .then(async (res) => {
           if (res.status === 200) {
             message.success(`อัพเดทข้อมูลสำเร็จ ${userData.USERNAME}`);
+            localStorage.setItem("USERNAME", dataComfirm?.USERNAME);
+            localStorage.setItem("FNAME", dataComfirm?.FNAME);
+            localStorage.setItem("LNAME", dataComfirm?.LNAME);
+            localStorage.setItem("NNAME", dataComfirm?.NNAME);
+            localStorage.setItem("LICENCE_NO_LAWYERS", dataComfirm?.LICENCE_NO);
+            localStorage.setItem("COMPANY_ID", dataComfirm?.COMPANY_ID);
+            localStorage.setItem("ACTIVE_STATUS", dataComfirm?.ACTIVE_STATUS);
             setLoading(false);
           } else if (res.status === 201) {
             message.error("ลงทะเบียนใหม่");

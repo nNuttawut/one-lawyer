@@ -90,7 +90,12 @@ const Main = () => {
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter((item) => item.MAIN_STATUS_ID === FINISH);
+      const newData = data.filter(
+        (item) =>
+          (item.MAIN_STATUS_ID === FINISH && item.LAWYER_ID === userId) ||
+          ((ROLE_ID === "1" || ROLE_ID === "2") &&
+            item.MAIN_STATUS_ID === FINISH)
+      );
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);

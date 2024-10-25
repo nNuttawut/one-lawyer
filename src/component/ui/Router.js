@@ -31,6 +31,7 @@ import FinalCase from "../pages/finalCase/MainFinal";
 import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
+import Test from "../pages/guidebook/Test";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -106,6 +107,7 @@ export default function Router() {
               element={<CommissionInvestigate />}
             />
             <Route path="guidbook/read-text/*" element={<ReadText />} />
+            <Route path="guidbook/test/*" element={<Test />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>
