@@ -13,12 +13,12 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined, FormOutlined } from "@ant-design/icons";
+import { SyncOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
-import CreateNotice from "./modal/CreateNotice";
 import { Link } from "react-router-dom";
-import EditNotice from "./modal/EditNotice";
+import UpdateStatusNotice from "./modal/UpdateStatusNotice";
+
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS_BY_STATUS,
@@ -32,9 +32,9 @@ import DateCustom from "../../../hook/DateCustom";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
+
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -88,8 +88,7 @@ const Main = () => {
 
     if (Array.isArray(data)) {
       const newData = data.filter(
-        (item) =>
-          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
+        (item) => item.LAWYER_ID === userId && item.DATE
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -227,11 +226,6 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
-    {
-      title: "หมายเลข EMS",
-      align: "center",
-      render: (record) => <>{record.MEMO ? record.MEMO : null}</>,
-    },
     //ทำ logic record
     ...(ROLE_ID === "1" || ROLE_ID === "2"
       ? [
@@ -277,43 +271,24 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {userId === record.LAWYER_ID &&
+                      (ROLE_ID === "1" || ROLE_ID === "2") ? (
                         <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
+                          style={{ boxShadow: "0 4px 3px" }}
                           onClick={() => {
-                            setIsModalCreate(true);
+                            setIsModalUpdate(true);
                             setDataModal(record);
                           }}
                         >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
+                          <SyncOutlined
+                            style={{ color: "green", fontSize: "16px" }}
                           />
                         </Button>
                       ) : null}
-                      {record.DATE ? (
-                        <>
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalEdit(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </>
-                      ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => ROLE_ID === "1" || ROLE_ID === "2",
+                  rowExpandable: (record) =>
+                    userId === record.LAWYER_ID && record.DATE,
                 }}
               />
             </Col>
@@ -323,18 +298,10 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {isModalCreate ? (
-        <CreateNotice
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEdit ? (
-        <EditNotice
-          open={isModalEdit}
-          close={setIsModalEdit}
+      {isModalUpdate ? (
+        <UpdateStatusNotice
+          open={isModalUpdate}
+          close={setIsModalUpdate}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />

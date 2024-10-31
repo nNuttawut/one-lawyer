@@ -217,6 +217,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo ? values.memo : dataDefualt.MEMO,
+      PROCESS_ID: values.PROCESS_ID,
       DATE: dataForm.dateCourt
         ? dataForm.dateCourt
         : moment(dataDefualt.DATE).format("YYYY-MM-DD"),

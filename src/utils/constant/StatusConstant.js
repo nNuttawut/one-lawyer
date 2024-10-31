@@ -21,6 +21,7 @@ export const getSelectOptions = (list) =>
 
 export const optionsSatus = [...getSelectOptions(listStatus)];
 
+export const JOB_NULL = 0;
 export const NOTICE = 1;
 export const INDICT = 2;
 export const AWAITING_JUDMENT = 3;
@@ -33,3 +34,6 @@ export const NEGOTIATE = 9;
 export const SELL_ASSETS = 10;
 export const FINISH = 11;
 export const BAD_DEBTOR = 12;
+export const STATUS_PROCESS_PROGRESS = 1;
+export const STATUS_PROCESS_UNSUCCESSFUL = 2;
+export const STATUS_PROCESS_SUCCESSFUL = 3;

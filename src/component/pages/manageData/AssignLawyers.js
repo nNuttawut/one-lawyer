@@ -22,12 +22,16 @@ import {
   optionsLone,
   HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  JOB_NULL,
+  NOTICE,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../utils/constant/StatusConstant";
 import {
   POST_STATUS,
   HEADERS_EXPORT,
-  GET_JOB_IN_PROGRESS,
   baseUrl,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
 
@@ -93,7 +97,7 @@ const Main = () => {
     console.log("loadData AssignLawyers");
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JOB_NULL, {
           HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
@@ -103,8 +107,11 @@ const Main = () => {
               ...item,
               key: i++,
             }));
-            filterDataNotAssign(newData);
-            console.log("resQuery", resQuery.data);
+
+            setArrayTable(newData);
+            setDataArr(newData);
+            setTableLength(newData.length);
+            console.log("resQuery", newData);
             setLoading(false);
           } else {
             setArrayTable([]);
@@ -122,12 +129,6 @@ const Main = () => {
     }
   };
 
-  const filterDataNotAssign = (value) => {
-    const newData = value.filter((item) => item.MAIN_STATUS_ID === null);
-    setArrayTable(newData);
-    setDataArr(newData);
-    setTableLength(newData.length);
-  };
   //set redux
   // const storeData = () => {
   //   dispatch(updateData(arrayTable));
@@ -335,6 +336,7 @@ const Main = () => {
         LAW_TYPE_ID: lawType,
         MEMO: null,
         DATE: null,
+        PROCESS_ID: STATUS_PROCESS_PROGRESS,
       };
 
       // Return อัพเดท array
@@ -404,6 +406,7 @@ const Main = () => {
     setDataArr(result);
     const newData = result.filter((item) => item.MAIN_STATUS_ID === null);
     setArrayTable(newData);
+    setTableLength(newData.length);
   };
 
   const reloadPage = () => {
@@ -427,6 +430,7 @@ const Main = () => {
     const newData = dataArr.filter((item) => !idsToFilterOut.includes(item.id));
 
     setArrayTable(newData);
+    setTableLength(newData.length);
     console.log("newData", newData);
   };
 

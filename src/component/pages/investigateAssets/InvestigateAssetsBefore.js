@@ -84,9 +84,7 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter(
-        (item) => item?.MAIN_STATUS_ID < JUDGEMENT && item?.MAIN_STATUS_ID
-      );
+      const newData = data.filter((item) => item?.MAIN_STATUS_ID);
       console.log("newDataLawsuit 11", newData);
       setArrayTable(newData);
       setDataArr(newData);

@@ -26,7 +26,10 @@ import {
 //use redux
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { INVESTIGATE } from "../../../utils/constant/StatusConstant";
+import {
+  CASE_IS_FINAL,
+  INVESTIGATE,
+} from "../../../utils/constant/StatusConstant";
 import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 
 const Main = () => {
@@ -81,9 +84,7 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter(
-        (item) => item?.MAIN_STATUS_ID === INVESTIGATE && item?.MAIN_STATUS_ID
-      );
+      const newData = data.filter((item) => item?.MAIN_STATUS_ID);
       console.log("newDataLawsuit 11", newData);
       setArrayTable(newData);
       setDataArr(newData);

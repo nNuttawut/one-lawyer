@@ -227,7 +227,7 @@ export {
 // const GET_SUB_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/subdistricted/`;
 // const GET_ZIPCODE = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
 
-//get GeoThailand ที่ดิน
+// // get GeoThailand ที่ดิน
 // const GET_PROVICE_LAND = `https://onemoney.ngrok.app/GetProvince`;
 // const POST_DISTRICT_LAND = `https://onemoney.ngrok.app/GetAmphur`;
 // const POST_CALCULATE_LAND = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
@@ -275,7 +275,7 @@ export {
 //   GET_ZIPCODE,
 //   DELETE_STATUS_BY_WORKLOG,
 //   GET_DETAILS,
-// GET_PROVICE_LAND,
-// POST_DISTRICT_LAND,
-// POST_CALCULATE_LAND
+//   GET_PROVICE_LAND,
+//   POST_DISTRICT_LAND,
+//   POST_CALCULATE_LAND,
 // };

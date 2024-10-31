@@ -21,6 +21,7 @@ import axios from "axios";
 import moment from "moment";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import DocumentEnforce from "./DocumentEnforce";
+import { STATUS_PROCESS_SUCCESSFUL } from "../../../../utils/constant/StatusConstant";
 
 const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
@@ -168,6 +169,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
       DATE: dataForm.dateCourt,
+      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
     };
 
     setDataStore((prev) => ({

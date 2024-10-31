@@ -11,7 +11,7 @@ import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
 import {
   INDICT,
   NEGOTIATE,
-  PAYMENT,
+  STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
@@ -130,6 +130,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+      PROCESS_ID: STATUS_PROCESS_PROGRESS,
       MEMO: memoText,
       DATE: statusSelect === INDICT ? null : moment().format("YYYY-MM-DD"),
     };
@@ -217,7 +218,6 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       <Modal
         title="เปลี่ยนสถานะ"
         open={open}
-        onCancel={handleCancel}
         width={850}
         footer={[
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
@@ -235,7 +235,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <div style={{ marginTop: "10px" }}>
             <TextArea
               rows={5}
-              placeholder="หมายเหตุ"
+              placeholder="กรอกเลขEMS/หมายเหตุ"
               value={memoText}
               onChange={onChangeInput}
             />

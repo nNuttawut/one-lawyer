@@ -10,7 +10,11 @@ import {
   message,
 } from "antd";
 import { useEffect, useState } from "react";
-import { NOTICE } from "../../../../utils/constant/StatusConstant";
+import {
+  NOTICE,
+  STATUS_PROCESS_PROGRESS,
+  STATUS_PROCESS_SUCCESSFUL,
+} from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
   baseUrl,
@@ -29,11 +33,18 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [companiesList, setLoadingData] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
+  const { dateNow, setDateNow } = useState(null);
 
   useEffect(() => {
     loadData();
     setLoadingData(true);
+    dateSet();
   }, [setLoadingData]);
+
+  const dateSet = () => {
+    const date = moment().format("YYYY-MM-DD");
+    return date;
+  };
 
   useEffect(() => {
     setOption();
@@ -48,9 +59,8 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setCompaniesOption(options);
   };
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
     try {
       const response = await axios.get(
         baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefualt.LAWSUIT_ID,
@@ -60,7 +70,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       );
       if (response.data) {
         setLawsuitData(response.data);
-        console.log(response.data);
+        console.log("setLawsuitData", response.data);
 
         setLoading(false);
       } else {
@@ -74,7 +84,6 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
-  console.log(lawsuitData);
 
   const sendStatus = async (data, lawsuit) => {
     console.log("data-->", data, lawsuit);
@@ -108,6 +117,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 MAIN_STATUS_ID: NOTICE,
                 DATE: data.DATE,
                 COMPANY_ID: lawsuit.COMPANY_ID,
+                MEMO: data.MEMO,
               });
               setLoading(false);
             } else {
@@ -151,23 +161,25 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const onChangeInput = (value) => {
     console.log(value);
   };
-  console.log("dataDefualt", dataDefualt);
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    const putData = {
+    const postData = {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
-      DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
+      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      DATE: preData
+        ? moment(preData.dateNotice).format("YYYY-MM-DD")
+        : moment(values.dateNotice).format("YYYY-MM-DD"),
     };
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
     };
-    console.log("putDataData", putData);
-    sendStatus(putData, putLawsuit);
+    console.log("putDataData", postData);
+    sendStatus(postData, putLawsuit);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -199,7 +211,11 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               }}
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
-              initialValues={{ memo: null }}
+              initialValues={{
+                memo: null,
+                company: 2,
+                dateNotice: moment(),
+              }}
             >
               <Form.Item
                 label="บริษัทที่ออกหนังสือ"
@@ -220,6 +236,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   optionFilterProp="value"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
+                  defaultValue={2}
                 />
               </Form.Item>
               <Form.Item
@@ -234,9 +251,18 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               >
                 <DatePicker onChange={onChange} />
               </Form.Item>
-              <Form.Item label="หมายเหตุ" name="memo">
+              <Form.Item
+                label="กรอกหมายเลข EMS"
+                name="memo"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดกรอกข้อมูล",
+                  },
+                ]}
+              >
                 <TextArea
-                  rows={5}
+                  rows={1}
                   onChange={(e) => onChangeInput(e.target.value)}
                 />
               </Form.Item>

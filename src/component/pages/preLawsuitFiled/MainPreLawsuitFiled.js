@@ -44,7 +44,6 @@ const Main = () => {
   const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
@@ -94,9 +93,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.MAIN_STATUS_ID === INDICT && item.LAWYER_ID === userId) ||
-          ((ROLE_ID === "1" || ROLE_ID === "2") &&
-            item.MAIN_STATUS_ID === INDICT)
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
       );
       setArrayTable(newData);
       setDataArr(newData);

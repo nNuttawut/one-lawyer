@@ -195,6 +195,7 @@ const Main = () => {
         LOAN_TYPE_ID: ownData[0]?.LOAN_TYPE_ID,
         LAW_TYPE_ID: ownData[0]?.LAW_TYPE_ID,
         MEMO: null,
+        PROCESS_ID: ownData[0]?.PROCESS_ID,
       };
       // Return อัพเดท array
       return [...updatedData, newItem];

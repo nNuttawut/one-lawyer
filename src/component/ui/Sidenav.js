@@ -48,7 +48,23 @@ function Sidenav({ color, onClick }) {
       label: "notice",
       path: "/notice",
       icon: <FormOutlined />,
-      title: "สร้าง โนติส",
+      title: "โนติส",
+      children: [
+        {
+          key: "31",
+          icon: <CaretRightOutlined />,
+          pageName: "import-data",
+          path: "notice/create-notice",
+          label: "สร้างโนติส",
+        },
+        {
+          key: "32",
+          icon: <CaretRightOutlined />,
+          pageName: "assign-lawyers",
+          path: "notice/reply-notice",
+          label: "ตอบกลับโนติส",
+        },
+      ],
     },
     {
       key: "4",

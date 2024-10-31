@@ -9,7 +9,7 @@ import {
   Spin,
   message,
 } from "antd";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { NOTICE } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
@@ -45,6 +45,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     form.setFieldsValue({
       company: dataDefualt.COMPANY_ID,
       dateNotice: moment(dataDefualt.DATE),
+      memo: dataDefualt.MEMO,
     });
   };
 
@@ -169,6 +170,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
       DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
+      PROCESS_ID: dataDefualt.PROCESS_ID,
     };
     const putLawsuit = {
       ...lawsuitData,

@@ -32,6 +32,7 @@ import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
 import Test from "../pages/guidebook/Test";
+import ReplyNotice from "../pages/notice/ReplyNotice";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -48,7 +49,8 @@ export default function Router() {
             <Route path="/final-case/*" element={<FinalCase />} />
             <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
             <Route path="/disbursement/*" element={<DisbursementRoute />} />
-            <Route path="/notice/*" element={<Notice />} />
+            <Route path="/notice/create-notice/*" element={<Notice />} />
+            <Route path="notice/reply-notice/*" element={<ReplyNotice />} />
             <Route
               path="/investigate-assets/*"
               element={<InvestigateAssetsRoute />}
