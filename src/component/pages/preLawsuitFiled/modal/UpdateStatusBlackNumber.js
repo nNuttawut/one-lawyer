@@ -10,7 +10,10 @@ import {
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import { AWAITING_JUDMENT } from "../../../../utils/constant/StatusConstant";
+import {
+  AWAITING_JUDMENT,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../../utils/constant/StatusConstant";
 
 const UpdateStatusBlackNumber = ({
   open,
@@ -164,6 +167,7 @@ const UpdateStatusBlackNumber = ({
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
       MEMO: values.memo,
       DATE: dataForm.considerationDate,
+      PROCESS_ID: STATUS_PROCESS_PROGRESS,
     };
 
     console.log(postStatus);
