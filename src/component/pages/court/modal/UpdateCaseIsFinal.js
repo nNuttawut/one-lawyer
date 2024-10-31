@@ -18,7 +18,10 @@ import {
   GET_JUDGE_BY_ID,
   PUT_JUDGE,
 } from "../../../API/apiUrls";
-import { INVESTIGATE } from "../../../../utils/constant/StatusConstant";
+import {
+  INVESTIGATE,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
 
@@ -164,6 +167,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
           MEMO: memoText,
           DATE: dateEnforceCase,
+          PROCESS_ID: STATUS_PROCESS_PROGRESS,
         };
         const putJudgement = {
           ...dataLoadJudgement,
