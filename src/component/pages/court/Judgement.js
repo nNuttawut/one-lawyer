@@ -292,7 +292,7 @@ const Main = () => {
                     const recordDate = moment(record.DATE);
                     const today = moment().startOf("day");
                     const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference > 30;
+                    return daysDifference > 30 && userId === record.LAWYER_ID;
                   },
                 }}
               />

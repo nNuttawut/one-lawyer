@@ -24,6 +24,7 @@ import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
@@ -65,9 +66,12 @@ const Main = () => {
     setLoading(true);
     console.log(data);
     try {
-      const response = await axios.get(baseUrl + GET_JOB_IN_PROGRESS, {
-        HEADERS_EXPORT,
-      });
+      const response = await axios.get(
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + PAYMENT,
+        {
+          HEADERS_EXPORT,
+        }
+      );
       if (response.data) {
         let i = 1;
         if (response.data) {
@@ -97,9 +101,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.MAIN_STATUS_ID === PAYMENT && item.LAWYER_ID === userId) ||
-          ((ROLE_ID === "1" || ROLE_ID === "2") &&
-            item.MAIN_STATUS_ID === PAYMENT)
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
       );
       setArrayTable(newData);
       setDataArr(newData);

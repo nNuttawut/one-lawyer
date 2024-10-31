@@ -102,12 +102,10 @@ const Main = () => {
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.MAIN_STATUS_ID === NEGOTIATE && item.LAWYER_ID === userId) ||
-          ((ROLE_ID === "1" || ROLE_ID === "2") &&
-            item.MAIN_STATUS_ID === NEGOTIATE)
-      );
+      const newData =
+        data.filter((item) => item.LAWYER_ID === userId) ||
+        ROLE_ID === "1" ||
+        ROLE_ID === "2";
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);

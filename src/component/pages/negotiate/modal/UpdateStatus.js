@@ -33,7 +33,11 @@ import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { optionsInterest } from "../../../../utils/constant/ Interest";
 import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import { optionsMonth } from "../../../../utils/constant/MonthSelect";
-import { JUDGEMENT, PAYMENT } from "../../../../utils/constant/StatusConstant";
+import {
+  JUDGEMENT,
+  PAYMENT,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
@@ -175,6 +179,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       MEMO: values.memo,
       DATE: preData,
       MAIN_STATUS_ID: PAYMENT,
+      PROCESS_ID: STATUS_PROCESS_PROGRESS,
     };
     const agreement = {
       LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
