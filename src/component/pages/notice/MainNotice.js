@@ -27,7 +27,10 @@ import {
 
 //use redux
 import axios from "axios";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  NOTICE,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 
 const Main = () => {
@@ -89,7 +92,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID &&
+          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -151,7 +156,12 @@ const Main = () => {
       });
       console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      const arr = result.filter(
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID &&
+          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
+      );
       console.log("arr", arr);
       setArrayTable(arr);
     } else {

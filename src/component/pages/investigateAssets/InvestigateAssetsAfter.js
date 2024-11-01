@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
@@ -29,6 +30,7 @@ import axios from "axios";
 import {
   CASE_IS_FINAL,
   INVESTIGATE,
+  NOTICE,
 } from "../../../utils/constant/StatusConstant";
 import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 
@@ -56,7 +58,7 @@ const Main = () => {
 
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
           HEADERS_EXPORT,
         })
         .then(async (res) => {
@@ -84,7 +86,7 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter((item) => item?.MAIN_STATUS_ID);
+      const newData = data.filter((item) => item.MAIN_STATUS_ID >= 4);
       console.log("newDataLawsuit 11", newData);
       setArrayTable(newData);
       setDataArr(newData);
@@ -144,9 +146,10 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log("result", result);
-      setDataArr(result);
-      setArrayTable(result);
+      const newData = result.filter((item) => item.MAIN_STATUS_ID >= 4);
+      console.log("result", newData);
+      setDataArr(newData);
+      setArrayTable(newData);
     } else {
       loadData();
       console.log("handleUpdateData loadData");

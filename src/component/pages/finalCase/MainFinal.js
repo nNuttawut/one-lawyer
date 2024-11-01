@@ -60,7 +60,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + FINISH,
         {
           HEADERS_EXPORT,
         }
@@ -92,9 +92,8 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.MAIN_STATUS_ID === FINISH && item.LAWYER_ID === userId) ||
-          ((ROLE_ID === "1" || ROLE_ID === "2") &&
-            item.MAIN_STATUS_ID === FINISH)
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -156,7 +155,11 @@ const Main = () => {
       });
       console.log("result", result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID === NOTICE);
+      const arr = result.filter(
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
+      );
       console.log("arr", arr);
       setArrayTable(arr);
     } else {

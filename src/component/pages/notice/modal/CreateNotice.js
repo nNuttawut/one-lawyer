@@ -118,6 +118,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 DATE: data.DATE,
                 COMPANY_ID: lawsuit.COMPANY_ID,
                 MEMO: data.MEMO,
+                PROCESS_ID: data.PROCESS_ID,
               });
               setLoading(false);
             } else {

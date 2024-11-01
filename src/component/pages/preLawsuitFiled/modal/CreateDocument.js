@@ -128,6 +128,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             funcUpdateStatus({
               ...dataDefualt,
               DATE: status.DATE,
+              PROCESS_ID: data.PROCESS_ID,
             });
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");

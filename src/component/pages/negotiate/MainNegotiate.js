@@ -102,10 +102,11 @@ const Main = () => {
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData =
-        data.filter((item) => item.LAWYER_ID === userId) ||
-        ROLE_ID === "1" ||
-        ROLE_ID === "2";
+      const newData = data.filter(
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
+      );
       setArrayTable(newData);
       setDataArr(newData);
       setTableLength(newData.length);
@@ -165,7 +166,11 @@ const Main = () => {
       });
       console.log(result);
       setDataArr(result);
-      const arr = result.filter((item) => item.MAIN_STATUS_ID >= ENFORCEMENT);
+      const arr = result.filter(
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
+      );
       console.log("arr", arr);
       setArrayTable(arr);
     } else {

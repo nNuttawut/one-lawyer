@@ -106,7 +106,8 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -168,7 +169,9 @@ const Main = () => {
       console.log(result);
       setDataArr(result);
       const arr = result.filter(
-        (item) => item.MAIN_STATUS_ID === AWAITING_JUDMENT
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
+          item.MAIN_STATUS_ID === item.STATUS_ID
       );
       console.log("arr", arr);
       setArrayTable(arr);
