@@ -13,7 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined, FormOutlined } from "@ant-design/icons";
+import { EditOutlined, FormOutlined, SyncOutlined } from "@ant-design/icons";
 import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
@@ -32,12 +32,14 @@ import {
   STATUS_PROCESS_PROGRESS,
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
+import UpdateReplyNotice from "./modal/UpdateReplyNotic";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModaUpdateReply, setIsModalUpdateReply] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -47,6 +49,7 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [dataRecord, setDataRecord] = useState();
+  const [dateUpdate, setDateUpdate] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -181,12 +184,38 @@ const Main = () => {
     const daysDifference = today.diff(recordDate, "days");
     let color = daysDifference > 30 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
         {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
       </Tag>
+    );
+  };
+
+  const updateDate = (record) => {
+    const recordDate = moment(record.DATE);
+    const today = moment().startOf("day");
+    const daysDifference = today.diff(recordDate, "days");
+
+    return (
+      <>
+        {daysDifference > 30 ? (
+          <Button
+            style={{
+              boxShadow: "0 4px 3px",
+              marginRight: "10px",
+            }}
+            onClick={() => {
+              setIsModalUpdateReply(true);
+              setDataModal(record);
+            }}
+          >
+            <SyncOutlined style={{ color: "green", fontSize: "16px" }} />
+          </Button>
+        ) : null}
+      </>
     );
   };
 
@@ -319,6 +348,7 @@ const Main = () => {
                               style={{ color: "orange", fontSize: "16px" }}
                             />
                           </Button>
+                          {updateDate(record)}
                         </>
                       ) : null}
                     </p>
@@ -345,6 +375,14 @@ const Main = () => {
         <EditNotice
           open={isModalEdit}
           close={setIsModalEdit}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModaUpdateReply ? (
+        <UpdateReplyNotice
+          open={isModaUpdateReply}
+          close={setIsModalUpdateReply}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />

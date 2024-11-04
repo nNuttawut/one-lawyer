@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, Card, Radio, Steps, message, Spin } from "antd";
 import {
-  BellOutlined,
   AuditOutlined,
   LoadingOutlined,
   DollarOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
-import {
-  INDICT,
-  NEGOTIATE,
-  STATUS_PROCESS_PROGRESS,
-} from "../../../../utils/constant/StatusConstant";
+import { INDICT, NEGOTIATE } from "../../../../utils/constant/StatusConstant";
 import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
 
@@ -130,7 +125,6 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-      PROCESS_ID: STATUS_PROCESS_PROGRESS,
       MEMO: memoText,
       DATE: statusSelect === INDICT ? null : moment().format("YYYY-MM-DD"),
     };
@@ -235,7 +229,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <div style={{ marginTop: "10px" }}>
             <TextArea
               rows={5}
-              placeholder="กรอกเลขEMS/หมายเหตุ"
+              placeholder="หมายเหตุ"
               value={memoText}
               onChange={onChangeInput}
             />

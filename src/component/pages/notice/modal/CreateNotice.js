@@ -170,7 +170,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
-      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      PROCESS_ID: STATUS_PROCESS_PROGRESS,
       DATE: preData
         ? moment(preData.dateNotice).format("YYYY-MM-DD")
         : moment(values.dateNotice).format("YYYY-MM-DD"),
