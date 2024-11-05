@@ -3,16 +3,16 @@ import { Button, Modal, Card, Radio, message, Spin, Form, Input } from "antd";
 import axios from "axios";
 import {
   baseUrl,
-  POST_STATUS,
   HEADERS_EXPORT,
+  PUT_PARCELS,
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import { STATUS_PROCESS_SUCCESSFUL } from "../../../../utils/constant/StatusConstant";
-import moment from "moment";
+import dayjs from "dayjs";
 
 const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
-  const [defaultRadio, setDefaultRadio] = useState("replyCard");
+  const [defaultRadio, setDefaultRadio] = useState("1");
   const [form] = Form.useForm();
 
   const handleCancel = () => {
@@ -20,7 +20,7 @@ const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     close(false);
   };
 
-  const sendStatus = async (data) => {
+  const sendStatus = async (data, parcel) => {
     setLoading(true);
     try {
       await axios
@@ -46,6 +46,23 @@ const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
+
+      await axios
+        .put(baseUrl + PUT_PARCELS, parcel, { HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status === 404) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
@@ -61,13 +78,22 @@ const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
-      MEMO: dataDefualt.memo,
-      DATE: moment(dataDefualt.DATE).format("YYYY-MM-DD"),
+      MEMO: dataDefualt.MEMO,
+      DATE: dayjs(dataDefualt.DATE).format("YYYY-MM-DD"),
       PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
     };
+    const putParcel = {
+      id: dataDefualt.PARCEL_ID,
+      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+      parcel_no: dataDefualt.PARCEL_NO,
+      parcel_typ_id: values.radio,
+      url_path: values.imageReplyFile,
+    };
+
     console.log(putData);
-    sendStatus(putData);
+    sendStatus(putData, putParcel);
   };
+  console.log("datadddd", dataDefualt);
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -119,8 +145,8 @@ const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         >
           <Form.Item label="การตอบกลับ" name="radio">
             <Radio.Group onChange={onChange} defaultValue={defaultRadio}>
-              <Radio value="replyCard">จากใบตอบกลับ</Radio>
-              <Radio value="website">จากเว็บไปษณีย์</Radio>
+              <Radio value="1">จากใบตอบกลับ</Radio>
+              <Radio value="2">จากเว็บไปษณีย์</Radio>
             </Radio.Group>
           </Form.Item>
           <Form.Item

@@ -4,10 +4,10 @@ import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
 import "../../../../assets/font/THSarabunNew-bold";
 import CreateDocument from "./CreateNotice";
-import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { Input } from "antd";
+import dayjs from "dayjs";
 
 const DocumentNotice = ({ open, close, contno }) => {
   const [
@@ -129,8 +129,8 @@ const DocumentNotice = ({ open, close, contno }) => {
   const calLostBenefits = () => {
     console.log(textData.enforceDate);
     console.log(textData.dueDate);
-    let date1 = moment(textData.enforceDate);
-    let date2 = moment(textData.dueDate);
+    let date1 = dayjs(textData.enforceDate);
+    let date2 = dayjs(textData.dueDate);
     const differenceDays = date1.diff(date2, "month");
     console.log(differenceDays);
     setTaxtData({

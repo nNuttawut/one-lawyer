@@ -13,18 +13,18 @@ import { useEffect, useState } from "react";
 import {
   NOTICE,
   STATUS_PROCESS_PROGRESS,
-  STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
   HEADERS_EXPORT,
+  POST_PARCELS,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
-import moment from "moment";
 import LoadCompanies from "../../../../hook/LoadCompanies";
+import dayjs from "dayjs";
 
 const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,6 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [companiesList, setLoadingData] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
-  const { dateNow, setDateNow } = useState(null);
 
   useEffect(() => {
     loadData();
@@ -42,7 +41,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   }, [setLoadingData]);
 
   const dateSet = () => {
-    const date = moment().format("YYYY-MM-DD");
+    const date = dayjs().format("YYYY-MM-DD");
     return date;
   };
 
@@ -85,7 +84,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (data, lawsuit) => {
+  const sendStatus = async (data, lawsuit, parcel) => {
     console.log("data-->", data, lawsuit);
     if (data) {
       setLoading(true);
@@ -94,6 +93,23 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+
+        await axios
+          .post(baseUrl + POST_PARCELS, parcel, { HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 201) {
               console.log("resQuery", res.data);
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
@@ -119,6 +135,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 COMPANY_ID: lawsuit.COMPANY_ID,
                 MEMO: data.MEMO,
                 PROCESS_ID: data.PROCESS_ID,
+                PARCEL_NO: parcel.parcel_no,
               });
               setLoading(false);
             } else {
@@ -159,6 +176,10 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setPreData({ ...preData, dateNotice: dateString });
   };
 
+  const onChangeInputParcel = (value) => {
+    console.log(value);
+  };
+
   const onChangeInput = (value) => {
     console.log(value);
   };
@@ -172,15 +193,22 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       MEMO: values.memo,
       PROCESS_ID: STATUS_PROCESS_PROGRESS,
       DATE: preData
-        ? moment(preData.dateNotice).format("YYYY-MM-DD")
-        : moment(values.dateNotice).format("YYYY-MM-DD"),
+        ? dayjs(preData.dateNotice).format("YYYY-MM-DD")
+        : dayjs(values.dateNotice).format("YYYY-MM-DD"),
     };
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
     };
+
+    const postParcel = {
+      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+      parcel_no: values.parcelNo,
+      parcel_typ_id: null,
+      url_path: null,
+    };
     console.log("putDataData", postData);
-    sendStatus(postData, putLawsuit);
+    sendStatus(postData, putLawsuit, postParcel);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -215,7 +243,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               initialValues={{
                 memo: null,
                 company: 2,
-                dateNotice: moment(),
+                dateNotice: dayjs(),
               }}
             >
               <Form.Item
@@ -254,7 +282,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               </Form.Item>
               <Form.Item
                 label="กรอกหมายเลข EMS"
-                name="memo"
+                name="parcelNo"
                 rules={[
                   {
                     required: true,
@@ -264,6 +292,12 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               >
                 <TextArea
                   rows={1}
+                  onChange={(e) => onChangeInputParcel(e.target.value)}
+                />
+              </Form.Item>
+              <Form.Item label="หมายเหตุ" name="memo">
+                <TextArea
+                  rows={5}
                   onChange={(e) => onChangeInput(e.target.value)}
                 />
               </Form.Item>

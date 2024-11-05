@@ -7,9 +7,9 @@ import garuda from "../../../../assets/images/garuda_emblem.jpg";
 import bracket from "../../../../assets/images/bracket.png";
 import arabicToThai from "../../../../hook/arabicToThai";
 import ConvertToThaiFont from "../../../../hook/ConvertToThaiFont";
-import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import dayjs from "dayjs";
 
 const DocumentEnforce = ({ open, close }) => {
   const [convertToThaiNumerals] = arabicToThai();
@@ -110,8 +110,8 @@ const DocumentEnforce = ({ open, close }) => {
   const calLostBenefits = () => {
     console.log(textData.enforceDate);
     console.log(textData.dueDate);
-    let date1 = moment(textData.enforceDate);
-    let date2 = moment(textData.dueDate);
+    let date1 = dayjs(textData.enforceDate);
+    let date2 = dayjs(textData.dueDate);
     const differenceDays = date1.diff(date2, "month");
     console.log(differenceDays);
     setTaxtData({

@@ -6,10 +6,10 @@ import CreateDocument from "./CreateNotice";
 import garuda from "../../../../assets/images/garuda_emblem.jpg";
 import arabicToThai from "../../../../hook/arabicToThai";
 import ConvertToThaiFont from "../../../../hook/ConvertToThaiFont";
-import moment from "moment";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { Input } from "antd";
+import dayjs from "dayjs";
 
 const TextEdit = ({ open, close }) => {
   const [convertToThaiNumerals] = arabicToThai();
@@ -120,8 +120,8 @@ const TextEdit = ({ open, close }) => {
   const calLostBenefits = () => {
     console.log(textData.enforceDate);
     console.log(textData.dueDate);
-    let date1 = moment(textData.enforceDate);
-    let date2 = moment(textData.dueDate);
+    let date1 = dayjs(textData.enforceDate);
+    let date2 = dayjs(textData.dueDate);
     const differenceDays = date1.diff(date2, "month");
     console.log(differenceDays);
     setTaxtData({

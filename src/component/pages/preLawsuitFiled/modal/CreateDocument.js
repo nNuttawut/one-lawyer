@@ -18,10 +18,10 @@ import {
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import moment from "moment";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import DocumentEnforce from "./DocumentEnforce";
 import { STATUS_PROCESS_SUCCESSFUL } from "../../../../utils/constant/StatusConstant";
+import dayjs from "dayjs";
 
 const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
@@ -306,8 +306,8 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const handleLossPay = (value) => {
     console.log("date", value);
-    let dateCurrent = moment(value);
-    let lastPayDate = moment(dataLoadLoan?.LOAN?.LPAYD);
+    let dateCurrent = dayjs(value);
+    let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
     const differenceMonth = dateCurrent.diff(lastPayDate, "month");
     const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
       ? differenceMonth * dataLoadLoan?.LOAN?.TOT_UPAY

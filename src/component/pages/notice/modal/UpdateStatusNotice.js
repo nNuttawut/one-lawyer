@@ -8,8 +8,8 @@ import {
 import axios from "axios";
 import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
 import { INDICT, NEGOTIATE } from "../../../../utils/constant/StatusConstant";
-import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
+import dayjs from "dayjs";
 
 const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [defaultRadio, setDefaultRadio] = useState("enforce");
@@ -24,9 +24,9 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   useEffect(() => {
     if (dataDefualt.DATE) {
-      const recordDate = moment(dataDefualt.DATE);
-      const toDay = moment().startOf("day");
-      const toDate = moment(recordDate).add(30, "days");
+      const recordDate = dayjs(dataDefualt.DATE);
+      const toDay = dayjs().startOf("day");
+      const toDate = dayjs(recordDate).add(30, "days");
       const daysDifference = toDay.diff(toDate, "days");
       console.log("toDate", toDate);
       console.log("daysDifference", daysDifference);
@@ -54,7 +54,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               funcUpdateStatus({
                 ...dataDefualt,
                 MAIN_STATUS_ID: data.MAIN_STATUS_ID,
-                DATE: moment().format("YYYY-MM-DD"),
+                DATE: dayjs().format("YYYY-MM-DD"),
               });
               message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
               setLoading(false);
@@ -126,7 +126,7 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
       MEMO: memoText,
-      DATE: statusSelect === INDICT ? null : moment().format("YYYY-MM-DD"),
+      DATE: statusSelect === INDICT ? null : dayjs().format("YYYY-MM-DD"),
     };
     console.log(postData);
     sendStatus(postData);

@@ -9,18 +9,21 @@ import {
   Spin,
   message,
 } from "antd";
-import { memo, useEffect, useState } from "react";
-import { NOTICE } from "../../../../utils/constant/StatusConstant";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,
+  PUT_PARCELS,
   PUT_STATUS,
 } from "../../../API/apiUrls";
-import moment from "moment";
+
 import LoadCompanies from "../../../../hook/LoadCompanies";
+import dayjs from "dayjs";
+import "dayjs/locale/th"; // import ภาษาไทย
+dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
@@ -34,6 +37,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   useEffect(() => {
     loadData();
     setLoadingData(true);
+    console.log("dataDefualt", dataDefualt);
   }, [setLoadingData]);
 
   useEffect(() => {
@@ -44,8 +48,9 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const setDataDefualt = () => {
     form.setFieldsValue({
       company: dataDefualt.COMPANY_ID,
-      dateNotice: moment(dataDefualt.DATE),
+      dateNotice: dayjs(dataDefualt.DATE),
       memo: dataDefualt.MEMO,
+      parcelNo: dataDefualt.PARCEL_NO,
     });
   };
 
@@ -84,15 +89,31 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
-  console.log("lawsuitData", lawsuitData);
 
-  const sendStatus = async (data, lawsuit) => {
-    console.log("data-->", data, lawsuit);
+  const sendStatus = async (data, lawsuit, parcel) => {
+    console.log("data-->", data, lawsuit, parcel);
     if (data) {
       setLoading(true);
       try {
         await axios
           .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+
+        await axios
+          .put(baseUrl + PUT_PARCELS, parcel, { HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -115,8 +136,8 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               message.success("อัพเดทข้อมูลสำเร็จ");
               funcUpdateStatus({
                 ...dataDefualt,
-                COMPANY_ID: lawsuit.COMPANY_ID,
                 DATE: data.DATE,
+                PARCEL_NO: parcel.parcel_no,
               });
               setLoading(false);
             } else {
@@ -154,13 +175,16 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChange = (date, dateString) => {
     console.log(date, dateString);
-    setPreData({ ...preData, dateNotice: dateString });
+    setPreData(dateString);
+  };
+
+  const onChangeInputParcel = (value) => {
+    console.log(value);
   };
 
   const onChangeInput = (value) => {
     console.log(value);
   };
-  console.log("dataDefualt", dataDefualt);
 
   const onFinish = (values) => {
     console.log("Success:", values);
@@ -169,24 +193,30 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       USER_ID: dataDefualt.LAWYER_ID,
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
-      DATE: moment(preData.dateNotice).format("YYYY-MM-DD"),
+      DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefualt.DATE,
       PROCESS_ID: dataDefualt.PROCESS_ID,
     };
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
     };
+    const putParcel = {
+      id: dataDefualt.PARCEL_ID,
+      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+      parcel_no: values.parcelNo,
+      parcel_typ_id: null,
+      url_path: null,
+    };
     console.log("putDataData", putData);
     console.log("putLawsuit", putLawsuit);
-    sendStatus(putData, putLawsuit);
+    console.log("putLawsuit", putParcel);
+    sendStatus(putData, putLawsuit, putParcel);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
-
-  console.log("dataDefualt.DATE", dataDefualt.DATE);
 
   return (
     <>
@@ -251,9 +281,24 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 <DatePicker
                   format={"YYYY-MM-DD"}
                   defaultValue={
-                    dataDefualt.DATE ? moment(dataDefualt.DATE) : moment()
+                    dataDefualt.DATE ? dayjs(dataDefualt.DATE) : dayjs()
                   }
                   onChange={onChange}
+                />
+              </Form.Item>
+              <Form.Item
+                label="กรอกหมายเลข EMS"
+                name="parcelNo"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดกรอกข้อมูล",
+                  },
+                ]}
+              >
+                <TextArea
+                  rows={1}
+                  onChange={(e) => onChangeInputParcel(e.target.value)}
                 />
               </Form.Item>
 

@@ -57,6 +57,10 @@ const POST_AGREEMENTS = `/lawyer/dev/api/agreements/`;
 const PUT_AGREEMENTS = `/lawyer/dev/api/agreements`;
 const GET_AGREEMENTS_BY_ID = `/lawyer/dev/api/agreements/`;
 
+//notice
+const POST_PARCELS = `/lawyer/dev/api/parcels`;
+const PUT_PARCELS = `/lawyer/dev/api/parcels`;
+
 //ดึง users ในระบบ
 const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
 const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
@@ -137,6 +141,8 @@ export {
   GET_PROVICE_LAND,
   POST_DISTRICT_LAND,
   POST_CALCULATE_LAND,
+  POST_PARCELS,
+  PUT_PARCELS,
 };
 
 //----production-----
@@ -151,6 +157,10 @@ export {
 
 // //ดึงจำนวนงานที่ users รับงาน
 // const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
+
+//notice
+// const POST_PARCELS = `/lawyer/api/parcels`;
+// const PUT_PARCELS = `/lawyer/api/parcels`;
 
 // //ดึงจำนานงานที่กำลังดำเนินการ
 // const GET_JOB_IN_PROGRESS = "/lawyer/api/jobs";
@@ -278,4 +288,6 @@ export {
 //   GET_PROVICE_LAND,
 //   POST_DISTRICT_LAND,
 //   POST_CALCULATE_LAND,
+// POST_PARCELS,
+// PUT_PARCELS
 // };

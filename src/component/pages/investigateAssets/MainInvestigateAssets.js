@@ -2,10 +2,10 @@ import { Col, Row, Space, Table, Tag, DatePicker, Card, Button } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
-import moment from "moment";
 
 import { Link } from "react-router-dom";
 import MotionHoc from "../../../utils/MotionHoc";
+import dayjs from "dayjs";
 
 const Main = () => {
   const [isModal, setIsModal] = useState(false);
@@ -56,7 +56,7 @@ const Main = () => {
               <Tag color={color} key={tag} style={{ textAlign: "center" }}>
                 {tag.toUpperCase()}
                 <br />
-                {moment().format("DD/MM/YY")}
+                {dayjs().format("DD/MM/YY")}
               </Tag>
             );
           })}

@@ -21,11 +21,7 @@ import {
   GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
   POST_AGREEMENTS,
-  POST_JUDGE,
-  POST_JUDGE_DEFENDANTS,
   POST_STATUS,
-  PUT_LAWSUIT_DETAIL,
-  PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
 
@@ -34,11 +30,9 @@ import { optionsInterest } from "../../../../utils/constant/ Interest";
 import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import { optionsMonth } from "../../../../utils/constant/MonthSelect";
 import {
-  JUDGEMENT,
   PAYMENT,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
-import moment from "moment";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =

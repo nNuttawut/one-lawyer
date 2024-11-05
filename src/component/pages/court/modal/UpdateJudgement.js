@@ -22,8 +22,8 @@ import {
   CASE_IS_FINAL,
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
-import moment from "moment";
 import TextArea from "antd/es/input/TextArea";
+import dayjs from "dayjs";
 
 const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [status, setStatus] = useState({
@@ -41,9 +41,9 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   useEffect(() => {
     if (dataDefualt.DATE) {
       loadData();
-      const recordDate = moment(dataDefualt.DATE);
-      const toDay = moment().startOf("day");
-      const toDate = moment(recordDate).add(45, "days");
+      const recordDate = dayjs(dataDefualt.DATE);
+      const toDay = dayjs().startOf("day");
+      const toDate = dayjs(recordDate).add(45, "days");
       const daysDifference = toDay.diff(toDate, "days");
       const daySub = daysDifference + 45;
       console.log("toDate", toDate);
@@ -109,7 +109,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               funcUpdateStatus({
                 ...dataDefualt,
                 MAIN_STATUS_ID: statusData.MAIN_STATUS_ID,
-                DATE: moment().format("YYYY-MM-DD"),
+                DATE: dayjs().format("YYYY-MM-DD"),
               });
               message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
               setLoading(false);
@@ -195,7 +195,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(date, dateString);
     setDateEnforceCase(dateString);
   };
-  const FormDisabled = () => {
+  const formData = () => {
     return (
       <>
         <Card style={{ marginTop: "10px" }}>
@@ -243,20 +243,22 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Card>
-            <FormDisabled />
+            <formData />
+            <p style={{ marginTop: "10px" }}>ใส่ url ที่แชร์ลิ้ง</p>
             <Input
-              style={{ marginTop: "10px" }}
+              style={{ marginTop: "5px" }}
               placeholder="ใส่ url file ในนี้"
               onChange={(e) => onChangeJudgementFile(e.target.value)}
             />
+            <p style={{ marginTop: "10px" }}>เลือกวันที่ออกหมายตั้ง</p>
             <DatePicker
-              style={{ marginTop: "10px" }}
-              placeholder="เลือกวันที่ออกหมายตั้ง"
+              style={{ marginTop: "5px" }}
+              placeholder="โปรดเลือกวัน"
               size="large"
               onChange={onChange}
             />
           </Card>
-          <div style={{ marginTop: "10px" }}>
+          <div style={{ marginTop: "5px" }}>
             <TextArea
               rows={5}
               placeholder="หมายเหตุ"

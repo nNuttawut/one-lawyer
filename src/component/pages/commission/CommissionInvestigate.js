@@ -18,7 +18,7 @@ import {
   EditOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
-import moment from "moment";
+
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
+import dayjs from "dayjs";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -119,15 +120,15 @@ const Main = () => {
     console.log(endDate[0]);
     console.log(endDate[1]);
 
-    const start = moment(endDate[0], "YYYY-MM-DD");
-    const end = moment(endDate[1], "YYYY-MM-DD");
+    const start = dayjs(endDate[0], "YYYY-MM-DD");
+    const end = dayjs(endDate[1], "YYYY-MM-DD");
 
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
-        const date = moment(item.DATE, "YYYY-MM-DD");
+        const date = dayjs(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
@@ -170,8 +171,8 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = moment(record.DATE);
-    const today = moment().startOf("day");
+    const recordDate = dayjs(record.DATE);
+    const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (

@@ -18,9 +18,9 @@ import {
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import moment from "moment";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import DocumentEnforce from "./DocumentEnforce";
+import dayjs from "dayjs";
 
 const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
@@ -47,7 +47,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   useEffect(() => {
     if (dataLoadLawSuit && dataLoadLoan) {
       form.setFieldsValue({
-        dateCourt: moment(dataDefualt.DATE),
+        dateCourt: dayjs(dataDefualt.DATE),
         court: dataLoadLawSuit?.provincial_court,
         subject: dataLoadLawSuit?.subject,
         trackingFee: currencyFormatNoPoint(dataLoadLawSuit?.tracking_fee),
@@ -56,8 +56,8 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         ),
       });
 
-      let dateCurrent = moment(dataDefualt.DATE);
-      let lastPayDate = moment(dataLoadLoan?.LOAN?.LPAYD);
+      let dateCurrent = dayjs(dataDefualt.DATE);
+      let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
 
       const differenceMonth = dateCurrent.diff(lastPayDate, "month");
       const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
@@ -220,7 +220,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       PROCESS_ID: values.PROCESS_ID,
       DATE: dataForm.dateCourt
         ? dataForm.dateCourt
-        : moment(dataDefualt.DATE).format("YYYY-MM-DD"),
+        : dayjs(dataDefualt.DATE).format("YYYY-MM-DD"),
     };
 
     setDataStore((prev) => ({
@@ -359,8 +359,8 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const handleLossPay = (value) => {
-    let dateCurrent = moment(value);
-    let lastPayDate = moment(dataLoadLoan?.LOAN?.LPAYD);
+    let dateCurrent = dayjs(value);
+    let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
 
     const differenceMonth = dateCurrent.diff(lastPayDate, "month");
     const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY

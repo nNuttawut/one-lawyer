@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -40,7 +40,12 @@ import {
 } from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
 
-const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const EditAwaitingJudgement = ({
+  open,
+  close,
+  dataDefualt,
+  funcUpdateStatus,
+}) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
   const [form] = Form.useForm();
@@ -1187,4 +1192,4 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     </>
   );
 };
-export default UpdateStatus;
+export default EditAwaitingJudgement;

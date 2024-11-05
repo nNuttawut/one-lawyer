@@ -6,16 +6,17 @@ import {
 } from "@supabase/auth-helpers-react";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Button, DatePicker, Input, Space } from "antd";
-import moment from "moment";
+
 import axios from "axios";
+import dayjs from "dayjs";
 
 const CalendarMain = () => {
   const session = useSession(); //token
   const supabase = useSupabaseClient(); // connect supabase
   const { isLoading } = useSessionContext();
 
-  const [startDate, setStartDate] = useState(moment().format("YYYY-MM-DD"));
-  const [endDate, setEndDate] = useState(moment().format("YYYY-MM-DD"));
+  const [startDate, setStartDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [endDate, setEndDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
 
@@ -77,19 +78,19 @@ const CalendarMain = () => {
   }
 
   const setStartDateEvent = (date, dateString) => {
-    // date เป็นอ็อบเจ็กต์ moment, dateString เป็นสตริงที่แสดงวันที่
-    setStartDate(date); // แปลง moment เป็น Date หรือใช้ null ถ้าไม่มีการเลือก
+    // date เป็นอ็อบเจ็กต์ dayjs, dateString เป็นสตริงที่แสดงวันที่
+    setStartDate(date); // แปลง dayjs เป็น Date หรือใช้ null ถ้าไม่มีการเลือก
     if (date) {
-      console.log("date", date); // แสดงอ็อบเจ็กต์ moment
+      console.log("date", date); // แสดงอ็อบเจ็กต์ dayjs
       console.log("startString", dateString);
       console.log(startDate);
     }
   };
 
   const setEndDateEvent = (date, dateString) => {
-    setEndDate(date ? date : null); // แปลง moment เป็น Date หรือใช้ null ถ้าไม่มีการเลือก
+    setEndDate(date ? date : null); // แปลง dayjs เป็น Date หรือใช้ null ถ้าไม่มีการเลือก
     if (date) {
-      console.log("date", date); // แสดงอ็อบเจ็กต์ moment
+      console.log("date", date); // แสดงอ็อบเจ็กต์ dayjs
       console.log("endString", dateString);
       console.log(endDate);
     }
@@ -112,12 +113,12 @@ const CalendarMain = () => {
             <p>start date of event</p>
             <DatePicker
               onChange={setStartDateEvent}
-              value={startDate ? moment(startDate) : null}
+              value={startDate ? dayjs(startDate) : null}
             />
             <p>end date of event</p>
             <DatePicker
               onChange={setEndDateEvent}
-              value={endDate ? moment(endDate) : null}
+              value={endDate ? dayjs(endDate) : null}
             />
             <p>event name</p>
             <Input type="text" onChange={(e) => setEventName(e.target.value)} />

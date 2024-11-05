@@ -14,7 +14,6 @@ import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import { EditOutlined, FormOutlined, SyncOutlined } from "@ant-design/icons";
-import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
 import { Link } from "react-router-dom";
@@ -33,6 +32,7 @@ import {
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import UpdateReplyNotice from "./modal/UpdateReplyNotic";
+import dayjs from "dayjs";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -73,6 +73,8 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
+          console.log("newData", newData);
+
           setLoading(false);
         }
       } else {
@@ -89,9 +91,6 @@ const Main = () => {
   };
 
   const filterDataLawyer = (data) => {
-    console.log("item.LAWYER_ID", data);
-    console.log("userId.id ", userId.id);
-
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
@@ -124,15 +123,15 @@ const Main = () => {
     console.log(endDate[0]);
     console.log(endDate[1]);
 
-    const start = moment(endDate[0], "YYYY-MM-DD");
-    const end = moment(endDate[1], "YYYY-MM-DD");
+    const start = dayjs(endDate[0], "YYYY-MM-DD");
+    const end = dayjs(endDate[1], "YYYY-MM-DD");
 
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
-        const date = moment(item.DATE, "YYYY-MM-DD");
+        const date = dayjs(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
@@ -179,8 +178,8 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = moment(record.DATE);
-    const today = moment().startOf("day");
+    const recordDate = dayjs(record.DATE);
+    const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color = daysDifference > 30 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
@@ -195,8 +194,8 @@ const Main = () => {
   };
 
   const updateDate = (record) => {
-    const recordDate = moment(record.DATE);
-    const today = moment().startOf("day");
+    const recordDate = dayjs(record.DATE);
+    const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
 
     return (
@@ -269,7 +268,7 @@ const Main = () => {
     {
       title: "หมายเลข EMS",
       align: "center",
-      render: (record) => <>{record.MEMO ? record.MEMO : null}</>,
+      render: (record) => <>{record.PARCEL_NO ? record.PARCEL_NO : null}</>,
     },
     //ทำ logic record
     ...(ROLE_ID === "1" || ROLE_ID === "2"

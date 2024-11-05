@@ -22,8 +22,9 @@ import {
   INVESTIGATE,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
-import moment from "moment";
+
 import TextArea from "antd/es/input/TextArea";
+import dayjs from "dayjs";
 
 const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [status, setStatus] = useState({
@@ -40,9 +41,9 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   useEffect(() => {
     if (dataDefualt.DATE) {
       loadData();
-      const recordDate = moment(dataDefualt.DATE);
-      const toDay = moment().startOf("day");
-      const toDate = moment(recordDate).add(15, "days");
+      const recordDate = dayjs(dataDefualt.DATE);
+      const toDay = dayjs().startOf("day");
+      const toDate = dayjs(recordDate).add(15, "days");
       const daysDifference = toDay.diff(toDate, "days");
       // const daySub = daysDifference + 15;
       console.log("toDate", toDate);
@@ -108,7 +109,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               funcUpdateStatus({
                 ...dataDefualt,
                 MAIN_STATUS_ID: statusData.MAIN_STATUS_ID,
-                DATE: moment().format("YYYY-MM-DD"),
+                DATE: dayjs().format("YYYY-MM-DD"),
               });
               message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
               setLoading(false);

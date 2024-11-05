@@ -15,7 +15,6 @@ import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import { FormOutlined } from "@ant-design/icons";
-import moment from "moment";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -31,6 +30,7 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import { AWAITING_JUDMENT } from "../../../utils/constant/StatusConstant";
 import UpdateStatusAwaitingJudgment from "./modal/UpdateStatusAwaitingJudgment";
+import dayjs from "dayjs";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -134,15 +134,15 @@ const Main = () => {
     console.log(endDate[0]);
     console.log(endDate[1]);
 
-    const start = moment(endDate[0], "YYYY-MM-DD");
-    const end = moment(endDate[1], "YYYY-MM-DD");
+    const start = dayjs(endDate[0], "YYYY-MM-DD");
+    const end = dayjs(endDate[1], "YYYY-MM-DD");
 
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
-        const date = moment(item.DATE, "YYYY-MM-DD");
+        const date = dayjs(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
@@ -226,7 +226,7 @@ const Main = () => {
     {
       title: "วันนัดพิจารณาคดี",
       align: "center",
-      sorter: (a, b) => moment(a.DATE).unix() - moment(b.DATE).unix(),
+      sorter: (a, b) => dayjs(a.DATE).unix() - dayjs(b.DATE).unix(),
       render: (record) => (
         <Tag color="orange" style={{ textAlign: "center" }}>
           {convertDateThai(record.DATE)}

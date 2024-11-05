@@ -36,7 +36,7 @@ import {
 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import moment from "moment";
+import dayjs from "dayjs";
 
 const DetailModal = ({ open, close, dataRec }) => {
   const [form] = Form.useForm();
@@ -101,8 +101,8 @@ const DetailModal = ({ open, close, dataRec }) => {
 
   useEffect(() => {
     if (dataDetail && loanData) {
-      let dateCurrent = moment(dataDetail?.lawsuit?.date_of_plaint);
-      let lastPayDate = moment(loanData?.LOAN?.LPAYD);
+      let dateCurrent = dayjs(dataDetail?.lawsuit?.date_of_plaint);
+      let lastPayDate = dayjs(loanData?.LOAN?.LPAYD);
 
       const differenceMonth = dateCurrent.diff(lastPayDate, "month");
       const lossBenefitValue = loanData?.LOAN?.TOT_UPAY
