@@ -23,6 +23,7 @@ import {
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
+import { STATUS_PROCESS_PROGRESS } from "../../../../utils/constant/StatusConstant";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
@@ -206,6 +207,7 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       parcel_no: values.parcelNo,
       parcel_typ_id: null,
       url_path: null,
+      process_id: STATUS_PROCESS_PROGRESS,
     };
     console.log("putDataData", putData);
     console.log("putLawsuit", putLawsuit);

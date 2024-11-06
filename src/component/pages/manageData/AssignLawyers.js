@@ -21,6 +21,7 @@ import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 import {
   optionsLone,
   HIRE_PURCASE,
+  MORTGAGE,
 } from "../../../utils/constant/LoanTypeConstant";
 import {
   JOB_NULL,
@@ -45,7 +46,7 @@ const Main = () => {
   const [dataArr, setDataArr] = useState();
   const [dataSend, setDataSend] = useState([]);
   const [dataToTable, setDataToTable] = useState([]);
-  const [dataFunc, setDataFunc] = useState(null);
+  let [dataFunc, setDataFunc] = useState(0);
   const [tableLength, setTableLength] = useState(0);
   const roleId = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
@@ -216,9 +217,10 @@ const Main = () => {
       if (setSucess === dataSend.length) {
         message.success(`มอบหมายงานให้ทนายเสร็จสิ้น ${dataSend.length} สัญญา`);
       }
-      i += 1;
+
+      setDataFunc((dataFunc += 1));
       setDataSend([]);
-      setDataFunc(i);
+      console.log("finally---->", dataFunc);
       if (setSucess === 999) {
         reloadPage();
       }
@@ -425,7 +427,6 @@ const Main = () => {
   //ไว้เปลี่ยน สถานะและ set table แบบ หลายค่า
   const handleChangeStatusAll = () => {
     console.log(dataToTable);
-
     const idsToFilterOut = dataToTable.map((item) => item.id);
     const newData = dataArr.filter((item) => !idsToFilterOut.includes(item.id));
 
@@ -506,7 +507,7 @@ const Main = () => {
           onChange={(e) => {
             onChange(record.id, e.target.value);
           }}
-          defaultValue={HIRE_PURCASE}
+          defaultValue={MORTGAGE}
           style={{ marginBottom: "10px" }}
         >
           {optionsLone.map((option) => (

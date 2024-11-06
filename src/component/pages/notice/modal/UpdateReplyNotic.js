@@ -87,10 +87,11 @@ const UpdateReplyNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       parcel_no: dataDefualt.PARCEL_NO,
       parcel_typ_id: values.radio,
+      process_id: STATUS_PROCESS_SUCCESSFUL,
       url_path: values.imageReplyFile,
     };
 
-    console.log(putData);
+    console.log(putData, putParcel);
     sendStatus(putData, putParcel);
   };
   console.log("datadddd", dataDefualt);

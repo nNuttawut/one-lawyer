@@ -284,108 +284,127 @@ const Main = () => {
 
   return (
     <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
-                  size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
-                />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
-                        <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                      {record.DATE ? (
-                        <>
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalEdit(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                          {updateDate(record)}
-                        </>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) => ROLE_ID === "1" || ROLE_ID === "2",
-                }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalCreate ? (
-        <CreateNotice
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEdit ? (
-        <EditNotice
-          open={isModalEdit}
-          close={setIsModalEdit}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModaUpdateReply ? (
-        <UpdateReplyNotice
-          open={isModaUpdateReply}
-          close={setIsModalUpdateReply}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col
+                  span={"24"}
+                  style={{ textAlign: "end", marginBottom: "10px" }}
+                >
+                  <Space direction="vertical" size={12}>
+                    <RangePicker
+                      size="large"
+                      style={{ marginRight: "10px" }}
+                      onChange={onSearchByDate}
+                    />
+                  </Space>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    onChange={search}
+                    enterButton
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
+                  />
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                    expandable={{
+                      expandedRowRender: (record) => (
+                        <p style={{ margin: 0 }}>
+                          {!record.DATE ? (
+                            <Button
+                              style={{
+                                boxShadow: "0 4px 3px",
+                                marginRight: "10px",
+                              }}
+                              onClick={() => {
+                                setIsModalCreate(true);
+                                setDataModal(record);
+                              }}
+                            >
+                              <FormOutlined
+                                style={{ color: "blue", fontSize: "16px" }}
+                              />
+                            </Button>
+                          ) : null}
+                          {record.DATE ? (
+                            <>
+                              <Button
+                                style={{
+                                  boxShadow: "0 4px 3px",
+                                  marginRight: "10px",
+                                }}
+                                onClick={() => {
+                                  setIsModalEdit(true);
+                                  setDataModal(record);
+                                }}
+                              >
+                                <EditOutlined
+                                  style={{ color: "orange", fontSize: "16px" }}
+                                />
+                              </Button>
+                              {updateDate(record)}
+                            </>
+                          ) : null}
+                        </p>
+                      ),
+                      rowExpandable: (record) =>
+                        ROLE_ID === "1" || ROLE_ID === "2",
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+          {isModal ? (
+            <DetailModal
+              open={isModal}
+              close={setIsModal}
+              dataRec={dataRecord}
+            />
+          ) : null}
+          {isModalCreate ? (
+            <CreateNotice
+              open={isModalCreate}
+              close={setIsModalCreate}
+              dataDefualt={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModalEdit ? (
+            <EditNotice
+              open={isModalEdit}
+              close={setIsModalEdit}
+              dataDefualt={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModaUpdateReply ? (
+            <UpdateReplyNotice
+              open={isModaUpdateReply}
+              close={setIsModalUpdateReply}
+              dataDefualt={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+        </>
+      ) : (
+        <>
+          <Card>
+            {" "}
+            <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+          </Card>
+        </>
+      )}
     </>
   );
 };

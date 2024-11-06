@@ -282,24 +282,21 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {userId === record.LAWYER_ID &&
-                      (ROLE_ID === "1" || ROLE_ID === "2") ? (
-                        <Button
-                          style={{ boxShadow: "0 4px 3px" }}
-                          onClick={() => {
-                            setIsModalUpdate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <SyncOutlined
-                            style={{ color: "green", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
+                      <Button
+                        style={{ boxShadow: "0 4px 3px" }}
+                        onClick={() => {
+                          setIsModalUpdate(true);
+                          setDataModal(record);
+                        }}
+                      >
+                        <SyncOutlined
+                          style={{ color: "green", fontSize: "16px" }}
+                        />
+                      </Button>
                     </p>
                   ),
                   rowExpandable: (record) =>
-                    userId === record.LAWYER_ID && record.DATE,
+                    userId === record.LAWYER_ID && ROLE_ID === "3",
                 }}
               />
             </Col>

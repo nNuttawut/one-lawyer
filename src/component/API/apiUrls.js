@@ -152,13 +152,13 @@ export {
 // //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
 // const GET_ALL_LOAN = "/lawyer/api/loans";
 
-// ///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
+// //ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
 // const GET_LOAN_BY_CONTNO = "/lawyer/api/loans/";
 
 // //ดึงจำนวนงานที่ users รับงาน
 // const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
 
-//notice
+// // notice;
 // const POST_PARCELS = `/lawyer/api/parcels`;
 // const PUT_PARCELS = `/lawyer/api/parcels`;
 
@@ -288,6 +288,6 @@ export {
 //   GET_PROVICE_LAND,
 //   POST_DISTRICT_LAND,
 //   POST_CALCULATE_LAND,
-// POST_PARCELS,
-// PUT_PARCELS
+//   POST_PARCELS,
+//   PUT_PARCELS,
 // };

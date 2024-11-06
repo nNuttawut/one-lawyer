@@ -205,9 +205,11 @@ const CreateNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
       parcel_no: values.parcelNo,
       parcel_typ_id: null,
+      process_id: STATUS_PROCESS_PROGRESS,
       url_path: null,
     };
     console.log("putDataData", postData);
+    console.log("postParcel", postParcel);
     sendStatus(postData, putLawsuit, postParcel);
   };
 

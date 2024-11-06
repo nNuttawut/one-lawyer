@@ -37,6 +37,7 @@ import {
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 
 const DetailModal = ({ open, close, dataRec }) => {
   const [form] = Form.useForm();
@@ -709,6 +710,69 @@ const DetailModal = ({ open, close, dataRec }) => {
     );
   };
 
+  const formNotice = () => {
+    return (
+      <>
+        {dataDetail?.STATUS1 ? (
+          <Card>
+            <Form
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 14,
+              }}
+              form={form}
+              layout="horizontal"
+            >
+              <Divider>รายละเอียดบอกเลิกสัญญา</Divider>
+              <Form.Item label="วันที่ส่ง" name="sendDate">
+                {dataRec?.DATE
+                  ? dayjs(dataRec?.DATE).format("D MMMM YYYY")
+                  : null}
+              </Form.Item>
+              <Form.Item label="หมายเลข EMS" name="parcelNo">
+                {dataDetail?.parcel?.parcel_no
+                  ? dataDetail?.parcel?.parcel_no
+                  : null}
+              </Form.Item>
+
+              <Form.Item label="บริษัทที่ออก" name="companySend">
+                {dataRec?.COMPANY_ID === 1
+                  ? "บริษัท วัน ลิสซิ่ง จำกัด"
+                  : dataRec?.COMPANY_ID === 2
+                  ? "บริษัท วัน มันนี่ จำกัด"
+                  : "บริษัท เค.เอส.เอ็ม.บิลเลี่ยนแนร์ จำกัด"}
+              </Form.Item>
+              <Form.Item label="การตอบกลับ" name="replyType">
+                {dataDetail?.parcel?.parcel_typ_id === 1
+                  ? "ใบตอบกลับ"
+                  : dataDetail?.parcel?.parcel_typ_id === 2
+                  ? "เว็บไปรษณีย์"
+                  : null}
+              </Form.Item>
+              <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
+                {dataDetail?.parcel?.url_path ? (
+                  <a
+                    href={dataDetail?.parcel?.url_path || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    คลิกเพื่อดูรูปภาพ
+                  </a>
+                ) : (
+                  <span>ไม่มีลิงก์รูปภาพ</span>
+                )}
+              </Form.Item>
+            </Form>
+          </Card>
+        ) : (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        )}
+      </>
+    );
+  };
+
   const formLawsuit = () => {
     return (
       <>
@@ -869,13 +933,17 @@ const DetailModal = ({ open, close, dataRec }) => {
                 บาท
               </Form.Item>
               <Form.Item label="ไฟล์คำพิพากษา" name="judgementFile">
-                <a
-                  href={dataDetail?.judge?.judgement_filepath || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {dataDetail?.judge?.judgement_filepath || "ไม่มีไฟล์"}
-                </a>
+                {dataDetail?.judge?.judgement_filepath ? (
+                  <a
+                    href={dataDetail?.judge?.judgement_filepath || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    คลิกเพื่อดูข้อมูล
+                  </a>
+                ) : (
+                  <span>ไม่มีลิงก์ข้อมูล</span>
+                )}
               </Form.Item>
               {judgeNumber1 ? (
                 <Form.Item
@@ -1144,22 +1212,28 @@ const DetailModal = ({ open, close, dataRec }) => {
     },
     {
       key: "3",
+      label: "ข้อูมล Notice",
+      children: formNotice(),
+    },
+
+    {
+      key: "4",
       label: "ส่วนฟ้อง",
       children: formLawsuit(),
     },
 
     {
-      key: "4",
+      key: "5",
       label: "คำพิพากษา",
       children: formJudgement(),
     },
     {
-      key: "5",
+      key: "6",
       label: "สืบทรัพย์",
       children: formDataAssets(),
     },
     {
-      key: "6",
+      key: "7",
       label: "ทำยอม",
       children: formDataPayment(),
     },
