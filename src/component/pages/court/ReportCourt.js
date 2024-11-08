@@ -120,12 +120,14 @@ const Main = () => {
 
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
+    console.log("dataArr--->", dataArr);
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
         const date = dayjs(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
+          console.log("item", item);
           return item;
         } else {
           return null;
@@ -166,13 +168,13 @@ const Main = () => {
     //   return null;
     // }
     const recordDate = dayjs(record.created_date).startOf("day");
-    console.log("recordDate", recordDate);
+    // console.log("recordDate", recordDate);
 
     const today = dayjs().startOf("day");
-    console.log("today", today);
+    // console.log("today", today);
 
     const daysDifference = today.diff(recordDate, "days");
-    console.log("daysDifference", daysDifference);
+    // console.log("daysDifference", daysDifference);
 
     let color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;

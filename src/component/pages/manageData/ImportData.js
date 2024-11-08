@@ -44,7 +44,7 @@ const Main = () => {
   const companyId = localStorage.getItem("COMPANY_ID");
   const [tableLength, setTableLength] = useState(0);
   // call redux action
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   const onQuery = () => {
     if (queryContno) {
@@ -222,6 +222,7 @@ const Main = () => {
 
       const promises = arrayTable.map(async (item) => {
         const arrayData = item;
+        console.log("arrayData", arrayData);
 
         if (!arrayData) {
           message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");

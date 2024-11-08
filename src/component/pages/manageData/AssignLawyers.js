@@ -139,7 +139,6 @@ const Main = () => {
   const insertDataAll = async () => {
     setLoading(true);
     let setSucess = 0;
-    let i = 0;
     console.log("dataSend all", dataSend);
     try {
       if (!dataSend || dataSend.length === 0) {
@@ -172,7 +171,7 @@ const Main = () => {
             if (!arrayData?.LOAN_TYPE_ID) {
               arrayData = {
                 ...arrayData,
-                LOAN_TYPE_ID: 1,
+                LOAN_TYPE_ID: MORTGAGE,
               };
               console.log("!arrayData.LOAN_TYPE_ID", arrayData);
             }
@@ -245,7 +244,7 @@ const Main = () => {
         if (!data.LOAN_TYPE_ID) {
           dataApprove = {
             ...dataApprove,
-            LOAN_TYPE_ID: 1,
+            LOAN_TYPE_ID: MORTGAGE,
           };
         }
         if (data?.LAW_TYPE_ID && data?.LOAN_TYPE_ID) {
@@ -255,6 +254,7 @@ const Main = () => {
       console.log("dataApprove", dataApprove);
       try {
         filteredData = dataArr.find((item) => item.id === id);
+        console.log("filteredData-->", filteredData);
         await axios
           .post(baseUrl + POST_STATUS, dataApprove, { HEADERS_EXPORT })
           .then((resQuery) => {
@@ -322,7 +322,7 @@ const Main = () => {
         .filter((item) => item.LOAN_ID === id)
         .map((item) => Number(item.LOAN_TYPE_ID));
       loanType = setLaonType[0];
-      console.log("setLaonType", setLaonType);
+      console.log("setLaonType", setLaonType[0]);
       console.log("loanType", loanType);
     }
 
@@ -364,6 +364,8 @@ const Main = () => {
   };
 
   const confirmInsert = () => {
+    console.log("confirmInsert", dataSend);
+
     insertDataAll();
   };
 
@@ -373,6 +375,7 @@ const Main = () => {
 
   const confirmInsertOne = (id) => {
     insertDataOne(id);
+    console.log("confirmInsertOne", dataSend);
   };
 
   const cancel = (e) => {

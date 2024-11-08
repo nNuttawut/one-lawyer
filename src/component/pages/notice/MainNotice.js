@@ -13,7 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined, FormOutlined, SyncOutlined } from "@ant-design/icons";
+import { FormOutlined, SyncOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
 import { Link } from "react-router-dom";
@@ -31,7 +31,6 @@ import {
   STATUS_PROCESS_PROGRESS,
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
-import UpdateReplyNotice from "./modal/UpdateReplyNotic";
 import dayjs from "dayjs";
 
 const Main = () => {
@@ -39,7 +38,7 @@ const Main = () => {
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
-  const [isModaUpdateReply, setIsModalUpdateReply] = useState(false);
+
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -181,42 +180,43 @@ const Main = () => {
     const recordDate = dayjs(record.DATE);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "green" : "red";
+    let color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
 
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
-        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
+        {<span>รอดำเนินการ {daysDifference} วัน</span>}
       </Tag>
     );
   };
 
-  const updateDate = (record) => {
-    const recordDate = dayjs(record.DATE);
-    const today = dayjs().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
+  //นับวันเพื่อแสดง button
+  // const updateDate = (record) => {
+  //   const recordDate = dayjs(record.DATE);
+  //   const today = dayjs().startOf("day");
+  //   const daysDifference = today.diff(recordDate, "days");
 
-    return (
-      <>
-        {daysDifference > 30 ? (
-          <Button
-            style={{
-              boxShadow: "0 4px 3px",
-              marginRight: "10px",
-            }}
-            onClick={() => {
-              setIsModalUpdateReply(true);
-              setDataModal(record);
-            }}
-          >
-            <SyncOutlined style={{ color: "green", fontSize: "16px" }} />
-          </Button>
-        ) : null}
-      </>
-    );
-  };
+  //   return (
+  //     <>
+  //       {daysDifference > 30 ? (
+  //         <Button
+  //           style={{
+  //             boxShadow: "0 4px 3px",
+  //             marginRight: "10px",
+  //           }}
+  //           onClick={() => {
+  //             setIsModalUpdateReply(true);
+  //             setDataModal(record);
+  //           }}
+  //         >
+  //           <SyncOutlined style={{ color: "green", fontSize: "16px" }} />
+  //         </Button>
+  //       ) : null}
+  //     </>
+  //   );
+  // };
 
   const columns = [
     {
@@ -348,11 +348,11 @@ const Main = () => {
                                   setDataModal(record);
                                 }}
                               >
-                                <EditOutlined
-                                  style={{ color: "orange", fontSize: "16px" }}
+                                <SyncOutlined
+                                  style={{ color: "green", fontSize: "16px" }}
                                 />
                               </Button>
-                              {updateDate(record)}
+                              {/* {updateDate(record)} */}
                             </>
                           ) : null}
                         </p>
@@ -384,14 +384,6 @@ const Main = () => {
             <EditNotice
               open={isModalEdit}
               close={setIsModalEdit}
-              dataDefualt={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-          {isModaUpdateReply ? (
-            <UpdateReplyNotice
-              open={isModaUpdateReply}
-              close={setIsModalUpdateReply}
               dataDefualt={dataModal}
               funcUpdateStatus={handleUpdateData}
             />

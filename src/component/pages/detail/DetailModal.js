@@ -89,13 +89,12 @@ const DetailModal = ({ open, close, dataRec }) => {
   useEffect(() => {
     if (dataRec) {
       loadData();
-      loadGeo();
       console.log("dataRecord", dataRec);
     }
-  }, [dataRec]);
+  }, []);
 
   useEffect(() => {
-    if (dataDetail) {
+    if (dataDetail?.investigateProperty?.length > 0) {
       loadGeo();
     }
   }, [dataDetail]);
@@ -131,9 +130,8 @@ const DetailModal = ({ open, close, dataRec }) => {
     }
   }, [dataDetail, loanData]);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
 
     try {
       await axios
@@ -713,7 +711,7 @@ const DetailModal = ({ open, close, dataRec }) => {
   const formNotice = () => {
     return (
       <>
-        {dataDetail?.STATUS1 ? (
+        {dataRec?.PARCEL_ID ? (
           <Card>
             <Form
               labelCol={{
@@ -749,7 +747,7 @@ const DetailModal = ({ open, close, dataRec }) => {
                   ? "ใบตอบกลับ"
                   : dataDetail?.parcel?.parcel_typ_id === 2
                   ? "เว็บไปรษณีย์"
-                  : null}
+                  : "ยังไม่มีข้อมูล"}
               </Form.Item>
               <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
                 {dataDetail?.parcel?.url_path ? (
