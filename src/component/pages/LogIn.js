@@ -81,7 +81,7 @@ export default function LogIn() {
       navigate("/dashboard");
     } else {
       console.log("null");
-      navigate("/");
+      navigate("/loginline");
     }
 
     window.location.reload();

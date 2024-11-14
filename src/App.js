@@ -34,31 +34,43 @@ function App() {
   } else {
     console.log("lineStatus", lineStatus);
     console.log("line", line);
-    if (line !== "null" || lineStatus === "false") {
-      console.log("lineStatus false", lineStatus);
-      return (
-        <>
-          <Provider store={store}>
-            <HashRouter>
-              <Main />
-            </HashRouter>
-          </Provider>
-        </>
-      );
-    } else {
-      console.log("lineStatus true", lineStatus);
-      ReactDOM.render(
+    // if (line !== "null" || lineStatus === "false") {
+    //   console.log("lineStatus false", lineStatus);
+    //   return (
+    //     <>
+    //       <Provider store={store}>
+    //         <HashRouter>
+    //           <Main />
+    //         </HashRouter>
+    //       </Provider>
+    //     </>
+    //   );
+    // } else {
+    //   console.log("lineStatus true", lineStatus);
+    //   ReactDOM.render(
+    //     <Provider store={store}>
+    //       <Router>
+    //         <Routes>
+    //           <Route path="/" element={<Loginline />} /> {/* หน้าหลัก */}
+    //           <Route path="#/liff" element={<Liff />} /> {/* หน้าหลัก */}
+    //         </Routes>
+    //       </Router>
+    //     </Provider>,
+    //     document.getElementById("root")
+    //   );
+    // }
+
+    // if (line !== "null" || lineStatus === "false") {
+    //   console.log("lineStatus false", lineStatus);
+    return (
+      <>
         <Provider store={store}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Loginline />} /> {/* หน้าหลัก */}
-              <Route path="/liff" element={<Liff />} /> {/* หน้าหลัก */}
-            </Routes>
-          </Router>
-        </Provider>,
-        document.getElementById("root")
-      );
-    }
+          <HashRouter>
+            <Main />
+          </HashRouter>
+        </Provider>
+      </>
+    );
   }
 }
 

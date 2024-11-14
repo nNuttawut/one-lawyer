@@ -116,7 +116,12 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
+    let result = dataArr.filter(
+      (item) =>
+        item.CONTNO.includes(value) ||
+        item.CUSTOMER_FNAME.includes(value) ||
+        item.CUSTOMER_LNAME.includes(value)
+    );
     setArrayTable(result);
   };
 

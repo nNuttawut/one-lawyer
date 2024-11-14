@@ -260,7 +260,11 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdfPositionY += 17; // เว้นบรรทัด
 
       pdf.setFont("THSarabunNew", "normal");
-      pdf.text(`เรื่อง   ${dataText.case}`, marginL, pdfPositionY + 10);
+      pdf.text(
+        `เรื่อง   บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา`,
+        marginL,
+        pdfPositionY + 10
+      );
       pdfPositionY += 10; // เว้นบรรทัด
 
       pdf.setFont("THSarabunNew", "normal");
@@ -377,7 +381,7 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
             )} บาท ให้แล้วเสร็จภายใน ${
               loanData?.LOAN?.T_NOPAY
             } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
+              loanData?.LOAN?.FDATE
             )} งวดต่อไปทุกวันที่`,
             marginL,
             pdfPositionY + 30
@@ -385,7 +389,9 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
           pdfPositionY += 17; // เว้นบรรทัด
 
           pdf.text(
-            ` 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใด ๆ`,
+            ` ${convertDateThaiDate(
+              loanData?.LOAN?.FDATE
+            )} ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใด ๆ`,
             marginL,
             pdfPositionY + 30
           );
@@ -423,8 +429,10 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
           pdf.text(
             `${loanData?.LOAN?.T_NOPAY} งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )} งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิดหากผู้เช่าซื้อ`,
+              loanData?.LOAN?.FDATE
+            )} งวดต่อไปทุกวันที่ ${convertDateThaiDate(
+              loanData?.LOAN?.FDATE
+            )} ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิดหากผู้เช่าซื้อ`,
             marginL,
             pdfPositionY + 30
           );
@@ -477,8 +485,10 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
             )} บาท ให้แล้วเสร็จภายใน ${
               loanData?.LOAN?.T_NOPAY
             } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )} งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป`,
+              loanData?.LOAN?.FDATE
+            )} งวดต่อไปทุกวันที่ ${convertDateThaiDate(
+              loanData?.LOAN?.FDATE
+            )} ของเดือนถัดไป`,
             marginL,
             pdfPositionY + 30
           );
@@ -530,8 +540,10 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
           pdf.text(
             `ที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )}งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่`,
+              loanData?.LOAN?.FDATE
+            )}งวดต่อไปทุกวันที่ ${convertDateThaiDate(
+              loanData?.LOAN?.FDATE
+            )} ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่`,
             marginL,
             pdfPositionY + 30
           );
@@ -669,7 +681,7 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
           open={open}
           onOk={""}
           onCancel={handleCancel}
-          width={750}
+          width={760}
           footer={[
             <Button
               key="cancle"
@@ -936,8 +948,10 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                         )} บาท ให้แล้วเสร็จภายใน ${
                           loanData?.LOAN?.T_NOPAY
                         } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-                          loanData?.LOAN?.SDATE
-                        )}งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใดๆ`
+                          loanData?.LOAN?.FDATE
+                        )}งวดต่อไปทุกวันที่ ${convertDateThaiDate(
+                          loanData?.LOAN?.FDATE
+                        )} ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใดๆ`
                       : `${
                           companiesOption[0].label
                         } ผู้ให้เช่าซื้อ เมื่อวันที่ ${convertDateThai(
@@ -949,8 +963,10 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                         )} บาท ให้แล้วเสร็จภายใน ${
                           loanData?.LOAN?.T_NOPAY
                         } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-                          loanData?.LOAN?.SDATE
-                        )}งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใดๆ`}
+                          loanData?.LOAN?.FDATE
+                        )}งวดต่อไปทุกวันที่ ${convertDateThaiDate(
+                          loanData?.LOAN?.FDATE
+                        )} ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใดๆ`}
                   </p>
                 </Col>
               </Row>

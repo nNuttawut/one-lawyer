@@ -260,7 +260,11 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdfPositionY += 17; // เว้นบรรทัด
 
       pdf.setFont("THSarabunNew", "normal");
-      pdf.text(`เรื่อง   ${dataText.case}`, marginL, pdfPositionY + 10);
+      pdf.text(
+        `เรื่อง   บอกกล่าวทวงถามบังคับจำนอง`,
+        marginL,
+        pdfPositionY + 10
+      );
       pdfPositionY += 10; // เว้นบรรทัด
 
       pdf.setFont("THSarabunNew", "normal");
@@ -269,327 +273,93 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
         marginL,
         pdfPositionY + 15
       );
-      pdf.text(`ผู้เช่าซื้อ`, marginC + 50, pdfPositionY + 15);
+      pdf.text(`ผู้กู้ยืม/จำนอง`, marginC + 50, pdfPositionY + 15);
       pdfPositionY += 17; // เว้นบรรทัด
 
-      if (loanData.GUARANTORS.length > 0) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[0].SNAM}${loanData.GUARANTORS[0].NAME1}  ${loanData.GUARANTORS[0].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (loanData.GUARANTORS.length > 1) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[1].SNAM}${loanData.GUARANTORS[1].NAME1}  ${loanData.GUARANTORS[1].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (loanData.GUARANTORS.length > 2) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[2].SNAM}${loanData.GUARANTORS[2].NAME1}  ${loanData.GUARANTORS[2].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (loanData.GUARANTORS.length > 3) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[3].SNAM}${loanData.GUARANTORS[3].NAME1}  ${loanData.GUARANTORS[3].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (loanData.GUARANTORS.length > 4) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[4].SNAM}${loanData.GUARANTORS[4].NAME1}  ${loanData.GUARANTORS[4].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (loanData.GUARANTORS.length > 5) {
-        pdf.setFont("THSarabunNew", "normal");
-        pdf.text(
-          `${loanData.GUARANTORS[5].SNAM}${loanData.GUARANTORS[5].NAME1}  ${loanData.GUARANTORS[5].NAME2}`,
-          marginL + 24,
-          pdfPositionY + 15
-        );
-        pdf.text(`ผู้ค้ำประกัน`, marginC + 50, pdfPositionY + 15);
-        pdfPositionY += 17; // เว้นบรรทัด
-      }
-
-      if (pdf.getTextWidth(loanData?.MORTGAGE?.BAAB) > 40) {
-        if (dataDefault?.COMPANY_ID === 4 || dataDefault?.COMPANY_ID === 5) {
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ตามที่ท่านได้ทำสัญญาเช่าซื้อและทำสัญญาค้ำประกันการเช่าซื้อ${loanData?.MORTGAGE?.BAAB} ยี่ห้อ ${loanData?.MORTGAGE?.TYPE} คันหมาย`,
-            marginL + 50,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `เลขเคร่ื่องยนต์ ${loanData?.MORTGAGE?.STRNO} หมายเลขทะเบียน ${loanData?.MORTGAGE?.REGNO} ${loanData?.MORTGAGE?.DORECV} ไปจาก บริษัท ซี เอ แอล 2009 จำกัด `,
-            marginL,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `( ปัจจุบันเปลี่ยนเป็น ${
-              companiesOption[0]?.label
-            } ) ผู้ให้เช่าซื้อ เมื่อวันที่ ${convertDateThai(
-              loanData?.LOAN?.SDATE
-            )} ในราคาเช่าซื้อ ${currencyFormat(
-              loanData?.LOAN?.NCSHPRC
-            )} บาท ตกลง`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `ผ่อนชำระค่างวด ๆ ละ ${currencyFormat(
-              loanData?.LOAN?.SMPAY
-            )} บาท ให้แล้วเสร็จภายใน ${
-              loanData?.LOAN?.T_NOPAY
-            } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )} งวดต่อไปทุกวันที่`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            ` 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใด ๆ`,
-            marginL,
-            pdfPositionY + 30
-          );
-        } else {
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ตามที่ท่านได้ทำสัญญาเช่าซื้อและทำสัญญาค้ำประกันการเช่าซื้อ${loanData?.MORTGAGE?.BAAB} ยี่ห้อ ${loanData?.MORTGAGE?.TYPE} คันหมาย`,
-            marginL + 50,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `เลขเคร่ื่องยนต์ ${loanData?.MORTGAGE?.STRNO} หมายเลขทะเบียน ${loanData?.MORTGAGE?.REGNO} ${loanData?.MORTGAGE?.DORECV} ไปจาก${companiesOption[0]?.label} ผู้ให้เช่าซื้อ `,
-            marginL,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `เมื่อวันที่ ${convertDateThai(
-              loanData?.LOAN?.SDATE
-            )} ในราคาเช่าซื้อ ${currencyFormat(
-              loanData?.LOAN?.NCSHPRC
-            )} บาท ตกลงผ่อนชำระค่างวด ๆ ละ ${currencyFormat(
-              loanData?.LOAN?.SMPAY
-            )} บาท ให้แล้วเสร็จภายใน `,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `${loanData?.LOAN?.T_NOPAY} งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )} งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิดหากผู้เช่าซื้อ`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `ไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใด ๆ`,
-            marginL,
-            pdfPositionY + 30
-          );
-        }
-      } else {
-        if (dataDefault?.COMPANY_ID === 4 || dataDefault?.COMPANY_ID === 5) {
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ตามที่ท่านได้ทำสัญญาเช่าซื้อและทำสัญญาค้ำประกันการเช่าซื้อ ${loanData?.MORTGAGE?.BAAB} ยี่ห้อ ${loanData?.MORTGAGE?.TYPE} คันหมายเลขเครื่อง`,
-            marginL + 50,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ยนต์ ${loanData?.MORTGAGE?.STRNO} หมายเลขทะเบียน ${loanData?.MORTGAGE?.REGNO} ${loanData?.MORTGAGE?.DORECV} ไปจาก บริษัท ซี เอ แอล 2009 จำกัด ( ปัจจุบันเปลี่ยนเป็น`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `${
-              companiesOption[0]?.label
-            })  ผู้ให้เช่าซื้อ เมื่อวันที่ ${convertDateThaiDate(
-              loanData?.LOAN?.SDATE
-            )} ${convertDateThaiMonth(
-              loanData?.LOAN?.SDATE
-            )} ${convertDateThaiYear(
-              loanData?.LOAN?.SDATE
-            )} ในราคาเช่าซื้อ ${currencyFormat(
-              loanData?.LOAN?.NCSHPRC
-            )} บาท ตกลงผ่อนชำระค่างวด ๆ`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `ละ ${currencyFormat(
-              loanData?.LOAN?.SMPAY
-            )} บาท ให้แล้วเสร็จภายใน ${
-              loanData?.LOAN?.T_NOPAY
-            } งวด เริ่มงวดแรกวันที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )} งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป`,
-            marginL,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่ว่าด้วยเหตุใด ๆ`,
-            marginL,
-            pdfPositionY + 30
-          );
-        } else {
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ตามที่ท่านได้ทำสัญญาเช่าซื้อและทำสัญญาค้ำประกันการเช่าซื้อ ${loanData?.MORTGAGE?.BAAB} ยี่ห้อ ${loanData?.MORTGAGE?.TYPE} คันหมายเลขเครื่อง`,
-            marginL + 50,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-          pdf.setFont("THSarabunNew", "normal");
-          pdf.text(
-            `ยนต์ ${loanData?.MORTGAGE?.STRNO} หมายเลขทะเบียน ${
-              loanData?.MORTGAGE?.REGNO
-            } ${loanData?.MORTGAGE?.DORECV} ไปจาก ${
-              companiesOption[0]?.label
-            } ผู้ให้เช่าซื้อ เมื่อวันที่ ${convertDateThaiDate(
-              loanData?.LOAN?.SDATE
-            )} ${convertDateThaiMonth(loanData?.LOAN?.SDATE)}`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `${convertDateThaiYear(
-              loanData?.LOAN?.SDATE
-            )} ในราคาเช่าซื้อ ${currencyFormat(
-              loanData?.LOAN?.NCSHPRC
-            )} บาท ตกลงผ่อนชำระค่างวด ๆ ละ ${currencyFormat(
-              loanData?.LOAN?.SMPAY
-            )} บาท ให้แล้วเสร็จภายใน ${
-              loanData?.LOAN?.T_NOPAY
-            } งวด เริ่มงวดแรกวัน`,
-            marginL,
-            pdfPositionY + 30
-          );
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(
-            `ที่ ${convertDateThai(
-              loanData?.LOAN?.LDATE
-            )}งวดต่อไปทุกวันที่ 5 ของเดือนถัดไป โดยผู้ค้ำประกันยินยอมรับผิด หากผู้เช่าซื้อไม่สามารถชำระหนี้ได้ไม่`,
-            marginL,
-            pdfPositionY + 30
-          );
-
-          pdfPositionY += 17; // เว้นบรรทัด
-
-          pdf.text(`ว่าด้วยเหตุใด ๆ`, marginL, pdfPositionY + 30);
-        }
-      }
-
-      pdfPositionY += 17; // เว้นบรรทัด
+      pdf.setFont("THSarabunNew", "normal");
       pdf.text(
-        `บัดนี้ ปรากฎว่าผู้เช่าซื้อได้ปฏิบัติผิดสัญญา โดยได้ค้างชำระค่างวดหลายงวดติดต่อกัน รวมเป็นเงินจำนวน`,
+        `เมื่อวันที่ ${convertDateThai(
+          loanData?.LOAN?.SDATE
+        )} ท่านได้กู้ยืมเงินและทำสัญญาจำนองที่ดินโฉนดที่ดินเลขที่ ${
+          loanData?.MORTGAGE?.STRNO
+        } เลขที่ดิน ${loanData?.MORTGAGE?.ENGNO}`,
+        marginL + 50,
+        pdfPositionY + 30
+      );
+
+      pdfPositionY += 17; // เว้นบรรทัด
+
+      pdf.setFont("THSarabunNew", "normal");
+      pdf.text(
+        `ตำบล ${loanData?.MORTGAGE?.BAAB} อำเภอ ${loanData?.MORTGAGE?.MODEL} จังหวัด ${loanData?.MORTGAGE?.TYPE} ไว้กับบริษัท ${companiesOption[0]?.label} ผู้รับจำนอง เพื่อเป็นการประกันการกู้`,
+        marginL,
+        pdfPositionY + 30
+      );
+
+      pdfPositionY += 17; // เว้นบรรทัด
+
+      pdf.text(
+        `ยืมเงินจำนวน ${currencyFormat(
+          loanData?.LOAN?.NCSHPRC
+        )} บาท โดยท่านสัญญาจะชำระดอกเบี้ยในอัตราร้อยละ 15 บาทต่อปี ของต้นเงินจำนองจำนวนดังกล่าว นับ`,
+        marginL,
+        pdfPositionY + 30
+      );
+      pdfPositionY += 17; // เว้นบรรทัด
+
+      pdf.text(
+        `แต่วันจำนองรายละเอียดตามสัญญาจำนองที่ได้อ้างถึงแล้วนั้น`,
+        marginL,
+        pdfPositionY + 30
+      );
+      pdfPositionY += 17; // เว้นบรรทัด
+
+      pdf.text(
+        `บัดนี้ท่านผิดนัดชำระหนี้หลายงวดติดต่อกัน มีหนี้ค้างชำระเป็นเงินต้นจำนวน ${currencyFormat(
+          loanData?.LOAN?.NCSHPRC
+        )} บาท โดยท่านไม่ได้ดำเนิน`,
         marginL + 50,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `${currencyFormat(
-          (loanData?.LOAN?.EXP_TO - loanData?.LOAN?.EXP_FRM) *
-            loanData?.LOAN?.TOT_UPAY
-        )} บาท`,
+        `การชำระหนี้ตามสัญญาทั้งเงินต้นและดอกเบี้ยและมิได้ไถ่ถอนจำนองตามสัญญาด้วย ซึ่งการที่ท่านผิดนัดผิดสัญญานั้นทำให้ผู้รับจำ`,
         marginL,
         pdfPositionY + 30
       );
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `ดังนั้น จึงขอให้ท่านผู้เช่า/ซื้อ/ผู้ค้ำประกัน ร่วมกันหรือแทนกันชำระค่างวดที่ค้าง พร้อมดอกเบี้ยปรับให้แก่`,
+        ` นองเสียหาย ผู้รับจำนองประสงค์จะทำการบังคับจำนองหนี้รายนี้ จึงได้มอบให้ข้าพเจ้าดดำเนินการบอกกล่าวบัง`,
         marginL + 50,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `ผู้ให้เช่าซื้อ/เจ้าของ ภายใน 30 วัน นับแต่วันที่ท่านได้รับหนังสือฉบับนี้`,
+        `คับจำนองกับท่าน โดยถือเอาหนังสือฉบับนี้เป็นหนังสือบอกกล่าวบังคับจำนอง`,
         marginL,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `หากพ้นกำหนดตามหนังสือ ผู้เช่าซื้อ/ผู้ซื้อ/ผู้ค้ำประกัน ไม่ชำระหนี้ให้ถือว่าหนังสือฉบับนี้เป็นหนังสือบอก`,
+        ` ข้าพเจ้าจึงเรียนมาเพื่อขอให้ท่านนำเงินต้น ดอกเบี้ยที่ค้างชำระ ค่าธรรมเนียมและค่าติดตามทวงถาม ไปชำระ ณ`,
         marginL + 50,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `เลิกสัญญาและเป็นหนังสือแจ้งให้ ผู้เช่าซื้อ/ผู้ซื้อ/ผู้ค้ำประกัน ส่งมอบรถคืนในสภาพเรียบร้อยใช้การได้ดี`,
+        `ที่ทำการสำนักงาน${companiesOption[0]?.label} ทั้งนี้ถายในกำหนด 60 วัน นับแต่วันที่ท่านได้รับหนังสือฉบับนี้มิฉะนั้นข้าพเจ้าจำเป็นจะ`,
         marginL,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `อนึ่ง เพื่อการตกลงกันโดยสันติวิธี ขอให้ท่านติดต่อข้าพเจ้า ฯ หรือผู้ให้เช่าซื้อโดยด่วน`,
-        marginL + 50,
+        `ต้องดำเนินคดี เพื่อบังคับจำนองที่ดินรายนี้ต่อไป`,
+        marginL,
         pdfPositionY + 30
       );
 
@@ -669,7 +439,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
           open={open}
           onOk={""}
           onCancel={handleCancel}
-          width={719}
+          width={760}
           footer={[
             <Button
               key="cancle"
@@ -737,9 +507,132 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 span={"12"}
               >
                 <br />
-                <p>ผู้เช่าซื้อ</p>
+                <p>ผู้กู้ยืม/จำนอง</p>
               </Col>
             </Row>
+            <>
+              <Row>
+                <Col
+                  style={{
+                    textAlign: "start",
+                    paddingTop: "20px",
+                  }}
+                  offset={3}
+                  span={"24"}
+                >
+                  <p>
+                    เมื่อวันที่ {convertDateThai(loanData?.LOAN?.SDATE)}{" "}
+                    ท่านได้กู้ยืมเงินและทำสัญญาจำนองที่ดินโฉนดที่ดินเลขที่{" "}
+                    {loanData?.MORTGAGE?.STRNO} เลขที่ดิน{" "}
+                    {loanData?.MORTGAGE?.ENGNO}
+                  </p>
+                </Col>
+
+                <Col
+                  style={{
+                    textAlign: "start",
+                  }}
+                  offset={1}
+                  span={"24"}
+                >
+                  <p>
+                    ตำบล {loanData?.MORTGAGE?.BAAB} อำเภอ{" "}
+                    {loanData?.MORTGAGE?.MODEL} จังหวัด{" "}
+                    {loanData?.MORTGAGE?.TYPE} ไว้กับบริษัท{" "}
+                    {companiesOption[0]?.label} ผู้รับจำนอง
+                    เพื่อเป็นการประกันการกู้ยืมเงินจำนวน{" "}
+                    {currencyFormat(loanData?.LOAN?.NCSHPRC)} บาท
+                    โดยท่านสัญญาจะชำระดอกเบี้ยในอัตราร้อยละ 15 บาทต่อปี
+                    ของต้นเงินจำนองจำนวนดังกล่าว นับแต่วันจำนอง
+                    รายละเอียดตามสัญญาจำนองที่ได้อ้างถึงแล้วนั้น
+                  </p>
+                </Col>
+              </Row>
+              <Row>
+                <Col
+                  style={{
+                    textAlign: "start",
+                    paddingTop: "10px",
+                  }}
+                  offset={3}
+                  span={"24"}
+                >
+                  <p>
+                    บัดนี้ท่านผิดนัดชำระหนี้หลายงวดติดต่อกัน
+                    มีหนี้ค้างชำระเป็นเงินต้นจำนวน{" "}
+                    {currencyFormat(loanData?.LOAN?.NCSHPRC)} บาท
+                    โดยท่านไม่ได้ดำเนิน
+                  </p>
+                </Col>
+                <Col
+                  style={{
+                    textAlign: "start",
+                    paddingTop: "5px",
+                  }}
+                  offset={1}
+                  span={"24"}
+                >
+                  <p>
+                    การชำระหนี้ตามสัญญาทั้งเงินต้นและดอกเบี้ยและมิได้ไถ่ถอนจำนองตามสัญญาด้วย
+                    ซึ่งการที่ท่านผิดนัดผิดสัญญานั้นทำให้ผู้รับจำนองเสียหาย
+                    ผู้รับจำนองประสงค์จะทำการบังคับจำนองหนี้รายนี้
+                    จึงได้มอบให้ข้าพเจ้าดดำเนินการบอกกล่าวบังคับจำนองกับท่าน
+                    โดยถือเอาหนังสือฉบับนี้เป็นหนังสือบอกกล่าวบังคับจำนอง
+                  </p>
+                </Col>
+              </Row>
+              <Row>
+                <Col
+                  style={{
+                    textAlign: "start",
+                    paddingTop: "10px",
+                  }}
+                  offset={3}
+                  span={"24"}
+                >
+                  <p>
+                    ข้าพเจ้าจึงเรียนมาเพื่อขอให้ท่านนำเงินต้น
+                    ดอกเบี้ยที่ค้างชำระ ค่าธรรมเนียมและค่าติดตามทวงถาม ไปชำระ ณ
+                  </p>
+                </Col>
+                <Col
+                  style={{
+                    textAlign: "start",
+                    paddingTop: "5px",
+                  }}
+                  offset={1}
+                  span={"24"}
+                >
+                  <p>
+                    ที่ทำการสำนักงาน{companiesOption[0]?.label}{" "}
+                    ทั้งนี้ถายในกำหนด 60 วัน
+                    นับแต่วันที่ท่านได้รับหนังสือฉบับนี้มิฉะนั้นข้าพเจ้าจำเป็นจะต้องดำเนินคดี
+                    เพื่อบังคับจำนองที่ดินรายนี้ต่อไป
+                  </p>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col
+                  style={{ textAlign: "center", paddingTop: "20px" }}
+                  span={"24"}
+                >
+                  <p>ขอแสดงความนับถือ</p>
+                  <p style={{ textAlign: "center", paddingTop: "70px" }}>
+                    ({dataDefault.LAWYER_FNAME} {dataDefault.LAWYER_LNAME})
+                  </p>
+                  <p>ทนายความผู้รับมอบอำนาจ</p>
+                  <p style={{ textAlign: "center", paddingTop: "10px" }}>
+                    {companiesOption[0]?.phone}
+                  </p>
+                  <p style={{ textAlign: "center", paddingTop: "10px" }}>
+                    หมายเหตุ {"    "}
+                    หากท่านได้คืนรถหรือชำระหนี้ก่อนที่ท่านจะได้รับหนังสือฉบับนี้
+                    บริษัท ฯ ขออภัยมา ณ โอกาสนี้ด้วย
+                  </p>
+                </Col>
+              </Row>
+            </>
           </Card>
         </Modal>
       </>

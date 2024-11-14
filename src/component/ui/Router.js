@@ -113,9 +113,9 @@ export default function Router() {
             />
             <Route path="guidbook/read-text/*" element={<ReadText />} />
             <Route path="guidbook/test/*" element={<Test />} />
-            <Route path="/liff" element={<Liff />} />
+            {/* <Route path="/liff" element={<Liff />} />
             <Route path="/loginLine" element={<Loginline />} />
-            <Route path="/login" element={<LogIn />} />
+            <Route path="/login" element={<LogIn />} /> */}
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

@@ -23,17 +23,17 @@ export default function Liff() {
   };
 
   const initLine = () => {
-    console.log("line", line);
+    console.log("lineqq", line);
 
     if (line === "null") {
+      console.log(" if (line === null) -->");
+
       liff.init(
         { liffId: "2006563000-BQzAEq8R", withLoginOnExternalBrowser: true },
         () => {
           if (liff.isLoggedIn()) {
-            console.log("runApp();");
             runApp();
           } else {
-            console.log("iff.login();");
             liff.login();
           }
         },
@@ -73,5 +73,5 @@ export default function Liff() {
     liff.closeWindow();
   };
 
-  return <></>;
+  return <>เข้าไม่ได้</>;
 }
