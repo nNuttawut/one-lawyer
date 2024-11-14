@@ -136,6 +136,7 @@ const Main = () => {
             localStorage.setItem("LICENCE_NO_LAWYERS", dataComfirm?.LICENCE_NO);
             localStorage.setItem("COMPANY_ID", dataComfirm?.COMPANY_ID);
             localStorage.setItem("ACTIVE_STATUS", dataComfirm?.ACTIVE_STATUS);
+            localStorage.setItem("ACTIVE_STATUS", dataComfirm?.line_uid);
             setLoading(false);
           } else if (res.status === 201) {
             message.error("ลงทะเบียนใหม่");

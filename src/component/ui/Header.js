@@ -46,6 +46,9 @@ function Header({ title, onPress, onClick }) {
     localStorage.removeItem("ROLE_ID");
     localStorage.removeItem("ACTIVE_STATUS");
     localStorage.removeItem("TOKEN");
+    localStorage.removeItem("lineStatus");
+    localStorage.removeItem("line");
+    navigate("/");
     window.location.reload();
     message.success("ออกจากระบบสำเร็จ");
   };
@@ -144,14 +147,14 @@ function Header({ title, onPress, onClick }) {
             >
               <UserOutlined fontSize="large" />
             </IconButton>
-            <a
+            {/* <a
               style={{ marginTop: "5px", marginRight: "5px" }}
               href="#/notifications"
             >
               <Badge count={5}>
                 <BellOutlined />
               </Badge>
-            </a>
+            </a> */}
             <Menu
               id="basic-menu"
               anchorEl={anchorEl}

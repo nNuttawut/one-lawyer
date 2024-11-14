@@ -37,3 +37,4 @@ export const BAD_DEBTOR = 12;
 export const STATUS_PROCESS_PROGRESS = 1;
 export const STATUS_PROCESS_UNSUCCESSFUL = 2;
 export const STATUS_PROCESS_SUCCESSFUL = 3;
+export const STATUS_PROCESS_PROCESS = 4;

@@ -55,7 +55,7 @@ function Sidenav({ color, onClick }) {
           icon: <CaretRightOutlined />,
           pageName: "import-data",
           path: "notice/create-notice",
-          label: "สร้างโนติส",
+          label: "ออกโนติส",
         },
         {
           key: "32",

@@ -13,11 +13,11 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { FormOutlined, SyncOutlined } from "@ant-design/icons";
+import { FormOutlined, SyncOutlined, EditOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import CreateNotice from "./modal/CreateNotice";
+import DocumentNotice1 from "./modal/DocumentNotice1";
 import { Link } from "react-router-dom";
-import EditNotice from "./modal/EditNotice";
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS_BY_STATUS,
@@ -32,13 +32,15 @@ import {
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
+import EditNotice from "./modal/EditNotice";
+import DocumentNotice2 from "./modal/DocumentNotice2";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalEdit, setIsModalEdit] = useState(false);
-
+  const [isModalDoc1, setIsModalDoc1] = useState(false);
+  const [isModalDoc2, setIsModalDoc2] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -48,7 +50,7 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [dataRecord, setDataRecord] = useState();
-  const [dateUpdate, setDateUpdate] = useState(null);
+  const [isModalEdit, setIsModalEdit] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -265,11 +267,6 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
-    {
-      title: "หมายเลข EMS",
-      align: "center",
-      render: (record) => <>{record.PARCEL_NO ? record.PARCEL_NO : null}</>,
-    },
     //ทำ logic record
     ...(ROLE_ID === "1" || ROLE_ID === "2"
       ? [
@@ -348,8 +345,34 @@ const Main = () => {
                                   setDataModal(record);
                                 }}
                               >
+                                <EditOutlined
+                                  style={{
+                                    color: "orange",
+                                    fontSize: "16px",
+                                    marginLeft: "10px",
+                                  }}
+                                />
+                              </Button>
+                              <Button
+                                style={{
+                                  boxShadow: "0 4px 3px",
+                                  marginRight: "10px",
+                                }}
+                                onClick={() => {
+                                  if (record.LOAN_TYPE_ID === 1) {
+                                    setIsModalDoc1(true);
+                                  } else {
+                                    setIsModalDoc2(true);
+                                  }
+                                  setDataModal(record);
+                                }}
+                              >
                                 <SyncOutlined
-                                  style={{ color: "green", fontSize: "16px" }}
+                                  style={{
+                                    color: "green",
+                                    fontSize: "16px",
+                                    marginLeft: "10px",
+                                  }}
                                 />
                               </Button>
                               {/* {updateDate(record)} */}
@@ -376,7 +399,23 @@ const Main = () => {
             <CreateNotice
               open={isModalCreate}
               close={setIsModalCreate}
-              dataDefualt={dataModal}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModalDoc1 ? (
+            <DocumentNotice1
+              open={isModalDoc1}
+              close={setIsModalDoc1}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModalDoc2 ? (
+            <DocumentNotice2
+              open={isModalDoc2}
+              close={setIsModalDoc2}
+              dataDefault={dataModal}
               funcUpdateStatus={handleUpdateData}
             />
           ) : null}
@@ -384,7 +423,7 @@ const Main = () => {
             <EditNotice
               open={isModalEdit}
               close={setIsModalEdit}
-              dataDefualt={dataModal}
+              dataDefault={dataModal}
               funcUpdateStatus={handleUpdateData}
             />
           ) : null}

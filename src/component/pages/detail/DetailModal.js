@@ -37,7 +37,6 @@ import {
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import dayjs from "dayjs";
-import { Link } from "react-router-dom";
 
 const DetailModal = ({ open, close, dataRec }) => {
   const [form] = Form.useForm();

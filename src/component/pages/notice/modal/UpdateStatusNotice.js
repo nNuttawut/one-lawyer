@@ -11,7 +11,7 @@ import { INDICT, NEGOTIATE } from "../../../../utils/constant/StatusConstant";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 
-const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [defaultRadio, setDefaultRadio] = useState("enforce");
   const [status, setStatus] = useState({
     process: "process",
@@ -23,8 +23,8 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [countDate, setCountDate] = useState();
 
   useEffect(() => {
-    if (dataDefualt.DATE) {
-      const recordDate = dayjs(dataDefualt.DATE);
+    if (dataDefault.DATE) {
+      const recordDate = dayjs(dataDefault.DATE);
       const toDay = dayjs().startOf("day");
       const toDate = dayjs(recordDate).add(30, "days");
       const daysDifference = toDay.diff(toDate, "days");
@@ -52,11 +52,11 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
               funcUpdateStatus({
-                ...dataDefualt,
+                ...dataDefault,
                 MAIN_STATUS_ID: data.MAIN_STATUS_ID,
                 DATE: dayjs().format("YYYY-MM-DD"),
               });
-              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
+              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
               setLoading(false);
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
@@ -121,10 +121,10 @@ const UpdateStatusNotice = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("statusSelect", statusSelect);
     const postData = {
       MAIN_STATUS_ID: statusSelect,
-      LOAN_ID: dataDefualt.id,
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+      LOAN_ID: dataDefault.id,
+      USER_ID: dataDefault.LAWYER_ID,
+      LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+      LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
       MEMO: memoText,
       DATE: statusSelect === INDICT ? null : dayjs().format("YYYY-MM-DD"),
     };

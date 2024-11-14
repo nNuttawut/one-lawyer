@@ -13,10 +13,11 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { SyncOutlined } from "@ant-design/icons";
+import { SyncOutlined, FormOutlined, EditOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import UpdateStatusNotice from "./modal/UpdateStatusNotice";
+import UpdateReplyNotice from "./modal/updateReplyNotice";
+import EditReplyNotice from "./modal/EditReplyNotice";
 
 import {
   baseUrl,
@@ -28,16 +29,21 @@ import {
 import axios from "axios";
 import {
   NOTICE,
+  STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
+  STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
+import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
+  const [isModalUpdateStatus, setIsModalUpdateStatus] = useState(false);
+  const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -94,7 +100,9 @@ const Main = () => {
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID &&
-          item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL
+          (item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ||
+            item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
+            item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
       );
       setArrayTable(newData);
       setDataArr(newData);
@@ -160,7 +168,9 @@ const Main = () => {
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID &&
-          item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL
+          (item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ||
+            item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
+            item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
       );
       console.log("arr", arr);
       setArrayTable(arr);
@@ -179,13 +189,38 @@ const Main = () => {
     const recordDate = dayjs(record.DATE);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "green" : "red";
+    let color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
-        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
+        {<span>เกินมา {daysDifference} วัน</span>}
+      </Tag>
+    );
+  };
+
+  const renderProcess = (record) => {
+    let value =
+      record.PROCESS_ID === 4
+        ? "รอดำเนินการ"
+        : record.PROCESS_ID === 3
+        ? "เตรียมส่งฟ้อง"
+        : record.PROCESS_ID === 2
+        ? "ข้อมูลไม่ครบ"
+        : null;
+    let color =
+      record.PROCESS_ID === 4
+        ? "blue"
+        : record.PROCESS_ID === 3
+        ? "green"
+        : record.PROCESS_ID === 2
+        ? "red"
+        : null;
+
+    return (
+      <Tag color={color} key={value} style={{ textAlign: "center" }}>
+        {value}
       </Tag>
     );
   };
@@ -237,6 +272,11 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    {
+      title: "การดำเนินการ",
+      align: "center",
+      render: (record) => <>{renderProcess(record)}</>,
+    },
     //ทำ logic record
     ...(ROLE_ID === "1" || ROLE_ID === "2"
       ? [
@@ -282,21 +322,53 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      <Button
-                        style={{ boxShadow: "0 4px 3px" }}
-                        onClick={() => {
-                          setIsModalUpdate(true);
-                          setDataModal(record);
-                        }}
-                      >
-                        <SyncOutlined
-                          style={{ color: "green", fontSize: "16px" }}
-                        />
-                      </Button>
+                      {record.PROCESS_ID === STATUS_PROCESS_PROCESS ? (
+                        <Button
+                          style={{ boxShadow: "0 4px 3px" }}
+                          onClick={() => {
+                            setIsModalUpdate(true);
+                            setDataModal(record);
+                            console.log("---->", record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : (
+                        <Button
+                          style={{ boxShadow: "0 4px 3px", marginLeft: "10px" }}
+                          onClick={() => {
+                            setIsModalEdit(true);
+                            setDataModal(record);
+                            console.log("---->", record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      )}
+                      {record.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ? (
+                        <Button
+                          style={{ boxShadow: "0 4px 3px", marginLeft: "10px" }}
+                          onClick={() => {
+                            setIsModalUpdateStatus(true);
+                            setDataModal(record);
+                            console.log("---->", record);
+                          }}
+                        >
+                          <SyncOutlined
+                            style={{ color: "green", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
                     </p>
                   ),
                   rowExpandable: (record) =>
-                    userId === record.LAWYER_ID && ROLE_ID === "3",
+                    (userId === record.LAWYER_ID && ROLE_ID === "3") ||
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "1",
                 }}
               />
             </Col>
@@ -307,10 +379,26 @@ const Main = () => {
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
       {isModalUpdate ? (
-        <UpdateStatusNotice
+        <UpdateReplyNotice
           open={isModalUpdate}
           close={setIsModalUpdate}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEdit ? (
+        <EditReplyNotice
+          open={isModalEdit}
+          close={setIsModalEdit}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalUpdateStatus ? (
+        <UpdateStatusNotice
+          open={isModalUpdateStatus}
+          close={setIsModalUpdateStatus}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}

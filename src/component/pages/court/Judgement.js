@@ -13,11 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { SyncOutlined } from "@ant-design/icons";
 
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -27,15 +23,9 @@ import {
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
-//use redux
-import { useSelector } from "react-redux";
-
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import {
-  CASE_IS_FINAL,
-  JUDGEMENT,
-} from "../../../utils/constant/StatusConstant";
+import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
 import UpdateJudgement from "./modal/UpdateJudgement";
 import dayjs from "dayjs";
 
@@ -44,12 +34,10 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();

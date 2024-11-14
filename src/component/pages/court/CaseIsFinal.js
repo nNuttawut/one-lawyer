@@ -29,10 +29,7 @@ import {
 //use redux
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import {
-  CASE_IS_FINAL,
-  JUDGEMENT,
-} from "../../../utils/constant/StatusConstant";
+import { CASE_IS_FINAL } from "../../../utils/constant/StatusConstant";
 import UpdateCaseIsFinal from "./modal/UpdateCaseIsFinal";
 import dayjs from "dayjs";
 
@@ -41,7 +38,6 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();

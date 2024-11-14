@@ -156,7 +156,7 @@ const DocumentEnforce = ({ open, close }) => {
 
       let customerLength;
 
-      if (textData.gua.length.length > 4) {
+      if (textData.gua.length > 4) {
         customerLength = "ห้า";
       } else if (textData.gua.length > 3) {
         customerLength = "สี่";

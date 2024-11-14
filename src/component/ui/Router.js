@@ -33,6 +33,9 @@ import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
 import Test from "../pages/guidebook/Test";
 import ReplyNotice from "../pages/notice/ReplyNotice";
+import Liff from "../API/Liff";
+import Loginline from "../API/LoginLine";
+import LogIn from "../pages/LogIn";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -110,6 +113,9 @@ export default function Router() {
             />
             <Route path="guidbook/read-text/*" element={<ReadText />} />
             <Route path="guidbook/test/*" element={<Test />} />
+            <Route path="/liff" element={<Liff />} />
+            <Route path="/loginLine" element={<Loginline />} />
+            <Route path="/login" element={<LogIn />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

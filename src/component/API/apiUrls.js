@@ -147,15 +147,15 @@ export {
   GET_PARCELS,
 };
 
-//----production-----
-// //ดีงข้อมูลจาก server ibm
-// const GET_LOAN_FROM_SERVER_IBM = "/lawyer/dev/server/loans"; // อย่าลืมแก้เป็น production
+// ----production-----
+// // ดีงข้อมูลจาก server ibm
+// const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans"; // อย่าลืมแก้เป็น production
 
 // //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
 // const GET_ALL_LOAN = "/lawyer/api/loans";
 
 // //ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
-// const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
+// const GET_LOAN_BY_CONTNO = "/lawyer/api/loans/";
 
 // //ดึงจำนวนงานที่ users รับงาน
 // const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
@@ -163,7 +163,7 @@ export {
 // // notice;
 // const POST_PARCELS = `/lawyer/api/parcels`;
 // const PUT_PARCELS = `/lawyer/api/parcels`;
-// const GET_PARCELS = `/lawyer/api/parcels/worklogs/;
+// const GET_PARCELS = `/lawyer/api/parcels/worklogs/`;
 
 // //ดึงจำนานงานที่กำลังดำเนินการ
 // const GET_JOB_IN_PROGRESS = "/lawyer/api/jobs";
@@ -293,5 +293,5 @@ export {
 //   POST_CALCULATE_LAND,
 //   POST_PARCELS,
 //   PUT_PARCELS,
-// GET_PARCELS,
+//   GET_PARCELS,
 // };

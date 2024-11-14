@@ -20,7 +20,6 @@ import LoadLawyers from "../../../hook/LoadLawyers";
 import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 import {
   optionsLone,
-  HIRE_PURCASE,
   MORTGAGE,
 } from "../../../utils/constant/LoanTypeConstant";
 import {

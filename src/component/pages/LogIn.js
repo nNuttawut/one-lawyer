@@ -33,8 +33,9 @@ export default function LogIn() {
             localStorage.setItem("ROLE_ID", res.data?.ROLE_ID);
             localStorage.setItem("ACTIVE_STATUS", res.data?.ACTIVE_STATUS);
             localStorage.setItem("TOKEN", JSON.stringify(res.data.token));
+            localStorage.setItem("line", res.data?.line_uid);
             message.success("เช้าสู่ระบบสำเร็จ");
-            handleNavigate();
+            handleNavigate(res.data);
           } else {
             message.error("ข้อมูลไม่ถูกต้อง");
             console.log("ข้อมูลไม่ถูกต้อง");
@@ -72,8 +73,17 @@ export default function LogIn() {
     message.info("รบกวนติดต่อไอทีเพื่อขอเปลี่ยนรหัสผ่าน");
   };
 
-  const handleNavigate = () => {
-    navigate("/dashboard");
+  const handleNavigate = (data) => {
+    console.log("data", data.line_uid);
+
+    if (data.line_uid !== "NULL") {
+      console.log("not null");
+      navigate("/dashboard");
+    } else {
+      console.log("null");
+      navigate("/");
+    }
+
     window.location.reload();
   };
 
