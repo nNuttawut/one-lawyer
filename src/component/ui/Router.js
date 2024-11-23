@@ -17,9 +17,7 @@ import AwaitingJudgment from "../pages/court/AwaitingJudgment";
 import ReportCourt from "../pages/court/ReportCourt";
 import Notice from "../pages/notice/MainNotice";
 import Calendar from "../pages/calendar/CalendarMain";
-import { AnimatePresence } from "framer-motion";
-import { createClient } from "@supabase/supabase-js";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+
 import AssignLawyers from "../pages/manageData/AssignLawyers";
 import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
 import InvestigateAssetsBefore from "../pages/investigateAssets/InvestigateAssetsBefore";
@@ -33,9 +31,11 @@ import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
 import Test from "../pages/guidebook/Test";
 import ReplyNotice from "../pages/notice/ReplyNotice";
-import Liff from "../API/Liff";
-import Loginline from "../API/LoginLine";
-import LogIn from "../pages/LogIn";
+import Liff from "../pages/lineLogIn/Liff";
+import Loginline from "../pages/lineLogIn/LoginLine";
+import { AnimatePresence } from "framer-motion";
+import { createClient } from "@supabase/supabase-js";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -48,7 +48,7 @@ export default function Router() {
       <SessionContextProvider supabaseClient={supabase}>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/dashboard/*" element={<DashboardRoute />} />
+            <Route path="/" element={<DashboardRoute />} />
             <Route path="/final-case/*" element={<FinalCase />} />
             <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
             <Route path="/disbursement/*" element={<DisbursementRoute />} />
@@ -113,9 +113,8 @@ export default function Router() {
             />
             <Route path="guidbook/read-text/*" element={<ReadText />} />
             <Route path="guidbook/test/*" element={<Test />} />
-            {/* <Route path="/liff" element={<Liff />} />
-            <Route path="/loginLine" element={<Loginline />} />
-            <Route path="/login" element={<LogIn />} /> */}
+            <Route path="/liff" element={<Liff />} />
+            <Route path="/login-line" element={<Loginline />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

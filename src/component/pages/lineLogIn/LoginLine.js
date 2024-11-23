@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Button, Row, Col, Form, Modal, Spin, message } from "antd";
-import logo from "../../assets/images/logoLogin.png";
+import logo from "../../../assets/images/logoLogin.png";
 import axios from "axios";
-import liff from "@line/liff";
 import { useNavigate } from "react-router-dom";
-import { baseUrl, POST_USER, HEADERS_EXPORT } from "./apiUrls";
+import { baseUrl, POST_USER, HEADERS_EXPORT } from "../../API/apiUrls";
 
 export default function Loginline() {
   const navigate = useNavigate();
@@ -36,7 +35,7 @@ export default function Loginline() {
       COMPANY_ID: company,
       ROLE_ID: roleId,
       ACTIVE_STATUS: activeStatus,
-      line_uid: lineId,
+      line_uid: lineId ? lineId : false,
       id: userId,
     };
     setLoading(true);
@@ -72,16 +71,16 @@ export default function Loginline() {
       console.log("value true", value);
       localStorage.setItem("lineStatus", value);
       navigate("/liff");
-      window.location.reload();
     } else {
       console.log("value false", value);
       localStorage.setItem("lineStatus", value);
       console.log("lineId", lineId);
 
-      if (lineId === "null") {
+      if (lineId === "null" && userId) {
+        console.log("sendData");
         sendData();
       }
-      navigate("#/dashboard");
+      navigate("/");
       window.location.reload();
     }
   };

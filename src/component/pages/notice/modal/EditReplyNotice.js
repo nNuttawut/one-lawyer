@@ -15,6 +15,7 @@ import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   GET_PARCELS,
   HEADERS_EXPORT,
@@ -27,7 +28,6 @@ import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
 import {
-  STATUS_PROCESS_PROGRESS,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
@@ -58,77 +58,77 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   }, [companiesList, parcelsData]);
 
-  const setDataDefualt = () => {
-    form.setFieldsValue({
-      company: dataDefault.COMPANY_ID,
-      dateNotice: dayjs(dataDefault.DATE),
-      memo: parcelsData[0]?.mark,
-      parcelNoCustomer: parcelsData[0]?.parcel_no,
-      parcelNoGuarantor1: parcelsData[1]?.parcel_no,
-      parcelNoGuarantor2: parcelsData[2]?.parcel_no,
-      parcelNoGuarantor3: parcelsData[3]?.parcel_no,
-      parcelNoGuarantor4: parcelsData[4]?.parcel_no,
-      parcelNoGuarantor5: parcelsData[5]?.parcel_no,
-      parcelNoGuarantor6: parcelsData[6]?.parcel_no,
-      imageReplyFile: parcelsData[0]?.url_path,
-      radioCus:
-        parcelsData[0]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[0]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[0]?.parcel_typ_id === 1
-          ? 1
-          : 3,
-      radioGuarantor1:
-        parcelsData[1]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[1]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[1]?.parcel_typ_id === 1
-          ? 1
-          : null,
-      radioGuarantor2:
-        parcelsData[2]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[2]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[2]?.parcel_typ_id === 1
-          ? 1
-          : null,
-      radioGuarantor3:
-        parcelsData[3]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[3]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[3]?.parcel_typ_id === 1
-          ? 1
-          : null,
-      radioGuarantor4:
-        parcelsData[4]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[4]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[4]?.parcel_typ_id === 1
-          ? 1
-          : null,
-      radioGuarantor5:
-        parcelsData[5]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[5]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[5]?.parcel_typ_id === 1
-          ? 1
-          : null,
-      radioGuarantor6:
-        parcelsData[6]?.parcel_typ_id === null
-          ? 3
-          : parcelsData[6]?.parcel_typ_id === 2
-          ? 2
-          : parcelsData[6]?.parcel_typ_id === 1
-          ? 1
-          : null,
-    });
-  };
+  // const setDataDefualt = () => {
+  //   form.setFieldsValue({
+  //     company: dataDefault.COMPANY_ID,
+  //     dateNotice: dayjs(dataDefault.DATE),
+  //     memo: parcelsData[0]?.mark,
+  //     parcelNoCustomer: parcelsData[0]?.parcel_no,
+  //     parcelNoGuarantor1: parcelsData[1]?.parcel_no,
+  //     parcelNoGuarantor2: parcelsData[2]?.parcel_no,
+  //     parcelNoGuarantor3: parcelsData[3]?.parcel_no,
+  //     parcelNoGuarantor4: parcelsData[4]?.parcel_no,
+  //     parcelNoGuarantor5: parcelsData[5]?.parcel_no,
+  //     parcelNoGuarantor6: parcelsData[6]?.parcel_no,
+  //     imageReplyFile: parcelsData[0]?.url_path,
+  //     radioCus:
+  //       parcelsData[0]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[0]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[0]?.parcel_typ_id === 1
+  //         ? 1
+  //         : 3,
+  //     radioGuarantor1:
+  //       parcelsData[1]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[1]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[1]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //     radioGuarantor2:
+  //       parcelsData[2]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[2]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[2]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //     radioGuarantor3:
+  //       parcelsData[3]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[3]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[3]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //     radioGuarantor4:
+  //       parcelsData[4]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[4]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[4]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //     radioGuarantor5:
+  //       parcelsData[5]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[5]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[5]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //     radioGuarantor6:
+  //       parcelsData[6]?.parcel_typ_id === null
+  //         ? 3
+  //         : parcelsData[6]?.parcel_typ_id === 2
+  //         ? 2
+  //         : parcelsData[6]?.parcel_typ_id === 1
+  //         ? 1
+  //         : null,
+  //   });
+  // };
 
   const setOption = () => {
     const options = companiesList.map((item) => ({
@@ -238,6 +238,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ...dataDefault,
                 DATE: data.DATE,
                 PROCESS_ID: data.PROCESS_ID,
+                parcel_list: parcel,
               });
               setLoading(false);
             } else {
@@ -288,6 +289,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } finally {
         setLoading(false);
         handleCancel();
+        window.location.reload();
       }
     } else {
       message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
@@ -321,7 +323,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     let statutProcess;
 
     if (
-      values.radioCus === 3 ||
+      values.radioGuarantor0 === 3 ||
       values.radioGuarantor1 === 3 ||
       values.radioGuarantor2 === 3 ||
       values.radioGuarantor3 === 3 ||
@@ -354,101 +356,122 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     };
 
     if (dataDefault.LOAN_TYPE_ID === 2) {
-      parcelsSet.push({
-        ...initData,
-        id: parcelsData[0].id,
-        CUSTOMER_ID: values.cusId,
-        parcel_no: values.parcelNoCustomer,
-        mark: values.memo,
-        parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
-        response_status: values.radioCus === 3 ? 0 : 1,
+      dataDefault.parcel_list.forEach((guarantor, index) => {
+        console.log("index--->", guarantor);
+
+        parcelsSet.push({
+          ...initData,
+          id: parcelsData[0].id,
+          CUSTOMER_ID: values.guarantor0,
+          parcel_no: values.parcelNoGuarantor0,
+          mark: values.memo,
+          parcel_typ_id:
+            values.radioGuarantor0 === 3 ? null : values.radioGuarantor0,
+          response_status: values.radioGuarantor0 === 3 ? 0 : 1,
+        });
       });
     } else {
-      parcelsSet.push({
-        ...initData,
-        id: parcelsData[0].id,
-        CUSTOMER_ID: values.cusId,
-        parcel_no: values.parcelNoCustomer,
-        mark: values.memo,
-        parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
-        response_status: values.radioCus === 3 ? 0 : 1,
+      // parcelsSet.push({
+      //   ...initData,
+      //   id: parcelsData[0].id,
+      //   CUSTOMER_ID: values.cusId,
+      //   parcel_no: values.parcelNoCustomer,
+      //   mark: values.memo,
+      //   parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
+      //   response_status: values.radioCus === 3 ? 0 : 1,
+      // });
+
+      // if (loanData.GUARANTORS.length > 0) {
+      //   console.log("loadData.GUARANTORS.length > 0");
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[1].id,
+      //     CUSTOMER_ID: values.guarantor1,
+      //     parcel_no: values.parcelNoGuarantor1,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor1 === 3 ? null : values.radioGuarantor1,
+      //     response_status: values.radioGuarantor1 === 3 ? 0 : 1,
+      //   });
+      // }
+      // if (loanData.GUARANTORS.length > 1) {
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[2].id,
+      //     CUSTOMER_ID: values.guarantor2,
+      //     parcel_no: values.parcelNoGuarantor2,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor2 === 3 ? null : values.radioGuarantor2,
+      //     response_status: values.radioGuarantor2 === 3 ? 0 : 1,
+      //   });
+      // }
+      // if (loanData.GUARANTORS.length > 2) {
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[3].id,
+      //     CUSTOMER_ID: values.guarantor3,
+      //     parcel_no: values.parcelNoGuarantor3,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor3 === 3 ? null : values.radioGuarantor3,
+      //     response_status: values.radioGuarantor3 === 3 ? 0 : 1,
+      //   });
+      // }
+
+      // if (loanData.GUARANTORS.length > 3) {
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[4].id,
+      //     CUSTOMER_ID: values.guarantor4,
+      //     parcel_no: values.parcelNoGuarantor4,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor4 === 3 ? null : values.radioGuarantor4,
+      //     response_status: values.radioGuarantor4 === 3 ? 0 : 1,
+      //   });
+      // }
+
+      // if (loanData.GUARANTORS.length > 4) {
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[5].id,
+      //     CUSTOMER_ID: values.guarantor5,
+      //     parcel_no: values.parcelNoGuarantor5,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor5 === 3 ? null : values.radioGuarantor5,
+      //     response_status: values.radioGuarantor5 === 3 ? 0 : 1,
+      //   });
+      // }
+      // if (loanData.GUARANTORS.length > 5) {
+      //   parcelsSet.push({
+      //     ...initData,
+      //     id: parcelsData[6].id,
+      //     CUSTOMER_ID: values.guarantor6,
+      //     parcel_no: values.parcelNoGuarantor6,
+      //     mark: values.memo,
+      //     parcel_typ_id:
+      //       values.radioGuarantor6 === 3 ? null : values.radioGuarantor6,
+      //     response_status: values.radioGuarantor6 === 3 ? 0 : 1,
+      //   });
+      // }
+      dataDefault.parcel_list.forEach((guarantor, index) => {
+        console.log("index--->", index);
+
+        parcelsSet.push({
+          ...initData,
+          id: parcelsData[index]?.id, // ใช้ index เพื่อเลือกค่าจาก parcelsData
+          CUSTOMER_ID: values[`guarantor${index}`], // ใช้ค่าจาก form
+          parcel_no: values[`parcelNoGuarantor${index}`],
+          mark: values.memo,
+          parcel_typ_id:
+            values[`radioGuarantor${index}`] === 3
+              ? null
+              : values[`radioGuarantor${index}`],
+          response_status: values[`radioGuarantor${index}`] === 3 ? 0 : 1,
+        });
       });
-
-      if (loanData.GUARANTORS.length > 0) {
-        console.log("loadData.GUARANTORS.length > 0");
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[1].id,
-          CUSTOMER_ID: values.guarantor1,
-          parcel_no: values.parcelNoGuarantor1,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor1 === 3 ? null : values.radioGuarantor1,
-          response_status: values.radioGuarantor1 === 3 ? 0 : 1,
-        });
-      }
-      if (loanData.GUARANTORS.length > 1) {
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[2].id,
-          CUSTOMER_ID: values.guarantor2,
-          parcel_no: values.parcelNoGuarantor2,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor2 === 3 ? null : values.radioGuarantor2,
-          response_status: values.radioGuarantor2 === 3 ? 0 : 1,
-        });
-      }
-      if (loanData.GUARANTORS.length > 2) {
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[3].id,
-          CUSTOMER_ID: values.guarantor3,
-          parcel_no: values.parcelNoGuarantor3,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor3 === 3 ? null : values.radioGuarantor3,
-          response_status: values.radioGuarantor3 === 3 ? 0 : 1,
-        });
-      }
-
-      if (loanData.GUARANTORS.length > 3) {
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[4].id,
-          CUSTOMER_ID: values.guarantor4,
-          parcel_no: values.parcelNoGuarantor4,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor4 === 3 ? null : values.radioGuarantor4,
-          response_status: values.radioGuarantor4 === 3 ? 0 : 1,
-        });
-      }
-
-      if (loanData.GUARANTORS.length > 4) {
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[5].id,
-          CUSTOMER_ID: values.guarantor5,
-          parcel_no: values.parcelNoGuarantor5,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor5 === 3 ? null : values.radioGuarantor5,
-          response_status: values.radioGuarantor5 === 3 ? 0 : 1,
-        });
-      }
-      if (loanData.GUARANTORS.length > 5) {
-        parcelsSet.push({
-          ...initData,
-          id: parcelsData[6].id,
-          CUSTOMER_ID: values.guarantor6,
-          parcel_no: values.parcelNoGuarantor6,
-          mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor6 === 3 ? null : values.radioGuarantor6,
-          response_status: values.radioGuarantor6 === 3 ? 0 : 1,
-        });
-      }
     }
     console.log("putStatus", putStatus);
     console.log("putLawsuit", putLawsuit);
@@ -462,6 +485,39 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+
+  const sortedParcels = dataDefault?.parcel_list?.sort(
+    (a, b) => a.GARNO - b.GARNO
+  ); // เรียงลำดับ parcel ตาม GARNO
+
+  const setDataDefualt = () => {
+    // ถ้าข้อมูลใน sortedParcels หรือ parcelsData ไม่เป็น null
+
+    // ตั้งค่าฟิลด์ใน Form
+    const fieldsToSet = {
+      company: dataDefault.COMPANY_ID,
+      dateNotice: dayjs(dataDefault.DATE),
+      memo: parcelsData[0]?.mark,
+      imageReplyFile: parcelsData[0]?.url_path,
+    };
+
+    sortedParcels?.forEach((parcel, index) => {
+      // กำหนดชื่อของฟิลด์เพื่อให้ตรงกับจำนวนของแต่ละตัวอย่าง (e.g., guarantor1, parcelNoGuarantor1)
+      fieldsToSet[`guarantor${index}`] = parcel?.id;
+      fieldsToSet[`parcelNoGuarantor${index}`] = parcel?.parcel_no;
+      fieldsToSet[`radioGuarantor${index}`] =
+        parcel?.parcel_typ_id === null
+          ? 3
+          : parcel?.parcel_typ_id === 2
+          ? 2
+          : parcel?.parcel_typ_id === 1
+          ? 1
+          : 3;
+    });
+
+    // ตั้งค่าให้กับ Form
+    form.setFieldsValue(fieldsToSet);
   };
 
   return (
@@ -536,7 +592,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   onChange={onChange}
                 />
               </Form.Item>
-              <Form.Item
+              {/* <Form.Item
                 label="ผู้ทำสัญญา"
                 name="cusId"
                 initialValue={dataDefault?.CUSTOMER_ID}
@@ -575,8 +631,8 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   <Radio value={2}>จากเว็บไปษณีย์</Radio>
                   <Radio value={3}>ยังไม่ตอบกลับ</Radio>
                 </Radio.Group>
-              </Form.Item>
-              {dataDefault.LOAN_TYPE_ID === 1 ? (
+              </Form.Item> */}
+              {/* {dataDefault.LOAN_TYPE_ID === 1 ? (
                 <>
                   {loanData?.GUARANTORS.length > 0 ? (
                     <>
@@ -628,14 +684,14 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     <>
                       <Form.Item
                         label="ผู้ค่ำที่ 2"
-                        name="guarantor2"
+                        name="guarantor1"
                         initialValue={loanData?.GUARANTORS[1]?.id}
                       >
                         {`${loanData?.GUARANTORS[1]?.SNAM}${loanData?.GUARANTORS[1]?.NAME1} ${loanData?.GUARANTORS[1]?.NAME2}`}
                       </Form.Item>
                       <Form.Item
                         label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor2"
+                        name="parcelNoGuarantor1"
                         rules={[
                           {
                             required: true,
@@ -663,9 +719,9 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                           onChange={onChange}
                           defaultValue={defaultRadio}
                         >
-                          <Radio value="1">จากใบตอบกลับ</Radio>
-                          <Radio value="2">จากเว็บไปษณีย์</Radio>
-                          <Radio value="3">ยังไม่ตอบกลับ</Radio>
+                          <Radio value={1}>จากใบตอบกลับ</Radio>
+                          <Radio value={2}>จากเว็บไปษณีย์</Radio>
+                          <Radio value={3}>ยังไม่ตอบกลับ</Radio>
                         </Radio.Group>
                       </Form.Item>
                     </>
@@ -855,7 +911,45 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     </>
                   ) : null}
                 </>
-              ) : null}
+              ) : null} */}
+
+              {sortedParcels?.map((parcel, index) => (
+                <div key={index}>
+                  <Form.Item
+                    label={
+                      parcel?.GARNO === 0 ? "ผู้ทำสัญญา" : `คำค้ำ ${index}`
+                    }
+                    name={`guarantor${index}`}
+                    initialValue={parcel?.id}
+                  >
+                    {`${parcel?.SNAM}${parcel?.NAME1} ${parcel?.NAME2}`}
+                  </Form.Item>
+
+                  <Form.Item
+                    label="กรอกหมายเลข EMS"
+                    name={`parcelNoGuarantor${index}`}
+                    rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
+                  >
+                    <Input
+                      placeholder="ตัวอย่าง:EF582568151TH"
+                      maxLength={13}
+                      onChange={(e) => onChangeInputParcel(e.target.value)}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="การตอบกลับ"
+                    name={`radioGuarantor${index}`}
+                    rules={[{ required: true, message: "โปรดเลือกข้อมูล" }]}
+                  >
+                    <Radio.Group onChange={onChange}>
+                      <Radio value={1}>จากใบตอบกลับ</Radio>
+                      <Radio value={2}>จากเว็บไปรษณีย์</Radio>
+                      <Radio value={3}>ยังไม่ตอบกลับ</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </div>
+              ))}
               <Form.Item
                 label="ลิ้งเก็บรูปตอบกลับ"
                 name="imageReplyFile"

@@ -18,6 +18,7 @@ import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,
@@ -35,6 +36,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
   const [loanType, setLoanType] = useState(dataDefault.LOAN_TYPE_ID);
+  const userCompany = localStorage.getItem("COMPANY_ID");
 
   const optionsLoan = [
     {
@@ -74,6 +76,9 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       label: item.company_name,
       address: item.address,
     }));
+
+    console.log("options", options);
+
     setCompaniesOption(options);
   };
 
@@ -346,7 +351,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinishFailed={onFinishFailed}
               initialValues={{
                 memo: null,
-                company: 2,
+                company: userCompany === "3" ? 3 : 2,
                 dateNotice: dayjs(),
                 cus: loanData?.CUSTOMER?.id,
               }}
@@ -385,7 +390,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   optionFilterProp="value"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
-                  defaultValue={2}
+                  defaultValue={userCompany === "3" ? 3 : 2}
                 />
               </Form.Item>
               <Form.Item

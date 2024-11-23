@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, message, Modal, Row } from "antd";
+import { Button, Card, Col, Image, message, Modal, Row } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
 import "../../../../assets/font/THSarabunNew-bold";
@@ -15,6 +15,9 @@ import {
 } from "../../../API/apiUrls";
 import { STATUS_PROCESS_PROCESS } from "../../../../utils/constant/StatusConstant";
 import LoadCompanies from "../../../../hook/LoadCompanies";
+import lawyerJumbo from "../../../../assets/images/license/lawyerJumbo.png";
+import lawyerYut from "../../../../assets/images/license/lawyerYut.png";
+import lawyerTon from "../../../../assets/images/license/lawyerTon.png";
 
 const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [
@@ -608,12 +611,63 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdfPositionY += 35; // เว้นบรรทัด
       pdf.text(`ขอแสดงความนับถือ`, marginC + 10, pdfPositionY + 30);
 
-      pdfPositionY += 55; // เว้นบรรทัด
-      pdf.text(
-        `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
-        marginC,
-        pdfPositionY + 30
-      );
+      if (dataDefault.LAWYER_ID === 2) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerYut; // Replace with your image URL or base64
+        pdfPositionY += 30;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+
+        pdfPositionY += 50; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC,
+          pdfPositionY + 30
+        );
+      } else if (dataDefault.LAWYER_ID === 3) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerJumbo; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC + 10,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+
+        pdfPositionY += 80; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC - 15,
+          pdfPositionY + 30
+        );
+      } else if (dataDefault.LAWYER_ID === 11) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerTon; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+        pdfPositionY += 50; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC,
+          pdfPositionY + 30
+        );
+      }
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(`ทนายความผู้รับมอบอำนาจ`, marginC, pdfPositionY + 30);
@@ -1105,7 +1159,21 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   span={"24"}
                 >
                   <p>ขอแสดงความนับถือ</p>
-                  <p style={{ textAlign: "center", paddingTop: "70px" }}>
+                  <Image
+                    src={
+                      dataDefault.LAWYER_ID === 2
+                        ? lawyerYut
+                        : dataDefault.LAWYER_ID === 3
+                        ? lawyerJumbo
+                        : dataDefault.LAWYER_ID === 11
+                        ? lawyerTon
+                        : null
+                    }
+                    width={200} // กำหนดความกว้างของรูป
+                    height={150} // กำหนดความสูงของรูป
+                    preview={false} // ถ้าไม่ต้องการให้เปิด preview เมื่อคลิกที่ภาพ
+                  />
+                  <p style={{ textAlign: "center", paddingTop: "20px" }}>
                     ({dataDefault.LAWYER_FNAME} {dataDefault.LAWYER_LNAME})
                   </p>
                   <p>ทนายความผู้รับมอบอำนาจ</p>

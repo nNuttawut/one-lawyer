@@ -11,6 +11,7 @@ const Main = () => {
   const [isModalAdd, setIsModalAdd] = useState(false);
   console.log(isModalDetail);
   const { RangePicker } = DatePicker;
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const columns = [
     {
       title: "เลขที่ใบเสร็จ",

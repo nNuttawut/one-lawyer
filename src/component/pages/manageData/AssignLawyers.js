@@ -108,11 +108,7 @@ const Main = () => {
               key: i++,
             }));
 
-            setArrayTable(newData);
-            setDataArr(newData);
-            setTableLength(newData.length);
-            console.log("resQuery", newData);
-            setLoading(false);
+            filterDataLawyer(newData);
           } else {
             setArrayTable([]);
             message.error("ไม่มีข้อมูล");
@@ -126,6 +122,51 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const filterDataLawyer = (value) => {
+    function containsNumber(str) {
+      return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+    }
+
+    function isEnglishOnly(str) {
+      return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+    }
+
+    let filteredData;
+
+    if (companyId === "3") {
+      filteredData = value.filter((item) => {
+        // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+        if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item;
+        } else {
+          return false;
+        }
+      });
+
+      console.log("filteredData3", filteredData);
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+    } else {
+      filteredData = value.filter((item) => {
+        const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+        console.log("test12", test);
+
+        // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+        if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item; // เก็บ item นี้ไว้
+        } else {
+          return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+        }
+      });
+
+      console.log("filteredData3", filteredData);
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
     }
   };
 
@@ -292,6 +333,7 @@ const Main = () => {
       setLoading(false);
     }
   };
+
   const onChangeSelect = (value, contno, id) => {
     console.log(`selected ${value} contno ${contno} id ${id}`);
     onApporvedData(value, contno, id);

@@ -145,7 +145,7 @@ function Header({ title, onPress, onClick }) {
               // aria-expanded={openMenuItem ? "true" : undefined}
               onClick={handleClickMenuItem}
             >
-              <UserOutlined fontSize="large" />
+              <UserOutlined fontSize="large" style={{ marginRight: "10px" }} />
             </IconButton>
             {/* <a
               style={{ marginTop: "5px", marginRight: "5px" }}

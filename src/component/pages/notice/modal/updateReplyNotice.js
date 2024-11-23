@@ -18,6 +18,7 @@ import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   POST_PARCELS,
@@ -37,6 +38,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
   const [defaultRadio, setDefaultRadio] = useState(null);
+  const userCompany = localStorage.getItem("COMPANY_ID");
 
   useEffect(() => {
     loadData();
@@ -153,7 +155,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 COMPANY_ID: lawsuit.COMPANY_ID,
                 MEMO: data.MEMO,
                 PROCESS_ID: data.PROCESS_ID,
-                PARCEL_NO: parcel.parcel_no,
+                parcel_list: parcel,
               });
               setLoading(false);
             } else {
@@ -204,6 +206,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } finally {
         setLoading(false);
         handleCancel();
+        window.location.reload();
       }
     } else {
       message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
@@ -259,9 +262,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       LOAN_ID: dataDefault.id,
       MEMO: values.memo,
       PROCESS_ID: statutProcess,
-      DATE: preData
-        ? dayjs(preData.dateNotice).format("YYYY-MM-DD")
-        : dayjs(values.dateNotice).format("YYYY-MM-DD"),
+      DATE: dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
     };
     const putLawsuit = {
       ...lawsuitData,
@@ -401,10 +402,12 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinishFailed={onFinishFailed}
               initialValues={{
                 memo: null,
-                company: 2,
+                company: dataDefault.COMPANY_ID,
                 dateNotice: dayjs(),
                 cus: loanData?.CUSTOMER?.id,
+                imageReplyFile: null,
               }}
+              dependencies={["radioCus"]}
             >
               <Form.Item label="เลขสัญญา">{dataDefault?.CONTNO}</Form.Item>
               <Form.Item label="ประเภทสัญญา">
@@ -421,7 +424,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   optionFilterProp="value"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
-                  defaultValue={2}
+                  defaultValue={parseInt(userCompany) === 3 ? 3 : 2}
                 />
               </Form.Item>
               <Form.Item label="วันที่ออกหนังสือ" name="dateNotice">
@@ -750,10 +753,10 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 label="ลิ้งเก็บรูปตอบกลับ"
                 name="imageReplyFile"
                 rules={[
-                  {
-                    required: true,
+                  ({ getFieldValue }) => ({
+                    required: getFieldValue("radioCus") !== 3,
                     message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-                  },
+                  }),
                 ]}
               >
                 <Input

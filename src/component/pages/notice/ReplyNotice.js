@@ -52,7 +52,10 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const [dataRecord, setDataRecord] = useState();
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+  const [searchEdit, setSearchEdit] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -76,6 +79,7 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
+          setSearchEdit(newData);
           setLoading(false);
         }
       } else {
@@ -104,14 +108,57 @@ const Main = () => {
             item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
             item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
       );
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log("newData", newData);
-      console.log("Length of filtered data:", newData.length);
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+      }
+
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = newData.filter((item) => {
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = newData.filter((item) => {
+          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          console.log("test12", test);
+
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+      console.log("newData", filteredData);
+      console.log("Length of filtered data:", filteredData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
+    }
+  };
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
     }
   };
 
@@ -121,13 +168,17 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter(
+    let result = searchEdit.filter(
       (item) =>
-        item.CONTNO.includes(value) ||
-        item.CUSTOMER_FNAME.includes(value) ||
-        item.CUSTOMER_LNAME.includes(value)
+        (item.CONTNO && item.CONTNO.includes(value)) ||
+        (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
+        (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))
     );
-    setArrayTable(result);
+    if (value) {
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -194,7 +245,14 @@ const Main = () => {
     const recordDate = dayjs(record.DATE);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    let color = daysDifference > 30 ? "red" : "green";
+    let color;
+    if (record.LOAN_TYPE_ID === 1) {
+      color = daysDifference > 30 ? "red" : "green";
+      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
+    } else if (record.LOAN_TYPE_ID === 2) {
+      color = daysDifference > 60 ? "red" : "green";
+      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
+    }
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
@@ -276,6 +334,12 @@ const Main = () => {
       title: "วันส่ง notice",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+      sorter: (a, b) => {
+        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+        return dayjs(a.DATE).isBefore(dayjs(b.DATE)) ? -1 : 1;
+      },
+
+      defaultSortOrder: "ascend",
     },
     {
       title: "การดำเนินการ",
@@ -296,117 +360,143 @@ const Main = () => {
 
   return (
     <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
-                  size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
-                />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {record.PROCESS_ID === STATUS_PROCESS_PROCESS ? (
-                        <Button
-                          style={{ boxShadow: "0 4px 3px" }}
-                          onClick={() => {
-                            setIsModalUpdate(true);
-                            setDataModal(record);
-                            console.log("---->", record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : (
-                        <Button
-                          style={{ boxShadow: "0 4px 3px", marginLeft: "10px" }}
-                          onClick={() => {
-                            setIsModalEdit(true);
-                            setDataModal(record);
-                            console.log("---->", record);
-                          }}
-                        >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      )}
-                      {record.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ? (
-                        <Button
-                          style={{ boxShadow: "0 4px 3px", marginLeft: "10px" }}
-                          onClick={() => {
-                            setIsModalUpdateStatus(true);
-                            setDataModal(record);
-                            console.log("---->", record);
-                          }}
-                        >
-                          <SyncOutlined
-                            style={{ color: "green", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) =>
-                    (userId === record.LAWYER_ID && ROLE_ID === "3") ||
-                    ROLE_ID === "2" ||
-                    ROLE_ID === "1",
-                }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalUpdate ? (
-        <UpdateReplyNotice
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEdit ? (
-        <EditReplyNotice
-          open={isModalEdit}
-          close={setIsModalEdit}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalUpdateStatus ? (
-        <UpdateStatusNotice
-          open={isModalUpdateStatus}
-          close={setIsModalUpdateStatus}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col
+                  span={"24"}
+                  style={{ textAlign: "end", marginBottom: "10px" }}
+                >
+                  <Space direction="vertical" size={12}>
+                    <RangePicker
+                      size="large"
+                      style={{ marginRight: "10px" }}
+                      onChange={onSearchByDate}
+                    />
+                  </Space>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    onChange={search}
+                    enterButton
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
+                  />
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                    expandable={{
+                      expandedRowRender: (record) => (
+                        <p style={{ margin: 0 }}>
+                          {record.PROCESS_ID === STATUS_PROCESS_PROCESS ? (
+                            <Button
+                              style={{ boxShadow: "0 4px 3px" }}
+                              onClick={() => {
+                                setIsModalUpdate(true);
+                                setDataModal(record);
+                                console.log("---->", record);
+                              }}
+                            >
+                              <FormOutlined
+                                style={{ color: "blue", fontSize: "16px" }}
+                              />
+                            </Button>
+                          ) : (
+                            <Button
+                              style={{
+                                boxShadow: "0 4px 3px",
+                                marginLeft: "10px",
+                              }}
+                              onClick={() => {
+                                setIsModalEdit(true);
+                                setDataModal(record);
+                                console.log("---->", record);
+                              }}
+                            >
+                              <EditOutlined
+                                style={{ color: "orange", fontSize: "16px" }}
+                              />
+                            </Button>
+                          )}
+                          {record.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ? (
+                            <Button
+                              style={{
+                                boxShadow: "0 4px 3px",
+                                marginLeft: "10px",
+                              }}
+                              onClick={() => {
+                                setIsModalUpdateStatus(true);
+                                setDataModal(record);
+                                console.log("---->", record);
+                              }}
+                            >
+                              <SyncOutlined
+                                style={{ color: "green", fontSize: "16px" }}
+                              />
+                            </Button>
+                          ) : null}
+                        </p>
+                      ),
+
+                      rowExpandable: (record) =>
+                        (userId === record.LAWYER_ID && ROLE_ID === "3") ||
+                        ROLE_ID === "2" ||
+                        ROLE_ID === "1",
+
+                      expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                      onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                    }}
+                    rowKey="key"
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+          {isModal ? (
+            <DetailModal
+              open={isModal}
+              close={setIsModal}
+              dataRec={dataRecord}
+            />
+          ) : null}
+          {isModalUpdate ? (
+            <UpdateReplyNotice
+              open={isModalUpdate}
+              close={setIsModalUpdate}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModalEdit ? (
+            <EditReplyNotice
+              open={isModalEdit}
+              close={setIsModalEdit}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+          {isModalUpdateStatus ? (
+            <UpdateStatusNotice
+              open={isModalUpdateStatus}
+              close={setIsModalUpdateStatus}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+        </>
+      ) : (
+        <Card>
+          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+        </Card>
+      )}
     </>
   );
 };

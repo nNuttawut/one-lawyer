@@ -11,8 +11,8 @@ import { Provider } from "react-redux";
 import { createStore } from "redux";
 import rootReducer from "./redux/reducers/index";
 import LogIn from "./component/pages/LogIn";
-import Loginline from "./component/API/LoginLine";
-import Liff from "./component/API/Liff";
+import Loginline from "./component/pages/lineLogIn/LoginLine";
+import Liff from "./component/pages/lineLogIn/Liff";
 const store = createStore(rootReducer);
 const TOKEN = localStorage.getItem("TOKEN");
 const lineStatus = localStorage.getItem("lineStatus");
@@ -25,15 +25,15 @@ function App() {
     return (
       <>
         <Provider store={store}>
-          <HashRouter>
+          <Router>
             <LogIn />
-          </HashRouter>
+          </Router>
         </Provider>
       </>
     );
   } else {
-    console.log("lineStatus", lineStatus);
-    console.log("line", line);
+    // console.log("lineStatus", lineStatus);
+    // console.log("line", line);
     // if (line !== "null" || lineStatus === "false") {
     //   console.log("lineStatus false", lineStatus);
     //   return (
@@ -65,9 +65,9 @@ function App() {
     return (
       <>
         <Provider store={store}>
-          <HashRouter>
+          <Router>
             <Main />
-          </HashRouter>
+          </Router>
         </Provider>
       </>
     );

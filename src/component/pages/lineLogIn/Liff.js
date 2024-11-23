@@ -41,7 +41,7 @@ export default function Liff() {
       );
     } else {
       console.log("out --->");
-      navigate("/#/dashboard");
+      navigate("/");
     }
   };
 
@@ -64,7 +64,7 @@ export default function Liff() {
         console.log("profile.userId", profile.userId);
 
         //  liff.closeWindow();
-        navigate("/#/dashboard");
+        navigate("/");
       })
       .catch((err) => console.error(err));
   };
@@ -73,5 +73,5 @@ export default function Liff() {
     liff.closeWindow();
   };
 
-  return <>เข้าไม่ได้</>;
+  return <></>;
 }

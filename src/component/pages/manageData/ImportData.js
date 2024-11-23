@@ -48,7 +48,7 @@ const Main = () => {
 
   const onQuery = () => {
     if (queryContno) {
-      queryData(queryContno.trim());
+      queryData(queryContno);
       console.log("queryContno--->", queryContno);
     }
   };

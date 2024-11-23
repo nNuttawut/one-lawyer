@@ -33,6 +33,7 @@ import dayjs from "dayjs";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
@@ -47,6 +48,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
+  const [searchEdit, setSearchEdit] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -71,7 +73,7 @@ const Main = () => {
           }));
           filterDataLawyer(newData);
           console.log(newData);
-
+          setSearchEdit(newData);
           setLoading(false);
         }
       } else {
@@ -94,11 +96,47 @@ const Main = () => {
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID
       );
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log(newData);
-      console.log("Length of filtered data:", newData.length);
+
+      console.log("newData-->", newData);
+
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+      }
+
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = newData.filter((item) => {
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = newData.filter((item) => {
+          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          console.log("test12", test);
+
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+      console.log("newData", filteredData);
+      console.log("Length of filtered data:", filteredData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -111,8 +149,18 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
-    setArrayTable(result);
+    let result = searchEdit.filter(
+      (item) =>
+        ((item.CONTNO && item.CONTNO.includes(value)) ||
+          (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
+          (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))) &&
+        item.LAWYER_ID === userId
+    );
+    if (value) {
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -229,6 +277,12 @@ const Main = () => {
       title: "วันส่งฟ้องคดี",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+      sorter: (a, b) => {
+        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+        return dayjs(a.updated_date).isBefore(dayjs(b.updated_date)) ? -1 : 1;
+      },
+
+      defaultSortOrder: "ascend",
     },
   ];
 
@@ -265,7 +319,7 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {record.PROCESS_ID !== 3 ? (
                         <Button
                           name="create"
                           style={{
@@ -281,8 +335,7 @@ const Main = () => {
                             style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : null}
-                      {record.DATE ? (
+                      ) : (
                         <>
                           {/* <Button
                             name="formPrint"
@@ -326,7 +379,7 @@ const Main = () => {
                             />
                           </Button>
                         </>
-                      ) : null}
+                      )}
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,

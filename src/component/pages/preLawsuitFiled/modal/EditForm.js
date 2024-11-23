@@ -244,7 +244,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("putData", putData);
     console.log("putStatus", putStatus);
 
-    sendStatus(putStatus, putData);
+    // sendStatus(putStatus, putData);
   };
 
   const onFinishFailed = (errorInfo) => {

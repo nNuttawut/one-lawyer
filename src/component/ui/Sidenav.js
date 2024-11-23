@@ -14,6 +14,7 @@ import {
   SnippetsOutlined,
   DollarOutlined,
   CheckOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
@@ -30,7 +31,7 @@ function Sidenav({ color, onClick }) {
       key: "1",
       pageName: "dashboard",
       label: "dashboard",
-      path: "/dashboard",
+      path: "/",
       icon: <HomeOutlined />,
       title: "หน้าแรก",
     },
@@ -184,22 +185,22 @@ function Sidenav({ color, onClick }) {
       label: "commission",
       path: "/commission",
       icon: <DollarOutlined />,
-      title: "ค่าคอมมิชชั่น",
+      title: "คอมมิชชั่นทนาย",
       children: [
         {
           key: "121",
           icon: <CaretRightOutlined />,
           pageName: "commission-law",
           path: "commission/commission-law",
-          label: "ค่าคอมมิชชั่นคดี",
+          label: "คดีในชั้นศาล",
         },
-        {
-          key: "122",
-          icon: <CaretRightOutlined />,
-          pageName: "commission-investigate",
-          path: "commission/commission-investigate",
-          label: "ค่าคอมมิชชั่นสืบทรัพย์",
-        },
+        // {
+        //   key: "122",
+        //   icon: <CaretRightOutlined />,
+        //   pageName: "commission-investigate",
+        //   path: "commission/commission-investigate",
+        //   label: "ค่าคอมมิชชั่นสืบทรัพย์",
+        // },
       ],
     },
     // {
@@ -211,14 +212,6 @@ function Sidenav({ color, onClick }) {
     //   title: "งบเบิกจ่าย",
     // },
     // {
-    //   key: "12",
-    //   pageName: "report",
-    //   label: "report",
-    //   path: "/report",
-    //   icon: <FileTextOutlined />,
-    //   title: "รายงาน",
-    // },
-    // {
     //   key: "13",
     //   pageName: "bad-debt",
     //   label: "bad-debt",
@@ -227,7 +220,7 @@ function Sidenav({ color, onClick }) {
     //   title: "ลูกหนี้สูญ",
     // },
     {
-      key: "14",
+      key: "13",
       pageName: "import",
       label: "manage-data",
       path: "/manage-data",
@@ -235,25 +228,42 @@ function Sidenav({ color, onClick }) {
       title: "จัดการข้อมูล",
       children: [
         {
-          key: "141",
+          key: "131",
           icon: <CaretRightOutlined />,
           pageName: "import-data",
           path: "manage-data/import-data",
           label: "นำข้อมูลเข้า",
         },
         {
-          key: "142",
+          key: "132",
           icon: <CaretRightOutlined />,
           pageName: "assign-lawyers",
           path: "manage-data/assign-lawyers",
           label: "มอบหมายงาน",
         },
         {
-          key: "143",
+          key: "133",
           icon: <CaretRightOutlined />,
           pageName: "change-lawyers-jobs",
           path: "manage-data/change-lawyers-jobs",
           label: "เปลี่ยนทนาย",
+        },
+      ],
+    },
+    {
+      key: "14",
+      pageName: "report",
+      label: "report",
+      path: "/report",
+      icon: <FileTextOutlined />,
+      title: "รายงาน",
+      children: [
+        {
+          key: "141",
+          icon: <CaretRightOutlined />,
+          pageName: "notice",
+          path: "report/notice",
+          label: "รายงาน โนติส",
         },
       ],
     },

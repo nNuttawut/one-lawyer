@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, message, Modal, Row } from "antd";
+import { Button, Card, Col, Image, message, Modal, Row } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
 import "../../../../assets/font/THSarabunNew-bold";
@@ -15,14 +15,12 @@ import {
 } from "../../../API/apiUrls";
 import { STATUS_PROCESS_PROCESS } from "../../../../utils/constant/StatusConstant";
 import LoadCompanies from "../../../../hook/LoadCompanies";
+import lawyerJumbo from "../../../../assets/images/license/lawyerJumbo.png";
+import lawyerYut from "../../../../assets/images/license/lawyerYut.png";
+import lawyerTon from "../../../../assets/images/license/lawyerTon.png";
 
 const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
-  const [
-    convertDateThai,
-    convertDateThaiYear,
-    convertDateThaiMonth,
-    convertDateThaiDate,
-  ] = DateCustom();
+  const [convertDateThai] = DateCustom();
   const [loading, setLoading] = useState(false);
   const [currencyFormat] = CurrencyFormat();
   const [dataText, setDataText] = useState({
@@ -51,7 +49,6 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loanData, setLoanData] = useState(null);
   const [companiesList, setLoadingData] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState();
-
   useEffect(() => {
     loadData();
     setLoadingData(true);
@@ -79,7 +76,6 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       companyValue = dataDefault.COMPANY_ID;
     }
 
-    console.log(companyValue);
     const company = options.filter((item) => companyValue === item.value);
     setCompaniesOption(company);
   };
@@ -280,9 +276,10 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdf.text(
         `เมื่อวันที่ ${convertDateThai(
           loanData?.LOAN?.SDATE
-        )} ท่านได้กู้ยืมเงินและทำสัญญาจำนองที่ดินโฉนดที่ดินเลขที่ ${
-          loanData?.MORTGAGE?.STRNO
-        } เลขที่ดิน ${loanData?.MORTGAGE?.ENGNO}`,
+        )} ท่านได้กู้ยืมเงินและทำสัญญาจำนองที่ดินโฉนดที่ดินเลขที่ ${loanData?.MORTGAGE?.STRNO.replace(
+          /\D/g,
+          ""
+        )} เลขที่ดิน `,
         marginL + 50,
         pdfPositionY + 30
       );
@@ -291,7 +288,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       pdf.setFont("THSarabunNew", "normal");
       pdf.text(
-        `ตำบล ${loanData?.MORTGAGE?.BAAB} อำเภอ ${loanData?.MORTGAGE?.MODEL} จังหวัด ${loanData?.MORTGAGE?.TYPE} ไว้กับบริษัท ${companiesOption[0]?.label} ผู้รับจำนอง เพื่อเป็นการประกันการกู้`,
+        `${loanData?.MORTGAGE?.ENGNO} ตำบล ${loanData?.MORTGAGE?.BAAB} อำเภอ ${loanData?.MORTGAGE?.MODEL} จังหวัด ${loanData?.MORTGAGE?.TYPE} ไว้กับบริษัท ${companiesOption[0]?.label} ผู้รับจำนอง`,
         marginL,
         pdfPositionY + 30
       );
@@ -299,16 +296,16 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdfPositionY += 17; // เว้นบรรทัด
 
       pdf.text(
-        `ยืมเงินจำนวน ${currencyFormat(
+        `เพื่อเป็นการประกันการกู้ยืมเงินจำนวน ${currencyFormat(
           loanData?.LOAN?.NCSHPRC
-        )} บาท โดยท่านสัญญาจะชำระดอกเบี้ยในอัตราร้อยละ 15 บาทต่อปี ของต้นเงินจำนองจำนวนดังกล่าว นับ`,
+        )} บาท โดยท่านสัญญาจะชำระดอกเบี้ยในอัตราร้อยละ 15 บาทต่อ ปี ของต้นเงิน`,
         marginL,
         pdfPositionY + 30
       );
       pdfPositionY += 17; // เว้นบรรทัด
 
       pdf.text(
-        `แต่วันจำนองรายละเอียดตามสัญญาจำนองที่ได้อ้างถึงแล้วนั้น`,
+        `จำนองจำนวนดังกล่าว นับแต่วันจำนองรายละเอียดตามสัญญาจำนองที่ได้อ้างถึงแล้วนั้น`,
         marginL,
         pdfPositionY + 30
       );
@@ -330,14 +327,14 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       );
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        ` นองเสียหาย ผู้รับจำนองประสงค์จะทำการบังคับจำนองหนี้รายนี้ จึงได้มอบให้ข้าพเจ้าดดำเนินการบอกกล่าวบัง`,
-        marginL + 50,
+        `นองเสียหาย ผู้รับจำนองประสงค์จะทำการบังคับจำนองหนี้รายนี้ จึงได้มอบให้ข้าพเจ้าดดำเนินการบอกกล่าวบังคับจำนองกับท่าน`,
+        marginL,
         pdfPositionY + 30
       );
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(
-        `คับจำนองกับท่าน โดยถือเอาหนังสือฉบับนี้เป็นหนังสือบอกกล่าวบังคับจำนอง`,
+        `โดยถือเอาหนังสือฉบับนี้เป็นหนังสือบอกกล่าวบังคับจำนอง`,
         marginL,
         pdfPositionY + 30
       );
@@ -366,12 +363,63 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       pdfPositionY += 35; // เว้นบรรทัด
       pdf.text(`ขอแสดงความนับถือ`, marginC + 10, pdfPositionY + 30);
 
-      pdfPositionY += 55; // เว้นบรรทัด
-      pdf.text(
-        `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
-        marginC,
-        pdfPositionY + 30
-      );
+      if (dataDefault.LAWYER_ID === 2) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerYut; // Replace with your image URL or base64
+        pdfPositionY += 30;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+
+        pdfPositionY += 50; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC,
+          pdfPositionY + 30
+        );
+      } else if (dataDefault.LAWYER_ID === 3) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerJumbo; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC + 10,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+
+        pdfPositionY += 80; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC - 15,
+          pdfPositionY + 30
+        );
+      } else if (dataDefault.LAWYER_ID === 11) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerTon; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          marginC,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+        pdfPositionY += 50; // เว้นบรรทัด
+        pdf.text(
+          `(${dataDefault.LAWYER_FNAME}  ${dataDefault.LAWYER_LNAME})`,
+          marginC,
+          pdfPositionY + 30
+        );
+      }
 
       pdfPositionY += 17; // เว้นบรรทัด
       pdf.text(`ทนายความผู้รับมอบอำนาจ`, marginC, pdfPositionY + 30);
@@ -523,8 +571,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   <p>
                     เมื่อวันที่ {convertDateThai(loanData?.LOAN?.SDATE)}{" "}
                     ท่านได้กู้ยืมเงินและทำสัญญาจำนองที่ดินโฉนดที่ดินเลขที่{" "}
-                    {loanData?.MORTGAGE?.STRNO} เลขที่ดิน{" "}
-                    {loanData?.MORTGAGE?.ENGNO}
+                    {loanData?.MORTGAGE?.STRNO.replace(/\D/g, "")} เลขที่ดิน
                   </p>
                 </Col>
 
@@ -536,8 +583,8 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   span={"24"}
                 >
                   <p>
-                    ตำบล {loanData?.MORTGAGE?.BAAB} อำเภอ{" "}
-                    {loanData?.MORTGAGE?.MODEL} จังหวัด{" "}
+                    {loanData?.MORTGAGE?.ENGNO} ตำบล {loanData?.MORTGAGE?.BAAB}{" "}
+                    อำเภอ {loanData?.MORTGAGE?.MODEL} จังหวัด{" "}
                     {loanData?.MORTGAGE?.TYPE} ไว้กับบริษัท{" "}
                     {companiesOption[0]?.label} ผู้รับจำนอง
                     เพื่อเป็นการประกันการกู้ยืมเงินจำนวน{" "}
@@ -606,8 +653,8 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   <p>
                     ที่ทำการสำนักงาน{companiesOption[0]?.label}{" "}
                     ทั้งนี้ถายในกำหนด 60 วัน
-                    นับแต่วันที่ท่านได้รับหนังสือฉบับนี้มิฉะนั้นข้าพเจ้าจำเป็นจะต้องดำเนินคดี
-                    เพื่อบังคับจำนองที่ดินรายนี้ต่อไป
+                    นับแต่วันที่ท่านได้รับหนังสือฉบับนี้มิฉะนั้นข้าพเจ้าจำ
+                    เป็นจะต้องดำเนินคดี เพื่อบังคับจำนองที่ดินรายนี้ต่อไป
                   </p>
                 </Col>
               </Row>
@@ -618,7 +665,21 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   span={"24"}
                 >
                   <p>ขอแสดงความนับถือ</p>
-                  <p style={{ textAlign: "center", paddingTop: "70px" }}>
+                  <Image
+                    src={
+                      dataDefault.LAWYER_ID === 2
+                        ? lawyerYut
+                        : dataDefault.LAWYER_ID === 3
+                        ? lawyerJumbo
+                        : dataDefault.LAWYER_ID === 11
+                        ? lawyerTon
+                        : null
+                    }
+                    width={200} // กำหนดความกว้างของรูป
+                    height={150} // กำหนดความสูงของรูป
+                    preview={false} // ถ้าไม่ต้องการให้เปิด preview เมื่อคลิกที่ภาพ
+                  />
+                  <p style={{ textAlign: "center", paddingTop: "20px" }}>
                     ({dataDefault.LAWYER_FNAME} {dataDefault.LAWYER_LNAME})
                   </p>
                   <p>ทนายความผู้รับมอบอำนาจ</p>

@@ -331,427 +331,600 @@ const DetailModal = ({ open, close, dataRec }) => {
   };
 
   const formDetail = () => {
-    return (
-      <div style={{ textAlign: "center" }}>
-        <Divider>รายละเอียดสัญญา</Divider>
-        <Row>
-          <Col span={12}>
-            <b>สัญญาเลขที่ : </b> {loanData?.LOAN?.CONTNO} <br />
-            <b>จำนวนงวด :</b> {loanData?.LOAN?.T_NOPAY} งวด
-            <br />
-            <b>ยอดกู้ไม่รวมดอก :</b>{" "}
-            {loanData?.LOAN?.NCSHPRC
-              ? currencyFormatNoPoint(loanData?.LOAN?.NCSHPRC)
-              : null}{" "}
-            บาท
-            <br />
-            <b>จ่ายล่าสุดวันที่ :</b> {convertDateThai(loanData?.LOAN?.LPAYD)}{" "}
-            <br />
-            <b>ยอดที่จ่ายมาแล้ว :</b>{" "}
-            {loanData?.LOAN?.SMPAY
-              ? currencyFormatNoPoint(loanData?.LOAN?.SMPAY)
-              : null}{" "}
-            บาท
-            <br />
-          </Col>
-          <Col span={12}>
-            <b>วันที่ทำสัญญา : </b> {convertDateThai(loanData?.LOAN?.SDATE)}{" "}
-            <br />
-            <b>ค่างวด : </b>{" "}
-            {loanData?.LOAN?.TOT_UPAY
-              ? currencyFormatNoPoint(loanData?.LOAN?.TOT_UPAY)
-              : null}{" "}
-            บาท
-            <br />
-            <b>ยอดกู้รวมดอก : </b>{" "}
-            {loanData?.LOAN?.TOTPRC
-              ? currencyFormatNoPoint(loanData?.LOAN?.TOTPRC)
-              : null}{" "}
-            บาท
-            <br />
-            <b>จำนวนที่จ่ายล่าสุด :</b>{" "}
-            {loanData?.LOAN?.LPAYA
-              ? currencyFormatNoPoint(loanData?.LOAN?.LPAYA)
-              : null}{" "}
-            บาท
-            <br />
-            <b>จำนวนงวดที่ค้าง :</b> {loanData?.LOAN?.EXP_FRM} ถึง{" "}
-            {loanData?.LOAN?.EXP_TO}
-            <br />
-          </Col>
-        </Row>
-        <Divider>รายละเอียดรถ</Divider>
-        <Row>
-          <Col span={12}>
-            <b>ยี่ห้อ : </b> {loanData?.MORTGAGE?.TYPE} <br />
-            <b>ชนิดรถ :</b> {loanData?.MORTGAGE?.BAAB}
-            <br />
-            <b>ทะเบียน :</b> {loanData?.MORTGAGE?.REGNO}
-            <br />
-            <b>เลขเครื่อง :</b> {loanData?.MORTGAGE?.ENGNO} <br />
-            <b>ปีที่จดทะเบียน :</b> {loanData?.MORTGAGE?.MANUYR}
-            <br />
-          </Col>
-          <Col span={12}>
-            <b>รุ่น : </b> {loanData?.MORTGAGE?.MODEL} <br />
-            <b>สี : </b> {loanData?.MORTGAGE?.COLOR}
-            <br />
-            <b>จังหวัด : </b> {loanData?.MORTGAGE?.DORECV}
-            <br />
-            <b>เลขตัวถัง :</b> {loanData?.MORTGAGE?.STRNO}
-            <br />
-          </Col>
-        </Row>
-        <Divider>รายละเอียดผู้กู้</Divider>
-        <Row>
-          <Col span={12}>
-            <b>ชื่อ : </b> {loanData?.CUSTOMER?.SNAM}
-            {loanData?.CUSTOMER?.NAME1} {loanData?.CUSTOMER?.NAME2}
-            <br />
-            <b>ที่อยู่ : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.ADDR1}
-            <br />
-            <b>ซอย : </b>{" "}
-            {loanData?.CUSTOMER?.ADDRESS[0]?.SOI
-              ? loanData?.CUSTOMER?.ADDRESS[0]?.SOI
-              : "-"}
-            <br />
-            <b>อำเภอ : </b>
-            {loanData?.CUSTOMER?.ADDRESS[0]?.AUMPDES} <br />
-            <b>รหัสไปษณีย์ : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.ZIP}
-            <br />
-            {loanData?.CUSTOMER?.ADDRESS.length > 1 ? (
-              <>
-                <b>ที่อยู่ : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.ADDR1}
-                <br />
-                <b>ซอย :</b>{" "}
-                {loanData?.CUSTOMER?.ADDRESS[1]?.SOI
-                  ? loanData?.CUSTOMER?.ADDRESS[1]?.SOI
-                  : "-"}
-                <br />
-                <b>อำเภอ : </b>
-                {loanData?.CUSTOMER?.ADDRESS[1]?.AUMPDES} <br />
-                <b>รหัสไปษณีย์ :</b> {loanData?.CUSTOMER?.ADDRESS[1]?.ZIP}
-                <br />
-              </>
-            ) : null}
-          </Col>
-          <Col span={12}>
-            <b>อาชีพ : </b> {loanData?.CUSTOMER?.OFFIC} <br />
-            <b>หมู่บ้าน : </b>{" "}
-            {loanData?.CUSTOMER?.ADDRESS[0]?.MOOBAN
-              ? loanData?.CUSTOMER?.ADDRESS[0]?.MOOBAN
-              : "-"}
-            <br />
-            <b>ตำบล : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.TUMB}
-            <br />
-            <b>จังหวัด :</b> {loanData?.CUSTOMER?.ADDRESS[0]?.PROVDES}
-            <br />
-            <b>เบอร์โทร :</b>{" "}
-            {loanData?.CUSTOMER?.ADDRESS[0]?.TELP
-              ? loanData?.CUSTOMER?.ADDRESS[0]?.TELP
-              : "-"}{" "}
-            <br />
-            {loanData?.CUSTOMER?.ADDRESS.length > 1 ? (
-              <>
-                <b>หมู่บ้าน : </b>{" "}
-                {loanData?.CUSTOMER?.ADDRESS[1]?.MOOBAN
-                  ? loanData?.CUSTOMER?.ADDRESS[1]?.MOOBAN
-                  : "-"}
-                <br />
-                <b>ตำบล : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.TUMB}
-                <br />
-                <b>จังหวัด : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.PROVDES}
-                <br />
-              </>
-            ) : null}
-          </Col>
-        </Row>
-        {loanData?.GUARANTORS?.length > 0 ? (
-          <>
-            <Divider>รายละเอียดคนค้ำที่ 1 </Divider>
-            <Row>
-              <Col span={12}>
-                <b>ชื่อ : </b> {loanData?.GUARANTORS[0]?.SNAM}
-                {loanData?.GUARANTORS[0]?.NAME1}{" "}
-                {loanData?.GUARANTORS[0]?.NAME2} <br />
-                <b>ที่อยู่ :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.ADDR1}
-                <br />
-                <b>ซอย :</b>{" "}
-                {loanData?.GUARANTORS[0]?.ADDRESS[0]?.SOI
-                  ? loanData?.GUARANTORS[0]?.ADDRESS[0]?.SOI
-                  : "-"}
-                <br />
-                <b>อำเภอ :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.AUMPDES}{" "}
-                <br />
-                <b>รหัสไปษณีย์ :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.ZIP}
-                <br />
-              </Col>
-              <Col span={12}>
-                <b>อาชีพ : </b> {loanData?.GUARANTORS[0]?.OFFIC} <br />
-                <b>หมู่บ้าน : </b>{" "}
-                {loanData?.GUARANTORS[0]?.ADDRESS[0]?.MOOBAN
-                  ? loanData?.GUARANTORS[0]?.ADDRESS[0]?.MOOBAN
-                  : "-"}
-                <br />
-                <b>ตำบล : </b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.TUMB}
-                <br />
-                <b>จังหวัด :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.PROVDES}
-                <br />
-                <b>เบอร์โทร :</b>
-                {loanData?.GUARANTORS[0]?.ADDRESS[0]?.TELP}
-              </Col>
-            </Row>
-            {loanData?.GUARANTORS?.length > 1 ? (
-              <>
-                <Divider>รายละเอียดคนค้ำที่ 2 </Divider>
-                <Row>
-                  <Col span={12}>
-                    <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
-                    {loanData?.GUARANTORS[1]?.NAME1}{" "}
-                    {loanData?.GUARANTORS[1]?.NAME2} <br />
-                    <b>ที่อยู่ :</b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.ADDR1}
-                    <br />
-                    <b>ซอย :</b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.SOI
-                      ? loanData?.GUARANTORS[1]?.ADDRESS[0]?.SOI
-                      : "-"}
-                    <br />
-                    <b>อำเภอ :</b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.AUMPDES} <br />
-                    <b>รหัสไปษณีย์ :</b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.ZIP}
-                    <br />
-                  </Col>
-                  <Col span={12}>
-                    <b>อาชีพ : </b> {loanData?.GUARANTORS[1]?.OFFIC} <br />
-                    <b>หมู่บ้าน : </b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.MOOBAN
-                      ? loanData?.GUARANTORS[1]?.ADDRESS[0]?.MOOBAN
-                      : "-"}
-                    <br />
-                    <b>ตำบล : </b> {loanData?.GUARANTORS[1]?.ADDRESS[0]?.TUMB}
-                    <br />
-                    <b>จังหวัด :</b>{" "}
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.PROVDES}
-                    <br />
-                    <b>เบอร์โทร :</b>
-                    {loanData?.GUARANTORS[1]?.ADDRESS[0]?.TELP}
-                  </Col>
-                </Row>
-              </>
-            ) : null}
-            {loanData?.GUARANTORS?.length > 2 ? (
-              <>
-                <Divider>รายละเอียดคนค้ำที่ 3 </Divider>
-                <Row>
-                  <Col span={12}>
-                    <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
-                    {loanData?.GUARANTORS[2]?.NAME1}{" "}
-                    {loanData?.GUARANTORS[2]?.NAME2} <br />
-                    <b>ที่อยู่ :</b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.ADDR1}
-                    <br />
-                    <b>ซอย :</b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.SOI
-                      ? loanData?.GUARANTORS[2]?.ADDRESS[0]?.SOI
-                      : "-"}
-                    <br />
-                    <b>อำเภอ :</b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.AUMPDES} <br />
-                    <b>รหัสไปษณีย์ :</b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.ZIP}
-                    <br />
-                  </Col>
-                  <Col span={12}>
-                    <b>อาชีพ : </b> {loanData?.GUARANTORS[2]?.OFFIC} <br />
-                    <b>หมู่บ้าน : </b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.MOOBAN
-                      ? loanData?.GUARANTORS[2]?.ADDRESS[0]?.MOOBAN
-                      : "-"}
-                    <br />
-                    <b>ตำบล : </b> {loanData?.GUARANTORS[2]?.ADDRESS[0]?.TUMB}
-                    <br />
-                    <b>จังหวัด :</b>{" "}
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.PROVDES}
-                    <br />
-                    <b>เบอร์โทร :</b>
-                    {loanData?.GUARANTORS[2]?.ADDRESS[0]?.TELP}
-                  </Col>
-                </Row>
-              </>
-            ) : null}
-            {loanData?.GUARANTORS?.length > 3 ? (
-              <>
-                <Divider>รายละเอียดคนค้ำที่ 4 </Divider>
-                <Row>
-                  <Col span={12}>
-                    <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
-                    {loanData?.GUARANTORS[3]?.NAME1}{" "}
-                    {loanData?.GUARANTORS[3]?.NAME2} <br />
-                    <b>ที่อยู่ :</b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.ADDR1}
-                    <br />
-                    <b>ซอย :</b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.SOI
-                      ? loanData?.GUARANTORS[3]?.ADDRESS[0]?.SOI
-                      : "-"}
-                    <br />
-                    <b>อำเภอ :</b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.AUMPDES} <br />
-                    <b>รหัสไปษณีย์ :</b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.ZIP}
-                    <br />
-                  </Col>
-                  <Col span={12}>
-                    <b>อาชีพ : </b> {loanData?.GUARANTORS[3]?.OFFIC} <br />
-                    <b>หมู่บ้าน : </b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.MOOBAN
-                      ? loanData?.GUARANTORS[3]?.ADDRESS[0]?.MOOBAN
-                      : "-"}
-                    <br />
-                    <b>ตำบล : </b> {loanData?.GUARANTORS[3]?.ADDRESS[0]?.TUMB}
-                    <br />
-                    <b>จังหวัด :</b>{" "}
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.PROVDES}
-                    <br />
-                    <b>เบอร์โทร :</b>
-                    {loanData?.GUARANTORS[3]?.ADDRESS[0]?.TELP}
-                  </Col>
-                </Row>
-              </>
-            ) : null}
-            {loanData?.GUARANTORS?.length > 4 ? (
-              <>
-                <Divider>รายละเอียดคนค้ำที่ 5 </Divider>
-                <Row>
-                  <Col span={12}>
-                    <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
-                    {loanData?.GUARANTORS[4]?.NAME1}{" "}
-                    {loanData?.GUARANTORS[4]?.NAME2} <br />
-                    <b>ที่อยู่ :</b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.ADDR1}
-                    <br />
-                    <b>ซอย :</b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.SOI
-                      ? loanData?.GUARANTORS[4]?.ADDRESS[0]?.SOI
-                      : "-"}
-                    <br />
-                    <b>อำเภอ :</b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.AUMPDES} <br />
-                    <b>รหัสไปษณีย์ :</b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.ZIP}
-                    <br />
-                  </Col>
-                  <Col span={12}>
-                    <b>อาชีพ : </b> {loanData?.GUARANTORS[4]?.OFFIC} <br />
-                    <b>หมู่บ้าน : </b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.MOOBAN
-                      ? loanData?.GUARANTORS[4]?.ADDRESS[0]?.MOOBAN
-                      : "-"}
-                    <br />
-                    <b>ตำบล : </b> {loanData?.GUARANTORS[4]?.ADDRESS[0]?.TUMB}
-                    <br />
-                    <b>จังหวัด :</b>{" "}
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.PROVDES}
-                    <br />
-                    <b>เบอร์โทร :</b>
-                    {loanData?.GUARANTORS[4]?.ADDRESS[0]?.TELP}
-                  </Col>
-                </Row>
-              </>
-            ) : null}
-            {loanData?.GUARANTORS?.length > 5 ? (
-              <>
-                <Divider>รายละเอียดคนค้ำที่ 6 </Divider>
-                <Row>
-                  <Col span={12}>
-                    <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
-                    {loanData?.GUARANTORS[5]?.NAME1}{" "}
-                    {loanData?.GUARANTORS[5]?.NAME2} <br />
-                    <b>ที่อยู่ :</b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.ADDR1}
-                    <br />
-                    <b>ซอย :</b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.SOI
-                      ? loanData?.GUARANTORS[5]?.ADDRESS[0]?.SOI
-                      : "-"}
-                    <br />
-                    <b>อำเภอ :</b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.AUMPDES} <br />
-                    <b>รหัสไปษณีย์ :</b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.ZIP}
-                    <br />
-                  </Col>
-                  <Col span={12}>
-                    <b>อาชีพ : </b> {loanData?.GUARANTORS[5]?.OFFIC} <br />
-                    <b>หมู่บ้าน : </b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.MOOBAN
-                      ? loanData?.GUARANTORS[5]?.ADDRESS[0]?.MOOBAN
-                      : "-"}
-                    <br />
-                    <b>ตำบล : </b> {loanData?.GUARANTORS[5]?.ADDRESS[0]?.TUMB}
-                    <br />
-                    <b>จังหวัด :</b>{" "}
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.PROVDES}
-                    <br />
-                    <b>เบอร์โทร :</b>
-                    {loanData?.GUARANTORS[5]?.ADDRESS[0]?.TELP}
-                  </Col>
-                </Row>
-              </>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-    );
+    if (loanData) {
+      return (
+        <div style={{ textAlign: "center" }}>
+          <Divider>รายละเอียดสัญญา</Divider>
+          <Row>
+            <Col span={12}>
+              <b>สัญญาเลขที่ : </b> {loanData?.LOAN?.CONTNO} <br />
+              <b>จำนวนงวด :</b> {loanData?.LOAN?.T_NOPAY} งวด
+              <br />
+              <b>ยอดกู้ไม่รวมดอก :</b>{" "}
+              {loanData?.LOAN?.NCSHPRC
+                ? currencyFormatNoPoint(loanData?.LOAN?.NCSHPRC)
+                : null}{" "}
+              บาท
+              <br />
+              <b>จ่ายล่าสุดวันที่ :</b> {convertDateThai(loanData?.LOAN?.LPAYD)}{" "}
+              <br />
+              <b>ยอดที่จ่ายมาแล้ว :</b>{" "}
+              {loanData?.LOAN?.SMPAY
+                ? currencyFormatNoPoint(loanData?.LOAN?.SMPAY)
+                : null}{" "}
+              บาท
+              <br />
+            </Col>
+            <Col span={12}>
+              <b>วันที่ทำสัญญา : </b> {convertDateThai(loanData?.LOAN?.SDATE)}{" "}
+              <br />
+              <b>ค่างวด : </b>{" "}
+              {loanData?.LOAN?.TOT_UPAY
+                ? currencyFormatNoPoint(loanData?.LOAN?.TOT_UPAY)
+                : null}{" "}
+              บาท
+              <br />
+              <b>ยอดกู้รวมดอก : </b>{" "}
+              {loanData?.LOAN?.TOTPRC
+                ? currencyFormatNoPoint(loanData?.LOAN?.TOTPRC)
+                : null}{" "}
+              บาท
+              <br />
+              <b>จำนวนที่จ่ายล่าสุด :</b>{" "}
+              {loanData?.LOAN?.LPAYA
+                ? currencyFormatNoPoint(loanData?.LOAN?.LPAYA)
+                : null}{" "}
+              บาท
+              <br />
+              <b>จำนวนงวดที่ค้าง :</b> {loanData?.LOAN?.EXP_FRM} ถึง{" "}
+              {loanData?.LOAN?.EXP_TO}
+              <br />
+            </Col>
+          </Row>
+          <Divider>รายละเอียดรถ</Divider>
+          <Row>
+            <Col span={12}>
+              <b>ยี่ห้อ : </b> {loanData?.MORTGAGE?.TYPE} <br />
+              <b>ชนิดรถ :</b> {loanData?.MORTGAGE?.BAAB}
+              <br />
+              <b>ทะเบียน :</b> {loanData?.MORTGAGE?.REGNO}
+              <br />
+              <b>เลขเครื่อง :</b> {loanData?.MORTGAGE?.ENGNO} <br />
+              <b>ปีที่จดทะเบียน :</b> {loanData?.MORTGAGE?.MANUYR}
+              <br />
+            </Col>
+            <Col span={12}>
+              <b>รุ่น : </b> {loanData?.MORTGAGE?.MODEL} <br />
+              <b>สี : </b> {loanData?.MORTGAGE?.COLOR}
+              <br />
+              <b>จังหวัด : </b> {loanData?.MORTGAGE?.DORECV}
+              <br />
+              <b>เลขตัวถัง :</b> {loanData?.MORTGAGE?.STRNO}
+              <br />
+            </Col>
+          </Row>
+          <Divider>รายละเอียดผู้กู้</Divider>
+          <Row>
+            <Col span={12}>
+              <b>ชื่อ : </b> {loanData?.CUSTOMER?.SNAM}
+              {loanData?.CUSTOMER?.NAME1} {loanData?.CUSTOMER?.NAME2}
+              <br />
+              <b>ที่อยู่ : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.ADDR1}
+              <br />
+              <b>ซอย : </b>{" "}
+              {loanData?.CUSTOMER?.ADDRESS[0]?.SOI
+                ? loanData?.CUSTOMER?.ADDRESS[0]?.SOI
+                : "-"}
+              <br />
+              <b>อำเภอ : </b>
+              {loanData?.CUSTOMER?.ADDRESS[0]?.AUMPDES} <br />
+              <b>รหัสไปษณีย์ : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.ZIP}
+              <br />
+              {loanData?.CUSTOMER?.ADDRESS.length > 1 ? (
+                <>
+                  <b>ที่อยู่ : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.ADDR1}
+                  <br />
+                  <b>ซอย :</b>{" "}
+                  {loanData?.CUSTOMER?.ADDRESS[1]?.SOI
+                    ? loanData?.CUSTOMER?.ADDRESS[1]?.SOI
+                    : "-"}
+                  <br />
+                  <b>อำเภอ : </b>
+                  {loanData?.CUSTOMER?.ADDRESS[1]?.AUMPDES} <br />
+                  <b>รหัสไปษณีย์ :</b> {loanData?.CUSTOMER?.ADDRESS[1]?.ZIP}
+                  <br />
+                </>
+              ) : null}
+            </Col>
+            <Col span={12}>
+              <b>อาชีพ : </b> {loanData?.CUSTOMER?.OFFIC} <br />
+              <b>หมู่บ้าน : </b>{" "}
+              {loanData?.CUSTOMER?.ADDRESS[0]?.MOOBAN
+                ? loanData?.CUSTOMER?.ADDRESS[0]?.MOOBAN
+                : "-"}
+              <br />
+              <b>ตำบล : </b> {loanData?.CUSTOMER?.ADDRESS[0]?.TUMB}
+              <br />
+              <b>จังหวัด :</b> {loanData?.CUSTOMER?.ADDRESS[0]?.PROVDES}
+              <br />
+              <b>เบอร์โทร :</b>{" "}
+              {loanData?.CUSTOMER?.ADDRESS[0]?.TELP
+                ? loanData?.CUSTOMER?.ADDRESS[0]?.TELP
+                : "-"}{" "}
+              <br />
+              {loanData?.CUSTOMER?.ADDRESS.length > 1 ? (
+                <>
+                  <b>หมู่บ้าน : </b>{" "}
+                  {loanData?.CUSTOMER?.ADDRESS[1]?.MOOBAN
+                    ? loanData?.CUSTOMER?.ADDRESS[1]?.MOOBAN
+                    : "-"}
+                  <br />
+                  <b>ตำบล : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.TUMB}
+                  <br />
+                  <b>จังหวัด : </b> {loanData?.CUSTOMER?.ADDRESS[1]?.PROVDES}
+                  <br />
+                </>
+              ) : null}
+            </Col>
+          </Row>
+          {loanData?.GUARANTORS?.length > 0 ? (
+            <>
+              <Divider>รายละเอียดคนค้ำที่ 1 </Divider>
+              <Row>
+                <Col span={12}>
+                  <b>ชื่อ : </b> {loanData?.GUARANTORS[0]?.SNAM}
+                  {loanData?.GUARANTORS[0]?.NAME1}{" "}
+                  {loanData?.GUARANTORS[0]?.NAME2} <br />
+                  <b>ที่อยู่ :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.ADDR1}
+                  <br />
+                  <b>ซอย :</b>{" "}
+                  {loanData?.GUARANTORS[0]?.ADDRESS[0]?.SOI
+                    ? loanData?.GUARANTORS[0]?.ADDRESS[0]?.SOI
+                    : "-"}
+                  <br />
+                  <b>อำเภอ :</b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.AUMPDES}{" "}
+                  <br />
+                  <b>รหัสไปษณีย์ :</b>{" "}
+                  {loanData?.GUARANTORS[0]?.ADDRESS[0]?.ZIP}
+                  <br />
+                </Col>
+                <Col span={12}>
+                  <b>อาชีพ : </b> {loanData?.GUARANTORS[0]?.OFFIC} <br />
+                  <b>หมู่บ้าน : </b>{" "}
+                  {loanData?.GUARANTORS[0]?.ADDRESS[0]?.MOOBAN
+                    ? loanData?.GUARANTORS[0]?.ADDRESS[0]?.MOOBAN
+                    : "-"}
+                  <br />
+                  <b>ตำบล : </b> {loanData?.GUARANTORS[0]?.ADDRESS[0]?.TUMB}
+                  <br />
+                  <b>จังหวัด :</b>{" "}
+                  {loanData?.GUARANTORS[0]?.ADDRESS[0]?.PROVDES}
+                  <br />
+                  <b>เบอร์โทร :</b>
+                  {loanData?.GUARANTORS[0]?.ADDRESS[0]?.TELP}
+                </Col>
+              </Row>
+              {loanData?.GUARANTORS?.length > 1 ? (
+                <>
+                  <Divider>รายละเอียดคนค้ำที่ 2 </Divider>
+                  <Row>
+                    <Col span={12}>
+                      <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
+                      {loanData?.GUARANTORS[1]?.NAME1}{" "}
+                      {loanData?.GUARANTORS[1]?.NAME2} <br />
+                      <b>ที่อยู่ :</b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.ADDR1}
+                      <br />
+                      <b>ซอย :</b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.SOI
+                        ? loanData?.GUARANTORS[1]?.ADDRESS[0]?.SOI
+                        : "-"}
+                      <br />
+                      <b>อำเภอ :</b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.AUMPDES} <br />
+                      <b>รหัสไปษณีย์ :</b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.ZIP}
+                      <br />
+                    </Col>
+                    <Col span={12}>
+                      <b>อาชีพ : </b> {loanData?.GUARANTORS[1]?.OFFIC} <br />
+                      <b>หมู่บ้าน : </b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.MOOBAN
+                        ? loanData?.GUARANTORS[1]?.ADDRESS[0]?.MOOBAN
+                        : "-"}
+                      <br />
+                      <b>ตำบล : </b> {loanData?.GUARANTORS[1]?.ADDRESS[0]?.TUMB}
+                      <br />
+                      <b>จังหวัด :</b>{" "}
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.PROVDES}
+                      <br />
+                      <b>เบอร์โทร :</b>
+                      {loanData?.GUARANTORS[1]?.ADDRESS[0]?.TELP}
+                    </Col>
+                  </Row>
+                </>
+              ) : null}
+              {loanData?.GUARANTORS?.length > 2 ? (
+                <>
+                  <Divider>รายละเอียดคนค้ำที่ 3 </Divider>
+                  <Row>
+                    <Col span={12}>
+                      <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
+                      {loanData?.GUARANTORS[2]?.NAME1}{" "}
+                      {loanData?.GUARANTORS[2]?.NAME2} <br />
+                      <b>ที่อยู่ :</b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.ADDR1}
+                      <br />
+                      <b>ซอย :</b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.SOI
+                        ? loanData?.GUARANTORS[2]?.ADDRESS[0]?.SOI
+                        : "-"}
+                      <br />
+                      <b>อำเภอ :</b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.AUMPDES} <br />
+                      <b>รหัสไปษณีย์ :</b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.ZIP}
+                      <br />
+                    </Col>
+                    <Col span={12}>
+                      <b>อาชีพ : </b> {loanData?.GUARANTORS[2]?.OFFIC} <br />
+                      <b>หมู่บ้าน : </b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.MOOBAN
+                        ? loanData?.GUARANTORS[2]?.ADDRESS[0]?.MOOBAN
+                        : "-"}
+                      <br />
+                      <b>ตำบล : </b> {loanData?.GUARANTORS[2]?.ADDRESS[0]?.TUMB}
+                      <br />
+                      <b>จังหวัด :</b>{" "}
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.PROVDES}
+                      <br />
+                      <b>เบอร์โทร :</b>
+                      {loanData?.GUARANTORS[2]?.ADDRESS[0]?.TELP}
+                    </Col>
+                  </Row>
+                </>
+              ) : null}
+              {loanData?.GUARANTORS?.length > 3 ? (
+                <>
+                  <Divider>รายละเอียดคนค้ำที่ 4 </Divider>
+                  <Row>
+                    <Col span={12}>
+                      <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
+                      {loanData?.GUARANTORS[3]?.NAME1}{" "}
+                      {loanData?.GUARANTORS[3]?.NAME2} <br />
+                      <b>ที่อยู่ :</b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.ADDR1}
+                      <br />
+                      <b>ซอย :</b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.SOI
+                        ? loanData?.GUARANTORS[3]?.ADDRESS[0]?.SOI
+                        : "-"}
+                      <br />
+                      <b>อำเภอ :</b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.AUMPDES} <br />
+                      <b>รหัสไปษณีย์ :</b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.ZIP}
+                      <br />
+                    </Col>
+                    <Col span={12}>
+                      <b>อาชีพ : </b> {loanData?.GUARANTORS[3]?.OFFIC} <br />
+                      <b>หมู่บ้าน : </b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.MOOBAN
+                        ? loanData?.GUARANTORS[3]?.ADDRESS[0]?.MOOBAN
+                        : "-"}
+                      <br />
+                      <b>ตำบล : </b> {loanData?.GUARANTORS[3]?.ADDRESS[0]?.TUMB}
+                      <br />
+                      <b>จังหวัด :</b>{" "}
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.PROVDES}
+                      <br />
+                      <b>เบอร์โทร :</b>
+                      {loanData?.GUARANTORS[3]?.ADDRESS[0]?.TELP}
+                    </Col>
+                  </Row>
+                </>
+              ) : null}
+              {loanData?.GUARANTORS?.length > 4 ? (
+                <>
+                  <Divider>รายละเอียดคนค้ำที่ 5 </Divider>
+                  <Row>
+                    <Col span={12}>
+                      <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
+                      {loanData?.GUARANTORS[4]?.NAME1}{" "}
+                      {loanData?.GUARANTORS[4]?.NAME2} <br />
+                      <b>ที่อยู่ :</b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.ADDR1}
+                      <br />
+                      <b>ซอย :</b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.SOI
+                        ? loanData?.GUARANTORS[4]?.ADDRESS[0]?.SOI
+                        : "-"}
+                      <br />
+                      <b>อำเภอ :</b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.AUMPDES} <br />
+                      <b>รหัสไปษณีย์ :</b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.ZIP}
+                      <br />
+                    </Col>
+                    <Col span={12}>
+                      <b>อาชีพ : </b> {loanData?.GUARANTORS[4]?.OFFIC} <br />
+                      <b>หมู่บ้าน : </b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.MOOBAN
+                        ? loanData?.GUARANTORS[4]?.ADDRESS[0]?.MOOBAN
+                        : "-"}
+                      <br />
+                      <b>ตำบล : </b> {loanData?.GUARANTORS[4]?.ADDRESS[0]?.TUMB}
+                      <br />
+                      <b>จังหวัด :</b>{" "}
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.PROVDES}
+                      <br />
+                      <b>เบอร์โทร :</b>
+                      {loanData?.GUARANTORS[4]?.ADDRESS[0]?.TELP}
+                    </Col>
+                  </Row>
+                </>
+              ) : null}
+              {loanData?.GUARANTORS?.length > 5 ? (
+                <>
+                  <Divider>รายละเอียดคนค้ำที่ 6 </Divider>
+                  <Row>
+                    <Col span={12}>
+                      <b>ชื่อ : </b> {loanData?.GUARANTORS[1]?.SNAM}
+                      {loanData?.GUARANTORS[5]?.NAME1}{" "}
+                      {loanData?.GUARANTORS[5]?.NAME2} <br />
+                      <b>ที่อยู่ :</b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.ADDR1}
+                      <br />
+                      <b>ซอย :</b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.SOI
+                        ? loanData?.GUARANTORS[5]?.ADDRESS[0]?.SOI
+                        : "-"}
+                      <br />
+                      <b>อำเภอ :</b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.AUMPDES} <br />
+                      <b>รหัสไปษณีย์ :</b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.ZIP}
+                      <br />
+                    </Col>
+                    <Col span={12}>
+                      <b>อาชีพ : </b> {loanData?.GUARANTORS[5]?.OFFIC} <br />
+                      <b>หมู่บ้าน : </b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.MOOBAN
+                        ? loanData?.GUARANTORS[5]?.ADDRESS[0]?.MOOBAN
+                        : "-"}
+                      <br />
+                      <b>ตำบล : </b> {loanData?.GUARANTORS[5]?.ADDRESS[0]?.TUMB}
+                      <br />
+                      <b>จังหวัด :</b>{" "}
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.PROVDES}
+                      <br />
+                      <b>เบอร์โทร :</b>
+                      {loanData?.GUARANTORS[5]?.ADDRESS[0]?.TELP}
+                    </Col>
+                  </Row>
+                </>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      );
+    }
   };
+
+  const sortedParcels = dataDetail?.parcel?.sort((a, b) => a.GARNO - b.GARNO);
 
   const formNotice = () => {
     return (
       <>
-        {dataRec?.PARCEL_ID ? (
+        {dataDetail?.parcel?.length > 0 ? (
           <Card>
             <Form
               labelCol={{
-                span: 8,
+                span: 11,
               }}
               wrapperCol={{
-                span: 14,
+                span: 13,
               }}
               form={form}
               layout="horizontal"
             >
               <Divider>รายละเอียดบอกเลิกสัญญา</Divider>
               <Form.Item label="วันที่ส่ง" name="sendDate">
-                {dataRec?.DATE
-                  ? dayjs(dataRec?.DATE).format("D MMMM YYYY")
+                {dataDetail?.parcel[0]?.created_date
+                  ? dayjs(dataDetail?.parcel[0]?.created_date).format(
+                      "D MMMM YYYY"
+                    )
                   : null}
               </Form.Item>
-              <Form.Item label="หมายเลข EMS" name="parcelNo">
-                {dataDetail?.parcel?.parcel_no
-                  ? dataDetail?.parcel?.parcel_no
-                  : null}
-              </Form.Item>
-
               <Form.Item label="บริษัทที่ออก" name="companySend">
-                {dataRec?.COMPANY_ID === 1
+                {dataDetail?.lawsuit?.COMPANY_ID === 1
                   ? "บริษัท วัน ลิสซิ่ง จำกัด"
-                  : dataRec?.COMPANY_ID === 2
+                  : dataDetail?.lawsuit?.COMPANY_ID === 2
                   ? "บริษัท วัน มันนี่ จำกัด"
                   : "บริษัท เค.เอส.เอ็ม.บิลเลี่ยนแนร์ จำกัด"}
               </Form.Item>
-              <Form.Item label="การตอบกลับ" name="replyType">
-                {dataDetail?.parcel?.parcel_typ_id === 1
-                  ? "ใบตอบกลับ"
-                  : dataDetail?.parcel?.parcel_typ_id === 2
-                  ? "เว็บไปรษณีย์"
-                  : "ยังไม่มีข้อมูล"}
-              </Form.Item>
+              {sortedParcels?.map((parcel, index) => (
+                <div key={index}>
+                  <Form.Item
+                    label={parcel?.GARNO === 0 ? "ผู้ทำสัญญา" : "คนค้ำ"}
+                    name={`customer_${index}`}
+                  >
+                    {parcel
+                      ? `${parcel?.SNAM}${parcel?.NAME1} ${parcel?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name={`parcelNo_${index}`}>
+                    {parcel ? parcel?.parcel_no : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name={`replyType_${index}`}>
+                    {parcel?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : parcel?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                  {/* {dataDetail?.parcel.length > 1 ? (
+                <>
+                  <Form.Item
+                    label={
+                      dataDetail?.parcel[1]?.GARNO === 0
+                        ? "ผู้ทำสัญญา"
+                        : "คนค้ำ"
+                    }
+                    name="customer"
+                  >
+                    {dataDetail?.parcel
+                      ? `${dataDetail?.parcel[1]?.SNAM}${dataDetail?.parcel[1]?.NAME1} ${dataDetail?.parcel[1]?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name="parcelNo">
+                    {dataDetail?.parcel
+                      ? dataDetail?.parcel[1]?.parcel_no
+                      : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name="replyType">
+                    {dataDetail?.parcel[1]?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : dataDetail?.parcel[1]?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                </>
+              ) : null}
+
+              {dataDetail?.parcel.length > 2 ? (
+                <>
+                  <Form.Item
+                    label={
+                      dataDetail?.parcel[2]?.GARNO === 0
+                        ? "ผู้ทำสัญญา"
+                        : "คนค้ำ"
+                    }
+                    name="customer"
+                  >
+                    {dataDetail?.parcel
+                      ? `${dataDetail?.parcel[2]?.SNAM}${dataDetail?.parcel[2]?.NAME2} ${dataDetail?.parcel[2]?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name="parcelNo">
+                    {dataDetail?.parcel
+                      ? dataDetail?.parcel[2]?.parcel_no
+                      : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name="replyType">
+                    {dataDetail?.parcel[2]?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : dataDetail?.parcel[2]?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                </>
+              ) : null}
+
+              {dataDetail?.parcel.length > 3 ? (
+                <>
+                  <Form.Item
+                    label={
+                      dataDetail?.parcel[3]?.GARNO === 0
+                        ? "ผู้ทำสัญญา"
+                        : "คนค้ำ"
+                    }
+                    name="customer"
+                  >
+                    {dataDetail?.parcel
+                      ? `${dataDetail?.parcel[3]?.SNAM}${dataDetail?.parcel[3]?.NAME2} ${dataDetail?.parcel[3]?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name="parcelNo">
+                    {dataDetail?.parcel
+                      ? dataDetail?.parcel[3]?.parcel_no
+                      : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name="replyType">
+                    {dataDetail?.parcel[3]?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : dataDetail?.parcel[3]?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                </>
+              ) : null}
+
+              {dataDetail?.parcel.length > 4 ? (
+                <>
+                  <Form.Item
+                    label={
+                      dataDetail?.parcel[4]?.GARNO === 0
+                        ? "ผู้ทำสัญญา"
+                        : "คนค้ำ"
+                    }
+                    name="customer"
+                  >
+                    {dataDetail?.parcel
+                      ? `${dataDetail?.parcel[4]?.SNAM}${dataDetail?.parcel[4]?.NAME2} ${dataDetail?.parcel[4]?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name="parcelNo">
+                    {dataDetail?.parcel
+                      ? dataDetail?.parcel[4]?.parcel_no
+                      : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name="replyType">
+                    {dataDetail?.parcel[4]?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : dataDetail?.parcel[4]?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                </>
+              ) : null}
+
+              {dataDetail?.parcel.length > 5 ? (
+                <>
+                  <Form.Item
+                    label={
+                      dataDetail?.parcel[5]?.GARNO === 0
+                        ? "ผู้ทำสัญญา"
+                        : "คนค้ำ"
+                    }
+                    name="customer"
+                  >
+                    {dataDetail?.parcel
+                      ? `${dataDetail?.parcel[5]?.SNAM}${dataDetail?.parcel[5]?.NAME2} ${dataDetail?.parcel[5]?.NAME2}`
+                      : "null"}
+                  </Form.Item>
+
+                  <Form.Item label="หมายเลข EMS" name="parcelNo">
+                    {dataDetail?.parcel
+                      ? dataDetail?.parcel[5]?.parcel_no
+                      : null}
+                  </Form.Item>
+
+                  <Form.Item label="การตอบกลับ" name="replyType">
+                    {dataDetail?.parcel[5]?.parcel_typ_id === 1
+                      ? "ใบตอบกลับ"
+                      : dataDetail?.parcel[5]?.parcel_typ_id === 2
+                      ? "เว็บไปรษณีย์"
+                      : "ยังไม่มีข้อมูล"}
+                  </Form.Item>
+                </>
+              ) : null} */}
+                </div>
+              ))}
               <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
-                {dataDetail?.parcel?.url_path ? (
+                {dataDetail?.parcel[0]?.url_path ? (
                   <a
-                    href={dataDetail?.parcel?.url_path || "#"}
+                    href={dataDetail?.parcel[0]?.url_path || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -760,6 +933,9 @@ const DetailModal = ({ open, close, dataRec }) => {
                 ) : (
                   <span>ไม่มีลิงก์รูปภาพ</span>
                 )}
+              </Form.Item>
+              <Form.Item label="หมายเหตุ" name="urlFileNotice">
+                {dataDetail?.parcel[0]?.mark}
               </Form.Item>
             </Form>
           </Card>
@@ -776,10 +952,10 @@ const DetailModal = ({ open, close, dataRec }) => {
         {dataDetail?.STATUS2 ? (
           <Form
             labelCol={{
-              span: 8,
+              span: 11,
             }}
             wrapperCol={{
-              span: 14,
+              span: 13,
             }}
             form={form}
             layout="horizontal"
@@ -819,7 +995,7 @@ const DetailModal = ({ open, close, dataRec }) => {
                   ? currencyFormatNoPoint(
                       dataDetail?.lawsuit?.suspension_amount
                     )
-                  : null}{" "}
+                  : "-"}{" "}
                 บาท
               </p>
             </Form.Item>
@@ -871,10 +1047,10 @@ const DetailModal = ({ open, close, dataRec }) => {
           <Card>
             <Form
               labelCol={{
-                span: 8,
+                span: 11,
               }}
               wrapperCol={{
-                span: 14,
+                span: 13,
               }}
               form={form}
               layout="horizontal"
@@ -901,6 +1077,7 @@ const DetailModal = ({ open, close, dataRec }) => {
               <Form.Item label="ดอกเบี้ยคำพิพากษา" name="interestRate">
                 {(dataDetail?.judge?.interest_rate * 100).toFixed(1)}%
               </Form.Item>
+
               <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth1">
                 {dataDetail?.judge?.defendants[0]?.cost_of_useleseness_per_month
                   ? currencyFormatNoPoint(
@@ -1015,10 +1192,10 @@ const DetailModal = ({ open, close, dataRec }) => {
         {dataDetail?.investigateProperty?.length > 0 ? (
           <Form
             labelCol={{
-              span: 8,
+              span: 11,
             }}
             wrapperCol={{
-              span: 14,
+              span: 13,
             }}
             form={form}
             layout="horizontal"
@@ -1137,10 +1314,10 @@ const DetailModal = ({ open, close, dataRec }) => {
           <Card>
             <Form
               labelCol={{
-                span: 8,
+                span: 11,
               }}
               wrapperCol={{
-                span: 14,
+                span: 13,
               }}
               form={form}
               layout="horizontal"

@@ -76,14 +76,14 @@ export default function LogIn() {
   const handleNavigate = (data) => {
     console.log("data", data.line_uid);
 
-    if (data.line_uid !== "NULL") {
-      console.log("not null");
-      navigate("/dashboard");
-    } else {
-      console.log("null");
-      navigate("/loginline");
-    }
-
+    // if (data.line_uid === "null" || !data.line_uid) {
+    //   console.log("null");
+    //   navigate("/login-line");
+    // } else {
+    //   console.log("not null");
+    //   navigate("/");
+    // }
+    navigate("/");
     window.location.reload();
   };
 

@@ -6,10 +6,18 @@ import {
   Tag,
   DatePicker,
   Card,
-  Button,
   message,
   Spin,
+  Radio,
+  Button,
+  Popconfirm,
+  Select,
 } from "antd";
+import {
+  DollarOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
@@ -17,8 +25,9 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
+  GET_LAWSUIT_LIST,
   HEADERS_EXPORT,
+  PUT_LAWSUIT_DETAIL,
 } from "../../API/apiUrls";
 
 //use redux
@@ -27,10 +36,14 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
+import CurrencyFormat from "../../../hook/CurrencyFormat";
+import LoadLawyers from "../../../hook/LoadLawyers";
+import { Option } from "antd/es/mentions";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const [currencyFormatNoPoint] = CurrencyFormat();
+  const [lawyersList, setLoadingData] = LoadLawyers();
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
@@ -43,21 +56,55 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userCompany = localStorage.getItem("COMPANY_ID");
+  const [lawyerId, setLawyerId] = useState(null);
+  const [lawyersOption, setLawyersOption] = useState();
+  const [statusId, setStatusId] = useState(0);
+  const { Option } = Select;
 
   useEffect(() => {
     loadData();
-  }, []);
+    setLoadingData(true);
+  }, [setLoadingData]);
+
+  useEffect(() => {
+    if (lawyersList && dataArr) {
+      setOption();
+    }
+  }, [lawyersList, dataArr]);
+
+  const setOption = () => {
+    let companySelect = null;
+
+    if (dataArr.COMPANY_ID === 3) {
+      companySelect = lawyersList.filter(
+        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+      );
+    } else {
+      companySelect = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+      );
+    }
+    const options = companySelect.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+    }));
+
+    options.unshift({
+      value: "all", // ค่าที่แทน "ทั้งหมด"
+      label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
+    });
+    setLawyersOption(options);
+  };
 
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
     try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS,
-        {
-          HEADERS_EXPORT,
-        }
-      );
+      const response = await axios.get(baseUrl + GET_LAWSUIT_LIST, {
+        HEADERS_EXPORT,
+      });
       if (response.data) {
         let i = 1;
         if (response.data) {
@@ -83,17 +130,86 @@ const Main = () => {
     }
   };
 
+  const sendStatus = async (dataLawsuit) => {
+    setLoading(true);
+    try {
+      await axios
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, dataLawsuit, { HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+    } finally {
+      setLoading(false);
+      if (dataLawsuit.fee_payment_status === 1) {
+        message.success(`อนุมัติสัญญาเลขท่ี ${dataLawsuit.CONTNO}`);
+      } else {
+        message.error(`ไม่อนุมัติสัญญาเลขที่ ${dataLawsuit.CONTNO}`);
+      }
+      handleUpdate(dataLawsuit);
+    }
+  };
+
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
-      );
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log(newData);
-      console.log("Length of filtered data:", newData.length);
+      const preData = data.filter((item) => item.black_case_number);
+
+      const newData = preData.filter((item) => !item.fee_payment_status);
+
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+      }
+
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      console.log("list lawsuit--->", newData);
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = newData.filter((item) => {
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = newData.filter((item) => {
+          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          console.log("test12", test);
+
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      setArrayTable(filteredData);
+      setDataArr(preData);
+      setTableLength(filteredData.length);
+      console.log("newData", filteredData);
+      console.log("Length of filtered data:", filteredData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -106,8 +222,54 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
+    if (value) {
+      let result = dataArr.filter(
+        (item) => item.CONTNO.includes(value) || item.NNAME.includes(value)
+      );
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
+  };
+
+  const onSearchLawyers = (value) => {
+    if (value === "all") {
+      let result = dataArr.filter((item) => item);
+      setArrayTable(result);
+    } else {
+      let result = dataArr.filter((item) => item.USER_ID === value);
+      setArrayTable(result);
+    }
+  };
+
+  const onSearchStatus = (value) => {
+    let result;
+    if (lawyerId && lawyerId !== "all") {
+      result = dataArr.filter(
+        (item) => item.fee_payment_status === value && item.USER_ID === lawyerId
+      );
+      console.log("if", result);
+    } else {
+      if (!value) {
+        result = dataArr.filter((item) => !item.fee_payment_status);
+      } else {
+        result = dataArr.filter((item) => item.fee_payment_status === value);
+      }
+      console.log("else", result);
+    }
     setArrayTable(result);
+  };
+
+  const onChangeSelectLawyer = (value) => {
+    console.log("onChangeSelectLawyer-->", value);
+    onSearchLawyers(value);
+    setLawyerId(value);
+  };
+
+  const onChangeSelectStatus = (value) => {
+    console.log("onChangeSelectStatus-->", value);
+    onSearchStatus(value);
+    setStatusId(value);
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -136,44 +298,86 @@ const Main = () => {
     }
   };
 
-  // const handleUpdateData = (data) => {
-  //   console.log("data---->update", data);
-  //   if (data !== 0) {
-  //     const result = dataArr.map((item) => {
-  //       if (item.id === data.id) {
-  //         return { ...data };
-  //       } else {
-  //         return { ...item };
-  //       }
-  //     });
-  //     console.log(result);
-  //     setDataArr(result);
-  //     const arr = result.filter(
-  //       (item) => item.MAIN_STATUS_ID === CASE_IS_FINAL
-  //     );
-  //     console.log("arr", arr);
-  //     setArrayTable(arr);
-  //   } else {
-  //     loadData();
-  //     console.log("handleUpdateData loadData");
-  //   }
-  // };
+  const renderStatus = (record) => {
+    let color =
+      record.fee_payment_status === 1
+        ? "green"
+        : record.fee_payment_status === 0
+        ? "orange"
+        : "silver";
 
-  //ทำ render record ของตาราถ้าใช้ logic เยอะ
-  const renderDate = (record) => {
-    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
-      return null;
-    }
-    const recordDate = dayjs(record.DATE);
-    const today = dayjs().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
-        {formattedDate}
+      <Tag color={color} key={record} style={{ textAlign: "center" }}>
+        {record.fee_payment_status === 1
+          ? "อนุมัติ"
+          : record.fee_payment_status === 0
+          ? "ไม่อนุมัติ"
+          : "รอดำเนินการ"}
       </Tag>
     );
+  };
+
+  const renderOpteionStatus = () => {
+    return (
+      <>
+        <Option value={0}>
+          <span style={{ marginRight: 8 }}>🕒</span>
+          รอดำเนินการ
+        </Option>
+        <Option value={1}>
+          <CheckCircleOutlined style={{ color: "green", marginRight: 8 }} />
+          อนุมัติ
+        </Option>
+        <Option value={2}>
+          <CloseCircleOutlined style={{ color: "red", marginRight: 8 }} />
+          ไม่อนุมัติ
+        </Option>
+      </>
+    );
+  };
+
+  const confirmInsertOne = (data) => {
+    const dataLawsuit = {
+      ...data,
+      fee_payment_status: 1,
+      fee_payment_datetime: dayjs().format(),
+    };
+
+    console.log(dataLawsuit);
+    sendStatus(dataLawsuit);
+  };
+
+  const cancel = (data) => {
+    const dataLawsuit = {
+      ...data,
+      fee_payment_status: 2,
+      fee_payment_datetime: dayjs().format(),
+    };
+    console.log(dataLawsuit);
+    sendStatus(dataLawsuit);
+  };
+
+  const handleUpdate = (data) => {
+    const result = dataArr.map((item) => {
+      if (item.id === data.id) {
+        return { ...data };
+      } else {
+        return { ...item };
+      }
+    });
+    let newData;
+    if (lawyerId !== "all" && statusId) {
+      newData = result.filter(
+        (item) =>
+          item.fee_payment_status === statusId && item.USER_ID === lawyerId
+      );
+    } else {
+      newData = result.filter((item) => item.fee_payment_status === statusId);
+    }
+
+    setDataArr(result);
+    setArrayTable(newData);
+    setTableLength(newData.length);
   };
 
   const columns = [
@@ -205,58 +409,124 @@ const Main = () => {
         </Link>
       ),
     },
-
-    // {
-    //   title: "วันที่สำเร็จ",
-    //   align: "center",
-    //   // render: (record) => <>{renderDate(record)}</>,
-    // },
     {
       title: "จำนวนเงิน",
       align: "center",
-      // render: (record) => <>{renderDate(record)}</>,
+      render: (record) => <>{currencyFormatNoPoint(record.attorney_fees)}</>,
     },
     {
-      title: "ทนายที่รับผิดชอบ",
+      title: "ผู้รับผิดชอบคดี",
       align: "center",
-      render: (record) => <>{record.LAWYER_NNAME}</>,
+      render: (record) => <>{record.NNAME ? record.NNAME : null}</>,
+    },
+    {
+      title: "วันที่อนุมัติ",
+      align: "center",
+      render: (record) => (
+        <>
+          {record.fee_payment_datetime
+            ? convertDateThai(record.fee_payment_datetime)
+            : null}
+        </>
+      ),
+    },
+    {
+      title: "สถานะการอนุมัติ",
+      align: "center",
+      render: (record) => <>{renderStatus(record)}</>,
+    },
+    {
+      title: "การจัดการ",
+      align: "center",
+      render: (record) => (
+        <>
+          <Popconfirm
+            placement="topLeft"
+            title="อัพเดทสถานะ"
+            description="คุณต้องการอัพเดทสถานะให้ทนายใช่หรือไม่ ?"
+            onConfirm={() => confirmInsertOne(record)}
+            onCancel={() => cancel(record)}
+            okText="อนุมัติ"
+            cancelText="ไม่อนุมัติ"
+          >
+            <Button style={{ fontSize: "20px", color: "green" }}>
+              <DollarOutlined />
+            </Button>
+          </Popconfirm>
+        </>
+      ),
     },
   ];
 
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "5") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <Select
+                    placeholder="เลือกทนาย"
+                    optionFilterProp="value"
+                    onChange={(value) => onChangeSelectLawyer(value)}
+                    options={lawyersOption}
+                    style={{
+                      width: 150,
+                      marginRight: "10px",
+                    }}
+                    size="large"
+                  />
+                </Space>
+                <Select
+                  placeholder="เลือกสถานะ"
+                  optionFilterProp="value"
+                  onChange={(value) => onChangeSelectStatus(value)}
+                  style={{
+                    width: 200,
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
+                >
+                  {renderOpteionStatus()}
+                </Select>
+              </Col>
+            </Row>
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
+                  size="large"
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {/* {!record.DATE ? (
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <p style={{ margin: 0 }}>
+                        {/* {!record.DATE ? (
                         <Button
                           name="create"
                           style={{
@@ -299,20 +569,23 @@ const Main = () => {
                           </Button>
                         </>
                       ) : null} */}
-                    </p>
-                  ),
-                  rowExpandable: (record) => !record,
-                }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-    </>
-  );
+                      </p>
+                    ),
+                    rowExpandable: (record) => !record,
+                  }}
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+      </>
+    );
+  } else {
+    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
+  }
 };
 
 const CommissionLaw = MotionHoc(Main);

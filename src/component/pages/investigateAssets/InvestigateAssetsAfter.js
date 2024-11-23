@@ -29,6 +29,7 @@ import axios from "axios";
 import {
   CASE_IS_FINAL,
   INVESTIGATE,
+  JUDGEMENT,
   NOTICE,
 } from "../../../utils/constant/StatusConstant";
 import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
@@ -46,7 +47,8 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
     useState(false);
-  console.log(profileRedux.id);
+
+  const userCompany = localStorage.getItem("COMPANY_ID");
 
   useEffect(() => {
     loadData();
@@ -58,7 +60,7 @@ const Main = () => {
 
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JUDGEMENT, {
           HEADERS_EXPORT,
         })
         .then(async (res) => {
@@ -86,13 +88,45 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter((item) => item.MAIN_STATUS_ID >= 4);
-      console.log("newDataLawsuit 11", newData);
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log(newData);
-      console.log("Length of filtered data:", newData.length);
+      const newData = data.filter((item) => item);
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+      }
+
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = newData.filter((item) => {
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = newData.filter((item) => {
+          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          console.log("test12", test);
+
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+      console.log("newData", filteredData);
+      console.log("Length of filtered data:", filteredData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -159,15 +193,24 @@ const Main = () => {
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDataAsset = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (record.INVESTIGATE_AFTER_ID === null) {
+    if (record.PROCESS_ID === 1) {
       return null;
     }
 
-    let color = record.INVESTIGATE_AFTER_ID ? "green" : "red";
+    let color =
+      record.PROCESS_ID === 3
+        ? "green"
+        : record.PROCESS_ID === 2
+        ? "red"
+        : null;
 
     return (
       <Tag color={color} key={record.id} style={{ textAlign: "center" }}>
-        {record.INVESTIGATE_AFTER_ID ? "เจอทรัพย์" : "ไม่เจอทรัพย์"}
+        {record.PROCESS_ID === 3
+          ? "เจอทรัพย์"
+          : record.PROCESS_ID === 2
+          ? "ไม่เจอทรัพย์"
+          : null}
       </Tag>
     );
   };

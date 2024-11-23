@@ -11,7 +11,8 @@ import {
 } from "antd";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL,
+  GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,
@@ -67,7 +68,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setLoading(true);
     try {
       const [lawsuitRes, loanRes] = await Promise.all([
-        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL}${dataDefualt.id}`, {
+        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefualt.id}`, {
           HEADERS_EXPORT,
         }),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
@@ -128,7 +129,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             funcUpdateStatus({
               ...dataDefualt,
               DATE: status.DATE,
-              PROCESS_ID: data.PROCESS_ID,
+              PROCESS_ID: status.PROCESS_ID,
             });
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
@@ -162,6 +163,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       suspension_amount: parseFloat(dataForm.suspensionAmount),
       interest_rate: null,
       fee: dataForm.fee,
+      attorney_fees: dataLoadLawSuit?.LOAN_TYPE_ID === 2 ? 3500 : 2500,
     };
 
     const putStatus = {
@@ -190,7 +192,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       suspensionAmount: dataForm.suspensionAmount,
       nopay: dataForm.nopay,
     }));
-    console.log(putData);
+    console.log("putData", putData);
 
     sendStatus(putStatus, putData);
   };
@@ -355,6 +357,10 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         onFinishFailed={onFinishFailed}
         initialValues={{
           memo: null,
+          subject:
+            dataDefualt.LOAN_TYPE_ID === 2
+              ? "บอกกล่าวบังคับจำนอง"
+              : "บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา",
           suspensionAmount: 0,
         }}
       >

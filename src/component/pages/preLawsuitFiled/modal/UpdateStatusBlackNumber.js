@@ -3,7 +3,8 @@ import { Button, DatePicker, Form, Input, Modal, Card, message } from "antd";
 import { LoadingOutlined, AuditOutlined } from "@ant-design/icons";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL,
+  GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   POST_STATUS,
@@ -50,7 +51,7 @@ const UpdateStatusBlackNumber = ({
     setLoading(true);
     try {
       const [lawsuitRes, loanRes] = await Promise.all([
-        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL}${dataDefualt.id}`, {
+        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefualt.id}`, {
           HEADERS_EXPORT,
         }),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {

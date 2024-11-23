@@ -20,15 +20,14 @@ import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 
 import {
   HEADERS_EXPORT,
-  GET_JOB_IN_PROGRESS,
   baseUrl,
   PUT_STATUS,
-  PUT_LAWSUIT_DETAIL,
-  GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_LIST,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
+import { NOTICE } from "../../../utils/constant/StatusConstant";
+import dayjs from "dayjs";
 
 const Main = () => {
   //set hook
@@ -90,7 +89,7 @@ const Main = () => {
     console.log("loadData AssignLawyers");
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
           HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
@@ -100,6 +99,7 @@ const Main = () => {
               ...item,
               key: i++,
             }));
+
             filterDataNotAssign(newData);
             console.log("resQuery", resQuery.data);
             setLoading(false);
@@ -119,13 +119,111 @@ const Main = () => {
     }
   };
 
+  //fillter สัญญาตามบริษัท
+  // const filterDataWithMoreThanTwoEnglishLetters = (dataArr) => {
+  //   // ฟังก์ชันเช็คว่าในค่ามีภาษาอังกฤษมากกว่า 2 ตัว
+  //   const hasMoreThanTwoEnglishLetters = (value) => {
+  //     const englishLetters = value.match(/[a-zA-Z]/g);
+  //     return englishLetters && englishLetters.length >= 2;
+  //   };
+
+  //   if (!Array.isArray(dataArr)) {
+  //     console.error("dataArr is not an array or is undefined");
+  //     return [];
+  //   }
+
+  //   // กรองข้อมูลที่มีภาษาอังกฤษมากกว่า 2 ตัวในฟิลด์ที่ต้องการ
+  //   return dataArr.filter(
+  //     (item) => item.CONTNO && hasMoreThanTwoEnglishLetters(item.CONTNO)
+  //   );
+  // };
+
+  // const filterDataWithMoreThanOneEnglishLetters = (dataArr) => {
+  //   // ฟังก์ชันเช็คว่าในค่ามีภาษาอังกฤษมากกว่า 2 ตัว
+  //   const hasMoreThanTwoEnglishLetters = (value) => {
+  //     const englishLetters = value.match(/[a-zA-Z]/g);
+  //     return englishLetters && englishLetters.length < 2;
+  //   };
+
+  //   const isOnlyNumbers = (value) => {
+  //     return /^\d+$/.test(value); // ใช้ RegEx เพื่อตรวจสอบว่าเป็นตัวเลขทั้งหมด
+  //   };
+
+  //   if (!Array.isArray(dataArr)) {
+  //     console.error("dataArr is not an array or is undefined");
+  //     return [];
+  //   }
+
+  //   // กรองข้อมูลที่มีภาษาอังกฤษมากกว่า 2 ตัวในฟิลด์ที่ต้องการ
+  //   return dataArr.filter(
+  //     (item) =>
+  //       isOnlyNumbers(item.CONTNO.replace(/-/g, "")) ||
+  //       hasMoreThanTwoEnglishLetters(item.CONTNO)
+  //   );
+  // };
+
+  // const filterDataNotAssign = (value) => {
+  //   if (companyId === "3") {
+  //     const filteredData = filterDataWithMoreThanTwoEnglishLetters(value);
+  //     console.log("filteredData3", filteredData);
+  //     setArrayTable(filteredData);
+
+  //     setDataArr(filteredData);
+  //     setTableLength(filteredData.length);
+  //   } else {
+  //     const filteredData = filterDataWithMoreThanOneEnglishLetters(value);
+  //     console.log("filteredData12", filteredData);
+
+  //     setArrayTable(filteredData);
+  //     setDataArr(filteredData);
+  //     setTableLength(filteredData.length);
+  //   }
+  // };
+
   const filterDataNotAssign = (value) => {
-    const newData = value.filter((item) => item.MAIN_STATUS_ID !== null);
-    setArrayTable(newData);
-    setDataArr(newData);
-    setTableLength(newData.length);
+    function containsNumber(str) {
+      return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+    }
+
+    function isEnglishOnly(str) {
+      return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+    }
+
+    let filteredData;
+
+    if (companyId === "3") {
+      filteredData = value.filter((item) => {
+        // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+        if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item;
+        } else {
+          return false;
+        }
+      });
+
+      console.log("filteredData3", filteredData);
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+    } else {
+      filteredData = value.filter((item) => {
+        const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+        console.log("test12", test);
+
+        // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+        if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item; // เก็บ item นี้ไว้
+        } else {
+          return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+        }
+      });
+
+      console.log("filteredData3", filteredData);
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
+    }
   };
-  console.log(dataArr);
 
   const insertDataOne = async (id, idLawSuit) => {
     setLoading(true);
@@ -196,7 +294,9 @@ const Main = () => {
         LAW_TYPE_ID: ownData[0]?.LAW_TYPE_ID,
         MEMO: null,
         PROCESS_ID: ownData[0]?.PROCESS_ID,
+        DATE: dayjs(ownData[0]?.DATE).format("YYYY-MM-DD"),
       };
+
       // Return อัพเดท array
       return [...updatedData, newItem];
     });
@@ -321,6 +421,12 @@ const Main = () => {
           {record.CONTNO ? record.CONTNO : null}
         </Link>
       ),
+      sorter: (a, b) => {
+        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+        return dayjs(a.updated_date).isBefore(dayjs(b.updated_date)) ? -1 : 1;
+      },
+
+      defaultSortOrder: "ascend",
     },
     {
       title: "ชื่อ-นามสกุล",
