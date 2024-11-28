@@ -11,7 +11,6 @@ import {
   Spin,
   Radio,
   Checkbox,
-  Space,
   Tooltip,
 } from "antd";
 import {
@@ -19,6 +18,7 @@ import {
   GET_LAWSUIT_DETAIL_BY_ID,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
+  POST_CALCULATE_LAND,
   POST_STATUS,
   PUT_INVESTIGATE,
   PUT_LAWSUIT_DETAIL,
@@ -27,8 +27,9 @@ import axios from "axios";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import CeckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import LoadLawyers from "../../../../hook/LoadLawyers";
-import GeoThailand from "../../../../hook/GeoThailand";
 import { ENFORCEMENT } from "../../../../utils/constant/StatusConstant";
+import GeoLand from "../../../../hook/GeoLand";
+import { PlusCircleOutlined } from "@ant-design/icons";
 
 const InvestigateAssetsDetail = ({
   open,
@@ -43,21 +44,12 @@ const InvestigateAssetsDetail = ({
   const [currencyFormatNoPoint, currencyFormatComma] = CurrencyFormat();
   const [assistantOption, setAssistantOption] = useState();
   const [lawyersList, setLoadingData] = LoadLawyers();
-  const [
-    setLoadingDataProvice,
-    setLoadingDataDistrict,
-    setLoadingDataSubDistrict,
-    setLoadingDataZipcode,
-    dataProvice,
-    dataDistrict,
-    dataSubDistrict,
-    dataZipcode,
-    setDataSearch,
-  ] = GeoThailand();
+  const [setLoadingDataProvice, dataProvice, dataDistrict, setDataSearch] =
+    GeoLand();
   const { TextArea } = Input;
+  const [isModal, setIsModal] = useState(false);
   const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
   const [loading, setLoading] = useState();
-  const [isModal, setIsModal] = useState(false);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const [dataType, setDataType] = useState(null);
   const [checkLenght, setCheckLenght] = useState([]);
@@ -67,28 +59,41 @@ const InvestigateAssetsDetail = ({
   const [investigateDateValue, setInvestigateDateValue] = useState(null);
   const [averageStatus, setAverageStatus] = useState(null);
   const [sequestrateStatus, setSequestrateStatus] = useState(null);
+  const [mortgageStatus, setMortgageStatus] = useState(null);
   const [dataProviceList, setDataProviceList] = useState(null);
   const [dataDistrictList, setDataDistrictList] = useState(null);
-  const [dataSubDistrictList, setDataSubDistrictList] = useState(null);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
+  const [assetTypeSelect, setAssetTypeSelect] = useState(false);
+  const [resultData, setResultData] = useState({
+    pvcode: null,
+    amcode: null,
+    landNo: null,
+  });
+  const [landPrice, setLandPrice] = useState(null);
+  const [checked, setChecked] = useState(false);
+  const [checkedGuarantors, setCheckedGuarantors] = useState({});
+
   const optionsInvestigate = [
     { label: "ไม่เจอทรัพย์", value: 0 },
     { label: "เจอทรัพย์", value: 1 },
+  ];
+  const optionsMortgageStatus = [
+    { label: "ไม่ติดภาระ", value: 0 },
+    { label: "ติดภาระ", value: 1 },
   ];
   const optionsSequestrateStatus = [
     { label: "ไม่ติดอายัด", value: 0 },
     { label: "ติดอายัด", value: 1 },
   ];
   const optionsAssetsType = [
-    { label: "ฉโนดที่ดิน", value: 1 },
-    { label: "น.ส.3ก.", value: 2 },
+    { label: "น.ส.4 จ", value: 1 },
+    { label: "น.ส.3 ก.", value: 2 },
   ];
 
   const optionsAverageStatus = [
     { label: "ไม่พอเฉลี่ย", value: 0 },
     { label: "พอเฉลี่ย", value: 1 },
   ];
-  console.log("data--->", dataDefualt);
 
   useEffect(() => {
     setIsModal(open);
@@ -101,7 +106,6 @@ const InvestigateAssetsDetail = ({
       } else {
         setDataType("หลังฟ้อง");
       }
-      setLoadingDataProvice(true);
     }
   }, [isModal]);
 
@@ -115,21 +119,22 @@ const InvestigateAssetsDetail = ({
     if (dataDistrict) {
       setOptionDistrict();
     }
-    if (dataSubDistrict) {
-      setOptionSubDistrict();
-    }
-  }, [lawyersList, dataProvice, dataDistrict, dataSubDistrict]);
+  }, [lawyersList, dataProvice, dataDistrict]);
 
   const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
-    if (COMPANY === "1") {
+    if (COMPANY === 1) {
       companySelectAssistant = lawyersList.filter(
-        (item) => item.COMPANY_ID === 1 && item.ROLE_ID === 4
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelectAssistant = lawyersList.filter(
-        (item) => item.COMPANY_ID === 1 && item.ROLE_ID === 4
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -140,9 +145,11 @@ const InvestigateAssetsDetail = ({
   };
 
   const setOptionProvice = () => {
+    console.log(dataProvice);
+
     const optionsProvice = dataProvice.map((item) => ({
-      value: item.provinceId,
-      label: item.provinceName,
+      value: item.pvcode,
+      label: item.pvnamethai,
     }));
     setDataProviceList(optionsProvice);
   };
@@ -150,19 +157,10 @@ const InvestigateAssetsDetail = ({
   const setOptionDistrict = () => {
     console.log("dataDistrict", dataDistrict);
     const optionsDistrict = dataDistrict.map((item) => ({
-      value: item.districtId,
-      label: item.districtName,
+      value: item.amcode,
+      label: item.amnamethai,
     }));
     setDataDistrictList(optionsDistrict);
-  };
-
-  const setOptionSubDistrict = () => {
-    console.log("dataDistrict", dataSubDistrict);
-    const optionsSubDistrict = dataSubDistrict.map((item) => ({
-      value: item.subdistrictId,
-      label: item.subdistrictName,
-    }));
-    setDataSubDistrictList(optionsSubDistrict);
   };
 
   const mergedArrow = useMemo(() => {
@@ -263,25 +261,27 @@ const InvestigateAssetsDetail = ({
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
-        await axios
-          .post(baseUrl + POST_STATUS, postStatus, {
-            HEADERS_EXPORT,
-          })
-          .then(async (res) => {
-            if (res.status === 201) {
-              console.log("resQuery", res);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
+        if (investigate === "after") {
+          await axios
+            .post(baseUrl + POST_STATUS, postStatus, {
+              HEADERS_EXPORT,
+            })
+            .then(async (res) => {
+              if (res.status === 201) {
+                console.log("resQuery", res);
+              } else {
+                message.error("ไม่สามารถส่งข้อมูลได้");
+                console.log("ไม่สามารถส่งข้อมูลได้");
+                setLoading(false);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              if (err.status > 400) {
+                message.error("ไม่สามารถส่งข้อมูลได้");
+              }
+            });
+        }
       }
       console.log("putDataLawsuit", putDataLawsuit);
       await axios
@@ -357,10 +357,10 @@ const InvestigateAssetsDetail = ({
         property_type_id: values.assetPropotyType,
         investigator_user_id: values.investigatorAsset,
         deed_number: values.deed,
-        sub_district: values.assetSubDistrict,
+        sub_district: null,
         district: values.assetDistrict,
         province: values.assetProvince,
-        zipcode: dataZipcode ? dataZipcode[0]?.zipCode : null,
+        zipcode: null,
         mortgagee: values?.mortgagee ? values?.mortgagee : null,
         sequestrate_status:
           values?.sequestrateStatus === 1
@@ -387,16 +387,17 @@ const InvestigateAssetsDetail = ({
         sale_announcement_mark: null,
         investigate_property_type_id: investigate === "before" ? 1 : 2,
       };
-
-      postStatus = {
-        MAIN_STATUS_ID: ENFORCEMENT,
-        LOAN_ID: dataDefualt.id,
-        USER_ID: dataDefualt.LAWYER_ID,
-        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-        MEMO: values.memo,
-        DATE: investigateDateValue,
-      };
+      if (investigate === "after") {
+        postStatus = {
+          MAIN_STATUS_ID: ENFORCEMENT,
+          LOAN_ID: dataDefualt.id,
+          USER_ID: dataDefualt.LAWYER_ID,
+          LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+          LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+          MEMO: values.memo,
+          DATE: investigateDateValue,
+        };
+      }
     }
     console.log("postStatus---->", postStatus);
 
@@ -428,6 +429,7 @@ const InvestigateAssetsDetail = ({
 
   const onChangeInputDeed = (value) => {
     console.log(value);
+    setResultData({ ...resultData, landNo: value });
   };
 
   const onChangeInputpossessorAsset = (value) => {
@@ -441,78 +443,60 @@ const InvestigateAssetsDetail = ({
     }
   }
 
-  const onChangeGovermentOfficer = (checkedValues) => {
-    console.log("checked = ", checkedValues);
-    setGovernmentOfficerLength(checkedValues.length);
+  const handleCheckCustomer = (e) => {
+    console.log("checked = ", e.target.value);
+    setChecked(e.target.checked);
+  };
+
+  const handleChangeGuarantor = (guarantorId, e) => {
+    setCheckedGuarantors((prev) => ({
+      ...prev,
+      [guarantorId]: e.target.checked,
+    }));
   };
 
   const handleCheckBoxGroupGoverment = () => {
     if (checkLenght) {
       return (
         <>
-          <Checkbox.Group onChange={onChangeGovermentOfficer}>
-            <Space direction="vertical" style={{ marginTop: "5px" }}>
-              <Checkbox value={governmentOfficers?.id}>
-                {governmentOfficers
-                  ? `${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`
-                  : "-"}
-              </Checkbox>
-              {checkLenght > 0 ? (
-                <Checkbox value={governmentOfficers?.guarantors[0]?.id}>
-                  {governmentOfficers?.guarantors?.length > 0
-                    ? `${governmentOfficers?.guarantors[0]?.SNAM} ${governmentOfficers?.guarantors[0]?.NAME1} ${governmentOfficers?.guarantors[0]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 2"}
-                </Checkbox>
-              ) : null}
-              {checkLenght > 1 ? (
-                <Checkbox value={governmentOfficers?.guarantors[1]?.id}>
-                  {governmentOfficers?.guarantors?.length > 1
-                    ? `${governmentOfficers?.guarantors[1]?.SNAM} ${governmentOfficers?.guarantors[1]?.NAME1} ${governmentOfficers?.guarantors[1]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 3"}
-                </Checkbox>
-              ) : null}
-              {checkLenght > 2 ? (
-                <Checkbox value={governmentOfficers?.guarantors[2]?.id}>
-                  {governmentOfficers?.guarantors?.length > 2
-                    ? `${governmentOfficers?.guarantors[2]?.SNAM} ${governmentOfficers?.guarantors[2]?.NAME1} ${governmentOfficers?.guarantors[2]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 4"}
-                </Checkbox>
-              ) : null}
-            </Space>
-            <Space direction="vertical" style={{ marginTop: "5px" }}>
-              {checkLenght > 3 ? (
-                <Checkbox value={governmentOfficers?.guarantors[3]?.id}>
-                  {governmentOfficers?.guarantors?.length > 3
-                    ? `${governmentOfficers?.guarantors[3]?.SNAM} ${governmentOfficers?.guarantors[3]?.NAME1} ${governmentOfficers?.guarantors[3]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 5"}
-                </Checkbox>
-              ) : null}
-              {checkLenght > 4 ? (
-                <Checkbox
-                  value={governmentOfficers?.guarantors[4]?.id}
-                  disabled="false"
-                >
-                  {governmentOfficers?.guarantors?.length > 4
-                    ? `${governmentOfficers?.guarantors[4]?.SNAM} ${governmentOfficers?.guarantors[4]?.NAME1} ${governmentOfficers?.guarantors[4]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 6"}
-                </Checkbox>
-              ) : null}
-              {checkLenght > 5 ? (
-                <Checkbox value={governmentOfficers?.guarantors[5]?.id}>
-                  {governmentOfficers?.guarantors?.length > 5
-                    ? `${governmentOfficers?.guarantors[5]?.SNAM} ${governmentOfficers?.guarantors[5]?.NAME1} ${governmentOfficers?.guarantors[5]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 7"}
-                </Checkbox>
-              ) : null}
-              {checkLenght > 6 ? (
-                <Checkbox value={governmentOfficers?.guarantors[6]?.id}>
-                  {governmentOfficers?.guarantors?.length > 6
-                    ? `${governmentOfficers?.guarantors[6]?.SNAM} ${governmentOfficers?.guarantors[6]?.NAME1} ${governmentOfficers?.guarantors[6]?.NAME2}`
-                    : "ไม่มีจำเลยที่ 8"}
-                </Checkbox>
-              ) : null}
-            </Space>
-          </Checkbox.Group>
+          <Checkbox
+            value={governmentOfficers.id}
+            onChange={handleCheckCustomer}
+          >
+            {governmentOfficers
+              ? `${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`
+              : "-"}
+          </Checkbox>
+          {checked ? (
+            <Input
+              placeholder="กรอกข้อมูลอาชีพ"
+              style={{ marginLeft: "20px" }}
+              size="small"
+            />
+          ) : null}
+
+          {/* แสดง checkbox สำหรับ guarantors */}
+          {governmentOfficers?.guarantors?.length > 0
+            ? governmentOfficers.guarantors.map((guarantor, index) => (
+                <div key={index}>
+                  <Checkbox
+                    value={guarantor.id}
+                    onChange={(e) => handleChangeGuarantor(guarantor.id, e)}
+                  >
+                    {`${guarantor?.SNAM} ${guarantor?.NAME1} ${guarantor?.NAME2}`}
+                  </Checkbox>
+
+                  {/* แสดง Input ถ้า guarantor checkbox ถูกเลือก */}
+                  {checkedGuarantors[guarantor.id] ? (
+                    <Input
+                      placeholder="กรอกข้อมูลอาชีพ"
+                      style={{ marginLeft: "20px" }}
+                      size="small"
+                    />
+                  ) : null}
+                </div>
+              ))
+            : null}
         </>
       );
     } else {
@@ -523,6 +507,7 @@ const InvestigateAssetsDetail = ({
   const onChangeInvestiGateResult = ({ target: { value } }) => {
     console.log("radio2 checked", value);
     setRadioStatus(value);
+    setLoadingDataProvice(true);
   };
 
   const onChangeEstimatedPrice = (value) => {
@@ -551,6 +536,11 @@ const InvestigateAssetsDetail = ({
 
   const onChangeSelectAssetPropotyType = (value) => {
     console.log(`selected ${value}`);
+    if (value === 1) {
+      setAssetTypeSelect(true);
+    } else {
+      setAssetTypeSelect(false);
+    }
   };
 
   const onChangeInputOwnerAssetLaw = (value) => {
@@ -567,19 +557,25 @@ const InvestigateAssetsDetail = ({
   const onChangeMortgageBalance = (value) => {
     console.log(value);
     let inputValue = value;
+
     isNotNumber(inputValue.replace(/,/g, ""));
     if (inputValue.length >= 4) {
       var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
       let intValue = parseInt(rawValue);
       let formattedValue =
         intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
+      let setAverage = parseInt(landPrice.replace(/,/g, "")) - intValue;
+      console.log("serAverage", setAverage);
       form.setFieldsValue({
         mortgageBalance: formattedValue,
+        averageStatus: setAverage > 1 ? 1 : 0,
       });
       console.log("formattedValue", formattedValue);
     } else {
+      let setAverage = parseInt(landPrice.replace(/,/g, "")) - value;
       form.setFieldsValue({
         mortgageBalance: inputValue,
+        averageStatus: setAverage > 1 ? 1 : 0,
       });
     }
   };
@@ -589,6 +585,17 @@ const InvestigateAssetsDetail = ({
     setAverageStatus(value);
   };
 
+  const onChangeMortgageStatus = ({ target: { value } }) => {
+    console.log("radio Mortgage checked", value);
+    setMortgageStatus(value);
+    if (value === 0) {
+      form.setFieldsValue({
+        mortgageBalance: null,
+        averageStatus: 1,
+      });
+    }
+  };
+
   const onChangeSequestrateStatus = ({ target: { value } }) => {
     console.log("radio2 checked", value);
     setSequestrateStatus(value);
@@ -596,29 +603,313 @@ const InvestigateAssetsDetail = ({
 
   const onChangeSelectProviceAsset = (value) => {
     console.log(`selected provice ${value}`);
-    setDataSearch({ provice: value });
+    setDataSearch(value);
+    setResultData({ ...resultData, pvcode: value });
     form.setFieldsValue({
       assetDistrict: null,
-      assetSubDistrict: null,
-      assetZipCode: null,
     });
   };
 
   const onChangeSelectDistrictAsset = (value) => {
     console.log(`selected District ${value}`);
-    setDataSearch({ District: value });
-    form.setFieldsValue({
-      assetSubDistrict: null,
-      assetZipCode: null,
-    });
+    setResultData({ ...resultData, amcode: value });
   };
 
-  const onChangeSelectSubDistrictAsset = (value) => {
-    console.log(`selected subDistrict${value}`);
-    setDataSearch({ subDistrict: value });
-    form.setFieldsValue({
-      assetZipCode: null,
-    });
+  const checkLandPrice = async () => {
+    var result = {
+      pvcode: resultData.pvcode,
+      amcode: resultData.amcode,
+      landNo: resultData.landNo,
+    };
+    if (resultData.landNo && resultData.pvcode && resultData.amcode) {
+      console.log("resul---->", resultData);
+      setLoading(true);
+      try {
+        await axios
+          .post(POST_CALCULATE_LAND, result, {
+            headers: HEADERS_EXPORT,
+          })
+          .then(async (resQuery) => {
+            if (resQuery.status === 200) {
+              console.log("loanRes", resQuery.data);
+              form.setFieldsValue({
+                estimatedPrice: resQuery.data.result[0].landprice,
+              });
+              setLandPrice(resQuery.data.result[0].landprice);
+            } else {
+              message.error("ไม่พบข้อมูล");
+            }
+          })
+          .catch((err) => console.log("ไม่มีข้อมูล", err));
+      } catch (error) {
+        console.error("Error loading data:", error);
+        message.error(`ไม่พบข้อมูล: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      message.error(
+        "กรอกข้อมูลไม่ครบโปรดตรวจสอบอีกที เลขโฉนด, ประเภททรัพย์, จังหวัด, อำเภอ"
+      );
+    }
+  };
+
+  const renderTabs = () => {
+    return (
+      <>
+        {radioStatus === 1 ? (
+          <>
+            <Form.Item
+              label="ชื่อเจ้าของทรัพย์"
+              name="possessorAsset"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาระบุเจ้าของทรัพย์ !",
+                },
+              ]}
+            >
+              <Input
+                onChange={(e) => onChangeInputpossessorAsset(e.target.value)}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="เลขโฉนด"
+              name="deed"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาพิมพ์เลขโฉนด !",
+                },
+              ]}
+            >
+              <Input
+                type="number"
+                onChange={(e) => onChangeInputDeed(e.target.value)}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="จังหวัด"
+              name="assetProvince"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาระบุจังหวัด !",
+                },
+              ]}
+            >
+              <Select
+                placeholder="เลือกจังหวัด"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectProviceAsset(value)}
+                options={dataProviceList}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="อำเภอ"
+              name="assetDistrict"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาระบุอำเภอ !",
+                },
+              ]}
+            >
+              <Select
+                placeholder="เลือกอำเภอ"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectDistrictAsset(value)}
+                options={dataDistrictList}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ประเภททรัพย์"
+              name="assetPropotyType"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาเลือกประเภททรัพย์ !",
+                },
+              ]}
+            >
+              <Select
+                placeholder="ประเภททรัพย์"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectAssetPropotyType(value)}
+                options={optionsAssetsType}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+            {assetTypeSelect ? (
+              <div style={{ textAlign: "center", marginBottom: "10px" }}>
+                <Button style={{ color: "blue" }} onClick={checkLandPrice}>
+                  เช็คราคาประเมิน
+                </Button>
+              </div>
+            ) : null}
+            <Form.Item
+              label="ราคาประเมิน"
+              name="estimatedPrice"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่ค่าราคาประเมิน !",
+                },
+              ]}
+            >
+              <Input
+                name="estimatedPrice"
+                onChange={(e) => onChangeEstimatedPrice(e.target.value)}
+              />
+            </Form.Item>
+            {investigate === "after" ? (
+              <>
+                <Form.Item
+                  label="ผู้ถือกรรมสิทธิ์"
+                  name="ownerAsset"
+                  rules={[
+                    {
+                      required: true,
+                      message: "ผู้ถือกรรมสิทธิ์ !",
+                    },
+                  ]}
+                >
+                  <Input
+                    onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="ติดภาระจำนอง"
+                  name="mortgageStatus"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรุณาเลือก !",
+                    },
+                  ]}
+                >
+                  <Radio.Group
+                    label="ติดภาระจำนอง"
+                    name="mortgageStatus"
+                    options={optionsMortgageStatus}
+                    onChange={onChangeMortgageStatus}
+                    value={mortgageStatus}
+                  />
+                </Form.Item>
+                {mortgageStatus === 1 ? (
+                  <>
+                    <Form.Item
+                      label="เจ้าหนี้จำนอง"
+                      name="mortgagee"
+                      rules={[
+                        {
+                          required: true,
+                          message: "กรณากรอกข้อมูล !",
+                        },
+                      ]}
+                    >
+                      <Input
+                        onChange={(e) => onChangeInputOwner(e.target.value)}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="ยอดหนี้จำนอง"
+                      name="mortgageBalance"
+                      rules={[
+                        {
+                          required: true,
+                          message: "กรณากรอกข้อมูล !",
+                        },
+                      ]}
+                    >
+                      <Input
+                        name="estimatedPrice"
+                        onChange={(e) =>
+                          onChangeMortgageBalance(e.target.value)
+                        }
+                      />
+                    </Form.Item>
+                  </>
+                ) : null}
+
+                <Form.Item
+                  label="ติดอายัด"
+                  name="sequestrateStatus"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรุณาเลือก !",
+                    },
+                  ]}
+                >
+                  <Radio.Group
+                    label="ผลการติดอายัด"
+                    name="sequestrateStatus"
+                    options={optionsSequestrateStatus}
+                    onChange={onChangeSequestrateStatus}
+                    value={sequestrateStatus}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="เจ้าหนี้คำพิพากษา"
+                  name="preferenceCreditor"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรณากรอกข้อมูล !",
+                    },
+                  ]}
+                >
+                  <Input
+                    onChange={(e) =>
+                      onChangeInputPreferenceCreditor(e.target.value)
+                    }
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="พอเฉลี่ยหนี้"
+                  name="averageStatus"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรุณาเลือก !",
+                    },
+                  ]}
+                >
+                  <Radio.Group
+                    label="พอเฉลี่ยหนี้"
+                    name="averageStatus"
+                    options={optionsAverageStatus}
+                    onChange={onChangeAverageStatus}
+                    value={averageStatus}
+                    disabled
+                  />
+                </Form.Item>
+              </>
+            ) : null}
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const dataResult = () => {
+    return (
+      <>
+        {radioStatus === 1 ? (
+          <Button>
+            <PlusCircleOutlined />
+          </Button>
+        ) : null}
+      </>
+    );
   };
 
   const formDataSet = () => {
@@ -683,222 +974,31 @@ const InvestigateAssetsDetail = ({
             onChange={onChangeInvestiGateResult}
             value={radioStatus}
           />
+          {radioStatus === 1 ? (
+            <Button>
+              <PlusCircleOutlined />
+            </Button>
+          ) : null}
         </Form.Item>
-        {radioStatus === 1 ? (
-          <>
-            <Form.Item
-              label="ชื่อเจ้าของทรัพย์"
-              name="possessorAsset"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุเจ้าของทรัพย์ !",
-                },
-              ]}
-            >
-              <Input
-                onChange={(e) => onChangeInputpossessorAsset(e.target.value)}
-              />
-            </Form.Item>
 
-            <Form.Item
-              label="เลขโฉนด"
-              name="deed"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาพิมพ์เลขโฉนด !",
-                },
-              ]}
-            >
-              <Input
-                type="number"
-                onChange={(e) => onChangeInputDeed(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item
-              label="ประเภททรัพย์"
-              name="assetPropotyType"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาเลือกประเภททรัพย์ !",
-                },
-              ]}
-            >
-              <Select
-                placeholder="ประเภททรัพย์"
-                optionFilterProp="value"
-                onChange={(value) => onChangeSelectAssetPropotyType(value)}
-                options={optionsAssetsType}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="ราคาประเมิน"
-              name="estimatedPrice"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาใส่ค่าราคาประเมิน !",
-                },
-              ]}
-            >
-              <Input
-                name="estimatedPrice"
-                onChange={(e) => onChangeEstimatedPrice(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item
-              label="จังหวัด"
-              name="assetProvince"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุจังหวัด !",
-                },
-              ]}
-            >
-              <Select
-                placeholder="เลือกจังหวัด"
-                optionFilterProp="value"
-                onChange={(value) => onChangeSelectProviceAsset(value)}
-                options={dataProviceList}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-            <Form.Item
-              label="อำเภอ"
-              name="assetDistrict"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุอำเภอ !",
-                },
-              ]}
-            >
-              <Select
-                placeholder="เลือกอำเภอ"
-                optionFilterProp="value"
-                onChange={(value) => onChangeSelectDistrictAsset(value)}
-                options={dataDistrictList}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="ตำบล"
-              name="assetSubDistrict"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาระบุตำบล !",
-                },
-              ]}
-            >
-              <Select
-                placeholder="เลือกตำบล"
-                optionFilterProp="value"
-                onChange={(value) => onChangeSelectSubDistrictAsset(value)}
-                options={dataSubDistrictList}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-
-            <Form.Item label="รหัสไปษณีย์" name="assetZipCode">
-              <p>{dataZipcode ? dataZipcode[0]?.zipCode : "เลือกตำบลก่อน"}</p>
-            </Form.Item>
-            {investigate === "after" ? (
-              <>
-                <Form.Item
-                  label="ผู้ถือกรรมสิทธิ์"
-                  name="ownerAsset"
-                  rules={[
-                    {
-                      required: true,
-                      message: "ผู้ถือกรรมสิทธิ์ !",
-                    },
-                  ]}
-                >
-                  <Input
-                    onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)}
-                  />
-                </Form.Item>
-                <Form.Item label="ผู้รับจำนอง/ไม่มีภาระ" name="mortgagee">
-                  <Input onChange={(e) => onChangeInputOwner(e.target.value)} />
-                </Form.Item>
-                <Form.Item
-                  label="ติดอายัด"
-                  name="sequestrateStatus"
-                  rules={[
-                    {
-                      required: true,
-                      message: "กรุณาเลือก !",
-                    },
-                  ]}
-                >
-                  <Radio.Group
-                    label="ผลการติดอายัด"
-                    name="sequestrateStatus"
-                    options={optionsSequestrateStatus}
-                    onChange={onChangeSequestrateStatus}
-                    value={sequestrateStatus}
-                  />
-                </Form.Item>
-                <Form.Item label="เจ้าหนี้บุริมสิทธ์" name="preferenceCreditor">
-                  <Input
-                    onChange={(e) =>
-                      onChangeInputPreferenceCreditor(e.target.value)
-                    }
-                  />
-                </Form.Item>
-                <Form.Item label="ยอดหนี้จำนอง" name="mortgageBalance">
-                  <Input
-                    name="estimatedPrice"
-                    onChange={(e) => onChangeMortgageBalance(e.target.value)}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="พอเฉลี่ยหนี้"
-                  name="averageStatus"
-                  rules={[
-                    {
-                      required: true,
-                      message: "กรุณาเลือก !",
-                    },
-                  ]}
-                >
-                  <Radio.Group
-                    label="พอเฉลี่ยหนี้"
-                    name="averageStatus"
-                    options={optionsAverageStatus}
-                    onChange={onChangeAverageStatus}
-                    value={averageStatus}
-                  />
-                </Form.Item>
-              </>
-            ) : null}
-            <Form.Item
-              label="เลือกผู้สืบทรัพย์"
-              name="investigatorAsset"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาเลือกผู้สืบทรัพย์ !",
-                },
-              ]}
-            >
-              <Select
-                placeholder="เลือกผู้สืบทรัพย์"
-                optionFilterProp="value"
-                onChange={(value) => onChangeSelectInvestigatorAsset(value)}
-                options={assistantOption}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-          </>
-        ) : null}
+        <Form.Item
+          label="เลือกผู้สืบทรัพย์"
+          name="investigatorAsset"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาเลือกผู้สืบทรัพย์ !",
+            },
+          ]}
+        >
+          <Select
+            placeholder="เลือกผู้สืบทรัพย์"
+            optionFilterProp="value"
+            onChange={(value) => onChangeSelectInvestigatorAsset(value)}
+            options={assistantOption}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

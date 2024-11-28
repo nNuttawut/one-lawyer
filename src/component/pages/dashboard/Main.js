@@ -203,7 +203,7 @@ const Main = () => {
                 percent={
                   !dataPercent.awaitingJudgement
                     ? 0
-                    : dataPercent.awaitingJudgement
+                    : dataPercent.awaitingJudgement.toFixed(2)
                 }
                 percentPosition={{
                   align: "center",

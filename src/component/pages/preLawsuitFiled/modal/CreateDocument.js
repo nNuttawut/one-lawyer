@@ -452,7 +452,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               : "-"}
           </p>
         </Form.Item>
-        <Form.Item label="ค่าฤชา" name="fee">
+        <Form.Item label="ค่าธรรมเนียมศาล" name="fee">
           <p>
             {dataForm.trackingFee
               ? currencyFormatPoint(dataForm.fee) + " บาท"

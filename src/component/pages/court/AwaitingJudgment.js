@@ -53,6 +53,7 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const companyId = localStorage.getItem("COMPANY_ID");
   const [searchEdit, setSearchEdit] = useState(null);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -69,6 +70,16 @@ const Main = () => {
       pointAtCenter: true,
     };
   }, [arrow]);
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
 
   const loadData = async (data) => {
     setLoading(true);
@@ -375,7 +386,10 @@ const Main = () => {
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
+                rowKey="key"
               />
             </Col>
           </Row>

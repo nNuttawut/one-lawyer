@@ -25,9 +25,9 @@ function App() {
     return (
       <>
         <Provider store={store}>
-          <Router>
+          <HashRouter>
             <LogIn />
-          </Router>
+          </HashRouter>
         </Provider>
       </>
     );
@@ -65,9 +65,9 @@ function App() {
     return (
       <>
         <Provider store={store}>
-          <Router>
+          <HashRouter>
             <Main />
-          </Router>
+          </HashRouter>
         </Provider>
       </>
     );

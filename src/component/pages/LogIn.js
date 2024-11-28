@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 import logo from "../../assets/images/logoLogin.png";
 import axios from "axios";
-import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../API/apiUrls";
+import { baseUrl, LOG_IN, HEADERS_LOGIN } from "../API/apiUrls";
 
 export default function LogIn() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function LogIn() {
     try {
       await axios
         .post(baseUrl + LOG_IN, postData, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {

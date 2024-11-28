@@ -56,6 +56,7 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [selectedOption, setSelectedOption] = useState(1);
+  const [dataSearchByDate, setDataSearchByDate] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -94,6 +95,7 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
+          setDataSearchByDate(newData);
           setLoading(false);
         }
       } else {
@@ -208,10 +210,57 @@ const Main = () => {
 
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
-    console.log("dataArr--->", dataArr);
+
+    let newData;
+    if (selectedOption === 1) {
+      newData = dataSearchByDate.filter(
+        (item) => item.PROCESS_ID === STATUS_PROCESS_PROCESS
+      );
+    } else if (selectedOption === 2) {
+      newData = dataSearchByDate.filter(
+        (item) => item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL
+      );
+    } else if (selectedOption === 3) {
+      newData = dataSearchByDate.filter(
+        (item) => item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL
+      );
+    }
+
+    function containsNumber(str) {
+      return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+    }
+
+    function isEnglishOnly(str) {
+      return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+    }
+
+    let filteredData;
+
+    if (userCompany === "3") {
+      filteredData = newData.filter((item) => {
+        // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+        if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item;
+        } else {
+          return false;
+        }
+      });
+    } else {
+      filteredData = newData.filter((item) => {
+        const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+        console.log("test12", test);
+
+        // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+        if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          return item; // เก็บ item นี้ไว้
+        } else {
+          return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+        }
+      });
+    }
 
     if (startDate && endDate) {
-      const selectSearch = dataArr.filter((item) => {
+      const selectSearch = filteredData.filter((item) => {
         const date = dayjs(item.DATE, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
@@ -223,7 +272,7 @@ const Main = () => {
       });
       setArrayTable(selectSearch);
     } else {
-      setArrayTable(dataArr);
+      setArrayTable(filteredData);
     }
   };
 

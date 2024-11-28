@@ -18,6 +18,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
+  GET_JOB_IN_PROGRESS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -31,6 +32,7 @@ import InvestigateAssetsDetail from "./modal/InvestigateAssetsDetail";
 import dayjs from "dayjs";
 
 const Main = () => {
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
   const [convertDateThai] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [isModal, setIsModal] = useState(false);
@@ -45,6 +47,7 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const [isModalInvestigateAssetsDetail, setIsModalInvestigateAssetsDetail] =
     useState(false);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -56,7 +59,7 @@ const Main = () => {
 
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS, {
           HEADERS_EXPORT,
         })
         .then(async (res) => {
@@ -84,7 +87,9 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter((item) => item.MAIN_STATUS_ID < 4);
+      const newData = data.filter(
+        (item) => item.MAIN_STATUS_ID < 4 && item.LAWYER_ID
+      );
       console.log("newDataLawsuit 11", newData);
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -129,7 +134,16 @@ const Main = () => {
       setTableLength(0);
     }
   };
-  console.log(arrayTable);
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
 
   const search = (event) => {
     console.log("query--->", event.target.value);
@@ -191,12 +205,10 @@ const Main = () => {
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDataAsset = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    console.log(record.INVESTIGATE_BEFORE_STATUS);
+
     if (record.INVESTIGATE_BEFORE_STATUS === null) {
       return null;
     }
-
-    console.log(record);
 
     let color = record.INVESTIGATE_BEFORE_STATUS ? "green" : "red";
 
@@ -310,8 +322,15 @@ const Main = () => {
                       </Button>
                     </p>
                   ),
-                  rowExpandable: (record) => !record.INVESTIGATE_BEFORE_ID,
+                  rowExpandable: (record) =>
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "3" ||
+                    ROLE_ID === "4" ||
+                    ROLE_ID === "1",
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
+                rowKey="key"
               />
             </Col>
           </Row>

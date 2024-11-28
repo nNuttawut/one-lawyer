@@ -62,11 +62,13 @@ const Main = () => {
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
+    console.log("HEADERS_EXPORT", HEADERS_EXPORT);
+
     try {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {

@@ -26,6 +26,8 @@ import {
   POST_STATUS,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
+  GET_JUDGE_BY_ID,
+  GET_JUDGE_DEFENDANTS_BY_ID,
 } from "../../../API/apiUrls";
 import axios from "axios";
 
@@ -61,11 +63,14 @@ const EditAwaitingJudgement = ({
     dateAgreement: null,
   });
   const [defaultRadio, setDefaultRadio] = useState("normal");
-  const [currencyFormatComma] = CurrencyFormat();
   const [arrow, setArrow] = useState("Show");
   const [tabsKey, setTabsKey] = useState("1");
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
+  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
+    CurrencyFormat();
+  const [dataJudgement, setDataJudgement] = useState(null);
+  const [dataJudgeDefendants, setDataJudgeDefendants] = useState(null);
 
   useEffect(() => {
     setIsModal(open);
@@ -96,20 +101,67 @@ const EditAwaitingJudgement = ({
     setIsModal(false);
   };
 
+  useEffect(() => {
+    if (dataJudgement && dataJudgeDefendants) {
+      let judgeNumber1 = dataJudgeDefendants.filter(
+        (item) => item.judge_number === 1
+      );
+      let judgeNumber2 = dataJudgeDefendants.filter(
+        (item) => item.judge_number === 2
+      );
+
+      console.log("judgeNumber1", judgeNumber1);
+
+      form.setFieldsValue({
+        redNumber: dataJudgement?.red_case_number,
+        judgement1: currencyFormatNoPoint(dataJudgement?.judgement),
+        costUnless1: currencyFormatNoPoint(
+          judgeNumber1[0]?.cost_of_uselessness
+        ),
+        interestRate: dataJudgement?.interest_rate,
+        costPermonth1: currencyFormatNoPoint(
+          judgeNumber1[0]?.cost_of_useleseness_per_month
+        ),
+        costMonth1: judgeNumber1[0]?.cost_of_useleseness_month,
+        trackingFeeEnforce: currencyFormatNoPoint(dataJudgement?.tracking_fee),
+        lawyerFeeEnforce: currencyFormatNoPoint(dataJudgement?.attorney_fees),
+        judgementFile: dataJudgement?.judgement_filepath,
+        costUnless2: currencyFormatNoPoint(
+          judgeNumber2[0]?.cost_of_uselessness
+        ),
+        costPermonth2: currencyFormatNoPoint(
+          judgeNumber2[0]?.cost_of_useleseness_per_month
+        ),
+        costMonth2: judgeNumber2[0]?.cost_of_useleseness_month,
+      });
+    }
+  }, [dataJudgement, dataJudgeDefendants]);
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [worklogs, loanRes] = await Promise.all([
-        axios.get(
-          `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
-          {
+      const [worklogs, loanRes, judgement, judgeDefendants] = await Promise.all(
+        [
+          axios.get(
+            `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
+            {
+              HEADERS_EXPORT,
+            }
+          ),
+          axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
             HEADERS_EXPORT,
-          }
-        ),
-        axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
-        }),
-      ]);
+          }),
+          axios.get(`${baseUrl}${GET_JUDGE_BY_ID}${dataDefualt.LAWSUIT_ID}`, {
+            HEADERS_EXPORT,
+          }),
+          axios.get(
+            `${baseUrl}${GET_JUDGE_DEFENDANTS_BY_ID}${dataDefualt.LAWSUIT_ID}`,
+            {
+              HEADERS_EXPORT,
+            }
+          ),
+        ]
+      );
 
       if (worklogs.status === 200) {
         setDataLoadLawSuit(worklogs.data);
@@ -125,6 +177,20 @@ const EditAwaitingJudgement = ({
         setupGovernmentOfficerList(loanRes.data);
         listGovermentList(loanRes.data);
         console.log("loanRes.data---->", loanRes.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
+
+      if (judgement.status === 200) {
+        setDataJudgement(judgement.data);
+        console.log("judge.data---->", judgement.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
+
+      if (judgeDefendants.status === 200) {
+        setDataJudgeDefendants(judgeDefendants.data);
+        console.log("judgeDefendants.data---->", judgeDefendants.data);
       } else {
         message.error("ไม่พบข้อมูลเงิน");
       }
@@ -717,7 +783,16 @@ const EditAwaitingJudgement = ({
   };
 
   const handleCheckBoxGroupGoverment = () => {
-    if (checkLenght) {
+    let checker;
+    if (checkLenght && dataJudgeDefendants) {
+      checker = dataJudgeDefendants.map((item) => ({
+        judgeNumber: item.judge_number,
+        customerId: item.CUSTOMER_ID,
+      }));
+
+      // console.log(checker);
+      // console.log(governmentOfficers);
+
       return (
         <>
           <Checkbox.Group onChange={onChangeGovermentOfficer}>

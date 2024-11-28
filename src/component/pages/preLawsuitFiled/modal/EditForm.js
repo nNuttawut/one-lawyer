@@ -99,10 +99,8 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   }, [dataLoadLawSuit, dataLoadLoan]);
 
-  const handleOk = () => {};
-
   const handleCancel = () => {
-    console.log("Clicked cancel button");
+    message.error("ยกเลิกการแก้ไข");
     close(false);
     setIsModal(false);
   };
@@ -244,7 +242,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("putData", putData);
     console.log("putStatus", putStatus);
 
-    // sendStatus(putStatus, putData);
+    sendStatus(putStatus, putData);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -500,7 +498,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               : "-"}
           </p>
         </Form.Item>
-        <Form.Item label="ค่าฤชา" name="fee">
+        <Form.Item label="ค่าธรรมเนียมศาล" name="fee">
           <p>
             {dataForm.intigationFounds
               ? currencyFormatPoint(dataForm.fee) + " บาท"
@@ -534,7 +532,6 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       <Modal
         title="แก้ไขคำฟ้องคดีผู้บริโภค"
         open={open}
-        onOk={handleOk}
         onCancel={handleCancel}
         width={850}
         footer={null}

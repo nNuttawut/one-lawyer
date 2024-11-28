@@ -362,13 +362,11 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         final_case_date: null,
         final_case_filepath: null,
         suspension_amount: dataLoadLawSuit.lawsuit.suspension_amount,
-        tracking_fee: dataLoadLawSuit.lawsuit.tracking_fee,
+        tracking_fee: parseInt(values.trackingFeeEnforce.replace(/,/g, "")),
         fee: dataLoadLawSuit.lawsuit.fee,
         enforce_case_date: null,
         enforce_case_filepath: null,
-        attorney_fees: values.lawyerFeeEnforce
-          ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
-          : null,
+        attorney_fees: parseInt(values.lawyerFeeEnforce.replace(/,/g, "")),
       };
     } else {
       statusData = {
