@@ -1,4 +1,4 @@
-import { Menu } from "antd";
+import { Menu, message } from "antd";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   HomeOutlined,
@@ -18,9 +18,13 @@ import {
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import TokenCheck from "../../hook/TokenCheck";
+import { baseUrl, GET_COMPANIES_LIST, HEADERS_EXPORT } from "../API/apiUrls";
 
 function Sidenav({ color, onClick }) {
+  const [signOut] = TokenCheck();
   const [openKeys, setOpenKeys] = useState([]);
 
   const { pathname } = useLocation();
@@ -86,16 +90,23 @@ function Sidenav({ color, onClick }) {
         {
           key: "51",
           icon: <CaretRightOutlined />,
-          pageName: "awaiting-judgment",
-          path: "investigate-assets/before-indict",
-          label: "ก่อนฟ้อง",
+          pageName: "create-invitigate-assets",
+          path: "investigate-assets/create-invitigate-assets",
+          label: "สืบทรัพย์",
         },
         {
           key: "52",
           icon: <CaretRightOutlined />,
-          pageName: "adjudge",
-          path: "investigate-assets/after-indict",
-          label: "หลังฟ้อง",
+          pageName: "estimate-assets",
+          path: "investigate-assets/estimate-assets",
+          label: "ประเมินทรัพย์",
+        },
+        {
+          key: "53",
+          icon: <CaretRightOutlined />,
+          pageName: "assets-found",
+          path: "investigate-assets/assets-found",
+          label: "ทรัพย์สินที่พบ",
         },
       ],
     },
@@ -129,13 +140,13 @@ function Sidenav({ color, onClick }) {
           label: "คดีถึงที่สุด",
         },
 
-        {
-          key: "64",
-          icon: <CaretRightOutlined />,
-          pageName: "report-court",
-          path: "court/report-court",
-          label: "รายงาน",
-        },
+        // {
+        //   key: "64",
+        //   icon: <CaretRightOutlined />,
+        //   pageName: "report-court",
+        //   path: "court/report-court",
+        //   label: "รายงาน",
+        // },
       ],
     },
     {
@@ -295,6 +306,7 @@ function Sidenav({ color, onClick }) {
 
   const handleClick = (value) => {
     // console.log(value);
+    loadData();
     onClick(value);
   };
 
@@ -364,6 +376,30 @@ function Sidenav({ color, onClick }) {
         </NavLink>
       </Menu.Item>
     );
+  };
+
+  useEffect(() => {
+    console.log("check token");
+
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    await axios
+      .get(baseUrl + GET_COMPANIES_LIST, { headers: HEADERS_EXPORT })
+      .then(async (res) => {
+        console.log("check token =>", res.status);
+
+        if (res.status === 401 || res.status === 403) {
+          message.error("หมดเวลาเข้าระบบ");
+          signOut();
+        }
+      })
+      .catch((err) => {
+        console.log("ไม่มี ข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
+        message.error("หมดเวลาเข้าระบบ");
+        signOut();
+      });
   };
 
   return (

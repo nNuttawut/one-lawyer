@@ -39,6 +39,7 @@ import {
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
@@ -98,11 +99,11 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         axios.get(
           `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
           {
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           }
         ),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
       ]);
 
@@ -144,7 +145,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       if (defaultRadio === "normal" || defaultRadio === "payment") {
         console.log("status----> normal,payment", status);
         await axios
-          .post(baseUrl + POST_STATUS, status, { HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -173,7 +174,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       } else {
         console.log("status---->", status);
         await axios
-          .put(baseUrl + PUT_STATUS, status, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -194,7 +195,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         console.log("normal---> defendants", defendants);
         console.log("data", judgement);
         await axios
-          .post(baseUrl + POST_JUDGE, judgement, { HEADERS_EXPORT })
+          .post(baseUrl + POST_JUDGE, judgement, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -214,7 +215,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           let arrayData = item;
           await axios
             .post(baseUrl + POST_JUDGE_DEFENDANTS, arrayData, {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             })
             .then(async (res) => {
               if (res.status === 201) {
@@ -237,7 +238,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       } else if (defaultRadio === "postponed") {
         console.log("postpone--->", putData);
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, putData, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, putData, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -261,7 +264,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       } else {
         console.log("agreement", agreement);
         await axios
-          .post(baseUrl + POST_AGREEMENTS, agreement, { HEADERS_EXPORT })
+          .post(baseUrl + POST_AGREEMENTS, agreement, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -327,22 +332,25 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       }));
       defendants.push(...govermentfinal1);
 
-      const govermentResult2 = values.governmentOfficer2.filter((item) => item);
-      const govermentfinal2 = govermentResult2.map((item) => ({
-        LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-        CUSTOMER_ID: item.id,
-        defendant_number: item.GARNO + 1,
-        cost_of_uselessness: values.costUnless2
-          ? parseInt(values.costUnless2.replace(/,/g, ""))
-          : null,
-        cost_of_useleseness_per_month: values.costPermonth2
-          ? parseInt(values.costPermonth2.replace(/,/g, ""))
-          : null,
-        cost_of_useleseness_month: values.costMonth2,
-        judge_number: 2,
-      }));
-
-      defendants.push(...govermentfinal2);
+      if (dataDefualt.LOAN_TYPE_ID === 1) {
+        const govermentResult2 = values.governmentOfficer2.filter(
+          (item) => item
+        );
+        const govermentfinal2 = govermentResult2.map((item) => ({
+          LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+          CUSTOMER_ID: item.id,
+          defendant_number: item.GARNO + 1,
+          cost_of_uselessness: values.costUnless2
+            ? parseInt(values.costUnless2.replace(/,/g, ""))
+            : null,
+          cost_of_useleseness_per_month: values.costPermonth2
+            ? parseInt(values.costPermonth2.replace(/,/g, ""))
+            : null,
+          cost_of_useleseness_month: values.costMonth2,
+          judge_number: 2,
+        }));
+        defendants.push(...govermentfinal2);
+      }
       statusData = {
         USER_ID: dataDefualt.LAWYER_ID,
         LOAN_ID: dataDefualt.id,
@@ -353,6 +361,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         MAIN_STATUS_ID: JUDGEMENT,
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
       };
+
       judgementData = {
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
         red_case_number: values.redNumber,
@@ -363,7 +372,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         final_case_filepath: null,
         suspension_amount: dataLoadLawSuit.lawsuit.suspension_amount,
         tracking_fee: parseInt(values.trackingFeeEnforce.replace(/,/g, "")),
-        fee: dataLoadLawSuit.lawsuit.fee,
+        fee: dataLoadLawSuit?.lawsuit?.fee,
         enforce_case_date: null,
         enforce_case_filepath: null,
         attorney_fees: parseInt(values.lawyerFeeEnforce.replace(/,/g, "")),
@@ -674,15 +683,21 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         >
           ปิด
         </Button>
-        <Button
-          style={{ color: "blue" }}
-          htmlType="submit"
-          onClick={() => {
-            setTabsKey("2");
-          }}
-        >
-          ถัดไป
-        </Button>
+        {dataDefualt.LOAN_TYPE_ID === 1 ? (
+          <Button
+            style={{ color: "blue" }}
+            htmlType="submit"
+            onClick={() => {
+              setTabsKey("2");
+            }}
+          >
+            ถัดไป
+          </Button>
+        ) : (
+          <Button style={{ color: "green" }} htmlType="submit">
+            บันทึก
+          </Button>
+        )}
       </div>
     );
   };
@@ -1139,17 +1154,22 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       label: "คำพิพากษาจำเลยที่ ๑",
       children: formJudge1(),
     },
-    {
-      key: "2",
-      label: "คำพิพากษาจำเลยถัดไป",
-      children: formJudge2(),
-    },
+    ...(dataDefualt.LOAN_TYPE_ID === 1
+      ? [
+          {
+            key: "2",
+            label: "คำพิพากษาจำเลยถัดไป",
+            children: formJudge2(),
+          },
+        ]
+      : []), // ถ้าเงื่อนไขไม่ตรง ก็ไม่ใส่ item นี้
   ];
 
   return (
     <>
       <Modal
-        title="อัพเดทสถานะ"
+        title={`อัพเดทสถานะ ${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+        ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}

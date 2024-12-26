@@ -145,19 +145,19 @@ const EditAwaitingJudgement = ({
           axios.get(
             `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
             {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             }
           ),
           axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           }),
           axios.get(`${baseUrl}${GET_JUDGE_BY_ID}${dataDefualt.LAWSUIT_ID}`, {
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           }),
           axios.get(
             `${baseUrl}${GET_JUDGE_DEFENDANTS_BY_ID}${dataDefualt.LAWSUIT_ID}`,
             {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             }
           ),
         ]
@@ -215,7 +215,7 @@ const EditAwaitingJudgement = ({
       if (defaultRadio === "normal" || defaultRadio === "payment") {
         console.log("status----> normal,payment", status);
         await axios
-          .post(baseUrl + POST_STATUS, status, { HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -236,15 +236,12 @@ const EditAwaitingJudgement = ({
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
       } else {
         console.log("status---->", status);
         await axios
-          .put(baseUrl + PUT_STATUS, status, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -255,17 +252,14 @@ const EditAwaitingJudgement = ({
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
       }
       if (defaultRadio === "normal") {
         console.log("normal---> defendants", defendants);
         console.log("data", judgement);
         await axios
-          .post(baseUrl + POST_JUDGE, judgement, { HEADERS_EXPORT })
+          .post(baseUrl + POST_JUDGE, judgement, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -276,16 +270,13 @@ const EditAwaitingJudgement = ({
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
         const promises = defendants.map(async (item) => {
           let arrayData = item;
           await axios
             .post(baseUrl + POST_JUDGE_DEFENDANTS, arrayData, {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             })
             .then(async (res) => {
               if (res.status === 201) {
@@ -297,10 +288,7 @@ const EditAwaitingJudgement = ({
               }
             })
             .catch((err) => {
-              console.log(err);
-              if (err.status > 400) {
-                message.error("ไม่สามารถส่งข้อมูลได้");
-              }
+              console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
             });
           const results = await Promise.all(promises);
           console.log("results promise", results);
@@ -308,7 +296,9 @@ const EditAwaitingJudgement = ({
       } else if (defaultRadio === "postponed") {
         console.log("postpone--->", putData);
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, putData, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, putData, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -324,15 +314,14 @@ const EditAwaitingJudgement = ({
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
       } else {
         console.log("agreement", agreement);
         await axios
-          .post(baseUrl + POST_AGREEMENTS, agreement, { HEADERS_EXPORT })
+          .post(baseUrl + POST_AGREEMENTS, agreement, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -343,10 +332,7 @@ const EditAwaitingJudgement = ({
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
       }
     } catch (error) {
@@ -1231,7 +1217,8 @@ const EditAwaitingJudgement = ({
   return (
     <>
       <Modal
-        title="อัพเดทสถานะ"
+        title={`อัพเดทสถานะ ${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+        ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}

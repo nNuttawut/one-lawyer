@@ -18,6 +18,7 @@ import LoadCompanies from "../../../../hook/LoadCompanies";
 import lawyerJumbo from "../../../../assets/images/license/lawyerJumbo.png";
 import lawyerYut from "../../../../assets/images/license/lawyerYut.png";
 import lawyerTon from "../../../../assets/images/license/lawyerTon.png";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [convertDateThai] = DateCustom();
@@ -86,7 +87,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
     try {
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -121,7 +122,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");
@@ -313,7 +314,7 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       pdf.text(
         `บัดนี้ท่านผิดนัดชำระหนี้หลายงวดติดต่อกัน มีหนี้ค้างชำระเป็นเงินต้นจำนวน ${currencyFormat(
-          loanData?.LOAN?.NCSHPRC
+          loanData?.LOAN?.NCSHPRC - loanData?.LOAN?.SMPAY
         )} บาท โดยท่านไม่ได้ดำเนิน`,
         marginL + 50,
         pdfPositionY + 30
@@ -607,8 +608,10 @@ const DocumentNotice2 = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   <p>
                     บัดนี้ท่านผิดนัดชำระหนี้หลายงวดติดต่อกัน
                     มีหนี้ค้างชำระเป็นเงินต้นจำนวน{" "}
-                    {currencyFormat(loanData?.LOAN?.NCSHPRC)} บาท
-                    โดยท่านไม่ได้ดำเนิน
+                    {currencyFormat(
+                      loanData?.LOAN?.NCSHPRC - loanData?.LOAN?.SMPAY
+                    )}{" "}
+                    บาท โดยท่านไม่ได้ดำเนิน
                   </p>
                 </Col>
                 <Col

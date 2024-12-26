@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import {
   Button,
   Modal,
@@ -8,6 +8,7 @@ import {
   Spin,
   Input,
   DatePicker,
+  Form,
 } from "antd";
 import { AuditOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -24,6 +25,7 @@ import {
 } from "../../../../utils/constant/StatusConstant";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
+import CurrencyFormat from "../../../../hook/CurrencyFormat";
 
 const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [status, setStatus] = useState({
@@ -31,17 +33,22 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     enforce: "wait",
     prePay: "wait",
   });
+
   const [loading, setLoading] = useState(false);
   const [memoText, setMemoText] = useState("");
   const [countDate, setCountDate] = useState();
   const [urlFileSave, setUrlFileSave] = useState();
   const [dataLoadJudgement, setDataJudgement] = useState();
   const [dateEnforceCase, setDateEnforceCase] = useState();
+  const [form] = Form.useForm();
+  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
+    CurrencyFormat();
+  const [totalFeeCal, setTotalFeeCal] = useState(null);
 
   useEffect(() => {
     if (dataDefualt.DATE) {
       loadData();
-      const recordDate = dayjs(dataDefualt.DATE);
+      const recordDate = dayjs(dataDefualt.DATE).startOf("day");
       const toDay = dayjs().startOf("day");
       const toDate = dayjs(recordDate).add(45, "days");
       const daysDifference = toDay.diff(toDate, "days");
@@ -62,7 +69,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       const response = await axios.get(
         baseUrl + GET_JUDGE_BY_ID + dataDefualt.LAWSUIT_ID,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if ((response.status = 200)) {
@@ -83,7 +90,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .post(baseUrl + POST_STATUS, statusData, { HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, statusData, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -95,14 +102,11 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status === 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
 
         await axios
-          .put(baseUrl + PUT_JUDGE, dataJudgement, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_JUDGE, dataJudgement, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -121,9 +125,8 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           })
           .catch((err) => {
             console.log(err);
-            if (err.status === 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+
+            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
           });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -152,53 +155,93 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const onChangeInput = (e) => {
-    const value = e.target.value;
+  const onChangeJudgementFile = (value) => {
+    console.log(value);
+    setUrlFileSave(value);
+  };
+
+  const onChange = (date, dateString) => {
+    console.log(date, dateString);
+    setDateEnforceCase(dateString);
+  };
+
+  const onChangeInputMemo = (value) => {
     console.log(value);
     setMemoText(value);
   };
 
-  const handleOk = () => {
+  const onFinish = (values) => {
+    console.log("Success:", values);
     if (status.enforce === "finish") {
-      if (urlFileSave) {
-        const postData = {
-          MAIN_STATUS_ID: CASE_IS_FINAL,
-          LOAN_ID: dataDefualt.id,
-          USER_ID: dataDefualt.LAWYER_ID,
-          LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-          LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-          MEMO: memoText,
-          DATE: dateEnforceCase,
-          PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
-        };
-        const putJudgement = {
-          ...dataLoadJudgement,
-          enforce_case_date: dateEnforceCase,
-          enforce_case_filepath: urlFileSave,
-        };
-        console.log("postData", postData);
-        console.log("putJudgement", putJudgement);
-        sendStatus(postData, putJudgement);
-      } else {
-        message.error("กรุณาใส่ URL FILE");
-      }
+      const postData = {
+        MAIN_STATUS_ID: CASE_IS_FINAL,
+        LOAN_ID: dataDefualt.id,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+        MEMO: memoText,
+        DATE: dateEnforceCase,
+        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      };
+      const putJudgement = {
+        ...dataLoadJudgement,
+        enforce_case_date: dateEnforceCase,
+        enforce_case_filepath: urlFileSave,
+        fee: totalFeeCal,
+      };
+      console.log("postData", postData);
+      console.log("putJudgement", putJudgement);
+      sendStatus(postData, putJudgement);
     } else {
       message.error("กรุณาเปลี่ยนสถานะ");
     }
   };
 
-  const onChangeJudgementFile = (value) => {
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+    message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+  function isNotNumber(value) {
+    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
+    if (!regex.test(value)) {
+      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
+    }
+  }
+
+  const onChangeTotalFee = (value) => {
+    let total;
     console.log(value);
-    setUrlFileSave(value);
+    let inputValue = value;
+    isNotNumber(inputValue.replace(/,/g, ""));
+    if (inputValue.length >= 4) {
+      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
+      let intValue = parseInt(rawValue);
+      let formattedValue =
+        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
+      form.setFieldsValue({
+        otherFee: formattedValue,
+      });
+      total =
+        dataLoadJudgement?.fee +
+        dataLoadJudgement?.attorney_fees +
+        parseInt(formattedValue.replace(/,/g, ""));
+      setTotalFeeCal(total);
+    } else {
+      form.setFieldsValue({
+        otherFee: inputValue,
+      });
+      total =
+        dataLoadJudgement?.fee +
+        dataLoadJudgement?.attorney_fees +
+        parseInt(inputValue);
+      setTotalFeeCal(total);
+    }
   };
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
-    setDateEnforceCase(dateString);
-  };
+
   const formData = () => {
     return (
       <>
-        <Card style={{ marginTop: "10px" }}>
+        <Card style={{ marginTop: "10px", marginBottom: "20px" }}>
           <Steps
             responsive={true}
             onChange={handleStatusChange}
@@ -228,7 +271,8 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   return (
     <>
       <Modal
-        title="เปลี่ยนสถานะ"
+        title={`อัพเดทสถานะ ${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+        ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
         open={open}
         onCancel={handleCancel}
         width={850}
@@ -236,36 +280,112 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <Button key="cancel" onClick={handleCancel} style={{ color: "red" }}>
             ปิด
           </Button>,
-          <Button key="ok" onClick={handleOk} style={{ color: "green" }}>
+          <Button
+            key="ok"
+            // onClick={handleOk}
+            onClick={() => form.submit()}
+            style={{ color: "green" }}
+            htmlType="submit"
+          >
             บันทึก
           </Button>,
         ]}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Card>
-            <formData />
-            <p style={{ marginTop: "10px" }}>ใส่ url ที่แชร์ลิ้ง</p>
-            <Input
-              style={{ marginTop: "5px" }}
-              placeholder="ใส่ url file ในนี้"
-              onChange={(e) => onChangeJudgementFile(e.target.value)}
-            />
-            <p style={{ marginTop: "10px" }}>เลือกวันที่ออกหมายตั้ง</p>
-            <DatePicker
-              style={{ marginTop: "5px" }}
-              placeholder="โปรดเลือกวัน"
-              size="large"
-              onChange={onChange}
-            />
+            {formData()}
+            <Form
+              labelCol={{
+                span: 8,
+              }}
+              wrapperCol={{
+                span: 14,
+              }}
+              form={form}
+              layout="horizontal"
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
+              initialValues={{
+                memo: null,
+              }}
+            >
+              <Form.Item
+                label="วันที่ออกหมายตั้ง"
+                name="dateEnforce"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่คำพิพากษา !",
+                  },
+                ]}
+              >
+                <DatePicker
+                  placeholder="โปรดเลือกวัน"
+                  size="large"
+                  onChange={onChange}
+                />
+              </Form.Item>
+              <Form.Item label="ค่าธรรมเนียมศาล" name="courtFee">
+                <p>
+                  {dataLoadJudgement?.fee
+                    ? currencyFormatPoint(dataLoadJudgement?.fee)
+                    : "-"}{" "}
+                  บาท
+                </p>
+              </Form.Item>
+              <Form.Item label="ค่าทนายความ" name="lawyerFeeEnforce">
+                <p>
+                  {dataLoadJudgement?.attorney_fees
+                    ? currencyFormatNoPoint(dataLoadJudgement?.attorney_fees)
+                    : "-"}{" "}
+                  บาท
+                </p>
+              </Form.Item>
+              <Form.Item
+                label="ค่าฤชาอื่น ๆ"
+                name="otherFee"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่ค่าติดตาม !",
+                  },
+                ]}
+              >
+                <Input
+                  autoComplete="off"
+                  name="otherFee"
+                  onChange={(e) => onChangeTotalFee(e.target.value)}
+                />
+              </Form.Item>
+
+              <Form.Item label="ค่าฤชาทั้งหมด" name="totalFee">
+                <p>
+                  {totalFeeCal ? currencyFormatNoPoint(totalFeeCal) : "-"} บาท
+                </p>
+              </Form.Item>
+              <Form.Item
+                label="ลิ้งที่แชร์ไฟ"
+                name="urlPath"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่คำพิพากษา !",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="ใส่ url file ในนี้"
+                  onChange={(e) => onChangeJudgementFile(e.target.value)}
+                />
+              </Form.Item>
+              <Form.Item label="หมายเหตุ" name="memo">
+                <TextArea
+                  rows={5}
+                  onChange={(e) => onChangeInputMemo(e.target.value)}
+                />
+              </Form.Item>
+            </Form>
           </Card>
-          <div style={{ marginTop: "5px" }}>
-            <TextArea
-              rows={5}
-              placeholder="หมายเหตุ"
-              value={memoText}
-              onChange={onChangeInput}
-            />
-          </div>
         </Spin>
       </Modal>
     </>

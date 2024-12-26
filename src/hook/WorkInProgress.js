@@ -1,4 +1,3 @@
-import { message } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
@@ -6,9 +5,10 @@ import {
   GET_JOB_IN_PROGRESS,
   HEADERS_EXPORT,
 } from "../component/API/apiUrls";
+import TokenCheck from "./TokenCheck";
 
 const WorkInProgress = () => {
-  const [dataLoad, setDataLoad] = useState(null);
+  const [dataLoad, setDataLoad] = useState(false);
   const [loadingDataWork, setLoadingDataWork] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const WorkInProgress = () => {
     console.log(data);
     try {
       const response = await axios.get(baseUrl + GET_JOB_IN_PROGRESS, {
-        HEADERS_EXPORT,
+        headers: HEADERS_EXPORT,
       });
       if (response.data) {
         let i = 1;
@@ -33,15 +33,12 @@ const WorkInProgress = () => {
           setDataLoad(newData);
           console.log("newData", newData);
         }
-      } else {
       }
     } catch (error) {
       console.error(
         "Error posting data:",
         error.response ? error.response.data : error.message
       );
-
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
 

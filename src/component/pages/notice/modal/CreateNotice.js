@@ -18,7 +18,6 @@ import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   PUT_LAWSUIT_DETAIL,
@@ -52,14 +51,9 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   useEffect(() => {
     loadData();
     setLoadingData(true);
-    dateSet();
+
     console.log("dataDefault--->", dataDefault);
   }, [setLoadingData]);
-
-  const dateSet = () => {
-    const date = dayjs().format("YYYY-MM-DD");
-    return date;
-  };
 
   useEffect(() => {
     setOption();
@@ -87,7 +81,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     try {
       await axios
         .get(baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefault.LAWSUIT_ID, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -109,7 +103,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -144,7 +138,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -161,7 +155,9 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           });
 
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");

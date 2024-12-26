@@ -26,9 +26,6 @@ import {
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
-//use redux
-import { useSelector } from "react-redux";
-
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import { ENFORCEMENT } from "../../../utils/constant/StatusConstant";
@@ -43,7 +40,6 @@ const Main = () => {
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
@@ -64,7 +60,7 @@ const Main = () => {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ENFORCEMENT,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -210,7 +206,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE);
+    const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;

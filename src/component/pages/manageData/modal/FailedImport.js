@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Modal,
-  Card,
-  List,
-} from "antd";
+import { Button, Modal, List } from "antd";
 
 const FailedImport = ({ open, close, data }) => {
   const [dataList, setDataList] = useState();

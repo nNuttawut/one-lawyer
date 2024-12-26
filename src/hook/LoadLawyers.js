@@ -26,7 +26,7 @@ const LoadLawyers = () => {
     try {
       await axios
         .get(baseUrl + GET_LAWYERS_LIST, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -47,7 +47,7 @@ const LoadLawyers = () => {
     try {
       await axios
         .get(baseUrl + GET_JOB_COUNT, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {

@@ -5,7 +5,7 @@ import DebtPaymentRoute from "../pages/debtPayment/Router";
 import DisbursementRoute from "../pages/disbursement/Router";
 import InvestigateAssetsRoute from "../pages/investigateAssets/Router";
 import PreLawsuitFiledRoute from "../pages/preLawsuitFiled/Router";
-import ReportRoute from "../pages/report/Router";
+import ReportNotice from "../pages/report/Router";
 import SaleAnnouncementRoute from "../pages/saleAnnouncement/Router";
 import EnforcementRoute from "../pages/enforcement/Router";
 import NegotiateRoute from "../pages/negotiate/Router";
@@ -17,11 +17,9 @@ import AwaitingJudgment from "../pages/court/AwaitingJudgment";
 import ReportCourt from "../pages/court/ReportCourt";
 import Notice from "../pages/notice/MainNotice";
 import Calendar from "../pages/calendar/CalendarMain";
-
 import AssignLawyers from "../pages/manageData/AssignLawyers";
 import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
-import InvestigateAssetsBefore from "../pages/investigateAssets/InvestigateAssetsBefore";
-import InvestigateAssetsAfter from "../pages/investigateAssets/InvestigateAssetsAfter";
+import EstimateAssets from "../pages/investigateAssets/EstimateAssets";
 import Judgement from "../pages/court/Judgement";
 import Profile from "../pages/Profile";
 import ChangePassword from "../pages/ChangePassword";
@@ -36,6 +34,8 @@ import Loginline from "../pages/lineLogIn/LoginLine";
 import { AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import CreateInvestigateAssets from "../pages/investigateAssets/CreateInvestigateAssets";
+import AssetsFound from "../pages/investigateAssets/AssetsFound";
 
 const supabase = createClient(
   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -48,30 +48,34 @@ export default function Router() {
       <SessionContextProvider supabaseClient={supabase}>
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<DashboardRoute />} />
+            <Route path="/*" element={<DashboardRoute />} />
             <Route path="/final-case/*" element={<FinalCase />} />
             <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
             <Route path="/disbursement/*" element={<DisbursementRoute />} />
             <Route path="/notice/create-notice/*" element={<Notice />} />
-            <Route path="notice/reply-notice/*" element={<ReplyNotice />} />
+            <Route path="/notice/reply-notice/*" element={<ReplyNotice />} />
             <Route
               path="/investigate-assets/*"
               element={<InvestigateAssetsRoute />}
             />
+            <Route
+              path="/investigate-assets/assets-found/*"
+              element={<AssetsFound />}
+            />
+            <Route
+              path="/investigate-assets/estimate-assets/*"
+              element={<EstimateAssets />}
+            />
+            <Route
+              path="investigate-assets/create-invitigate-assets/*"
+              element={<CreateInvestigateAssets />}
+            />
 
-            <Route
-              path="investigate-assets/before-indict/*"
-              element={<InvestigateAssetsBefore />}
-            />
-            <Route
-              path="investigate-assets/after-indict/*"
-              element={<InvestigateAssetsAfter />}
-            />
             <Route
               path="/pre-lawsuit-filed/*"
               element={<PreLawsuitFiledRoute />}
             />
-            <Route path="/report/*" element={<ReportRoute />} />
+            <Route path="/report/notice/*" element={<ReportNotice />} />
             <Route
               path="/sale-announcement/*"
               element={<SaleAnnouncementRoute />}
@@ -84,37 +88,37 @@ export default function Router() {
             <Route path="/notifications/*" element={<NotificationRouter />} />
             <Route path="/detail-status/*" element={<DetailStatusRouter />} />
 
-            <Route path="court/case-is-final/*" element={<CaseIsFinal />} />
-            <Route path="court/judgement/*" element={<Judgement />} />
+            <Route path="/court/case-is-final/*" element={<CaseIsFinal />} />
+            <Route path="/court/judgement/*" element={<Judgement />} />
             <Route
-              path="court/awaiting-judgment/*"
+              path="/court/awaiting-judgment/*"
               element={<AwaitingJudgment />}
             />
-            <Route path="court/report-court/*" element={<ReportCourt />} />
+            <Route path="/court/report-court/*" element={<ReportCourt />} />
             <Route
-              path="manage-data/assign-lawyers/*"
+              path="/manage-data/assign-lawyers/*"
               element={<AssignLawyers />}
             />
             <Route
-              path="manage-data/change-lawyers-jobs/*"
+              path="/manage-data/change-lawyers-jobs/*"
               element={<ChangeLawyersJob />}
             />
-            <Route path="manage-data/import-data/*" element={<ImportData />} />
-            <Route path="/chang-password" element={<ChangePassword />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/manage-data/import-data/*" element={<ImportData />} />
+            <Route path="/chang-password/*" element={<ChangePassword />} />
+            <Route path="/profile/*" element={<Profile />} />
+            <Route path="/calendar/*" element={<Calendar />} />
             <Route
-              path="commission/commission-law/*"
+              path="/commission/commission-law/*"
               element={<CommissionLaw />}
             />
             <Route
-              path="commission/commission-investigate/*"
+              path="/commission/commission-investigate/*"
               element={<CommissionInvestigate />}
             />
-            <Route path="guidbook/read-text/*" element={<ReadText />} />
-            <Route path="guidbook/test/*" element={<Test />} />
-            <Route path="/liff" element={<Liff />} />
-            <Route path="/login-line" element={<Loginline />} />
+            <Route path="/guidbook/read-text/*" element={<ReadText />} />
+            <Route path="/guidbook/test/*" element={<Test />} />
+            <Route path="/liff/*" element={<Liff />} />
+            <Route path="/login-line/*" element={<Loginline />} />
           </Routes>
         </AnimatePresence>
       </SessionContextProvider>

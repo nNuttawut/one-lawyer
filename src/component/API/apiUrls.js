@@ -1,5 +1,3 @@
-const TOKEN = localStorage.getItem("TOKEN");
-
 //------dev-------
 //ดีงข้อมูลจาก server ibm
 const GET_LOAN_FROM_SERVER_IBM = "/lawyer/dev/server/loans";
@@ -36,11 +34,19 @@ const PUT_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits`;
 const GET_LAWSUIT_DETAIL_BY_LOAN = `/lawyer/dev/api/lawsuits/loan/`;
 
 //ดึงข้อมูลสืบทรัพย์
-const GET_INVESTIGATE_BY_ID = `/lawyer/dev/api/investigate-properties/`;
+const GET_INVESTIGATE_BY_LAWSUIT = `/lawyer/dev/api/investigate-properties/`;
+const GET_INVESTIGATE_LIST = `/lawyer/dev/api/investigate-properties`;
 //สร้างข้อมูลสืบทรัพย์
-const POST_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
+const POST_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
+const POST_INVESTIGATE_ITEM = `/lawyer/dev/api/investigate-properties`;
 //อัพเดทข้อมูลสืบทรัพย์
-const PUT_INVESTIGATE = `/lawyer/dev/api/investigate-properties`;
+const PUT_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
+const PUT_INVESTIGATE_ITEM_BY_ID = `/lawyer/dev/api/investigate-properties`;
+//ดึงข้อมูลเพื่อสืบทรัพย์
+const GET_INVESTIGATE_LOANS_LIST = `/lawyer/dev/api/investigate-properties/loans/list`;
+//ข้อมูลลักษณะที่ดิน
+const GET_LAND_DETAIL_LIST = `/lawyer/dev/api/investigate-properties/details/list`;
+
 //ข้อมูลทั้งหมดของ id
 const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/dev/api/worklogs/`;
 
@@ -75,6 +81,7 @@ const GET_BY_ID = "/lawyer/dev/api/users/";
 const LOG_IN = `/lawyer/dev/api/login`;
 const REGISTER = `/lawyer/dev/api/register`;
 const POST_USER = `/lawyer/dev/api/users`;
+const PUT_USER_UPDATE = `/lawyer/dev/api/customers`;
 
 //all details
 const GET_DETAILS = `/lawyer/dev/api/all-details?contractNo=`;
@@ -84,8 +91,9 @@ const DELETE_STATUS_BY_WORKLOG = `/lawyer/dev/api/worklogs/`;
 
 const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 
+const TOKEN = localStorage.getItem("TOKEN");
 const HEADERS_EXPORT = {
-  "x-access-token": `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiVVNFUk5BTUUiOiJhZG1pbmlzdHJhdG9yIiwiVE5BTUUiOjEsIkZOQU1FIjoiQWRtaW4iLCJMTkFNRSI6IkRldmVsb3BlciIsIk5OQU1FIjoiRGV2IiwiTElDRU5DRV9OTyI6bnVsbCwiQ09NUEFOWV9JRCI6MSwiUk9MRV9JRCI6MSwiQUNUSVZFX1NUQVRVUyI6MSwibGluZV91aWQiOiJVZWQwMjU2OWUyOWRiYTNmYzk2NmU1ZGJkMTM0MGY1ZTEiLCJjcmVhdGVkX2RhdGUiOiIyMDI0LTA5LTA3VDE0OjE0OjM2LjAwMFoiLCJ1cGRhdGVkX2RhdGUiOiIyMDI0LTExLTIyVDE3OjU4OjQ2LjAwMFoiLCJwYXNzd29yZCI6IiQyYiQxMCRmWFVnb2ZrT2IzSEhRR2dsRWdjLmxlUFZtb005QW9qSzl6a2xhcElJYVk0RFIzUzVBMzBiRyIsImlhdCI6MTczMjc2NTczMSwiZXhwIjoxNzMyODA4OTMxfQ.GZXOkMW2V1e646mWcD0Qcs-sBTH6u5Tm56VnHxB1KJc`,
+  "x-access-token": TOKEN,
 };
 
 const HEADERS_LOGIN = {
@@ -104,6 +112,11 @@ const POST_DISTRICT_LAND = `https://onemoney.ngrok.app/GetAmphur`;
 const POST_CALCULATE_LAND = `https://onemoney.ngrok.app/AllData`;
 
 export {
+  PUT_INVESTIGATE_ITEM_BY_ID,
+  POST_INVESTIGATE_ITEM,
+  GET_LAND_DETAIL_LIST,
+  GET_INVESTIGATE_LOANS_LIST,
+  PUT_USER_UPDATE,
   HEADERS_LOGIN,
   GET_LOAN_FROM_SERVER_IBM,
   GET_ALL_LOAN,
@@ -119,9 +132,10 @@ export {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_LOAN,
   PUT_LAWSUIT_DETAIL,
-  GET_INVESTIGATE_BY_ID,
-  POST_INVESTIGATE,
-  PUT_INVESTIGATE,
+  GET_INVESTIGATE_BY_LAWSUIT,
+  GET_INVESTIGATE_LIST,
+  POST_INVESTIGATE_LOG,
+  PUT_INVESTIGATE_LOG,
   LOG_IN,
   REGISTER,
   GET_WORK_LOG_DETAIL_BY_ID,
@@ -230,6 +244,7 @@ export {
 // const LOG_IN = `/lawyer/api/login`;
 // const REGISTER = `/lawyer/api/register`;
 // const POST_USER = `/lawyer/api/users`;
+// const PUT_USER_DATA = `/lawyer/api/customers`;
 
 // //all details
 // const GET_DETAILS = `/lawyer/api/all-details?contractNo=`;
@@ -254,6 +269,7 @@ export {
 // const POST_CALCULATE_LAND = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
 
 // export {
+// PUT_USER_DATA
 //   GET_LOAN_FROM_SERVER_IBM,
 //   GET_ALL_LOAN,
 //   GET_LOAN_BY_CONTNO,

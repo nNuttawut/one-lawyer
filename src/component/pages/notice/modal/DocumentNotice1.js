@@ -26,31 +26,9 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
     convertDateThaiMonth,
     convertDateThaiDate,
   ] = DateCustom();
+
   const [loading, setLoading] = useState(false);
   const [currencyFormat] = CurrencyFormat();
-  const [dataText, setDataText] = useState({
-    company: "ฝ่ายกฎหมาย บริษัท วัน มันนี่ จำกัด",
-    address:
-      "1/24 ถนน มิตรภาพ ตำบล ในเมือง อำเภอ เมืองขอนแก่น จังหวัดขอนแก่น 40000 โทร ",
-    telephon: "097-0933735",
-    dateCreate: dataDefault.DATE,
-    case: "บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา",
-    toCustomer: null,
-    toGuarantor: [],
-    type: null,
-    brand: null,
-    engineNumber: null,
-    licensePlate: null,
-    provicePlate: null,
-    companyByOld: null,
-    companyByNew: null,
-    sDate: null,
-    buyPrice: null,
-    uPay: null,
-    tNoPay: null,
-    LPAYDDate: null,
-    NCSHPRC: null,
-  });
   const [loanData, setLoanData] = useState(null);
   const [companiesList, setLoadingData] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState();
@@ -93,7 +71,7 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
     try {
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -128,7 +106,7 @@ const DocumentNotice1 = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");

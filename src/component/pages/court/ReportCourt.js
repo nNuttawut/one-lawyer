@@ -21,8 +21,6 @@ import {
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
-//use redux
-import { useSelector } from "react-redux";
 import axios from "axios";
 import { NOTICE } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
@@ -38,7 +36,6 @@ const Main = () => {
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();

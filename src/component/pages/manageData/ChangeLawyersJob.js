@@ -17,7 +17,6 @@ import { PlusCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
 import LoadLawyers from "../../../hook/LoadLawyers";
 import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
-
 import {
   HEADERS_EXPORT,
   baseUrl,
@@ -31,6 +30,7 @@ import dayjs from "dayjs";
 
 const Main = () => {
   //set hook
+
   const [lawyersList, setLoadingData, loadLawyerJobs] = LoadLawyers();
   const [lawyersOption, setLawyersOption] = useState();
   const [isModal, setIsModal] = useState(false);
@@ -90,7 +90,7 @@ const Main = () => {
     try {
       await axios
         .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
@@ -118,67 +118,6 @@ const Main = () => {
       setLoading(false);
     }
   };
-
-  //fillter สัญญาตามบริษัท
-  // const filterDataWithMoreThanTwoEnglishLetters = (dataArr) => {
-  //   // ฟังก์ชันเช็คว่าในค่ามีภาษาอังกฤษมากกว่า 2 ตัว
-  //   const hasMoreThanTwoEnglishLetters = (value) => {
-  //     const englishLetters = value.match(/[a-zA-Z]/g);
-  //     return englishLetters && englishLetters.length >= 2;
-  //   };
-
-  //   if (!Array.isArray(dataArr)) {
-  //     console.error("dataArr is not an array or is undefined");
-  //     return [];
-  //   }
-
-  //   // กรองข้อมูลที่มีภาษาอังกฤษมากกว่า 2 ตัวในฟิลด์ที่ต้องการ
-  //   return dataArr.filter(
-  //     (item) => item.CONTNO && hasMoreThanTwoEnglishLetters(item.CONTNO)
-  //   );
-  // };
-
-  // const filterDataWithMoreThanOneEnglishLetters = (dataArr) => {
-  //   // ฟังก์ชันเช็คว่าในค่ามีภาษาอังกฤษมากกว่า 2 ตัว
-  //   const hasMoreThanTwoEnglishLetters = (value) => {
-  //     const englishLetters = value.match(/[a-zA-Z]/g);
-  //     return englishLetters && englishLetters.length < 2;
-  //   };
-
-  //   const isOnlyNumbers = (value) => {
-  //     return /^\d+$/.test(value); // ใช้ RegEx เพื่อตรวจสอบว่าเป็นตัวเลขทั้งหมด
-  //   };
-
-  //   if (!Array.isArray(dataArr)) {
-  //     console.error("dataArr is not an array or is undefined");
-  //     return [];
-  //   }
-
-  //   // กรองข้อมูลที่มีภาษาอังกฤษมากกว่า 2 ตัวในฟิลด์ที่ต้องการ
-  //   return dataArr.filter(
-  //     (item) =>
-  //       isOnlyNumbers(item.CONTNO.replace(/-/g, "")) ||
-  //       hasMoreThanTwoEnglishLetters(item.CONTNO)
-  //   );
-  // };
-
-  // const filterDataNotAssign = (value) => {
-  //   if (companyId === "3") {
-  //     const filteredData = filterDataWithMoreThanTwoEnglishLetters(value);
-  //     console.log("filteredData3", filteredData);
-  //     setArrayTable(filteredData);
-
-  //     setDataArr(filteredData);
-  //     setTableLength(filteredData.length);
-  //   } else {
-  //     const filteredData = filterDataWithMoreThanOneEnglishLetters(value);
-  //     console.log("filteredData12", filteredData);
-
-  //     setArrayTable(filteredData);
-  //     setDataArr(filteredData);
-  //     setTableLength(filteredData.length);
-  //   }
-  // };
 
   const filterDataNotAssign = (value) => {
     function containsNumber(str) {
@@ -208,7 +147,6 @@ const Main = () => {
     } else {
       filteredData = value.filter((item) => {
         const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-        console.log("test12", test);
 
         // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
         if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
@@ -235,7 +173,7 @@ const Main = () => {
     try {
       filteredData = dataArr.find((item) => item.id === id);
       await axios
-        .put(baseUrl + PUT_STATUS, dataApprove, { HEADERS_EXPORT })
+        .put(baseUrl + PUT_STATUS, dataApprove, { headers: HEADERS_EXPORT })
         .then((resQuery) => {
           if (resQuery.status === 200) {
             const dataToUpdate = {

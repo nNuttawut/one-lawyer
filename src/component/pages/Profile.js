@@ -32,7 +32,6 @@ const Main = () => {
     setLoadingData(true);
     setLoadingDataRole(true);
     // ตั้งค่าฟิลด์ในฟอร์ม
-    console.log("load");
   }, [setLoadingDataRole, setLoadingData]);
 
   useEffect(() => {
@@ -45,7 +44,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(baseUrl + GET_BY_ID + userId, {
-        HEADERS_EXPORT,
+        headers: HEADERS_EXPORT,
       });
       if (response.data) {
         if (response.status === 200) {
@@ -61,7 +60,6 @@ const Main = () => {
         error.response ? error.response.data : error.message
       );
       setLoading(false);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
 
@@ -149,10 +147,7 @@ const Main = () => {
           }
         })
         .catch((err) => {
-          console.log(err);
-          if (err.status === 404) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
         });
     } catch (error) {
       console.error("Error fetching data:", error);

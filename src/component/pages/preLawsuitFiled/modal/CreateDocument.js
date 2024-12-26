@@ -11,7 +11,6 @@ import {
 } from "antd";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
@@ -35,7 +34,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [dataForm, setDataForm] = useState({
     dateCourt: "",
     trackingFee: 0,
-    lossBenefit: 0,
+    lossBenefit: null,
     suspensionAmount: 0,
     memo: "",
     nopay: 0,
@@ -44,6 +43,8 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     amountTotalCal: 0,
   });
   const [isModalDocument, setIsModalDocument] = useState(false);
+  const [buttonCal, setButtonCal] = useState(false);
+  const [buttonSubmit, setButtonSubmit] = useState(false);
   const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
     CurrencyFormat();
 
@@ -69,10 +70,10 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     try {
       const [lawsuitRes, loanRes] = await Promise.all([
         axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefualt.id}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
       ]);
 
@@ -103,7 +104,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     try {
       console.log("status", status);
       await axios
-        .put(baseUrl + PUT_STATUS, status, { HEADERS_EXPORT })
+        .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("resQuery", res.data);
@@ -121,7 +122,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         });
       console.log("data", data);
       await axios
-        .put(baseUrl + PUT_LAWSUIT_DETAIL, data, { HEADERS_EXPORT })
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, data, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("resQuery", res.data);
@@ -154,47 +155,126 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    const putData = {
-      ...dataLoadLawSuit,
-      subject: values.subject,
-      provincial_court: values.court,
-      tracking_fee: parseInt(values.trackingFee.replace(/,/g, "")),
-      litigation_funds: dataForm.intigationFounds,
-      suspension_amount: parseFloat(dataForm.suspensionAmount),
-      interest_rate: null,
-      fee: dataForm.fee,
-      attorney_fees: dataLoadLawSuit?.LOAN_TYPE_ID === 2 ? 3500 : 2500,
-    };
 
-    const putStatus = {
-      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_ID: dataDefualt.id,
-      MEMO: values.memo,
-      DATE: dataForm.dateCourt,
-      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
-    };
+    if (dataForm.dateCourt) {
+      setButtonCal(true);
+    }
+    let dateCurrent = dayjs(dataForm.dateCourt);
+    let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
+    const differenceMonth = dateCurrent.diff(lastPayDate, "month");
+    let lossBenefitValue;
 
-    setDataStore((prev) => ({
-      ...prev,
-      subject: values.subject,
-      provincial_court: values.court,
-      tracking_fee: parseInt(values.trackingFee.replace(/,/g, "")),
-      litigation_funds: dataForm.intigationFounds,
-      MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
-      LOAN_ID: dataDefualt.id,
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-      MEMO: values.memo,
-      DATE: dataForm.dateCourt,
-      lossBenefit: dataForm.lossBenefit,
-      suspensionAmount: dataForm.suspensionAmount,
-      nopay: dataForm.nopay,
-    }));
-    console.log("putData", putData);
+    if (dataForm.lossBenefit === null) {
+      lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
+        ? differenceMonth * dataLoadLoan?.LOAN?.TOT_UPAY
+        : 0;
+    } else {
+      lossBenefitValue = dataForm.lossBenefit ? dataForm.lossBenefit : 0;
+      console.log("else", dataForm.lossBenefit);
+    }
 
-    sendStatus(putStatus, putData);
+    let balance;
+    if (dataDefualt?.LOAN_TYPE_ID === 1) {
+      balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
+    } else {
+      balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
+    }
+
+    let result =
+      balance +
+      parseInt(lossBenefitValue) +
+      dataForm.trackingFee -
+      dataForm.suspensionAmount;
+
+    console.log(balance);
+    console.log(lossBenefitValue);
+    console.log(dataForm.trackingFee);
+    console.log(dataForm.suspensionAmount);
+
+    form.setFieldsValue({
+      intigationFounds: currencyFormatComma(result),
+      lossBenefit: currencyFormatComma(lossBenefitValue),
+    });
+
+    if (buttonSubmit) {
+      const putData = {
+        ...dataLoadLawSuit,
+        subject: values.subject,
+        provincial_court: values.court,
+        tracking_fee:
+          values?.trackingFee &&
+          typeof values.trackingFee === "string" &&
+          values.trackingFee.includes(",")
+            ? parseInt(values.trackingFee.replace(/,/g, ""))
+            : parseInt(values.trackingFee)
+            ? parseInt(values.trackingFee)
+            : 0,
+        litigation_funds:
+          values?.intigationFounds &&
+          typeof values.intigationFounds === "string" &&
+          values.intigationFounds.includes(",")
+            ? parseInt(values.intigationFounds.replace(/,/g, ""))
+            : parseInt(values.intigationFounds)
+            ? parseInt(values.intigationFounds)
+            : 0,
+        suspension_amount:
+          values?.suspensionAmount &&
+          typeof values.suspensionAmount === "string" &&
+          values.suspensionAmount.includes(",")
+            ? parseInt(values.suspensionAmount.replace(/,/g, ""))
+            : parseInt(values.suspensionAmount)
+            ? parseInt(values.suspensionAmount)
+            : 0,
+        interest_rate: null,
+        attorney_fees: dataLoadLawSuit?.LOAN_TYPE_ID === 2 ? 3500 : 2500,
+        date_of_plaint: dataForm.dateCourt,
+        lack_of_benefits:
+          values?.lossBenefit &&
+          typeof values.lossBenefit === "string" &&
+          values.lossBenefit.includes(",")
+            ? parseInt(values.lossBenefit.replace(/,/g, ""))
+            : parseInt(values.lossBenefit)
+            ? parseInt(values.lossBenefit)
+            : 0,
+      };
+
+      const putStatus = {
+        WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_ID: dataDefualt.id,
+        MEMO: values.memo,
+        DATE: dataForm.dateCourt,
+        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      };
+
+      setDataStore((prev) => ({
+        ...prev,
+        subject: values.subject,
+        provincial_court: values.court,
+        tracking_fee:
+          values?.trackingFee &&
+          typeof values.trackingFee === "string" &&
+          values.trackingFee.includes(",")
+            ? parseInt(values.trackingFee.replace(/,/g, ""))
+            : parseInt(values.trackingFee)
+            ? parseInt(values.trackingFee)
+            : 0,
+        litigation_funds: dataForm.intigationFounds,
+        MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
+        LOAN_ID: dataDefualt.id,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: dataForm.dateCourt,
+        lossBenefit: dataForm.lossBenefit,
+        suspensionAmount: dataForm.suspensionAmount,
+        nopay: dataForm.nopay,
+      }));
+      console.log("putData", putData);
+
+      sendStatus(putStatus, putData);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -218,92 +298,176 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(date, dateString);
     setDataForm({ ...dataForm, dateCourt: dateString });
     handleLossPay(dateString);
+    if (!date) {
+      form.setFieldsValue({
+        trackingFee: 0,
+        intigationFounds: 0,
+        lossBenefit: 0,
+        suspensionAmount: 0,
+      });
+      setButtonCal(false);
+    }
   };
 
   const onChangeTrackingFee = (value) => {
     console.log(value);
     let inputValue = value;
     isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
+    }
+
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
       let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
       form.setFieldsValue({
         trackingFee: formattedValue,
       });
+
       setDataForm({
         ...dataForm,
-        trackingFee: parseFloat(inputValue),
+        trackingFee: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
       });
     } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
         trackingFee: inputValue,
       });
+
       setDataForm({
         ...dataForm,
-        trackingFee: parseFloat(inputValue),
+        trackingFee: parseFloat(rawValue),
       });
     }
-    let balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
-    let result =
-      balance + dataForm.lossBenefit + parseInt(value.replace(/,/g, ""));
-
-    let calculatedFee;
-
-    if (result < 300000) {
-      calculatedFee = 1000;
-    } else {
-      calculatedFee = result * 0.02;
-    }
-
-    setDataForm((prev) => ({
-      ...prev,
-      intigationFounds: result,
-      amountTotalCal: result,
-      fee: calculatedFee,
-    }));
   };
 
   const onChangeSuspensionAmount = (value) => {
     let inputValue = value;
     console.log(value);
     isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
+    }
+
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
       let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
       form.setFieldsValue({
         suspensionAmount: formattedValue,
       });
+
       setDataForm({
         ...dataForm,
-        suspensionAmount: parseFloat(inputValue),
+        suspensionAmount: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
       });
     } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
         suspensionAmount: inputValue,
       });
+
       setDataForm({
         ...dataForm,
-        suspensionAmount: parseFloat(inputValue),
+        suspensionAmount: parseFloat(rawValue),
       });
     }
-    let result = dataForm?.amountTotalCal - parseInt(value.replace(/,/g, ""));
-    let calculatedFee;
-    if (result < 300000) {
-      calculatedFee = 1000;
-    } else {
-      calculatedFee = result * 0.02;
+  };
+  console.log(dataForm);
+
+  const onChangeInpuutLossBenefit = (value) => {
+    let inputValue = value;
+    console.log(value);
+    isNotNumber(inputValue.replace(/,/g, ""));
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
     }
 
-    setDataForm((prev) => ({
-      ...prev,
-      intigationFounds: result,
-      suspensionAmount: parseFloat(value.replace(/,/g, "")),
-      fee: calculatedFee,
-    }));
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
+      let intValue = parseInt(rawValue);
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
+      form.setFieldsValue({
+        lossBenefit: formattedValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        lossBenefit: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
+      });
+    } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
+      form.setFieldsValue({
+        lossBenefit: inputValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        lossBenefit: parseFloat(rawValue),
+      });
+    }
+  };
+
+  const onChangeInputLitigationFunds = (value) => {
+    let inputValue = value;
+    console.log(value);
+    isNotNumber(inputValue.replace(/,/g, ""));
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
+    }
+
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
+      let intValue = parseInt(rawValue);
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
+      form.setFieldsValue({
+        intigationFounds: formattedValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        intigationFounds: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
+      });
+    } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
+      form.setFieldsValue({
+        intigationFounds: inputValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        intigationFounds: parseFloat(rawValue),
+      });
+    }
   };
 
   const handleLossPay = (value) => {
@@ -311,13 +475,10 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     let dateCurrent = dayjs(value);
     let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
     const differenceMonth = dateCurrent.diff(lastPayDate, "month");
-    const lossBenefitValue = dataLoadLoan?.LOAN?.TOT_UPAY
-      ? differenceMonth * dataLoadLoan?.LOAN?.TOT_UPAY
-      : 0;
+
     setDataForm((prev) => ({
       ...prev,
       nopay: differenceMonth,
-      lossBenefit: lossBenefitValue,
     }));
   };
 
@@ -362,8 +523,15 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               ? "บอกกล่าวบังคับจำนอง"
               : "บอกเลิกสัญญาให้ชำระหนี้/บอกเลิกสัญญา",
           suspensionAmount: 0,
+          trackingFee: 0,
         }}
       >
+        <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
+          <p>
+            {`${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+            ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
+          </p>
+        </Form.Item>
         <Form.Item
           label="วันที่ส่งฟ้อง"
           name="dateCourt"
@@ -404,7 +572,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <Input onChange={(e) => onChangeInputSubject(e.target.value)} />
         </Form.Item>
         <Form.Item
-          label="ค่าติดตาม"
+          label="ค่าติดตามทวงถาม"
           name="trackingFee"
           rules={[
             {
@@ -416,6 +584,7 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <Input
             autoComplete="off"
             name="trackingFee"
+            placeholder="ไม่มีให้ใส่ 0"
             onChange={(e) => onChangeTrackingFee(e.target.value)}
           />
         </Form.Item>
@@ -438,26 +607,30 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         <Form.Item label="ผิดนัดชำระจำนวน" name="noPay">
           <p>{dataForm.nopay ? dataForm.nopay + " งวด" : "-"}</p>
         </Form.Item>
-        <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
-          <p>
-            {dataForm.lossBenefit
-              ? currencyFormatNoPoint(dataForm.lossBenefit) + " บาท"
-              : "-"}
-          </p>
-        </Form.Item>
-        <Form.Item label="จำนวนทุนทรัพย์" name="intigationFounds">
-          <p>
-            {dataForm.intigationFounds
-              ? currencyFormatNoPoint(dataForm.intigationFounds) + " บาท"
-              : "-"}
-          </p>
-        </Form.Item>
-        <Form.Item label="ค่าธรรมเนียมศาล" name="fee">
-          <p>
-            {dataForm.trackingFee
-              ? currencyFormatPoint(dataForm.fee) + " บาท"
-              : "-"}
-          </p>
+        {buttonCal ? (
+          <>
+            {dataDefualt.LOAN_TYPE_ID === 1 ? (
+              <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+                <Input
+                  autoComplete="off"
+                  name="lossBenefit"
+                  onChange={(e) => onChangeInpuutLossBenefit(e.target.value)}
+                />
+              </Form.Item>
+            ) : null}
+            <Form.Item label="จำนวนทุนทรัพย์" name="intigationFounds">
+              <Input
+                autoComplete="off"
+                name="intigationFounds"
+                onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
+              />
+            </Form.Item>
+          </>
+        ) : null}
+        <Form.Item label="คำนวณค่าโดยประมาณ" name="noPay">
+          <Button style={{ color: "blue" }} htmlType="submit">
+            คำนวณ
+          </Button>
         </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
@@ -473,7 +646,11 @@ const CreateDocument = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             ปิด
           </Button>
 
-          <Button style={{ color: "green" }} htmlType="submit">
+          <Button
+            style={{ color: "green" }}
+            onClick={() => setButtonSubmit(true)}
+            htmlType="submit"
+          >
             บันทึก
           </Button>
         </div>

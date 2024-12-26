@@ -23,9 +23,6 @@ import {
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
-//use redux
-import { useSelector } from "react-redux";
-
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import { AWAITING_JUDMENT } from "../../../utils/constant/StatusConstant";
@@ -43,7 +40,6 @@ const Main = () => {
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
@@ -88,7 +84,7 @@ const Main = () => {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + AWAITING_JUDMENT,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -288,6 +284,8 @@ const Main = () => {
       render: (record) => (
         <Tag color="orange" style={{ textAlign: "center" }}>
           {convertDateThai(record.DATE)}
+          <br />
+          {`เวลา ${dayjs(record.DATE).subtract(7, "hour").format("HH:mm")} น.`}
         </Tag>
       ),
     },

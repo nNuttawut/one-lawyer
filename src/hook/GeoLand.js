@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   GET_PROVICE_LAND,
   POST_DISTRICT_LAND,
-  HEADERS_EXPORT,
+  HEADERS_LOGIN,
 } from "../component/API/apiUrls";
 
 const GeoLand = () => {
@@ -12,7 +12,6 @@ const GeoLand = () => {
   const [dataProvice, setDataProvice] = useState();
   const [dataDistrict, setDataDistrict] = useState();
   const [dataSearch, setDataSearch] = useState(null);
-  console.log("dataSearch", dataSearch);
 
   useEffect(() => {
     if (loadingDataProvice) {
@@ -25,7 +24,7 @@ const GeoLand = () => {
     try {
       await axios
         .get(GET_PROVICE_LAND, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -56,7 +55,7 @@ const GeoLand = () => {
   const loadDataDistrict = async () => {
     try {
       await axios
-        .post(POST_DISTRICT_LAND, { pvcode: dataSearch, HEADERS_EXPORT })
+        .post(POST_DISTRICT_LAND, { pvcode: dataSearch, HEADERS_LOGIN })
         .then(async (res) => {
           if (res.status === 200) {
             setDataDistrict(res.data);

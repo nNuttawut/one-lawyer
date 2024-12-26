@@ -33,6 +33,7 @@ import {
   GET_PROVICE,
   GET_SUB_DISTRICT,
   HEADERS_EXPORT,
+  HEADERS_LOGIN,
 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
@@ -135,7 +136,7 @@ const DetailModal = ({ open, close, dataRec }) => {
     try {
       await axios
         .get(baseUrl + GET_DETAILS + dataRec.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -150,7 +151,7 @@ const DetailModal = ({ open, close, dataRec }) => {
 
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataRec.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -175,7 +176,7 @@ const DetailModal = ({ open, close, dataRec }) => {
     try {
       await axios
         .get(GET_PROVICE, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (resp) => {
           if (resp.status === 200) {
@@ -195,7 +196,7 @@ const DetailModal = ({ open, close, dataRec }) => {
 
       await axios
         .get(GET_DISTRICT + dataDetail?.investigateProperty[0]?.province, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (resd) => {
           if (resd.status === 200) {
@@ -214,7 +215,7 @@ const DetailModal = ({ open, close, dataRec }) => {
 
       await axios
         .get(GET_SUB_DISTRICT + dataDetail?.investigateProperty[0]?.district, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (ress) => {
           if (ress.status === 200) {

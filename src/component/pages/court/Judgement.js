@@ -57,7 +57,7 @@ const Main = () => {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JUDGEMENT,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -214,7 +214,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE);
+    const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const toDate = dayjs(recordDate).add(30, "days");
     const daysDifference = today.diff(toDate, "days");
@@ -329,7 +329,7 @@ const Main = () => {
                     </p>
                   ),
                   rowExpandable: (record) => {
-                    const recordDate = dayjs(record.DATE);
+                    const recordDate = dayjs(record.DATE).startOf("day");
                     const today = dayjs().startOf("day");
                     const daysDifference = today.diff(recordDate, "days");
                     return daysDifference > 30 && userId === record.LAWYER_ID;

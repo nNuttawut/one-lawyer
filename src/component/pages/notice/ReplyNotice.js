@@ -39,7 +39,6 @@ import UpdateStatusNotice from "./modal/UpdateStatusNotice";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
   const [isModal, setIsModal] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [isModalUpdateStatus, setIsModalUpdateStatus] = useState(false);
@@ -61,14 +60,14 @@ const Main = () => {
     loadData();
   }, []);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
+
     try {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -97,7 +96,7 @@ const Main = () => {
 
   const filterDataLawyer = (data) => {
     console.log("item.LAWYER_ID", data);
-    console.log("userId.id ", userId.id);
+    console.log("userId.id ", userId);
 
     if (Array.isArray(data)) {
       const newData = data.filter(
@@ -242,7 +241,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE);
+    const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color;

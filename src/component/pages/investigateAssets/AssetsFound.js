@@ -13,102 +13,83 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
+import { FormOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
+  GET_INVESTIGATE_LOANS_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
 import axios from "axios";
-import { INDICT } from "../../../utils/constant/StatusConstant";
+
 import DateCustom from "../../../hook/DateCustom";
-import CreateDocument from "./modal/CreateDocument";
-import DocumentEnforce from "./modal/DocumentEnforce";
-import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
-import EditFrom from "./modal/EditForm";
+import InvestigateAssets from "./modal/InvestigateAssets";
 import dayjs from "dayjs";
+import AssetsListSuccess from "./modal/AssetsListSuccess";
 
 const Main = () => {
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
   const [convertDateThai] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
-  const ROLE_ID = localStorage.getItem("ROLE_ID");
-  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
-  const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
+  const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataRecord, setDataRecord] = useState();
-  const [searchEdit, setSearchEdit] = useState(null);
+  const [isModalInvestigateAssets, setIsModalInvestigateAssets] =
+    useState(false);
+  const [isModalassetsListSuccess, setIsModalassetsListSuccess] =
+    useState(false);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const onExpand = (expanded, record) => {
-    if (expanded) {
-      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
-      setExpandedRowKeys([record.key]);
-    } else {
-      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
-      setExpandedRowKeys([]);
-    }
-  };
-
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
+
     try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + INDICT,
-        {
+      await axios
+        .get(baseUrl + GET_INVESTIGATE_LOANS_LIST, {
           headers: HEADERS_EXPORT,
-        }
-      );
-      if (response.data) {
-        let i = 1;
-        if (response.data) {
-          const newData = response.data.map((item) => ({
-            ...item,
-            key: i++,
-          }));
-          filterData(newData);
-          console.log(newData);
-          setSearchEdit(newData);
-          setLoading(false);
-        }
-      } else {
-        setArrayTable([]);
-      }
+        })
+        .then(async (res) => {
+          let i = 1;
+          if (res.status === 200) {
+            const newData = res.data.map((item) => ({
+              ...item,
+              key: i++,
+            }));
+            filterData(newData);
+            console.log("res Role", newData);
+          } else {
+            message.error("ไม่มีข้อมูล");
+            console.log("res Role", res.data);
+          }
+        })
+        .catch((err) => {
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
+        });
     } catch (error) {
-      console.error(
-        "Error posting data:",
-        error.response ? error.response.data : error.message
-      );
-      setLoading(false);
+      console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const filterData = (data) => {
-    if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
-      );
-
-      console.log("newData-->", newData);
+    if (data) {
+      const newData = data.filter((item) => item.investigation_status === 1);
+      console.log("newDataLawsuit 11", newData);
 
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -154,25 +135,24 @@ const Main = () => {
     }
   };
 
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
+
   const search = (event) => {
     console.log("query--->", event.target.value);
     onSearch(event.target.value);
   };
 
   const onSearch = (value) => {
-    let result = searchEdit.filter(
-      (item) =>
-        ((item.CONTNO && item.CONTNO.includes(value)) ||
-          (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
-          (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))) &&
-        item.LAWYER_ID === userId
-    );
-
-    if (value) {
-      setArrayTable(result);
-    } else {
-      setArrayTable(dataArr);
-    }
+    let result = dataArr.filter((item) => item.CONTNO.includes(value));
+    setArrayTable(result);
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -203,7 +183,8 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    if (data !== 0) {
+    console.log("dataArr", dataArr);
+    if (data) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -211,29 +192,65 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log(result);
-      setDataArr(result);
-      const arr = result.filter(
-        (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
-      );
-      console.log("arr", arr);
-      setArrayTable(arr);
+      const newData = result.filter((item) => item.investigation_status === 1);
+      console.log("result", newData);
+      setDataArr(newData);
+      setArrayTable(newData);
     } else {
       loadData();
       console.log("handleUpdateData loadData");
     }
   };
 
+  //ทำ render record ของตาราถ้าใช้ logic เยอะ
+  const renderDataAsset = (record) => {
+    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
+    const checkData = record.map((item) => !item.estimated_price); // ได้ array ของ true, false
+    console.log(checkData);
+    // ถ้าทุกค่าภายใน checkData เป็น false (หมายความว่า ประเมินหมดแล้ว)
+    const allFalse = checkData.every((value) => value === false);
+
+    // ถ้าทุกค่าภายใน checkData เป็น true (หมายความว่า ยังไม่ได้ประเมิน)
+    const allTrue = checkData.every((value) => value === true);
+
+    // if (allFalse) {
+    //   console.log("ทุกค่าถูกประเมินแล้ว");
+    // } else if (allTrue) {
+    //   console.log("ทุกค่ายังไม่ได้รับการประเมิน");
+    // } else {
+    //   console.log("มีค่าทั้งที่ประเมินแล้วและยังไม่ได้ประเมิน");
+    // }
+
+    let color = allTrue === true ? "blue" : allFalse ? "green" : "orange";
+
+    return (
+      <Tag color={color} key={record.id} style={{ textAlign: "center" }}>
+        {allFalse
+          ? "ประเมินเสร็จสิ้น"
+          : allTrue
+          ? "รอประเมินทรัพย์"
+          : "อยู่ในระหว่างการประเมินทรัพย์"}
+      </Tag>
+    );
+  };
+
+  //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
+    if (!record.investigation_date) {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.DATE).startOf("day");
+    const recordDate = dayjs(record.investigation_date).startOf("day");
     const today = dayjs().startOf("day");
+
+    const checkData = record.property_list.map((item) => !item.estimated_price); // ได้ array ของ true, false
+    console.log(checkData);
+    // ถ้าทุกค่าภายใน checkData เป็น false (หมายความว่า ประเมินหมดแล้ว)
+    const allFalse = checkData.every((value) => value === false);
+
+    // ถ้าทุกค่าภายใน checkData เป็น true (หมายความว่า ยังไม่ได้ประเมิน)
+    const allTrue = checkData.every((value) => value === true);
 
     // คำนวณความแตกต่างในหน่วยปี
     const yearsDifference = today.diff(recordDate, "year");
@@ -250,37 +267,29 @@ const Main = () => {
       .diff(recordDate, "month");
 
     // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
-    const remainingDays = today.diff(recordDate, "day");
+    const remainingDays = today
+      .subtract(yearsDifference, "year")
+      .subtract(remainingMonths, "month")
+      .diff(recordDate, "day");
 
-    if (record.LOAN_TYPE_ID === 1) {
-      color =
-        remainingDays > 30 && record.PROCESS_ID === 1
-          ? "green"
-          : record.PROCESS_ID === 3
-          ? "blue"
-          : "red";
+    if (allTrue) {
+      color = remainingDays > 7 ? "red" : "blue";
+    } else if (allFalse) {
+      color = "green";
     } else {
-      color =
-        remainingDays > 60 && record.PROCESS_ID === 1
-          ? "green"
-          : record.PROCESS_ID === 3
-          ? "blue"
-          : "red";
+      color = "orange";
     }
 
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.investigation_date
+      ? convertDateThai(record.investigation_date)
+      : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
         {
           <span>
-            {record.LOAN_TYPE_ID === 1 && remainingDays > 30
-              ? "เกิน"
-              : record.LOAN_TYPE_ID === 2 && remainingDays > 60
-              ? "เกิน"
-              : null}{" "}
-            {remainingDays} วัน
+            {remainingDays > 7 ? "เกิน" : null} {remainingDays} วัน
           </span>
         }
       </Tag>
@@ -329,16 +338,31 @@ const Main = () => {
         </>
       ),
     },
+
     {
-      title: "วันที่ส่งโนติส",
+      title: "สถานะ",
+      align: "center",
+      render: (record) => <>{renderDataAsset(record.property_list)}</>,
+    },
+    {
+      title: "วันที่สืบทรัพย์",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
       sorter: (a, b) => {
-        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+        // กรณีถ้า a.investigation_date เป็น null ให้ขึ้นก่อน
+        if (a.investigation_date === null) return -1;
+        if (b.investigation_date === null) return 1;
 
-        return dayjs(a.DATE).isBefore(b.DATE) ? -1 : 1;
+        // เปรียบเทียบวันที่ระหว่าง a.investigation_date และ b.investigation_date
+        const dateA = dayjs(a.investigation_date);
+        const dateB = dayjs(b.investigation_date);
+
+        if (dateA.isBefore(dateB)) return -1;
+        if (dateA.isAfter(dateB)) return 1;
+        return 0; // ถ้าเท่ากัน
       },
-      defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
+      defaultSortOrder: "ascend", // กำหนดการเรียงลำดับเริ่มต้น
+      sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
     },
   ];
 
@@ -375,15 +399,14 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {record.PROCESS_ID !== 3 ? (
+                      {!record.investigation_date ? (
                         <Button
-                          name="create"
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
                           }}
                           onClick={() => {
-                            setIsModalCreate(true);
+                            setIsModalInvestigateAssets(true);
                             setDataModal(record);
                           }}
                         >
@@ -391,54 +414,31 @@ const Main = () => {
                             style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : (
-                        <>
-                          {/* <Button
-                            name="formPrint"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button> */}
-                          <Button
-                            name="edit"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalEdit(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </>
-                      )}
+                      ) : null}
+
+                      {record.investigation_date ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalassetsListSuccess(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  rowExpandable: (record) =>
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "3" ||
+                    ROLE_ID === "4" ||
+                    ROLE_ID === "1",
                   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
@@ -451,29 +451,18 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
+      {isModalInvestigateAssets ? (
+        <InvestigateAssets
+          open={isModalInvestigateAssets}
+          close={setIsModalInvestigateAssets}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
-      {isModalUpdate ? (
-        <UpdateStatusBlackNumber
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEdit ? (
-        <EditFrom
-          open={isModalEdit}
-          close={setIsModalEdit}
+      {isModalassetsListSuccess ? (
+        <AssetsListSuccess
+          open={isModalassetsListSuccess}
+          close={setIsModalassetsListSuccess}
           dataDefualt={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
@@ -482,5 +471,5 @@ const Main = () => {
   );
 };
 
-const PreLawsuitFiled = MotionHoc(Main);
-export default PreLawsuitFiled;
+const AssetsFound = MotionHoc(Main);
+export default AssetsFound;

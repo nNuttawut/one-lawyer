@@ -10,6 +10,7 @@ import { baseUrl, POST_STATUS, HEADERS_EXPORT } from "../../../API/apiUrls";
 import { INDICT, NEGOTIATE } from "../../../../utils/constant/StatusConstant";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [defaultRadio, setDefaultRadio] = useState("enforce");
@@ -24,7 +25,7 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     if (dataDefault.DATE) {
-      const recordDate = dayjs(dataDefault.DATE);
+      const recordDate = dayjs(dataDefault.DATE).startOf("day");
       const toDay = dayjs().startOf("day");
       const toDate = dayjs(recordDate).add(30, "days");
       const daysDifference = toDay.diff(toDate, "days");
@@ -47,7 +48,7 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .post(baseUrl + POST_STATUS, data, { HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
@@ -126,7 +127,10 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
       LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
       MEMO: memoText,
-      DATE: statusSelect === INDICT ? null : dayjs().format("YYYY-MM-DD"),
+      DATE:
+        statusSelect === INDICT
+          ? dayjs(dataDefault.DATE).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD"),
     };
     console.log(postData);
     sendStatus(postData);

@@ -37,6 +37,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 
 const Main = () => {
   //set hook
+
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [lawyersOption, setLawyersOption] = useState();
   const [isModal, setIsModal] = useState(false);
@@ -98,7 +99,7 @@ const Main = () => {
     try {
       await axios
         .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JOB_NULL, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
@@ -153,8 +154,6 @@ const Main = () => {
     } else {
       filteredData = value.filter((item) => {
         const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-        console.log("test12", test);
-
         // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
         if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
           return item; // เก็บ item นี้ไว้
@@ -169,12 +168,6 @@ const Main = () => {
       setTableLength(filteredData.length);
     }
   };
-
-  //set redux
-  // const storeData = () => {
-  //   dispatch(updateData(arrayTable));
-  //   console.log("in store data");
-  // };
 
   const insertDataAll = async () => {
     setLoading(true);
@@ -225,7 +218,7 @@ const Main = () => {
           }, 1000);
         } else {
           await axios
-            .post(baseUrl + POST_STATUS, arrayData, { HEADERS_EXPORT })
+            .post(baseUrl + POST_STATUS, arrayData, { headers: HEADERS_EXPORT })
             .then((resQuery) => {
               if (resQuery.status === 201) {
                 console.log("arrayData.LOAN_ID", arrayData.LOAN_ID);
@@ -296,7 +289,7 @@ const Main = () => {
         filteredData = dataArr.find((item) => item.id === id);
         console.log("filteredData-->", filteredData);
         await axios
-          .post(baseUrl + POST_STATUS, dataApprove, { HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, dataApprove, { headers: HEADERS_EXPORT })
           .then((resQuery) => {
             if (resQuery.status === 201) {
               const dataToUpdate = {

@@ -14,7 +14,6 @@ import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   GET_PARCELS,
   HEADERS_EXPORT,
@@ -27,13 +26,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
-const EditNotice = ({
-  open,
-  close,
-  dataDefault,
-  funcUpdateStatus,
-  dataEdit,
-}) => {
+const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
@@ -98,7 +91,7 @@ const EditNotice = ({
       const response = await axios.get(
         baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefault.LAWSUIT_ID,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -109,7 +102,7 @@ const EditNotice = ({
       }
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -131,7 +124,7 @@ const EditNotice = ({
 
       await axios
         .get(baseUrl + GET_PARCELS + dataDefault.WORK_LOG_ID, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -166,7 +159,7 @@ const EditNotice = ({
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -182,7 +175,9 @@ const EditNotice = ({
             }
           });
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");

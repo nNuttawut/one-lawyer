@@ -15,6 +15,7 @@ import {
   AWAITING_JUDMENT,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const UpdateStatusBlackNumber = ({
   open,
@@ -52,10 +53,10 @@ const UpdateStatusBlackNumber = ({
     try {
       const [lawsuitRes, loanRes] = await Promise.all([
         axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefualt.id}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
       ]);
 
@@ -86,7 +87,7 @@ const UpdateStatusBlackNumber = ({
     try {
       console.log(data);
       await axios
-        .put(baseUrl + PUT_LAWSUIT_DETAIL, data, { HEADERS_EXPORT })
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, data, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("resQuery", res.data);
@@ -105,7 +106,7 @@ const UpdateStatusBlackNumber = ({
 
       console.log(status);
       await axios
-        .post(baseUrl + POST_STATUS, status, { HEADERS_EXPORT })
+        .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 201) {
             console.log("resQuery", res.data);
@@ -135,15 +136,9 @@ const UpdateStatusBlackNumber = ({
     }
   };
 
-  const onChangeDateOfPlaint = (date, dateString) => {
-    console.log(dateString);
-    setDataForm({ ...dataForm, dateOfPlaint: dateString });
-  };
-
-  console.log("setDataLoadLawSuit", dataLoadLawSuit);
-
   const onChangeConsiderationDate = (date, dateString) => {
     console.log(date, dateString);
+
     setDataForm({ ...dataForm, considerationDate: dateString });
   };
 
@@ -157,7 +152,6 @@ const UpdateStatusBlackNumber = ({
     const putData = {
       ...dataLoadLawSuit,
       black_case_number: values.blackNumber,
-      date_of_plaint: dataForm.dateOfPlaint,
       consideration_date: dataForm.considerationDate,
     };
     const postStatus = {
@@ -171,8 +165,8 @@ const UpdateStatusBlackNumber = ({
       PROCESS_ID: STATUS_PROCESS_PROGRESS,
     };
 
-    console.log(postStatus);
-    console.log(putData);
+    console.log("postStatus", postStatus);
+    console.log("putData", putData);
     sendStatus(putData, postStatus);
   };
 
@@ -204,6 +198,12 @@ const UpdateStatusBlackNumber = ({
             suspensionAmount: 0,
           }}
         >
+          <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
+            <p>
+              {`${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+            ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
+            </p>
+          </Form.Item>
           <Form.Item
             label="หมายเลขคดีดำ"
             name="blackNumber"
@@ -217,18 +217,6 @@ const UpdateStatusBlackNumber = ({
             <Input onChange={(e) => onChangeInputBlackNumber(e.target.value)} />
           </Form.Item>
           <Form.Item
-            label="วันประทับฟ้อง"
-            name="dateOfPlaint"
-            rules={[
-              {
-                required: true,
-                message: "โปรดเลือกวันที่",
-              },
-            ]}
-          >
-            <DatePicker onChange={onChangeDateOfPlaint} />
-          </Form.Item>
-          <Form.Item
             label="วันนัดพิจารณาคดี"
             name="considerationDate"
             rules={[
@@ -238,7 +226,13 @@ const UpdateStatusBlackNumber = ({
               },
             ]}
           >
-            <DatePicker onChange={onChangeConsiderationDate} />
+            <DatePicker
+              showTime={{
+                format: "HH:mm",
+              }}
+              format="YYYY-MM-DD HH:mm"
+              onChange={onChangeConsiderationDate}
+            />
           </Form.Item>
           <Form.Item label="หมายเหตุ" name="memo">
             <TextArea

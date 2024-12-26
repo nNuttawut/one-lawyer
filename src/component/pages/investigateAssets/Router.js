@@ -2,21 +2,24 @@ import React from "react";
 
 import { Routes, Route } from "react-router-dom";
 
-import Main from "./MainInvestigateAssets";
-import InvestigateAssetsBefore from "./InvestigateAssetsBefore";
-import InvestigateAssetsAfter from "./InvestigateAssetsAfter";
+import EstimateAssets from "./EstimateAssets";
+import CreateInvestigateAssets from "./CreateInvestigateAssets";
+import AssetsFound from "./AssetsFound";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Main />}></Route>
       <Route
-        path="investigateAssets/investigateAssets-before"
-        element={<InvestigateAssetsBefore />}
+        path="investigate-assets/create-invitigate-assets"
+        element={<CreateInvestigateAssets />}
       ></Route>
       <Route
-        path="investigateAssets/investigateAssets-after"
-        element={<InvestigateAssetsAfter />}
+        path="investigate-assets/estimate-assets"
+        element={<EstimateAssets />}
+      ></Route>
+      <Route
+        path="investigate-assets/assets-found"
+        element={<AssetsFound />}
       ></Route>
     </Routes>
   );

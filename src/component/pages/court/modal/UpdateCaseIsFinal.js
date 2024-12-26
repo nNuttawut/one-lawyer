@@ -41,7 +41,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   useEffect(() => {
     if (dataDefualt.DATE) {
       loadData();
-      const recordDate = dayjs(dataDefualt.DATE);
+      const recordDate = dayjs(dataDefualt.DATE).startOf("day");
       const toDay = dayjs().startOf("day");
       const toDate = dayjs(recordDate).add(15, "days");
       const daysDifference = toDay.diff(toDate, "days");
@@ -96,9 +96,6 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           })
           .catch((err) => {
             console.log(err);
-            if (err.status === 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
           });
 
         await axios
@@ -121,9 +118,6 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           })
           .catch((err) => {
             console.log(err);
-            if (err.status === 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
           });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -227,7 +221,8 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   return (
     <>
       <Modal
-        title="เปลี่ยนสถานะ"
+        title={`อัพเดทสถานะ ${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
+        ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
         open={open}
         onCancel={handleCancel}
         width={850}

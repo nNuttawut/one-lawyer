@@ -31,6 +31,7 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
+import TokenCheck from "../../../../hook/TokenCheck";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
@@ -146,7 +147,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       const response = await axios.get(
         baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefault.LAWSUIT_ID,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if (response.data) {
@@ -157,7 +158,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       }
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -179,7 +180,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       await axios
         .get(baseUrl + GET_PARCELS + dataDefault.WORK_LOG_ID, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -214,7 +215,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -230,7 +231,9 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
             }
           });
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");
@@ -264,7 +267,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           }
           await axios
             .put(baseUrl + PUT_PARCELS, arrayData, {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             })
             .then((resQuery) => {
               if (resQuery.status === 200) {
@@ -592,326 +595,6 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   onChange={onChange}
                 />
               </Form.Item>
-              {/* <Form.Item
-                label="ผู้ทำสัญญา"
-                name="cusId"
-                initialValue={dataDefault?.CUSTOMER_ID}
-              >
-                {`${loanData?.CUSTOMER?.SNAM}${loanData?.CUSTOMER?.NAME1}  ${loanData?.CUSTOMER?.NAME2}`}
-              </Form.Item>
-              <Form.Item
-                label="กรอกหมายเลข EMS"
-                name="parcelNoCustomer"
-                rules={[
-                  {
-                    required: true,
-                    message: "โปรดกรอกข้อมูล",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="ตัวอย่าง:EF582568151TH"
-                  name="parcelNoCustomer"
-                  maxLength={13}
-                  onChange={(e) => onChangeInputParcel(e.target.value)}
-                />
-              </Form.Item>
-              <Form.Item
-                label="การตอบกลับ"
-                name="radioCus"
-                rules={[
-                  {
-                    required: true,
-                    message: "โปรดเลือกข้อมูล",
-                  },
-                ]}
-              >
-                <Radio.Group onChange={onChange} defaultValue={defaultRadio}>
-                  <Radio value={1}>จากใบตอบกลับ</Radio>
-                  <Radio value={2}>จากเว็บไปษณีย์</Radio>
-                  <Radio value={3}>ยังไม่ตอบกลับ</Radio>
-                </Radio.Group>
-              </Form.Item> */}
-              {/* {dataDefault.LOAN_TYPE_ID === 1 ? (
-                <>
-                  {loanData?.GUARANTORS.length > 0 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 1"
-                        name="guarantor1"
-                        initialValue={loanData?.GUARANTORS[0]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[0]?.SNAM}${loanData?.GUARANTORS[0]?.NAME1} ${loanData?.GUARANTORS[0]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor1"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor1"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value={1}>จากใบตอบกลับ</Radio>
-                          <Radio value={2}>จากเว็บไปษณีย์</Radio>
-                          <Radio value={3}>ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                  {loanData?.GUARANTORS.length > 1 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 2"
-                        name="guarantor1"
-                        initialValue={loanData?.GUARANTORS[1]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[1]?.SNAM}${loanData?.GUARANTORS[1]?.NAME1} ${loanData?.GUARANTORS[1]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor1"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor2"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value={1}>จากใบตอบกลับ</Radio>
-                          <Radio value={2}>จากเว็บไปษณีย์</Radio>
-                          <Radio value={3}>ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                  {loanData?.GUARANTORS.length > 2 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 3"
-                        name="guarantor3"
-                        initialValue={loanData?.GUARANTORS[2]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[2]?.SNAM}${loanData?.GUARANTORS[2]?.NAME1} ${loanData?.GUARANTORS[2]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor3"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor3"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value="1">จากใบตอบกลับ</Radio>
-                          <Radio value="2">จากเว็บไปษณีย์</Radio>
-                          <Radio value="3">ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                  {loanData?.GUARANTORS.length > 3 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 4"
-                        name="guarantor4"
-                        initialValue={loanData?.GUARANTORS[3]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[3]?.SNAM}${loanData?.GUARANTORS[3]?.NAME1} ${loanData?.GUARANTORS[3]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor4"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor4"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value="1">จากใบตอบกลับ</Radio>
-                          <Radio value="2">จากเว็บไปษณีย์</Radio>
-                          <Radio value="3">ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                  {loanData?.GUARANTORS.length > 4 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 5"
-                        name="guarantor5"
-                        initialValue={loanData?.GUARANTORS[4]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[4]?.SNAM}${loanData?.GUARANTORS[4]?.NAME1} ${loanData?.GUARANTORS[4]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor5"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor5"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value="1">จากใบตอบกลับ</Radio>
-                          <Radio value="2">จากเว็บไปษณีย์</Radio>
-                          <Radio value="3">ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                  {loanData?.GUARANTORS.length > 5 ? (
-                    <>
-                      <Form.Item
-                        label="ผู้ค่ำที่ 6"
-                        name="guarantor6"
-                        initialValue={loanData?.GUARANTORS[5]?.id}
-                      >
-                        {`${loanData?.GUARANTORS[5]?.SNAM}${loanData?.GUARANTORS[5]?.NAME1} ${loanData?.GUARANTORS[5]?.NAME2}`}
-                      </Form.Item>
-                      <Form.Item
-                        label="กรอกหมายเลข EMS"
-                        name="parcelNoGuarantor6"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดกรอกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="ตัวอย่าง:EF582568151TH"
-                          maxLength={13}
-                          onChange={(e) => onChangeInputParcel(e.target.value)}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="การตอบกลับ"
-                        name="radioGuarantor6"
-                        rules={[
-                          {
-                            required: true,
-                            message: "โปรดเลือกข้อมูล",
-                          },
-                        ]}
-                      >
-                        <Radio.Group
-                          onChange={onChange}
-                          defaultValue={defaultRadio}
-                        >
-                          <Radio value="1">จากใบตอบกลับ</Radio>
-                          <Radio value="2">จากเว็บไปษณีย์</Radio>
-                          <Radio value="3">ยังไม่ตอบกลับ</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </>
-                  ) : null}
-                </>
-              ) : null} */}
 
               {sortedParcels?.map((parcel, index) => (
                 <div key={index}>

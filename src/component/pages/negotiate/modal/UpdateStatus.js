@@ -33,10 +33,12 @@ import {
   PAYMENT,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isModal, setIsModal] = useState(false);
@@ -78,11 +80,11 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         axios.get(
           `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
           {
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           }
         ),
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }),
       ]);
 
@@ -116,7 +118,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     try {
       console.log("status", status);
       await axios
-        .post(baseUrl + POST_STATUS, status, { HEADERS_EXPORT })
+        .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 201) {
             console.log("resQuery", res.data);
@@ -134,7 +136,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         });
 
       await axios
-        .post(baseUrl + POST_AGREEMENTS, agreement, { HEADERS_EXPORT })
+        .post(baseUrl + POST_AGREEMENTS, agreement, { headers: HEADERS_EXPORT })
         .then(async (res) => {
           if (res.status === 201) {
             console.log("resQuery", res.data);

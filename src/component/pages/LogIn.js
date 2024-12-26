@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 import logo from "../../assets/images/logoLogin.png";
 import axios from "axios";
-import { baseUrl, LOG_IN, HEADERS_LOGIN } from "../API/apiUrls";
+import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../API/apiUrls";
 
 export default function LogIn() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function LogIn() {
     try {
       await axios
         .post(baseUrl + LOG_IN, postData, {
-          HEADERS_LOGIN,
+          HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -32,7 +32,7 @@ export default function LogIn() {
             localStorage.setItem("COMPANY_ID", res.data?.COMPANY_ID);
             localStorage.setItem("ROLE_ID", res.data?.ROLE_ID);
             localStorage.setItem("ACTIVE_STATUS", res.data?.ACTIVE_STATUS);
-            localStorage.setItem("TOKEN", JSON.stringify(res.data.token));
+            localStorage.setItem("TOKEN", res.data.token);
             localStorage.setItem("line", res.data?.line_uid);
             message.success("เช้าสู่ระบบสำเร็จ");
             handleNavigate(res.data);
@@ -42,6 +42,7 @@ export default function LogIn() {
             setLoading(false);
           }
         })
+
         .catch((err) => {
           console.log(err);
           message.error("ข้อมูลไม่ถูกต้อง");
@@ -151,7 +152,7 @@ export default function LogIn() {
                   name="remember"
                   className="aligin-center"
                   valuePropName="checked"
-                  initialValue={false}
+                  initialValue={true}
                 >
                   <Checkbox>จดจำฉัน</Checkbox>
                 </Form.Item>

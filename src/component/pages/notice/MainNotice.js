@@ -62,7 +62,6 @@ const Main = () => {
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
-    console.log("HEADERS_EXPORT", HEADERS_EXPORT);
 
     try {
       const response = await axios.get(
@@ -236,7 +235,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE);
+    const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color;

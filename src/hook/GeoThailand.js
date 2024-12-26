@@ -6,7 +6,7 @@ import {
   GET_PROVICE,
   GET_SUB_DISTRICT,
   GET_ZIPCODE,
-  HEADERS_EXPORT,
+  HEADERS_LOGIN,
 } from "../component/API/apiUrls";
 
 const GeoThailand = () => {
@@ -36,7 +36,7 @@ const GeoThailand = () => {
     try {
       await axios
         .get(GET_PROVICE, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -68,7 +68,7 @@ const GeoThailand = () => {
     try {
       await axios
         .get(GET_DISTRICT + dataSearch.provice, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -101,7 +101,7 @@ const GeoThailand = () => {
     try {
       await axios
         .get(GET_SUB_DISTRICT + dataSearch.District, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -134,7 +134,7 @@ const GeoThailand = () => {
     try {
       await axios
         .get(GET_ZIPCODE + dataSearch.subDistrict, {
-          HEADERS_EXPORT,
+          HEADERS_LOGIN,
         })
         .then(async (res) => {
           if (res.status === 200) {

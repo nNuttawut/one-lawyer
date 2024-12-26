@@ -30,9 +30,6 @@ import {
   PUT_LAWSUIT_DETAIL,
 } from "../../API/apiUrls";
 
-//use redux
-import { useSelector } from "react-redux";
-
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
@@ -47,7 +44,6 @@ const Main = () => {
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
@@ -103,7 +99,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(baseUrl + GET_LAWSUIT_LIST, {
-        HEADERS_EXPORT,
+        headers: HEADERS_EXPORT,
       });
       if (response.data) {
         let i = 1;
@@ -134,7 +130,9 @@ const Main = () => {
     setLoading(true);
     try {
       await axios
-        .put(baseUrl + PUT_LAWSUIT_DETAIL, dataLawsuit, { HEADERS_EXPORT })
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, dataLawsuit, {
+          headers: HEADERS_EXPORT,
+        })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("resQuery", res.data);
@@ -145,10 +143,7 @@ const Main = () => {
           }
         })
         .catch((err) => {
-          console.log(err);
-          if (err.status > 400) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
         });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -236,9 +231,11 @@ const Main = () => {
     if (value === "all") {
       let result = dataArr.filter((item) => item);
       setArrayTable(result);
+      setTableLength(result.length);
     } else {
       let result = dataArr.filter((item) => item.USER_ID === value);
       setArrayTable(result);
+      setTableLength(result.length);
     }
   };
 
@@ -258,6 +255,7 @@ const Main = () => {
       console.log("else", result);
     }
     setArrayTable(result);
+    setTableLength(result.length);
   };
 
   const onChangeSelectLawyer = (value) => {
@@ -302,15 +300,15 @@ const Main = () => {
     let color =
       record.fee_payment_status === 1
         ? "green"
-        : record.fee_payment_status === 0
-        ? "orange"
+        : record.fee_payment_status === 2
+        ? "red"
         : "silver";
 
     return (
       <Tag color={color} key={record} style={{ textAlign: "center" }}>
         {record.fee_payment_status === 1
           ? "อนุมัติ"
-          : record.fee_payment_status === 0
+          : record.fee_payment_status === 2
           ? "ไม่อนุมัติ"
           : "รอดำเนินการ"}
       </Tag>
@@ -522,7 +520,11 @@ const Main = () => {
                   columns={columns}
                   dataSource={arrayTable}
                   scroll={{ x: 850 }}
-                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                  footer={() => (
+                    <>
+                      <p>จำนวนสัญญาทั้งหมด {tableLength}</p>
+                    </>
+                  )}
                   expandable={{
                     expandedRowRender: (record) => (
                       <p style={{ margin: 0 }}>

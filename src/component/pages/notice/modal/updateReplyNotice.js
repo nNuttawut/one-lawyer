@@ -28,6 +28,7 @@ import {
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import TokenCheck from "../../../../hook/TokenCheck";
 
 const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -70,7 +71,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     try {
       await axios
         .get(baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefault.LAWSUIT_ID, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -92,7 +93,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       await axios
         .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault?.CONTNO, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -127,7 +128,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -144,7 +145,9 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           });
 
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, { HEADERS_EXPORT })
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+            headers: HEADERS_EXPORT,
+          })
           .then(async (res) => {
             if (res.status === 200) {
               message.success("อัพเดทข้อมูลสำเร็จ");
@@ -181,7 +184,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           }
           await axios
             .post(baseUrl + POST_PARCELS, arrayData, {
-              HEADERS_EXPORT,
+              headers: HEADERS_EXPORT,
             })
             .then((resQuery) => {
               if (resQuery.status === 201) {

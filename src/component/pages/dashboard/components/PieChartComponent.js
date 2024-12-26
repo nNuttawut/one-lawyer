@@ -3,13 +3,7 @@ import * as echarts from "echarts/core";
 import { TooltipComponent, LegendComponent } from "echarts/components";
 import { PieChart } from "echarts/charts";
 import { CanvasRenderer } from "echarts/renderers";
-import { message } from "antd";
-import axios from "axios";
-import {
-  baseUrl,
-  GET_JOB_IN_PROGRESS,
-  HEADERS_EXPORT,
-} from "../../../API/apiUrls";
+
 import {
   AWAITING_JUDMENT,
   BAD_DEBTOR,

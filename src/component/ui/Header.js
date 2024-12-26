@@ -10,8 +10,6 @@ import {
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import "../../assets/styles/Sidenav.css";
 
-//use redux
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 function Header({ title, onPress, onClick }) {
@@ -22,8 +20,6 @@ function Header({ title, onPress, onClick }) {
   const openMenuItem = Boolean(anchorEl);
   const navigate = useNavigate();
 
-  //use redux
-  const profileRedux = useSelector((state) => state.authReducer.profile);
   const userName = localStorage.getItem("USERNAME");
 
   const handleClickMenuItem = (event) => {

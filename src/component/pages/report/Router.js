@@ -6,7 +6,7 @@ import ReportNotice from "./ReportNotice";
 export default function Router() {
   return (
     <Routes>
-      <Route path="/notice" element={<ReportNotice />}></Route>
+      <Route path="/" element={<ReportNotice />}></Route>
     </Routes>
   );
 }

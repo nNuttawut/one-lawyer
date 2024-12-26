@@ -22,8 +22,6 @@ import {
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { updateData } from "../../../redux/action/DataImport";
 import FailedImport from "./modal/FailedImport";
 import {
   GET_LOAN_FROM_SERVER_IBM,
@@ -75,7 +73,7 @@ const Main = () => {
       await axios
         .get(baseUrl + GET_LOAN_FROM_SERVER_IBM, {
           params: { contractNo: queryContno, company: companyUse },
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
@@ -132,7 +130,7 @@ const Main = () => {
         return axios
           .get(baseUrl + GET_LOAN_FROM_SERVER_IBM, {
             params: { contractNo: contno, company: companyUse },
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           })
           .then((resQuery) => {
             if (resQuery.status === 200) {
@@ -163,6 +161,7 @@ const Main = () => {
       setTableLength(filteredResults.length);
     } catch (error) {
       console.error("Error fetching data:", error);
+
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
@@ -230,7 +229,7 @@ const Main = () => {
         }
         await axios
           .post(baseUrl + POST_LOAN_IN_LAWYERS_DB, arrayData, {
-            HEADERS_EXPORT,
+            headers: HEADERS_EXPORT,
           })
           .then((resQuery) => {
             if (resQuery.status === 201) {

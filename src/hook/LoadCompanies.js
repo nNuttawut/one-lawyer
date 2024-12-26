@@ -22,7 +22,7 @@ const LoadCompanies = () => {
     try {
       await axios
         .get(baseUrl + GET_COMPANIES_LIST, {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {

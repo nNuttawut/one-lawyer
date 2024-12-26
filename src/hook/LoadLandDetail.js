@@ -3,36 +3,35 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import {
   baseUrl,
-  GET_ROLE_LIST,
+  GET_LAND_DETAIL_LIST,
   HEADERS_EXPORT,
 } from "../component/API/apiUrls";
 
-const RoleSelect = () => {
-  const [roleList, setroleList] = useState([]);
-  const [loadingDataRole, setLoadingDataRole] = useState(false);
+const LoadLandDetail = () => {
+  const [loadLandDetailList, setLoadLandDetailList] = useState([]);
+  const [loadingLandDetailData, setLoadingLandDetailData] = useState(false);
 
   useEffect(() => {
-    if (loadingDataRole) {
+    if (loadingLandDetailData) {
       loadData();
     }
-  }, [loadingDataRole]);
+  }, [loadingLandDetailData]);
 
   const loadData = async () => {
-    console.log("loadData Role");
-
+    console.log("loadData LoadLawyers");
     try {
       await axios
-        .get(baseUrl + GET_ROLE_LIST, {
+        .get(baseUrl + GET_LAND_DETAIL_LIST, {
           headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
           if (res.status === 200) {
-            setroleList(res.data);
-            console.log("res Role", res.data);
+            setLoadLandDetailList(res.data);
+            console.log("LoadLandDetailList", res.data);
           } else {
-            setroleList([]);
+            setLoadLandDetailList([]);
             message.error("ไม่มีข้อมูล");
-            console.log("res Role", res.data);
+            console.log("res", res.data);
           }
         })
         .catch((err) => console.log("ไม่มีข้อมูล", err));
@@ -42,7 +41,7 @@ const RoleSelect = () => {
     }
   };
 
-  return [roleList, setLoadingDataRole];
+  return [loadLandDetailList, setLoadingLandDetailData];
 };
 
-export default RoleSelect;
+export default LoadLandDetail;
