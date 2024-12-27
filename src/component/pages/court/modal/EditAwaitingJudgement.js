@@ -373,12 +373,22 @@ const EditAwaitingJudgement = ({
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
         CUSTOMER_ID: item.id,
         defendant_number: item.GARNO + 1,
-        cost_of_uselessness: values.costUnless1
-          ? parseInt(values.costUnless1.replace(/,/g, ""))
-          : null,
-        cost_of_useleseness_per_month: values.costPermonth1
-          ? parseInt(values.costPermonth1.replace(/,/g, ""))
-          : null,
+        cost_of_uselessness:
+          values?.costUnless1 &&
+          typeof values.costUnless1 === "string" &&
+          values.costUnless1.includes(",")
+            ? parseInt(values.costUnless1.replace(/,/g, ""))
+            : parseInt(values.costUnless1)
+            ? parseInt(values.costUnless1)
+            : 0,
+        cost_of_useleseness_per_month:
+          values?.costPermonth1 &&
+          typeof values.costPermonth1 === "string" &&
+          values.costPermonth1.includes(",")
+            ? parseInt(values.costPermonth1.replace(/,/g, ""))
+            : parseInt(values.costPermonth1)
+            ? parseInt(values.costPermonth1)
+            : 0,
         cost_of_useleseness_month: values.costMonth1,
         judge_number: 1,
       }));
@@ -389,12 +399,22 @@ const EditAwaitingJudgement = ({
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
         CUSTOMER_ID: item.id,
         defendant_number: item.GARNO + 1,
-        cost_of_uselessness: values.costUnless2
-          ? parseInt(values.costUnless2.replace(/,/g, ""))
-          : null,
-        cost_of_useleseness_per_month: values.costPermonth2
-          ? parseInt(values.costPermonth2.replace(/,/g, ""))
-          : null,
+        cost_of_uselessness:
+          values?.costUnless2 &&
+          typeof values.costUnless2 === "string" &&
+          values.costUnless2.includes(",")
+            ? parseInt(values.costUnless2.replace(/,/g, ""))
+            : parseInt(values.costUnless2)
+            ? parseInt(values.costUnless2)
+            : 0,
+        cost_of_useleseness_per_month:
+          values?.costPermonth2 &&
+          typeof values.costPermonth2 === "string" &&
+          values.costPermonth2.includes(",")
+            ? parseInt(values.costPermonth2.replace(/,/g, ""))
+            : parseInt(values.costPermonth2)
+            ? parseInt(values.costPermonth2)
+            : 0,
         cost_of_useleseness_month: values.costMonth2,
         judge_number: 2,
       }));
@@ -413,7 +433,14 @@ const EditAwaitingJudgement = ({
       judgementData = {
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
         red_case_number: values.redNumber,
-        judgement: parseInt(values.judgement1.replace(/,/g, "")),
+        judgement:
+          values?.judgement1 &&
+          typeof values.judgement1 === "string" &&
+          values.judgement1.includes(",")
+            ? parseInt(values.judgement1.replace(/,/g, ""))
+            : parseInt(values.judgement1)
+            ? parseInt(values.judgement1)
+            : 0,
         judgement_filepath: values.judgementFile,
         interest_rate: values.interestRate,
         final_case_date: null,
@@ -423,9 +450,13 @@ const EditAwaitingJudgement = ({
         fee: dataLoadLawSuit.lawsuit.fee,
         enforce_case_date: null,
         enforce_case_filepath: null,
-        attorney_fees: values.lawyerFeeEnforce
-          ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
-          : null,
+        attorney_fees:
+          typeof values.lawyerFeeEnforce === "string" &&
+          values.lawyerFeeEnforce.includes(",")
+            ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
+            : parseInt(values.lawyerFeeEnforce)
+            ? parseInt(values.lawyerFeeEnforce)
+            : 0,
       };
     } else {
       statusData = {
@@ -440,10 +471,20 @@ const EditAwaitingJudgement = ({
       };
       agreement = {
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-        total_amount: parseInt(values.paymentAmount.replace(/,/g, "")),
-        installment_amount: parseInt(
-          values.paymentPerMonthAmount.replace(/,/g, "")
-        ),
+        total_amount:
+          typeof values.paymentAmount === "string" &&
+          values.paymentAmount.includes(",")
+            ? parseInt(values.paymentAmount.replace(/,/g, ""))
+            : parseInt(values.paymentAmount)
+            ? parseInt(values.paymentAmount)
+            : 0,
+        installment_amount:
+          typeof values.paymentPerMonthAmount === "string" &&
+          values.paymentPerMonthAmount.includes(",")
+            ? parseInt(values.paymentPerMonthAmount.replace(/,/g, ""))
+            : parseInt(values.paymentPerMonthAmount)
+            ? parseInt(values.paymentPerMonthAmount)
+            : 0,
         installment_count: values.costMonth3,
         document_filepath: values.paymentFile,
         mark: values.memo,

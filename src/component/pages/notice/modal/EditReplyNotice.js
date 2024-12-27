@@ -292,7 +292,6 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } finally {
         setLoading(false);
         handleCancel();
-        window.location.reload();
       }
     } else {
       message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");

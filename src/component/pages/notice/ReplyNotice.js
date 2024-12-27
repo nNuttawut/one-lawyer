@@ -229,6 +229,7 @@ const Main = () => {
       );
       console.log("arr", arr);
       setArrayTable(arr);
+      loadData();
     } else {
       loadData();
       console.log("handleUpdateData loadData");
