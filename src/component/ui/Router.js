@@ -32,96 +32,95 @@ import ReplyNotice from "../pages/notice/ReplyNotice";
 import Liff from "../pages/lineLogIn/Liff";
 import Loginline from "../pages/lineLogIn/LoginLine";
 import { AnimatePresence } from "framer-motion";
-import { createClient } from "@supabase/supabase-js";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+// import { createClient } from "@supabase/supabase-js";
+// import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import CreateInvestigateAssets from "../pages/investigateAssets/CreateInvestigateAssets";
 import AssetsFound from "../pages/investigateAssets/AssetsFound";
+import ChargerIndict from "../pages/chargeCourt/ChargeIndict";
 
-const supabase = createClient(
-  "https://btjqmddnrozkizntpzkg.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0anFtZGRucm96a2l6bnRwemtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUyNzA3MzgsImV4cCI6MjA0MDg0NjczOH0.5tBKhAwdjk9dgshiZkqhd7jhWsrJ-7xHat7P1hm0n7I"
-);
+// const supabase = createClient(
+//   "https://btjqmddnrozkizntpzkg.supabase.co",
+//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0anFtZGRucm96a2l6bnRwemtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjUyNzA3MzgsImV4cCI6MjA0MDg0NjczOH0.5tBKhAwdjk9dgshiZkqhd7jhWsrJ-7xHat7P1hm0n7I"
+// );
 
 export default function Router() {
   return (
     <>
-      <SessionContextProvider supabaseClient={supabase}>
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route path="/*" element={<DashboardRoute />} />
-            <Route path="/final-case/*" element={<FinalCase />} />
-            <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
-            <Route path="/disbursement/*" element={<DisbursementRoute />} />
-            <Route path="/notice/create-notice/*" element={<Notice />} />
-            <Route path="/notice/reply-notice/*" element={<ReplyNotice />} />
-            <Route
-              path="/investigate-assets/*"
-              element={<InvestigateAssetsRoute />}
-            />
-            <Route
-              path="/investigate-assets/assets-found/*"
-              element={<AssetsFound />}
-            />
-            <Route
-              path="/investigate-assets/estimate-assets/*"
-              element={<EstimateAssets />}
-            />
-            <Route
-              path="investigate-assets/create-invitigate-assets/*"
-              element={<CreateInvestigateAssets />}
-            />
+      {/* <SessionContextProvider supabaseClient={supabase}> */}
+      <AnimatePresence mode="wait">
+        <Routes>
+          <Route path="/" element={<DashboardRoute />} />
+          <Route path="/final-case" element={<FinalCase />} />
+          <Route path="/debt-payment" element={<DebtPaymentRoute />} />
+          <Route path="/disbursement/" element={<DisbursementRoute />} />
+          <Route path="/notice/create-notice" element={<Notice />} />
+          <Route path="/notice/reply-notice" element={<ReplyNotice />} />
+          <Route
+            path="/investigate-assets"
+            element={<InvestigateAssetsRoute />}
+          />
+          <Route
+            path="/investigate-assets/assets-found"
+            element={<AssetsFound />}
+          />
+          <Route
+            path="/investigate-assets/estimate-assets"
+            element={<EstimateAssets />}
+          />
+          <Route
+            path="investigate-assets/create-invitigate-assets"
+            element={<CreateInvestigateAssets />}
+          />
 
-            <Route
-              path="/pre-lawsuit-filed/*"
-              element={<PreLawsuitFiledRoute />}
-            />
-            <Route path="/report/notice/*" element={<ReportNotice />} />
-            <Route
-              path="/sale-announcement/*"
-              element={<SaleAnnouncementRoute />}
-            />
-            <Route
-              path="/send-to-enforcement/*"
-              element={<EnforcementRoute />}
-            />
-            <Route path="/negotiate/*" element={<NegotiateRoute />} />
-            <Route path="/notifications/*" element={<NotificationRouter />} />
-            <Route path="/detail-status/*" element={<DetailStatusRouter />} />
+          <Route path="/pre-lawsuit-filed" element={<PreLawsuitFiledRoute />} />
+          <Route path="/report/notice" element={<ReportNotice />} />
+          <Route
+            path="/sale-announcement"
+            element={<SaleAnnouncementRoute />}
+          />
+          <Route path="/send-to-enforcement" element={<EnforcementRoute />} />
+          <Route path="/negotiate" element={<NegotiateRoute />} />
+          <Route path="/notifications" element={<NotificationRouter />} />
+          <Route path="/detail-status" element={<DetailStatusRouter />} />
 
-            <Route path="/court/case-is-final/*" element={<CaseIsFinal />} />
-            <Route path="/court/judgement/*" element={<Judgement />} />
-            <Route
-              path="/court/awaiting-judgment/*"
-              element={<AwaitingJudgment />}
-            />
-            <Route path="/court/report-court/*" element={<ReportCourt />} />
-            <Route
-              path="/manage-data/assign-lawyers/*"
-              element={<AssignLawyers />}
-            />
-            <Route
-              path="/manage-data/change-lawyers-jobs/*"
-              element={<ChangeLawyersJob />}
-            />
-            <Route path="/manage-data/import-data/*" element={<ImportData />} />
-            <Route path="/chang-password/*" element={<ChangePassword />} />
-            <Route path="/profile/*" element={<Profile />} />
-            <Route path="/calendar/*" element={<Calendar />} />
-            <Route
-              path="/commission/commission-law/*"
-              element={<CommissionLaw />}
-            />
-            <Route
-              path="/commission/commission-investigate/*"
-              element={<CommissionInvestigate />}
-            />
-            <Route path="/guidbook/read-text/*" element={<ReadText />} />
-            <Route path="/guidbook/test/*" element={<Test />} />
-            <Route path="/liff/*" element={<Liff />} />
-            <Route path="/login-line/*" element={<Loginline />} />
-          </Routes>
-        </AnimatePresence>
-      </SessionContextProvider>
+          <Route path="/court/case-is-final" element={<CaseIsFinal />} />
+          <Route path="/court/judgement" element={<Judgement />} />
+          <Route
+            path="/court/awaiting-judgment"
+            element={<AwaitingJudgment />}
+          />
+          <Route path="/court/report-court" element={<ReportCourt />} />
+          <Route
+            path="/manage-data/assign-lawyers"
+            element={<AssignLawyers />}
+          />
+          <Route
+            path="/manage-data/change-lawyers-jobs"
+            element={<ChangeLawyersJob />}
+          />
+          <Route path="/manage-data/import-data" element={<ImportData />} />
+          <Route path="/chang-password" element={<ChangePassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route
+            path="/commission/commission-law"
+            element={<CommissionLaw />}
+          />
+          <Route
+            path="/commission/commission-investigate"
+            element={<CommissionInvestigate />}
+          />
+          <Route
+            path="/charge-court/charge-indict"
+            element={<ChargerIndict />}
+          />
+          <Route path="/guidbook/read-text" element={<ReadText />} />
+          <Route path="/guidbook/test" element={<Test />} />
+          <Route path="/liff" element={<Liff />} />
+          <Route path="/login-line" element={<Loginline />} />
+        </Routes>
+      </AnimatePresence>
+      {/* </SessionContextProvider> */}
     </>
   );
 }

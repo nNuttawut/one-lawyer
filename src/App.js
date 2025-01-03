@@ -2,7 +2,7 @@ import React from "react";
 import "./assets/styles/main.css";
 import "./assets/styles/responsive.css";
 import Main from "./component/ui/Main";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 
 import LogIn from "./component/pages/LogIn";
 import Loginline from "./component/pages/lineLogIn/LoginLine";
@@ -16,11 +16,9 @@ function App() {
 
   if (!token) {
     return (
-      <>
-        <Router>
-          <LogIn />
-        </Router>
-      </>
+      <Router>
+        <LogIn />
+      </Router>
     );
   }
   return (

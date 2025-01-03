@@ -540,7 +540,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        judgement1: inputValue,
+        judgement1: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -559,7 +561,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        paymentAmount: inputValue,
+        paymentAmount: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -579,7 +583,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        costUnless1: inputValue,
+        costUnless1: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -599,7 +605,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        costUnless2: inputValue,
+        costUnless2: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -619,7 +627,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        costPermonth1: inputValue,
+        costPermonth1: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -639,7 +649,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        paymentPerMonthAmount: inputValue,
+        paymentPerMonthAmount: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -659,7 +671,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        costPermonth2: inputValue,
+        costPermonth2: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -679,7 +693,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        trackingFeeEnforce: inputValue,
+        trackingFeeEnforce: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -699,7 +715,9 @@ const EditAwaitingJudgement = ({
       });
     } else {
       form.setFieldsValue({
-        lawyerFeeEnforce: inputValue,
+        lawyerFeeEnforce: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };

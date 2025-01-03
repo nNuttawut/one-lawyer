@@ -15,6 +15,7 @@ import {
   DollarOutlined,
   CheckOutlined,
   FileTextOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
@@ -214,13 +215,39 @@ function Sidenav({ color, onClick }) {
         // },
       ],
     },
+    {
+      key: "16",
+      pageName: "charge-court",
+      label: "charge-court",
+      path: "/charge-court",
+      icon: <WalletOutlined />,
+      title: "งบเบิกจ่าย",
+      children: [
+        {
+          key: "161",
+          icon: <CaretRightOutlined />,
+          pageName: "charge-court",
+          path: "charge-court/charge-indict",
+          label: "ค่าฤชาส่วนฟ้อง",
+        },
+      ],
+    },
     // {
-    //   key: "12",
+    //   key: "16",
     //   pageName: "disbursement",
     //   label: "disbursement",
     //   path: "/disbursement",
     //   icon: <WalletOutlined />,
     //   title: "งบเบิกจ่าย",
+    //   children: [
+    //     {
+    //       key: "161",
+    //       icon: <CaretRightOutlined />,
+    //       pageName: "disbursement",
+    //       path: "disbursement/indict-charge",
+    //       label: "ค่าฤชาส่วนฟ้อง",
+    //     },
+    //   ],
     // },
     // {
     //   key: "13",

@@ -25,7 +25,6 @@ import {
 
 import axios from "axios";
 import {
-  INDICT,
   NOTICE,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
@@ -39,14 +38,10 @@ const Main = () => {
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
-  const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
@@ -55,7 +50,6 @@ const Main = () => {
   const [selectedOption, setSelectedOption] = useState(1);
   const [dataSearchByDate, setDataSearchByDate] = useState(null);
 
-  console.log("sssssssssss");
   useEffect(() => {
     loadData();
   }, [selectedOption]);
@@ -110,6 +104,8 @@ const Main = () => {
   };
 
   const filterDataLawyer = (data) => {
+    console.log("data", data);
+
     if (Array.isArray(data)) {
       const firstDayOfMonth = dayjs().startOf("month").format("YYYY-MM-DD");
       let newData;
@@ -132,6 +128,7 @@ const Main = () => {
             firstDayOfMonth <= item.DATE
         );
       }
+      console.log("newData", newData);
 
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -142,6 +139,7 @@ const Main = () => {
       }
 
       let filteredData;
+      console.log("userCompany", userCompany);
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {

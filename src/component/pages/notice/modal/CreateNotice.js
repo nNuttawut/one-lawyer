@@ -188,6 +188,10 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } finally {
         setLoading(false);
         handleCancel();
+        setLoading(false);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
     } else {
       message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");

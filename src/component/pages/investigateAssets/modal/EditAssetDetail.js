@@ -303,7 +303,9 @@ const EditAssetsDetail = ({
       console.log("formattedValue", formattedValue);
     } else {
       form.setFieldsValue({
-        estimatedPrice: inputValue,
+        estimatedPrice: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };

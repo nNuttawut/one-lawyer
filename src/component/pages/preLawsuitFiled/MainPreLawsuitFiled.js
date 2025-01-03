@@ -30,6 +30,7 @@ import DocumentEnforce from "./modal/DocumentEnforce";
 import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
 import EditFrom from "./modal/EditForm";
 import dayjs from "dayjs";
+import EditUpdateStatusBlackNumber from "./modal/EditUpdateStatusBlackNumber";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -41,6 +42,7 @@ const Main = () => {
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModalEditUpdate, setIsModalEditUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -330,6 +332,13 @@ const Main = () => {
       ),
     },
     {
+      title: "ประเภทสัญญา",
+      align: "center",
+      render: (record) => (
+        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
+      ),
+    },
+    {
       title: "วันที่ส่งโนติส",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
@@ -375,7 +384,8 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {record.PROCESS_ID !== 3 ? (
+                      {record.PROCESS_ID !== 3 &&
+                      record.MAIN_STATUS_ID === record.STATUS_ID ? (
                         <Button
                           name="create"
                           style={{
@@ -391,7 +401,8 @@ const Main = () => {
                             style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : (
+                      ) : record.PROCESS_ID === 3 &&
+                        record.MAIN_STATUS_ID === record.STATUS_ID ? (
                         <>
                           {/* <Button
                             name="formPrint"
@@ -435,7 +446,21 @@ const Main = () => {
                             />
                           </Button>
                         </>
-                      )}
+                      ) : null}
+                      {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
+                        <Button
+                          name="EditupdateStatus"
+                          style={{ boxShadow: "0 4px 3px" }}
+                          onClick={() => {
+                            setIsModalEditUpdate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <SyncOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,
@@ -455,7 +480,7 @@ const Main = () => {
         <CreateDocument
           open={isModalCreate}
           close={setIsModalCreate}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
@@ -466,7 +491,15 @@ const Main = () => {
         <UpdateStatusBlackNumber
           open={isModalUpdate}
           close={setIsModalUpdate}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEditUpdate ? (
+        <EditUpdateStatusBlackNumber
+          open={isModalEditUpdate}
+          close={setIsModalEditUpdate}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
@@ -474,7 +507,7 @@ const Main = () => {
         <EditFrom
           open={isModalEdit}
           close={setIsModalEdit}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}

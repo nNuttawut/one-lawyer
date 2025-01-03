@@ -1,23 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Form, Input, Modal, Card, message } from "antd";
-import { LoadingOutlined, AuditOutlined } from "@ant-design/icons";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Modal,
+  Card,
+  message,
+  Tooltip,
+} from "antd";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LAWSUIT_DETAIL_BY_LOAN,
-  GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
-  POST_STATUS,
   PUT_LAWSUIT_DETAIL,
+  PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import {
-  AWAITING_JUDMENT,
-  STATUS_PROCESS_PROGRESS,
-} from "../../../../utils/constant/StatusConstant";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
-const UpdateStatusBlackNumber = ({
+const EditUpdateStatusBlackNumber = ({
   open,
   close,
   dataDefault,
@@ -27,6 +32,7 @@ const UpdateStatusBlackNumber = ({
   const [memoText, setMemoText] = useState("");
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
+  const [arrow, setArrow] = useState("Show");
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const { TextArea } = Input;
@@ -35,6 +41,9 @@ const UpdateStatusBlackNumber = ({
   const [dataForm, setDataForm] = useState({});
   const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
     CurrencyFormat();
+  const [dateDefault, setDateDefault] = useState(null);
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
   useEffect(() => {
     setIsModal(open);
@@ -44,12 +53,37 @@ const UpdateStatusBlackNumber = ({
     }
   }, [isModal]);
 
+  useEffect(() => {
+    setLoading(true);
+    if (dataLoadLawSuit) {
+      form.setFieldsValue({
+        blackNumber: dataLoadLawSuit?.black_case_number,
+        docShipingCost: dataLoadLawSuit?.attorney_fees,
+      });
+      setDateDefault(
+        dayjs(dataLoadLawSuit?.consideration_date).format("YYYY-MM-DD HH:mm")
+      );
+      setLoading(false);
+    }
+  }, [dataLoadLawSuit]);
+
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
     setIsModal(false);
   };
 
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
   const loadData = async () => {
     setLoading(true);
     try {
@@ -98,15 +132,11 @@ const UpdateStatusBlackNumber = ({
 
       console.log(status);
       await axios
-        .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
+        .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
         .then(async (res) => {
-          if (res.status === 201) {
+          if (res.status === 200) {
             console.log("resQuery", res.data);
             message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
-            funcUpdateStatus({
-              ...dataDefault,
-              MAIN_STATUS_ID: status.MAIN_STATUS_ID,
-            });
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
@@ -125,6 +155,9 @@ const UpdateStatusBlackNumber = ({
     } finally {
       setLoading(false);
       handleCancel();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
@@ -148,7 +181,9 @@ const UpdateStatusBlackNumber = ({
     const putData = {
       ...dataLoadLawSuit,
       black_case_number: values.blackNumber,
-      consideration_date: dataForm.considerationDate,
+      consideration_date: values.considerationDate
+        ? dayjs(values.considerationDate).format("YYYY-MM-DD HH:mm")
+        : dateDefault,
       attorney_fees:
         values?.docShipingCost &&
         typeof values.docShipingCost === "string" &&
@@ -158,20 +193,20 @@ const UpdateStatusBlackNumber = ({
           ? parseInt(values.docShipingCost)
           : 0,
     };
-    const postStatus = {
-      MAIN_STATUS_ID: AWAITING_JUDMENT,
-      LOAN_ID: dataDefault.id,
+    const putStatus = {
+      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
-      LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
+      LOAN_ID: dataDefault.id,
       MEMO: values.memo,
-      DATE: dataForm.considerationDate,
-      PROCESS_ID: STATUS_PROCESS_PROGRESS,
+      DATE: values.considerationDate
+        ? dayjs(values.considerationDate).format("YYYY-MM-DD HH:mm")
+        : dateDefault,
+      PROCESS_ID: dataDefault.PROCESS_ID,
     };
 
-    console.log("postStatus", postStatus);
+    console.log("postStatus", putStatus);
     console.log("putData", putData);
-    sendStatus(putData, postStatus);
+    sendStatus(putData, putStatus);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -199,7 +234,7 @@ const UpdateStatusBlackNumber = ({
           onFinishFailed={onFinishFailed}
           initialValues={{
             memo: null,
-            docShipingCost: 0,
+            considerationDate: dataLoadLawSuit?.consideration_date,
           }}
         >
           <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
@@ -220,24 +255,28 @@ const UpdateStatusBlackNumber = ({
           >
             <Input onChange={(e) => onChangeInputBlackNumber(e.target.value)} />
           </Form.Item>
-          <Form.Item
-            label="วันนัดพิจารณาคดี"
-            name="considerationDate"
-            rules={[
-              {
-                required: true,
-                message: "โปรดเลือกวันที่",
-              },
-            ]}
-          >
-            <DatePicker
-              showTime={{
-                format: "HH:mm",
-              }}
-              format="YYYY-MM-DD HH:mm"
-              onChange={onChangeConsiderationDate}
-            />
+
+          <Form.Item label="วันนัดพิจารณาคดี" name="considerationDate">
+            {dayjs(dataDefault.DATE).utc().format("YYYY/MM/DD HH:mm") + " น."}
           </Form.Item>
+          <Tooltip
+            placement="bottom"
+            title="ถ้าไม่ต้องการเปลี่ยนวันที่ไม่ต้องเลือก !"
+            arrow={mergedArrow}
+          >
+            <Form.Item
+              label="ต้องการเปลี่ยนเป็นวันที่"
+              name="considerationDate"
+            >
+              <DatePicker
+                showTime={{
+                  format: "HH:mm",
+                }}
+                format="YYYY-MM-DD HH:mm"
+                onChange={onChangeConsiderationDate}
+              />
+            </Form.Item>
+          </Tooltip>
           <Form.Item
             label="ค่าส่งหมาย"
             name="docShipingCost"
@@ -280,7 +319,7 @@ const UpdateStatusBlackNumber = ({
   return (
     <>
       <Modal
-        title="เปลี่ยนสถานะ"
+        title="แก้ไขข้อมูลเปลี่ยนสถานะ"
         open={open}
         onCancel={handleCancel}
         width={850}
@@ -293,4 +332,4 @@ const UpdateStatusBlackNumber = ({
     </>
   );
 };
-export default UpdateStatusBlackNumber;
+export default EditUpdateStatusBlackNumber;

@@ -196,7 +196,9 @@ const EstimateAssetsResult = ({
       console.log("formattedValue", formattedValue);
     } else {
       form.setFieldsValue({
-        estimatedPrice: inputValue,
+        estimatedPrice: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -264,6 +266,12 @@ const EstimateAssetsResult = ({
             if (resQuery.status === 200) {
               console.log("POST_CALCULATE_LAND", resQuery?.data?.result);
               calLandPrice(resQuery?.data?.result[0]);
+              if (
+                Number.isNaN(resQuery?.data?.result[0].landprice) ||
+                !resQuery?.data?.result[0].landprice
+              ) {
+                message.error("ไม่มีข้อมูลประเมินจากกรมที่ดิน ");
+              }
             } else {
               message.error("ไม่พบข้อมูล");
             }
@@ -300,9 +308,6 @@ const EstimateAssetsResult = ({
         ? parseInt(value?.landprice)
         : null;
     let totalArea = (raiArea + nganArea + waArea) * landPrice;
-    if (Number.isNaN(value?.landprice) || !value?.landprice) {
-      message.error("ไม่มีข้อมูลจากกรมที่ดิน ", Number.isNaN(value?.landprice));
-    }
 
     console.log("raiArea + nganArea + waArea", raiArea + nganArea + waArea);
     console.log("parseInt(value?.landprice)", landPrice);

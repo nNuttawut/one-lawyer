@@ -228,7 +228,9 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setTotalFeeCal(total);
     } else {
       form.setFieldsValue({
-        otherFee: inputValue,
+        otherFee: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
       total =
         dataLoadJudgement?.fee +

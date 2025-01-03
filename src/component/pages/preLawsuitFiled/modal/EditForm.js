@@ -23,7 +23,7 @@ import DocumentEnforce from "./DocumentEnforce";
 import dayjs from "dayjs";
 import TokenCheck from "../../../../hook/TokenCheck";
 
-const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
@@ -35,6 +35,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [buttonCal, setButtonCal] = useState(false);
   const [buttonSubmit, setButtonSubmit] = useState(false);
+  const [buttonCalFounds, setButtonCalFounds] = useState(false);
   const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
     CurrencyFormat();
 
@@ -43,27 +44,37 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     if (isModal) {
       loadData();
       setLawType();
-      console.log("dataDefualt", dataDefualt);
+      console.log("dataDefault", dataDefault);
     }
   }, [isModal]);
 
   useEffect(() => {
     if (dataLoadLawSuit && dataLoadLoan) {
       form.setFieldsValue({
-        dateCourt: dayjs(dataDefualt.DATE),
+        dateCourt: dayjs(dataDefault.DATE),
         court: dataLoadLawSuit?.provincial_court,
         subject: dataLoadLawSuit?.subject,
-        trackingFee: currencyFormatNoPoint(dataLoadLawSuit?.tracking_fee),
-        suspensionAmount: currencyFormatNoPoint(
-          dataLoadLawSuit?.suspension_amount
-        ),
-        lossBenefit: currencyFormatNoPoint(dataLoadLawSuit?.lack_of_benefits),
-        intigationFounds: currencyFormatNoPoint(
-          dataLoadLawSuit?.litigation_funds
-        ),
+        trackingFee: dataLoadLawSuit?.tracking_fee
+          ? currencyFormatNoPoint(dataLoadLawSuit?.tracking_fee)
+          : null,
+        suspensionAmount: dataLoadLawSuit?.suspension_amount
+          ? currencyFormatNoPoint(dataLoadLawSuit?.suspension_amount)
+          : null,
+        lossBenefit: dataLoadLawSuit?.lack_of_benefits
+          ? currencyFormatNoPoint(dataLoadLawSuit?.lack_of_benefits)
+          : null,
+        intigationFounds: dataLoadLawSuit?.litigation_funds
+          ? currencyFormatNoPoint(dataLoadLawSuit?.litigation_funds)
+          : null,
+        feeCourt: dataLoadLawSuit?.fee
+          ? currencyFormatComma(dataLoadLawSuit?.fee)
+          : null,
+        stampDuty: dataLoadLawSuit?.attorney_fees_payment_status
+          ? currencyFormatComma(dataLoadLawSuit?.attorney_fees_payment_status)
+          : null,
       });
 
-      let dateCurrent = dayjs(dataDefualt.DATE);
+      let dateCurrent = dayjs(dataDefault.DATE);
       let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
 
       const differenceMonth = dateCurrent.diff(lastPayDate, "month");
@@ -77,7 +88,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       }));
 
       let balance;
-      if (dataDefualt?.LOAN_TYPE_ID === 1) {
+      if (dataDefault?.LOAN_TYPE_ID === 1) {
         balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
       } else {
         balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
@@ -109,7 +120,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefualt.LAWSUIT_ID,
+        baseUrl + GET_LAWSUIT_DETAIL_BY_ID + dataDefault.LAWSUIT_ID,
         {
           headers: HEADERS_EXPORT,
         }
@@ -124,7 +135,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       }
 
       const res = await axios.get(
-        baseUrl + GET_LOAN_BY_CONTNO + dataDefualt.CONTNO,
+        baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO,
         {
           headers: HEADERS_EXPORT,
         }
@@ -172,7 +183,7 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             console.log("resQuery", res.data);
             message.success("อัพเดทข้อมูลสำเร็จ");
             funcUpdateStatus({
-              ...dataDefualt,
+              ...dataDefault,
               DATE: status.DATE,
             });
           } else {
@@ -197,89 +208,207 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const onFinish = (values) => {
-    console.log("Success:", values);
-    const putData = {
-      ...dataLoadLawSuit,
-      subject: values.subject,
-      provincial_court: values.court,
-      tracking_fee:
-        values?.trackingFee &&
-        typeof values.trackingFee === "string" &&
-        values.trackingFee.includes(",")
-          ? parseInt(values.trackingFee.replace(/,/g, ""))
-          : parseInt(values.trackingFee)
-          ? parseInt(values.trackingFee)
-          : 0,
-      litigation_funds:
-        values?.intigationFounds &&
-        typeof values.intigationFounds === "string" &&
-        values.intigationFounds.includes(",")
-          ? parseInt(values.intigationFounds.replace(/,/g, ""))
-          : parseInt(values.intigationFounds)
-          ? parseInt(values.intigationFounds)
-          : 0,
-      suspension_amount:
-        values?.suspensionAmount &&
-        typeof values.suspensionAmount === "string" &&
-        values.suspensionAmount.includes(",")
-          ? parseInt(values.suspensionAmount.replace(/,/g, ""))
-          : parseInt(values.suspensionAmount)
-          ? parseInt(values.suspensionAmount)
-          : 0,
-      interest_rate: null,
-      fee: null,
-      MEMO: values.memo,
-      date_of_plaint: dataForm.dateCourt,
-      lack_of_benefits:
-        values?.lossBenefit &&
-        typeof values.lossBenefit === "string" &&
-        values.lossBenefit.includes(",")
+    let intTrackingFee =
+      values?.trackingFee &&
+      typeof values.trackingFee === "string" &&
+      values.trackingFee.includes(",")
+        ? parseInt(values.trackingFee.replace(/,/g, ""))
+        : parseInt(values.trackingFee)
+        ? parseInt(values.trackingFee)
+        : 0;
+
+    let intLostbenefit =
+      values?.lossBenefit && typeof values.lossBenefit === "string"
+        ? values.lossBenefit.includes(",")
           ? parseInt(values.lossBenefit.replace(/,/g, ""))
           : parseInt(values.lossBenefit)
-          ? parseInt(values.lossBenefit)
-          : 0,
-    };
+        : parseInt(values.lossBenefit);
 
-    const putStatus = {
-      WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_ID: dataDefualt.id,
-      MEMO: values.memo ? values.memo : dataDefualt.MEMO,
-      PROCESS_ID: dataDefualt.PROCESS_ID,
-      DATE: dataForm.dateCourt
-        ? dataForm.dateCourt
-        : dayjs(dataDefualt.DATE).format("YYYY-MM-DD"),
-    };
+    console.log("intLostbenefit---->", intLostbenefit);
+    let intSuspensionAmount =
+      values?.suspensionAmount &&
+      typeof values.suspensionAmount === "string" &&
+      values.suspensionAmount.includes(",")
+        ? parseInt(values.suspensionAmount.replace(/,/g, ""))
+        : parseInt(values.suspensionAmount)
+        ? parseInt(values.suspensionAmount)
+        : 0;
 
-    setDataStore((prev) => ({
-      ...prev,
-      subject: values.subject,
-      provincial_court: values.court,
-      tracking_fee:
-        values?.trackingFee &&
-        typeof values.trackingFee === "string" &&
-        values.trackingFee.includes(",")
-          ? parseInt(values.trackingFee.replace(/,/g, ""))
-          : parseInt(values.trackingFee)
-          ? parseInt(values.trackingFee)
-          : 0,
-      litigation_funds: dataForm.intigationFounds,
-      MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
-      LOAN_ID: dataDefualt.id,
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-      MEMO: values.memo,
-      DATE: dataForm.dateCourt,
-      lossBenefit: dataForm.lossBenefit,
-      suspensionAmount: dataForm.suspensionAmount,
-      nopay: dataForm.nopay,
-    }));
+    let valueIntigationFounds =
+      values?.intigationFounds &&
+      typeof values.intigationFounds === "string" &&
+      values.intigationFounds.includes(",")
+        ? parseInt(values.intigationFounds.replace(/,/g, ""))
+        : parseInt(values.intigationFounds)
+        ? parseInt(values.intigationFounds)
+        : 0;
 
-    console.log("putData", putData);
-    console.log("putStatus", putStatus);
+    let calFeeCourt;
+    let calStampDuty;
+    let balance;
+    let calIntigationFounds;
 
-    sendStatus(putStatus, putData);
+    console.log("Success:", values);
+
+    if (buttonCalFounds) {
+      console.log("intTrackingFee", intTrackingFee);
+      console.log("intLostbenefit", intLostbenefit);
+      console.log("intSuspensionAmount", intSuspensionAmount);
+
+      if (dataDefault?.LOAN_TYPE_ID === 1) {
+        balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
+        calIntigationFounds =
+          balance + intTrackingFee + intLostbenefit - intSuspensionAmount;
+      } else {
+        balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
+        calIntigationFounds = balance + intTrackingFee - intSuspensionAmount;
+      }
+
+      console.log("calIntigationFounds--->", calIntigationFounds);
+      if (calIntigationFounds < 0) {
+        calIntigationFounds = 0;
+        message.error("ไม่สามารถคำนวณได้เนื่องจากมีค่าติดลบ");
+      }
+
+      form.setFieldsValue({
+        intigationFounds: currencyFormatComma(calIntigationFounds),
+        feeCourt: 0,
+        stampDuty: 0,
+      });
+
+      setButtonCalFounds(false);
+    }
+    if (buttonCal) {
+      console.log("values.intigationFounds--->", valueIntigationFounds);
+
+      if (valueIntigationFounds < 300000) {
+        calFeeCourt = valueIntigationFounds * 0.02;
+        if (calFeeCourt > 1000) {
+          calFeeCourt = 1000;
+        }
+      } else {
+        calFeeCourt = valueIntigationFounds * 0.02;
+      }
+
+      calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 2000;
+      if (calStampDuty > 10000) {
+        calStampDuty = 10000;
+      }
+
+      console.log("calFeeCourt", Math.ceil(calFeeCourt));
+
+      form.setFieldsValue({
+        feeCourt: currencyFormatComma(calFeeCourt),
+        stampDuty: dataDefault.LOAN_TYPE_ID === 1 ? Math.ceil(calStampDuty) : 0,
+      });
+
+      setButtonCal(false);
+    }
+    if (buttonSubmit) {
+      const putStatus = {
+        WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+        USER_ID: dataDefault.LAWYER_ID,
+        LOAN_ID: dataDefault.id,
+        MEMO: values.memo ? values.memo : dataDefault.MEMO,
+        PROCESS_ID: dataDefault.PROCESS_ID,
+        DATE: dataForm.dateCourt
+          ? dataForm.dateCourt
+          : dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
+      };
+
+      const putData = {
+        ...dataLoadLawSuit,
+        subject: values.subject,
+        provincial_court: values.court,
+        tracking_fee:
+          values?.trackingFee &&
+          typeof values.trackingFee === "string" &&
+          values.trackingFee.includes(",")
+            ? parseInt(values.trackingFee.replace(/,/g, ""))
+            : parseInt(values.trackingFee)
+            ? parseInt(values.trackingFee)
+            : 0,
+        litigation_funds:
+          values?.intigationFounds &&
+          typeof values.intigationFounds === "string" &&
+          values.intigationFounds.includes(",")
+            ? parseInt(values.intigationFounds.replace(/,/g, ""))
+            : parseInt(values.intigationFounds)
+            ? parseInt(values.intigationFounds)
+            : 0,
+        suspension_amount:
+          values?.suspensionAmount &&
+          typeof values.suspensionAmount === "string" &&
+          values.suspensionAmount.includes(",")
+            ? parseInt(values.suspensionAmount.replace(/,/g, ""))
+            : parseInt(values.suspensionAmount)
+            ? parseInt(values.suspensionAmount)
+            : 0,
+        attorney_fees_payment_status:
+          values?.stampDuty &&
+          typeof values.stampDuty === "string" &&
+          values.stampDuty.includes(",")
+            ? parseInt(values.stampDuty.replace(/,/g, ""))
+            : parseInt(values.stampDuty)
+            ? parseInt(values.stampDuty)
+            : 0,
+        // attorney_fees:
+        //   values?.docShipingCost &&
+        //   typeof values.docShipingCost === "string" &&
+        //   values.docShipingCost.includes(",")
+        //     ? parseInt(values.docShipingCost.replace(/,/g, ""))
+        //     : parseInt(values.docShipingCost)
+        //     ? parseInt(values.docShipingCost)
+        //     : 0,
+        date_of_plaint: dataForm.dateCourt,
+        lack_of_benefits:
+          values?.lossBenefit &&
+          typeof values.lossBenefit === "string" &&
+          values.lossBenefit.includes(",")
+            ? parseInt(values.lossBenefit.replace(/,/g, ""))
+            : parseInt(values.lossBenefit)
+            ? parseInt(values.lossBenefit)
+            : 0,
+        fee:
+          values?.feeCourt &&
+          typeof values.feeCourt === "string" &&
+          values.feeCourt.includes(",")
+            ? parseInt(values.feeCourt.replace(/,/g, ""))
+            : parseInt(values.feeCourt)
+            ? parseInt(values.feeCourt)
+            : 0,
+      };
+
+      setDataStore((prev) => ({
+        ...prev,
+        subject: values.subject,
+        provincial_court: values.court,
+        tracking_fee:
+          values?.trackingFee &&
+          typeof values.trackingFee === "string" &&
+          values.trackingFee.includes(",")
+            ? parseInt(values.trackingFee.replace(/,/g, ""))
+            : parseInt(values.trackingFee)
+            ? parseInt(values.trackingFee)
+            : 0,
+        litigation_funds: dataForm.intigationFounds,
+        MAIN_STATUS_ID: dataDefault.MAIN_STATUS_ID,
+        LOAN_ID: dataDefault.id,
+        USER_ID: dataDefault.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: dataForm.dateCourt,
+        lossBenefit: dataForm.lossBenefit,
+        suspensionAmount: dataForm.suspensionAmount,
+        nopay: dataForm.nopay,
+      }));
+
+      console.log("putData", putData);
+      console.log("putStatus", putStatus);
+
+      sendStatus(putStatus, putData);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -302,15 +431,30 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const onChangeCourt = (date, dateString) => {
     console.log("date, dateString", date, dateString);
     setDataForm({ ...dataForm, dateCourt: dateString });
-    handleLossPay(dateString);
+
     if (!date) {
       form.setFieldsValue({
-        trackingFee: 0,
         intigationFounds: 0,
         lossBenefit: 0,
-        suspensionAmount: 0,
+        dateCourt: null,
+        docShipingCost: 0,
+        stampDuty: 0,
+        feeCourt: 0,
       });
+      setDataForm({
+        ...dataForm,
+        suspensionAmount: 0,
+        trackingFee: 0,
+        intigationFounds: 0,
+        dateCourt: null,
+        feeCourt: 0,
+        docShipingCost: 0,
+        lossBenefit: 0,
+      });
+      setButtonCal(false);
+      setButtonCalFounds(false);
     }
+    handleLossPay(dateString);
   };
 
   const onChangeTrackingFee = (value) => {
@@ -343,7 +487,9 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     } else {
       // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
-        trackingFee: inputValue,
+        trackingFee: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
 
       setDataForm({
@@ -383,7 +529,9 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     } else {
       // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
-        suspensionAmount: inputValue,
+        suspensionAmount: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
 
       setDataForm({
@@ -392,7 +540,6 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     }
   };
-  console.log(dataForm);
 
   const onChangeInpuutLossBenefit = (value) => {
     let inputValue = value;
@@ -424,7 +571,9 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     } else {
       // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
-        lossBenefit: inputValue,
+        lossBenefit: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
 
       setDataForm({
@@ -464,12 +613,98 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     } else {
       // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
       form.setFieldsValue({
-        intigationFounds: inputValue,
+        intigationFounds: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
 
       setDataForm({
         ...dataForm,
         intigationFounds: parseFloat(rawValue),
+      });
+    }
+  };
+
+  const stampDutyCost = (value) => {
+    let inputValue = value;
+    console.log(value);
+    isNotNumber(inputValue.replace(/,/g, ""));
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
+    }
+
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
+      let intValue = parseInt(rawValue);
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
+      form.setFieldsValue({
+        stampDuty: formattedValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        stampDuty: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
+      });
+    } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
+      form.setFieldsValue({
+        stampDuty: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        stampDuty: parseFloat(rawValue),
+      });
+    }
+  };
+
+  const feeCourt = (value) => {
+    let inputValue = value;
+    console.log(value);
+    isNotNumber(inputValue.replace(/,/g, ""));
+
+    // ตัดเครื่องหมาย , ออก
+    let rawValue = inputValue.replace(/,/g, "");
+
+    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
+    if (isNaN(rawValue)) {
+      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
+    }
+
+    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
+    if (parseInt(rawValue) >= 1000) {
+      let intValue = parseInt(rawValue);
+      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
+      console.log("formattedValue", formattedValue);
+
+      form.setFieldsValue({
+        feeCourt: formattedValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        feeCourt: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
+      });
+    } else {
+      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
+      form.setFieldsValue({
+        feeCourt: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
+      });
+
+      setDataForm({
+        ...dataForm,
+        feeCourt: parseFloat(rawValue),
       });
     }
   };
@@ -493,12 +728,12 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   }
 
   const setLawType = () => {
-    let result = dataDefualt
-      ? dataDefualt.LAW_TYPE_ID === 1
+    let result = dataDefault
+      ? dataDefault.LAW_TYPE_ID === 1
         ? "แพ่ง"
-        : dataDefualt.LAW_TYPE_ID === 2
+        : dataDefault.LAW_TYPE_ID === 2
         ? "อาญา"
-        : dataDefualt.LAW_TYPE_ID === 3
+        : dataDefault.LAW_TYPE_ID === 3
         ? "แพ่ง, อาญา"
         : null
       : null;
@@ -526,8 +761,8 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
           <p>
-            {`${dataDefualt?.CONTNO}/${dataDefualt?.CUSTOMER_TNAME}
-            ${dataDefualt?.CUSTOMER_FNAME} ${dataDefualt?.CUSTOMER_LNAME}`}
+            {`${dataDefault?.CONTNO}/${dataDefault?.CUSTOMER_TNAME}
+            ${dataDefault?.CUSTOMER_FNAME} ${dataDefault?.CUSTOMER_LNAME}`}
           </p>
         </Form.Item>
         <Form.Item
@@ -602,25 +837,113 @@ const EditFrom = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           />
         </Form.Item>
         <Form.Item label="ผิดนัดชำระจำนวน" name="noPay">
-          <p>{dataForm.nopay ? dataForm.nopay + " งวด" : "-"}</p>
+          <p>{dataForm?.nopay ? dataForm?.nopay + " งวด" : "-"}</p>
         </Form.Item>
-        {dataDefualt.LOAN_TYPE_ID === 1 ? (
-          <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
-            <Input
-              autoComplete="off"
-              name="lossBenefit"
-              onChange={(e) => onChangeInpuutLossBenefit(e.target.value)}
-            />
-          </Form.Item>
+        {dataDefault.DATE && dataLoadLoan?.LOAN ? (
+          <>
+            <Form.Item label="เงินต้น" name="principle">
+              <p>
+                {dataDefault.LOAN_TYPE_ID === 1
+                  ? currencyFormatComma(dataLoadLoan?.LOAN?.TOTPRC) + " บาท"
+                  : currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC) + " บาท"}
+              </p>
+            </Form.Item>
+            <Form.Item label="ยอดที่จ่ายมาทั้งหมด" name="sumaryPay">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.SMPAY) + " บาท"}</p>
+            </Form.Item>
+            <Form.Item label="เงินค้างจ่ายโดยประมาณ" name="balance">
+              <p>
+                {dataDefault.LOAN_TYPE_ID === 1
+                  ? currencyFormatComma(
+                      dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY
+                    ) + " บาท"
+                  : currencyFormatComma(
+                      dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY
+                    ) + " บาท"}
+              </p>
+            </Form.Item>
+            {dataDefault.LOAN_TYPE_ID === 1 ? (
+              <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+                <Input
+                  autoComplete="off"
+                  name="lossBenefit"
+                  onChange={(e) => onChangeInpuutLossBenefit(e.target.value)}
+                />
+              </Form.Item>
+            ) : null}
+            <Form.Item label="คำนวณทุนทรัพย์โดยประมาณ">
+              <Button
+                style={{ color: "blue" }}
+                htmlType="submit"
+                onClick={() => setButtonCalFounds(true)}
+              >
+                คำนวณ
+              </Button>
+            </Form.Item>
+            <Form.Item
+              label="จำนวนทุนทรัพย์"
+              name="intigationFounds"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                },
+              ]}
+            >
+              <Input
+                autoComplete="off"
+                name="intigationFounds"
+                onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าธรรมเนียมศาล"
+              name="feeCourt"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่ค่าธรรมเนียมศาล !",
+                },
+              ]}
+            >
+              <Input
+                autoComplete="off"
+                name="feeCourt"
+                onChange={(e) => feeCourt(e.target.value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าอากรณ์แสตมป์"
+              name="stampDuty"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่ค่าอากรณ์แสตมป์ !",
+                },
+              ]}
+            >
+              <Input
+                name="stampDuty"
+                onChange={(e) => stampDutyCost(e.target.value)}
+              />
+            </Form.Item>
+            {/* <Form.Item label="ค่าส่งหมาย" name="docShipingCost">
+              <Input
+                name="docShipingCost"
+                onChange={(e) => docShipingCost(e.target.value)}
+              />
+            </Form.Item> */}
+          </>
         ) : null}
-        <Form.Item label="จำนวนทุนทรัพย์" name="intigationFounds">
-          <Input
-            autoComplete="off"
-            name="intigationFounds"
-            onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
-          />
+        <Form.Item label="คำนวณค่าธรรมเนียม">
+          <Button
+            style={{ color: "blue" }}
+            htmlType="submit"
+            onClick={() => setButtonCal(true)}
+          >
+            คำนวณ
+          </Button>
         </Form.Item>
-
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

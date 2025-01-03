@@ -629,7 +629,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                       }
                       description={
                         <>
-                          <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.districtName} จังหวัด${item.provinceName}`}</p>
+                          <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
                           <p>{`หมายเหตุ ${item.mark}`}</p>
                         </>
                       }

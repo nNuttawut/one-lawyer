@@ -221,7 +221,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     } else {
       form.setFieldsValue({
-        judgement2: inputValue,
+        judgement2: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };
@@ -241,7 +243,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       });
     } else {
       form.setFieldsValue({
-        costUnless1: inputValue,
+        costUnless1: inputValue.includes(",")
+          ? inputValue.replace(",", "")
+          : inputValue,
       });
     }
   };

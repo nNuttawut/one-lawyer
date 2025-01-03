@@ -141,8 +141,9 @@ function Header({ title, onPress, onClick }) {
               // aria-expanded={openMenuItem ? "true" : undefined}
               onClick={handleClickMenuItem}
             >
-              <UserOutlined fontSize="large" style={{ marginRight: "10px" }} />
+              <UserOutlined fontSize="large" style={{ marginRight: "5px" }} />
             </IconButton>
+            <b style={{ marginTop: "7px", marginRight: "5px" }}>{userName}</b>
             {/* <a
               style={{ marginTop: "5px", marginRight: "5px" }}
               href="#/notifications"
