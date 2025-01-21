@@ -23,6 +23,7 @@
     "framer-motion": "^11.3.30",
     "google-map-react": "^2.2.1",
     "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.4",
     "pdfjs-dist": "^4.5.136",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -30,6 +31,7 @@
     "react-scripts": "5.0.1",
     "recoil": "^0.7.7",
     "styled-components": "^6.1.12",
+    "tesseract.js": "^6.0.0",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },

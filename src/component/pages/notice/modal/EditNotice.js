@@ -31,7 +31,7 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
   const { TextArea } = Input;
-  const [companiesList, setLoadingData] = LoadCompanies();
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
@@ -51,16 +51,16 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     loadData();
-    setLoadingData(true);
+    setLoadingDataCompany(true);
     console.log("dataDefault", dataDefault);
-  }, [setLoadingData]);
+  }, [setLoadingDataCompany]);
 
   useEffect(() => {
     setOption();
     if (parcelsData) {
       setDataDefualt();
     }
-  }, [companiesList, parcelsData]);
+  }, [companiesListCompany, parcelsData]);
 
   useEffect(() => {
     console.log("loanType", loanType);
@@ -76,7 +76,7 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const setOption = () => {
-    const options = companiesList.map((item) => ({
+    const options = companiesListCompany.map((item) => ({
       value: item.id,
       label: item.company_name,
       address: item.address,

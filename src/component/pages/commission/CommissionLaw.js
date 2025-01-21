@@ -39,7 +39,12 @@ import { Option } from "antd/es/mentions";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-  const [currencyFormatNoPoint] = CurrencyFormat();
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -56,7 +61,19 @@ const Main = () => {
   const [lawyerId, setLawyerId] = useState(null);
   const [lawyersOption, setLawyersOption] = useState();
   const [statusId, setStatusId] = useState(0);
+  const [selectPrint, setSelectPrint] = useState(1);
   const { Option } = Select;
+
+  const printOption = [
+    {
+      value: 1,
+      label: "PDF",
+    },
+    {
+      value: 2,
+      label: "EXCEL",
+    },
+  ];
 
   useEffect(() => {
     loadData();
@@ -150,7 +167,7 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      if (dataLawsuit.fee_payment_status === 1) {
+      if (dataLawsuit.attorney_fees_payment_datetime === 1) {
         message.success(`อนุมัติสัญญาเลขท่ี ${dataLawsuit.CONTNO}`);
       } else {
         message.error(`ไม่อนุมัติสัญญาเลขที่ ${dataLawsuit.CONTNO}`);
@@ -163,7 +180,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const preData = data.filter((item) => item.black_case_number);
 
-      const newData = preData.filter((item) => !item.fee_payment_status);
+      const newData = preData.filter(
+        (item) => !item.attorney_fees_payment_datetime
+      );
 
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -243,14 +262,18 @@ const Main = () => {
     let result;
     if (lawyerId && lawyerId !== "all") {
       result = dataArr.filter(
-        (item) => item.fee_payment_status === value && item.USER_ID === lawyerId
+        (item) =>
+          item.attorney_fees_payment_datetime === value &&
+          item.USER_ID === lawyerId
       );
       console.log("if", result);
     } else {
       if (!value) {
-        result = dataArr.filter((item) => !item.fee_payment_status);
+        result = dataArr.filter((item) => !item.attorney_fees_payment_datetime);
       } else {
-        result = dataArr.filter((item) => item.fee_payment_status === value);
+        result = dataArr.filter(
+          (item) => item.attorney_fees_payment_datetime === value
+        );
       }
       console.log("else", result);
     }
@@ -298,17 +321,17 @@ const Main = () => {
 
   const renderStatus = (record) => {
     let color =
-      record.fee_payment_status === 1
+      record.attorney_fees_payment_datetime === 1
         ? "green"
-        : record.fee_payment_status === 2
+        : record.attorney_fees_payment_datetime === 2
         ? "red"
         : "silver";
 
     return (
       <Tag color={color} key={record} style={{ textAlign: "center" }}>
-        {record.fee_payment_status === 1
+        {record.attorney_fees_payment_datetime === 1
           ? "อนุมัติ"
-          : record.fee_payment_status === 2
+          : record.attorney_fees_payment_datetime === 2
           ? "ไม่อนุมัติ"
           : "รอดำเนินการ"}
       </Tag>
@@ -337,8 +360,8 @@ const Main = () => {
   const confirmInsertOne = (data) => {
     const dataLawsuit = {
       ...data,
-      fee_payment_status: 1,
-      fee_payment_datetime: dayjs().format(),
+      attorney_fees_payment_datetime: 1,
+      attorney_fees_payment_datetime: dayjs().format(),
     };
 
     console.log(dataLawsuit);
@@ -348,8 +371,8 @@ const Main = () => {
   const cancel = (data) => {
     const dataLawsuit = {
       ...data,
-      fee_payment_status: 2,
-      fee_payment_datetime: dayjs().format(),
+      attorney_fees_payment_datetime: 2,
+      tracking_fee_payment_datetime: dayjs().format(),
     };
     console.log(dataLawsuit);
     sendStatus(dataLawsuit);
@@ -367,10 +390,13 @@ const Main = () => {
     if (lawyerId !== "all" && statusId) {
       newData = result.filter(
         (item) =>
-          item.fee_payment_status === statusId && item.USER_ID === lawyerId
+          item.attorney_fees_payment_datetime === statusId &&
+          item.USER_ID === lawyerId
       );
     } else {
-      newData = result.filter((item) => item.fee_payment_status === statusId);
+      newData = result.filter(
+        (item) => item.attorney_fees_payment_datetime === statusId
+      );
     }
 
     setDataArr(result);
@@ -410,7 +436,16 @@ const Main = () => {
     {
       title: "จำนวนเงิน",
       align: "center",
-      render: (record) => <>{currencyFormatNoPoint(record.attorney_fees)}</>,
+      // render: (record) => <>{currencyFormatNoPoint(record.attorney_fees)}</>,
+      render: (record) => (
+        <>
+          {record.LOAN_TYPE_ID === 1
+            ? "3,500"
+            : record.LOAN_TYPE_ID === 2
+            ? "2,500"
+            : null}
+        </>
+      ),
     },
     {
       title: "ผู้รับผิดชอบคดี",
@@ -422,8 +457,8 @@ const Main = () => {
       align: "center",
       render: (record) => (
         <>
-          {record.fee_payment_datetime
-            ? convertDateThai(record.fee_payment_datetime)
+          {record.attorney_fees_payment_datetime
+            ? convertDateThai(record.attorney_fees_payment_datetime)
             : null}
         </>
       ),

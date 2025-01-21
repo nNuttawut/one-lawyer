@@ -13,11 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -27,24 +23,26 @@ import {
 } from "../../API/apiUrls";
 
 import axios from "axios";
+import { INDICT } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
-import { ENFORCEMENT } from "../../../utils/constant/StatusConstant";
+import CreateDocument from "./modal/CreateDocument";
+import DocumentEnforce from "./modal/DocumentEnforce";
+import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
+import EditFrom from "./modal/EditForm";
 import dayjs from "dayjs";
+import EditUpdateStatusBlackNumber from "./modal/EditUpdateStatusBlackNumber";
 
 const Main = () => {
-  const [
-    convertDateThai,
-    convertDateThaiShort,
-    convertDateThaiYear,
-    convertDateThaiMonth,
-    convertDateThaiDate,
-    dateNow,
-  ] = DateCustom();
-
+  const [convertDateThai] = DateCustom();
+  const userCompany = localStorage.getItem("COMPANY_ID");
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
+  const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModalEditUpdate, setIsModalEditUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -52,20 +50,29 @@ const Main = () => {
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
-  const ROLE_ID = localStorage.getItem("ROLE_ID");
-  const userId = parseInt(localStorage.getItem("USER_ID"));
-  const userCompany = localStorage.getItem("COMPANY_ID");
+  const [searchEdit, setSearchEdit] = useState(null);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
 
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ENFORCEMENT,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + INDICT,
         {
           headers: HEADERS_EXPORT,
         }
@@ -77,9 +84,9 @@ const Main = () => {
             ...item,
             key: i++,
           }));
-          filterDataLawyer(newData);
+          filterData(newData);
           console.log(newData);
-
+          setSearchEdit(newData);
           setLoading(false);
         }
       } else {
@@ -95,13 +102,16 @@ const Main = () => {
     }
   };
 
-  const filterDataLawyer = (data) => {
+  const filterData = (data) => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID
       );
+
+      console.log("newData-->", newData);
+
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -152,8 +162,19 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
-    setArrayTable(result);
+    let result = searchEdit.filter(
+      (item) =>
+        ((item.CONTNO && item.CONTNO.includes(value)) ||
+          (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
+          (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))) &&
+        item.LAWYER_ID === userId
+    );
+
+    if (value) {
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -207,19 +228,63 @@ const Main = () => {
     }
   };
 
-  //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
     if (!record.DATE) {
       return null;
     }
+    let color;
     const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
+
+    // คำนวณความแตกต่างในหน่วยปี
+    const yearsDifference = today.diff(recordDate, "year");
+
+    // คำนวณความแตกต่างในหน่วยเดือน
+    const monthsDifference = today.diff(recordDate, "month");
+
+    // คำนวณความแตกต่างในหน่วยวัน
+    const daysDifference = today.diff(recordDate, "day");
+
+    // คำนวณส่วนที่เหลือหลังจากคำนวณปีแล้ว (คำนวณเดือนที่เหลือ)
+    const remainingMonths = today
+      .subtract(yearsDifference, "year")
+      .diff(recordDate, "month");
+
+    // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
+    const remainingDays = today.diff(recordDate, "day");
+
+    if (record.LOAN_TYPE_ID === 1) {
+      color =
+        remainingDays > 30 && record.PROCESS_ID === 1
+          ? "green"
+          : record.PROCESS_ID === 3
+          ? "blue"
+          : "red";
+    } else {
+      color =
+        remainingDays > 60 && record.PROCESS_ID === 1
+          ? "green"
+          : record.PROCESS_ID === 3
+          ? "blue"
+          : "red";
+    }
+
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
+        <br />
+        {
+          <span>
+            {record.LOAN_TYPE_ID === 1 && remainingDays > 30
+              ? "เกิน"
+              : record.LOAN_TYPE_ID === 2 && remainingDays > 60
+              ? "เกิน"
+              : null}{" "}
+            {remainingDays} วัน
+          </span>
+        }
       </Tag>
     );
   };
@@ -267,9 +332,22 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "ประเภทสัญญา",
+      align: "center",
+      render: (record) => (
+        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
+      ),
+    },
+    {
+      title: "วันที่ส่งโนติส",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+      sorter: (a, b) => {
+        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+
+        return dayjs(a.DATE).isBefore(b.DATE) ? -1 : 1;
+      },
+      defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
   ];
 
@@ -306,7 +384,8 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
+                      {record.PROCESS_ID !== 3 &&
+                      record.MAIN_STATUS_ID === record.STATUS_ID ? (
                         <Button
                           name="create"
                           style={{
@@ -318,25 +397,40 @@ const Main = () => {
                             setDataModal(record);
                           }}
                         >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : null}
-                      {record.DATE ? (
+                      ) : record.PROCESS_ID === 3 &&
+                        record.MAIN_STATUS_ID === record.STATUS_ID ? (
                         <>
+                          {/* <Button
+                                name="formPrint"
+                                style={{
+                                  boxShadow: "0 4px 3px",
+                                  marginRight: "10px",
+                                }}
+                                onClick={() => {
+                                  setIsModalDocument(true);
+                                }}
+                              >
+                                <FileDoneOutlined
+                                  style={{ color: "green", fontSize: "16px" }}
+                                />
+                              </Button> */}
                           <Button
-                            name="formPrint"
+                            name="edit"
                             style={{
                               boxShadow: "0 4px 3px",
                               marginRight: "10px",
                             }}
                             onClick={() => {
-                              setIsModalDocument(true);
+                              setIsModalEdit(true);
+                              setDataModal(record);
                             }}
                           >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
+                            <EditOutlined
+                              style={{ color: "orange", fontSize: "16px" }}
                             />
                           </Button>
                           <Button
@@ -353,10 +447,27 @@ const Main = () => {
                           </Button>
                         </>
                       ) : null}
+                      {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
+                        <Button
+                          name="EditupdateStatus"
+                          style={{ boxShadow: "0 4px 3px" }}
+                          onClick={() => {
+                            setIsModalEditUpdate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <SyncOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
+                rowKey="key"
               />
             </Col>
           </Row>
@@ -365,11 +476,11 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {/* {isModalCreate ? (
+      {isModalCreate ? (
         <CreateDocument
           open={isModalCreate}
           close={setIsModalCreate}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
       ) : null}
@@ -380,13 +491,29 @@ const Main = () => {
         <UpdateStatusBlackNumber
           open={isModalUpdate}
           close={setIsModalUpdate}
-          dataDefualt={dataModal}
+          dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null} */}
+      ) : null}
+      {isModalEditUpdate ? (
+        <EditUpdateStatusBlackNumber
+          open={isModalEditUpdate}
+          close={setIsModalEditUpdate}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEdit ? (
+        <EditFrom
+          open={isModalEdit}
+          close={setIsModalEdit}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
     </>
   );
 };
 
-const MainEnforcement = MotionHoc(Main);
-export default MainEnforcement;
+const LawsuitClearAdvanePayment = MotionHoc(Main);
+export default LawsuitClearAdvanePayment;

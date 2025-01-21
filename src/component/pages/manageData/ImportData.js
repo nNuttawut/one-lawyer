@@ -175,10 +175,14 @@ const Main = () => {
     const reader = new FileReader();
 
     reader.onload = (event) => {
-      const workbook = XLSX.read(event.target.result, { type: "binary" });
+      const arrayBuffer = event.target.result; // อ่านเป็น ArrayBuffer
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+        type: "array",
+      }); // แปลง ArrayBuffer เป็น Uint8Array
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const sheetData = XLSX.utils.sheet_to_json(sheet);
+
       let filteredData = [];
 
       const columnName = "เลขสัญญา";
@@ -197,7 +201,7 @@ const Main = () => {
       setData(filteredData);
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file); // ใช้ ArrayBuffer แทน BinaryString
     return false; // Prevent automatic upload
   };
 
@@ -275,7 +279,7 @@ const Main = () => {
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       setTimeout(() => {
-        message.warning(`ไม่สามารถ import สัญญาได้เกิน 50 สัญญาต่อครั้ง`);
+        message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
       }, 1000);
       handleFileUpload(file);
       if (file.status !== "uploading") {
@@ -284,7 +288,7 @@ const Main = () => {
         onSuccess(); // Call onSuccess when the file is handled
       }
     },
-    showUploadList: true, // Hide upload list
+    showUploadList: arrayTable?.length > 0 ? false : true,
   };
 
   const confirm = (e) => {
@@ -411,7 +415,7 @@ const Main = () => {
                         style={{ color: "green", marginRight: "5px" }}
                         icon={<ImportOutlined />}
                       >
-                        import Excel
+                        นำเข้า Excel
                       </Button>
                     </Upload>
                   </Space>

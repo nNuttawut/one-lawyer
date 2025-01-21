@@ -9,6 +9,10 @@ const CurrencyFormat = () => {
     }
   };
 
+  const currencyFormatComma = (value) => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   const currencyFormatPoint = (amount) => {
     if (amount) {
       return Number(amount)
@@ -27,10 +31,6 @@ const CurrencyFormat = () => {
     } else {
       return 0;
     }
-  };
-
-  const currencyFormatComma = (value) => {
-    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   return [

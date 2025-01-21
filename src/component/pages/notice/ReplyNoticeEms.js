@@ -13,59 +13,55 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { SyncOutlined, FormOutlined, EditOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
+
 import {
   baseUrl,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 
+//use redux
 import axios from "axios";
+import {
+  NOTICE,
+  STATUS_PROCESS_PROCESS,
+  STATUS_PROCESS_SUCCESSFUL,
+  STATUS_PROCESS_UNSUCCESSFUL,
+} from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
-import { ENFORCEMENT } from "../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
+import UpdateReplyNoticeEms from "./modal/UpdateReplyNoticfeEms";
 
 const Main = () => {
-  const [
-    convertDateThai,
-    convertDateThaiShort,
-    convertDateThaiYear,
-    convertDateThaiMonth,
-    convertDateThaiDate,
-    dateNow,
-  ] = DateCustom();
-
+  const [convertDateThai] = DateCustom();
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
-  const [isModalUpdate, setIsModalUpdate] = useState(false);
+  const [isModalUpdateNoticeEms, setIsModalUpdateNoticeEms] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
+  const [dataRecord, setDataRecord] = useState();
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+  const [searchEdit, setSearchEdit] = useState(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
+
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ENFORCEMENT,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE,
         {
           headers: HEADERS_EXPORT,
         }
@@ -78,8 +74,7 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
-          console.log(newData);
-
+          setSearchEdit(newData);
           setLoading(false);
         }
       } else {
@@ -96,11 +91,17 @@ const Main = () => {
   };
 
   const filterDataLawyer = (data) => {
+    console.log("item.LAWYER_ID", data);
+    console.log("userId.id ", userId);
+
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          item.MAIN_STATUS_ID === item.STATUS_ID &&
+          (item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ||
+            item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
+            item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -146,14 +147,43 @@ const Main = () => {
     }
   };
 
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
+
   const search = (event) => {
     console.log("query--->", event.target.value);
     onSearch(event.target.value);
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
-    setArrayTable(result);
+    let result = searchEdit.filter(
+      (item) =>
+        (item.CONTNO && item.CONTNO.includes(value)) ||
+        (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
+        (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value)) ||
+        (item.parcel_list &&
+          item.parcel_list.some((parcel) => parcel.parcel_no.includes(value)))
+    );
+    console.log("ssdss", value.length);
+
+    if (value.length === 13 && result.length > 0) {
+      console.log("ssdss--->", value.length);
+      setIsModalUpdateNoticeEms(true);
+      setDataModal(result[0]);
+      console.log("result---->", result);
+    }
+    if (value) {
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
   };
 
   const onSearchByDate = (startDate, endDate) => {
@@ -184,7 +214,8 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    if (data !== 0) {
+    console.log("dataArr", dataArr);
+    if (data) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -192,15 +223,19 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log(result);
+      console.log("result", result);
       setDataArr(result);
       const arr = result.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          item.MAIN_STATUS_ID === item.STATUS_ID &&
+          (item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ||
+            item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
+            item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
       );
       console.log("arr", arr);
       setArrayTable(arr);
+      loadData();
     } else {
       loadData();
       console.log("handleUpdateData loadData");
@@ -216,10 +251,45 @@ const Main = () => {
     const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
+    let color;
+    if (record.LOAN_TYPE_ID === 1) {
+      color = daysDifference > 30 ? "red" : "green";
+      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
+    } else if (record.LOAN_TYPE_ID === 2) {
+      color = daysDifference > 60 ? "red" : "green";
+      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
+    }
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
+        <br />
+        {<span>เกินมา {daysDifference} วัน</span>}
+      </Tag>
+    );
+  };
+
+  const renderProcess = (record) => {
+    let value =
+      record.PROCESS_ID === 4
+        ? "รอดำเนินการ"
+        : record.PROCESS_ID === 3
+        ? "เตรียมส่งฟ้อง"
+        : record.PROCESS_ID === 2
+        ? "ข้อมูลไม่ครบ"
+        : null;
+    let color =
+      record.PROCESS_ID === 4
+        ? "blue"
+        : record.PROCESS_ID === 3
+        ? "green"
+        : record.PROCESS_ID === 2
+        ? "red"
+        : null;
+
+    return (
+      <Tag color={color} key={value} style={{ textAlign: "center" }}>
+        {value}
       </Tag>
     );
   };
@@ -267,126 +337,128 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "วันส่ง notice",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+      sorter: (a, b) => {
+        // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
+        return dayjs(a.DATE).isBefore(dayjs(b.DATE)) ? -1 : 1;
+      },
+
+      defaultSortOrder: "ascend",
     },
+    {
+      title: "การดำเนินการ",
+      align: "center",
+      render: (record) => <>{renderProcess(record)}</>,
+    },
+    //ทำ logic record
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "ทนายที่รับผิดชอบ",
+            align: "center",
+            render: (record) => <>{record.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (
     <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
-                  size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
-                />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
-                        <Button
-                          name="create"
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                      {record.DATE ? (
-                        <>
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col
+                  span={"24"}
+                  style={{ textAlign: "end", marginBottom: "10px" }}
+                >
+                  <Space direction="vertical" size={12}>
+                    <RangePicker
+                      size="large"
+                      style={{ marginRight: "10px" }}
+                      onChange={onSearchByDate}
+                    />
+                  </Space>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    onChange={search}
+                    enterButton
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
+                  />
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                    expandable={{
+                      expandedRowRender: (record) => (
+                        <p style={{ margin: 0 }}>
                           <Button
-                            name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
-                              marginRight: "10px",
+                              marginLeft: "10px",
                             }}
                             onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
+                              setIsModalUpdateNoticeEms(true);
                               setDataModal(record);
+                              console.log("---->", record);
                             }}
                           >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
+                            <EditOutlined
+                              style={{ color: "orange", fontSize: "16px" }}
                             />
                           </Button>
-                        </>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
-                }}
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {/* {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
-      {isModalUpdate ? (
-        <UpdateStatusBlackNumber
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null} */}
+                          {/* )} */}
+                        </p>
+                      ),
+
+                      rowExpandable: (record) =>
+                        (userId === record.LAWYER_ID && ROLE_ID === "3") ||
+                        ROLE_ID === "2" ||
+                        ROLE_ID === "1",
+
+                      expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                      onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                    }}
+                    rowKey="key"
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+          {isModal ? (
+            <DetailModal
+              open={isModal}
+              close={setIsModal}
+              dataRec={dataRecord}
+            />
+          ) : null}
+          {isModalUpdateNoticeEms ? (
+            <UpdateReplyNoticeEms
+              open={isModalUpdateNoticeEms}
+              close={setIsModalUpdateNoticeEms}
+              dataDefault={dataModal}
+              funcUpdateStatus={handleUpdateData}
+            />
+          ) : null}
+        </>
+      ) : (
+        <Card>
+          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+        </Card>
+      )}
     </>
   );
 };
 
-const MainEnforcement = MotionHoc(Main);
-export default MainEnforcement;
+const ReplyNoticeEms = MotionHoc(Main);
+export default ReplyNoticeEms;

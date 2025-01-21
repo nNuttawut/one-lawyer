@@ -21,6 +21,7 @@ import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 import {
   optionsLone,
   MORTGAGE,
+  HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
 import {
   JOB_NULL,
@@ -140,7 +141,10 @@ const Main = () => {
     if (companyId === "3") {
       filteredData = value.filter((item) => {
         // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-        if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+        if (
+          isEnglishOnly(item.CONTNO.substring(0, 2)) ||
+          item.CONTNO.substring(0, 1) === "4"
+        ) {
           return item;
         } else {
           return false;
@@ -204,7 +208,10 @@ const Main = () => {
             if (!arrayData?.LOAN_TYPE_ID) {
               arrayData = {
                 ...arrayData,
-                LOAN_TYPE_ID: MORTGAGE,
+                LOAN_TYPE_ID:
+                  arrayData.contno.substring(0, 1) === "2"
+                    ? HIRE_PURCASE
+                    : MORTGAGE,
               };
               console.log("!arrayData.LOAN_TYPE_ID", arrayData);
             }
@@ -277,7 +284,10 @@ const Main = () => {
         if (!data.LOAN_TYPE_ID) {
           dataApprove = {
             ...dataApprove,
-            LOAN_TYPE_ID: MORTGAGE,
+            LOAN_TYPE_ID:
+              dataApprove.contno.substring(0, 1) === "2"
+                ? HIRE_PURCASE
+                : MORTGAGE,
           };
         }
         if (data?.LAW_TYPE_ID && data?.LOAN_TYPE_ID) {
@@ -373,6 +383,7 @@ const Main = () => {
         MEMO: null,
         DATE: null,
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
+        contno: contno,
       };
 
       // Return อัพเดท array
@@ -544,7 +555,9 @@ const Main = () => {
           onChange={(e) => {
             onChange(record.id, e.target.value);
           }}
-          defaultValue={MORTGAGE}
+          defaultValue={
+            record.CONTNO.substring(0, 1) === "2" ? HIRE_PURCASE : MORTGAGE
+          }
           style={{ marginBottom: "10px" }}
         >
           {optionsLone.map((option) => (

@@ -4,14 +4,13 @@ import "dayjs/locale/th"; // import ภาษาไทย
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const DateCustom = () => {
-  const dateNow = () => {
-    const date = dayjs().format();
-
+  const convertDateThai = (value) => {
+    const date = dayjs(value).add(543, "year").format("D MMMM YYYY ");
     return date;
   };
 
-  const convertDateThai = (value) => {
-    const date = dayjs(value).add(543, "year").format("D MMMM YYYY ");
+  const convertDateThaiShort = (value) => {
+    const date = dayjs(value).add(543, "year").format("D MMM YY");
     return date;
   };
 
@@ -32,8 +31,15 @@ const DateCustom = () => {
 
     return date;
   };
+
+  const dateNow = () => {
+    const date = dayjs().format();
+    return date;
+  };
+
   return [
     convertDateThai,
+    convertDateThaiShort,
     convertDateThaiYear,
     convertDateThaiMonth,
     convertDateThaiDate,

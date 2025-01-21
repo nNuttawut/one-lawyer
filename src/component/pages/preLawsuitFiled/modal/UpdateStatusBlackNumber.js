@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Form, Input, Modal, Card, message } from "antd";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Modal,
+  Card,
+  message,
+  InputNumber,
+} from "antd";
 import { LoadingOutlined, AuditOutlined } from "@ant-design/icons";
 import {
   baseUrl,
@@ -142,6 +151,14 @@ const UpdateStatusBlackNumber = ({
     console.log(value);
   };
 
+  const documentCost = (value) => {
+    console.log(value);
+  };
+
+  const onChangeReplyFile = (value) => {
+    console.log(value);
+  };
+
   const onFinish = (values) => {
     console.log(values);
 
@@ -150,12 +167,27 @@ const UpdateStatusBlackNumber = ({
       black_case_number: values.blackNumber,
       consideration_date: dataForm.considerationDate,
       attorney_fees:
+        dataLoadLawSuit?.LOAN_TYPE_ID === 1
+          ? 3500
+          : dataLoadLawSuit?.LOAN_TYPE_ID === 2
+          ? 2500
+          : 0,
+      file_path: values.imageReplyFile,
+      delivery_of_summons:
         values?.docShipingCost &&
         typeof values.docShipingCost === "string" &&
         values.docShipingCost.includes(",")
           ? parseInt(values.docShipingCost.replace(/,/g, ""))
           : parseInt(values.docShipingCost)
           ? parseInt(values.docShipingCost)
+          : 0,
+      document_cost:
+        values?.documentCost &&
+        typeof values.documentCost === "string" &&
+        values.documentCost.includes(",")
+          ? parseInt(values.documentCost.replace(/,/g, ""))
+          : parseInt(values.documentCost)
+          ? parseInt(values.documentCost)
           : 0,
     };
     const postStatus = {
@@ -199,7 +231,6 @@ const UpdateStatusBlackNumber = ({
           onFinishFailed={onFinishFailed}
           initialValues={{
             memo: null,
-            docShipingCost: 0,
           }}
         >
           <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
@@ -244,14 +275,59 @@ const UpdateStatusBlackNumber = ({
             rules={[
               {
                 required: true,
-                message: "กรุณากรอกหมายเลขคดีดำ !",
+                message: "กรุณากรอกค่าส่งหมาย !",
+              },
+            ]}
+          >
+            <InputNumber
+              addonAfter="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณากรอกค่าส่งหมาย"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => docShipingCost(value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="ค่าจัดทำเอกสาร"
+            name="documentCost"
+            rules={[
+              {
+                required: true,
+                message: "กรุณากรอกค่าจัดทำเอกสาร !",
+              },
+            ]}
+          >
+            <InputNumber
+              addonAfter="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณากรอกจัดทำเอกสาร"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => documentCost(value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="ลิ้งเก็บรูปส่วนฟ้อง"
+            name="imageReplyFile"
+            rules={[
+              {
+                required: true,
+                message: "กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง !",
               },
             ]}
           >
             <Input
-              type="number"
-              min={0}
-              onChange={(e) => docShipingCost(e.target.value)}
+              placeholder="กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง"
+              name="imageReplyFile"
+              style={{ width: "100%" }}
+              onChange={(e) => onChangeReplyFile(e.target.value)}
             />
           </Form.Item>
           <Form.Item label="หมายเหตุ" name="memo">

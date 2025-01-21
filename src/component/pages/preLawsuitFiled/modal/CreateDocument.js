@@ -245,13 +245,13 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         calStampDuty = 10000;
       }
 
-      console.log("calFeeCourt", Math.ceil(calFeeCourt));
+      console.log("calFeeCourt", Math.round(calFeeCourt));
 
       if (dataForm.dateCourt) {
         form.setFieldsValue({
-          feeCourt: currencyFormatComma(calFeeCourt),
+          feeCourt: currencyFormatComma(Math.round(calFeeCourt)),
           stampDuty:
-            dataDefault.LOAN_TYPE_ID === 1 ? Math.ceil(calStampDuty) : 0,
+            dataDefault.LOAN_TYPE_ID === 1 ? Math.round(calStampDuty) : 0,
         });
       }
 
@@ -287,7 +287,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             : parseInt(values.suspensionAmount)
             ? parseInt(values.suspensionAmount)
             : 0,
-        attorney_fees_payment_status:
+        stamp_cost:
           values?.stampDuty &&
           typeof values.stampDuty === "string" &&
           values.stampDuty.includes(",")
@@ -593,7 +593,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       setDataForm({
         ...dataForm,
-        feeCourt: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
+        feeCourt: parseInt(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
       });
     } else {
       // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
@@ -605,7 +605,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       setDataForm({
         ...dataForm,
-        feeCourt: parseFloat(rawValue),
+        feeCourt: parseInt(rawValue),
       });
     }
   };
@@ -706,13 +706,14 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("dataForm.trackingFee", dataForm.trackingFee);
       console.log("dataForm.suspensionAmount", dataForm.suspensionAmount);
       console.log("calFeeCourt", calFeeCourt);
-      console.log("calStampDuty", Math.ceil(calStampDuty));
+      console.log("calStampDuty", Math.round(calStampDuty));
 
       form.setFieldsValue({
         intigationFounds: currencyFormatComma(result),
         lossBenefit: currencyFormatComma(lossBenefitValue),
-        feeCourt: currencyFormatComma(calFeeCourt),
-        stampDuty: dataDefault.LOAN_TYPE_ID === 1 ? Math.ceil(calStampDuty) : 0,
+        feeCourt: currencyFormatComma(Math.round(calFeeCourt)),
+        stampDuty:
+          dataDefault.LOAN_TYPE_ID === 1 ? Math.round(calStampDuty) : 0,
       });
 
       setDataForm((prev) => ({
@@ -823,6 +824,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Input
+            suffix="บาท"
             autoComplete="off"
             name="trackingFee"
             placeholder="ไม่มีให้ใส่ 0"
@@ -840,6 +842,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Input
+            suffix="บาท"
             autoComplete="off"
             name="suspensionAmount"
             onChange={(e) => onChangeSuspensionAmount(e.target.value)}
@@ -900,6 +903,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
               ]}
             >
               <Input
+                suffix="บาท"
                 autoComplete="off"
                 name="intigationFounds"
                 onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
@@ -916,26 +920,29 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
               ]}
             >
               <Input
+                suffix="บาท"
                 autoComplete="off"
                 name="feeCourt"
                 onChange={(e) => feeCourt(e.target.value)}
               />
             </Form.Item>
-            <Form.Item
-              label="ค่าอากรณ์แสตมป์"
-              name="stampDuty"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาใส่ค่าอากรณ์แสตมป์ !",
-                },
-              ]}
-            >
-              <Input
+            {dataDefault.LOAN_TYPE_ID === 1 ? (
+              <Form.Item
+                label="ค่าอากรสแตมป์"
                 name="stampDuty"
-                onChange={(e) => stampDutyCost(e.target.value)}
-              />
-            </Form.Item>
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่ค่าค่าอากรสแตมป์ !",
+                  },
+                ]}
+              >
+                <Input
+                  name="stampDuty"
+                  onChange={(e) => stampDutyCost(e.target.value)}
+                />
+              </Form.Item>
+            ) : null}
           </>
         ) : null}
         <Form.Item label="คำนวณค่าธรรมเนียม">

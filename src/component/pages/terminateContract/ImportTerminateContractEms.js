@@ -1,0 +1,488 @@
+import {
+  Col,
+  Row,
+  Space,
+  Table,
+  Card,
+  Button,
+  message,
+  Spin,
+  Upload,
+  Popconfirm,
+} from "antd";
+import Search from "antd/es/input/Search";
+import React, { useState, useEffect } from "react";
+import MotionHoc from "../../../utils/MotionHoc";
+import {
+  DeleteOutlined,
+  PlusCircleOutlined,
+  CloseCircleOutlined,
+  ImportOutlined,
+} from "@ant-design/icons";
+import * as XLSX from "xlsx";
+import axios from "axios";
+import FailedImport from "./modal/FailedImport";
+import { HEADERS_EXPORT, POST_CANCEL, baseUrl } from "../../API/apiUrls";
+import DateCustom from "../../../hook/DateCustom";
+import CurrencyFormat from "../../../hook/CurrencyFormat";
+
+const Main = () => {
+  const [convertDateThai, convertDateThaiShort] = DateCustom();
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
+  const [importLoad, setImportLoad] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [arrayTable, setArrayTable] = useState();
+  const [data, setData] = useState(null);
+  const [failedData, setFailedData] = useState([]);
+  const [isModalFailed, setIsModalFailed] = useState(false);
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const companyId = localStorage.getItem("COMPANY_ID");
+  const [tableLength, setTableLength] = useState(0);
+
+  useEffect(() => {
+    if (!data) {
+      console.log("no data");
+    } else {
+      // queryMultiData();
+    }
+  }, [data]);
+
+  const search = (event) => {
+    console.log("query--->", event.target.value);
+    onSearch(event.target.value);
+  };
+
+  const onSearch = (value) => {
+    let result = data.filter(
+      (item) => item.contno && item.contno.includes(value)
+    );
+    if (value) {
+      setArrayTable(result);
+      setTableLength(result.length);
+    } else {
+      setArrayTable(data);
+      setTableLength(data.length);
+    }
+  };
+
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const arrayBuffer = event.target.result; // อ่านไฟล์เป็น ArrayBuffer
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+        type: "array",
+      }); // อ่านไฟล์ Excel
+      const allData = []; // ตัวแปรเก็บข้อมูลรวมจากทุกชีต
+
+      // วนลูปผ่านทุกชีตในไฟล์
+      workbook.SheetNames.forEach((sheetName) => {
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+        // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
+        const filteredData = sheetData.map((row) => ({
+          contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
+          pay_type: row["ประเภทจ่าย"] || "", // เลขที่สัญญา
+          account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
+          datetime: row["รอบวันออกจดหมายในระบบ"] || "", // เลขที่สัญญา
+          contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
+          customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
+          customer_type_id: row["ประเภทลูกค้า"] || "" || 0,
+          brand: row["ยี่ห้อ"] || "", // ยี่ห้อ
+          register_no: row["ทะเบียน"] || "", // ทะเบียน
+          overdue_installment_count: row["ค้างงวด"] || "", // ค้างงวด
+          overdue_installment_amount: row["เงินค้าง"] || "", // เงินค้าง
+          dept_collection_fees: row["ค่าทวงถาม"] || "", // ค่าทวงถาม
+          parcel_no: row["ems no."] || "", // ค่าทวงถาม
+          status: null,
+        }));
+
+        // รวมข้อมูลจากชีตนี้เข้าไปใน allData
+        allData.push(...filteredData);
+      });
+
+      // แสดงข้อมูลรวม
+      console.log(allData);
+      setArrayTable(allData);
+      setTableLength(allData.length);
+      setData(allData); // หรืออัพเดท state ใน React
+      setImportLoad(false);
+    };
+
+    reader.readAsArrayBuffer(file); // อ่านไฟล์เป็น ArrayBuffer
+    return false; // ป้องกันการอัพโหลดอัตโนมัติ
+  };
+
+  const uploadProps = {
+    customRequest: ({ file, onSuccess, fileList }) => {
+      handleFileUpload(file);
+      if (file.status !== "uploading") {
+        console.log(file, fileList);
+      } else {
+        onSuccess(); // Call onSuccess when the file is handled
+      }
+    },
+    showUploadList: importLoad,
+  };
+
+  const confirm = (e) => {
+    console.log("eeeee", e);
+    let deleteItem = arrayTable.filter((item) => {
+      if (item.contno !== e.contno) {
+        return { item };
+      }
+    });
+    setData(deleteItem);
+    setArrayTable(deleteItem);
+    console.log("deleteItem", deleteItem);
+
+    message.success(`ลบสัญญาเรียบร้อย ${e.contno}`);
+  };
+
+  const cancel = (e) => {
+    console.log(e);
+    message.error("ยกเลิกการลบสัญญา");
+  };
+
+  const insertData = async () => {
+    setLoading(true);
+    let duplicate = 0;
+    let success = 0;
+    console.log("post data");
+    try {
+      if (!arrayTable || arrayTable.length === 0) {
+        message.error("ไม่มีเลขสัญญาโปรดรีเฟรชใหม่ !!");
+        setLoading(false);
+        return;
+      }
+
+      const promises = arrayTable.map(async (item) => {
+        const arrayData = item;
+        console.log("arrayData", arrayData);
+
+        if (!arrayData) {
+          message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
+          return null;
+        }
+        await axios
+          .post(baseUrl + POST_CANCEL, arrayData, {
+            headers: HEADERS_EXPORT,
+          })
+          .then((resQuery) => {
+            if (resQuery.status === 201) {
+              success += 1;
+              console.log(resQuery.data);
+              setImportLoad(false);
+              return resQuery.data;
+            } else {
+              if (resQuery.data === "Duplicate Contract No.") {
+                console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+                duplicate += 1;
+                return null;
+              }
+              console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
+              return null;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
+            setFailedData({ ...failedData, setFailedData: arrayData });
+            setImportLoad(false);
+            return null;
+          });
+      });
+
+      const response = await Promise.all(promises);
+      console.log("results", response);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    } finally {
+      setLoading(false);
+      if (success > 0) {
+        message.success(`นำเข้าข้อมูลสำเร็จ`);
+        setArrayTable([]);
+      }
+      if (duplicate > 0) {
+        message.error(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+        setArrayTable([]);
+      }
+    }
+  };
+
+  const confirmInsert = () => {
+    setImportLoad(true);
+    insertData(arrayTable);
+  };
+  const cancelInsert = () => {
+    message.error("ยกเลิกการนำเข้าข้อมูล");
+  };
+
+  const confirmModal = () => {
+    setIsModalFailed(true);
+  };
+
+  const cancelModal = () => {
+    message.error("ไม่ดูข้อมูลที่ค้นหาไม่เจอ");
+  };
+
+  const renderType = (record) => {
+    const options = [
+      { value: "116", label: "จดหมายส่งผู้คนค้ำ(116)" },
+      { value: "119", label: "บอกเลิกสัญญา(119)" },
+      { value: "129", label: "ค่าบอกเลิกสัญญา(No ems)(129)" },
+      { value: "vsfhp", label: "สัญญา 2" },
+      { value: "psfhp", label: "สัญญา 3" },
+      { value: "rpsl", label: "สัญญา 3(ใหม่)" },
+      { value: "sfhp", label: "สัญญา 8" },
+    ];
+
+    if (!record) {
+      return null;
+    }
+    const matchedOption = options.find((opt) => opt.value === record);
+    return matchedOption ? matchedOption.label : "-"; // ถ้าไม่เจอ ให้แสดง "-"
+  };
+
+  const columns = [
+    {
+      title: "ลำดับ",
+      key: "index", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+      render: (text, record, index) => (
+        <>{index + 1}</> // ใช้ index ที่ถูกส่งมาจาก Table เพื่อเพิ่มลำดับแถว
+      ),
+    },
+    {
+      title: "สัญญา",
+      dataIndex: "contract_schema",
+      key: "contract_schema", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+      render: (text, record) => <>{renderType(record.contract_schema)}</>,
+    },
+    {
+      title: "ประเภทจ่าย",
+      dataIndex: "pay_type",
+      key: "pay_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+      render: (text, record) => <>{renderType(record.pay_type)}</>,
+    },
+    {
+      title: "ประเภทบัญชี",
+      dataIndex: "account_type",
+      key: "account_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+    },
+    {
+      title: "วันที่ออกจดหมาย",
+      align: "center",
+      render: (text, record) => (
+        <>{record.datetime ? convertDateThaiShort(record.datetime) : null}</>
+      ),
+    },
+    {
+      title: "เลขที่สัญญา",
+      dataIndex: "contract_no",
+      key: "contract_no",
+      align: "center",
+      render: (text, record) => (
+        <>{record.contract_no ? record.contract_no : null}</>
+      ),
+    },
+    {
+      title: "ชื่อ-นามสกุล",
+      dataIndex: "customer_fullname",
+      key: "customer_fullname",
+      align: "center",
+      render: (text, record) => (
+        <>{record.customer_fullname ? record.customer_fullname : null} </>
+      ),
+    },
+    {
+      title: "ประเภทลูกค้า",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.customer_type_id === 0
+            ? "ผู้เช่าซื้อ"
+            : `ผู้ค้ำที่ ${record.customer_type_id}`}
+        </>
+      ),
+    },
+    {
+      title: "ยี่ห้อ",
+      dataIndex: "brand",
+      key: "brand", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+    },
+    {
+      title: "ทะเบียน",
+      dataIndex: "register_no",
+      key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+    },
+    {
+      title: "ค้างงวด",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.overdue_installment_count
+            ? record.overdue_installment_count
+            : null}{" "}
+        </>
+      ),
+    },
+    {
+      title: "เงินค้าง",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.overdue_installment_amount
+            ? currencyFormatPoint(record.overdue_installment_amount)
+            : null}{" "}
+        </>
+      ),
+    },
+    {
+      title: "ค่าทวงถาม",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.dept_collection_fees
+            ? currencyFormatComma(record.dept_collection_fees)
+            : null}{" "}
+        </>
+      ),
+    },
+    {
+      title: "ems no.",
+      dataIndex: "parcel_no",
+      key: "parcel_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+      align: "center",
+    },
+
+    {
+      title: "การจัดการ",
+      align: "center",
+      render: (text, record) => (
+        <>
+          <Popconfirm
+            title="ลบสัญญา"
+            description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
+            onConfirm={() => {
+              confirm(record);
+            }}
+            onCancel={cancel}
+            okText="ยืนยัน"
+            cancelText="ยกเลิก"
+          >
+            <Button style={{ fontSize: "16px", color: "red" }}>
+              <DeleteOutlined />
+            </Button>
+          </Popconfirm>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      {ROLE_ID === "1" || ROLE_ID === "2" ? (
+        <>
+          <Card>
+            <Spin spinning={loading} size="large" tip=" Loading... ">
+              <Row>
+                <Col span={"12"} style={{ textAlign: "start" }}>
+                  <Popconfirm
+                    title="นำเข้าข้อมูล"
+                    description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
+                    onConfirm={confirmInsert}
+                    onCancel={cancelInsert}
+                    okText="ยืนยัน"
+                    cancelText="ยกเลิก"
+                  >
+                    <Button style={{ marginRight: "10px" }}>
+                      <PlusCircleOutlined
+                        style={{ color: "green", fontSize: "16px" }}
+                        onClick={() => {
+                          // storeData(record);
+                        }}
+                      />
+                    </Button>
+                  </Popconfirm>
+                  {/* <Popconfirm
+                    title="เลขสัญญาที่ค้นหาไม่เจอ"
+                    description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
+                    onConfirm={confirmModal}
+                    onCancel={cancelModal}
+                    okText="ตกลง"
+                    cancelText="ยกเลิก"
+                  >
+                    <Button style={{ color: "red" }}>
+                      <CloseCircleOutlined style={{ fontSize: "16px" }} />
+                    </Button>
+                  </Popconfirm> */}
+                </Col>
+                <Col span={"12"} style={{ textAlign: "end" }}>
+                  <Space direction="vertical" size={12}>
+                    <Upload {...uploadProps}>
+                      <Button
+                        style={{ color: "green", marginRight: "5px" }}
+                        icon={<ImportOutlined />}
+                      >
+                        นำเข้า Excel
+                      </Button>
+                    </Upload>
+                  </Space>
+                  <Search
+                    placeholder="ค้นหาสัญญา"
+                    onChange={search}
+                    style={{
+                      width: 200,
+                    }}
+                    size="large"
+                  />
+                </Col>
+                <Col span={"24"}>
+                  <Table
+                    style={{ marginTop: "10px" }}
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    scroll={{ x: 850 }}
+                    footer={() => (
+                      <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength}</p>
+                    )}
+                  />
+                </Col>
+              </Row>
+            </Spin>
+          </Card>
+
+          {isModalFailed ? (
+            <FailedImport
+              open={isModalFailed}
+              close={setIsModalFailed}
+              data={failedData}
+            />
+          ) : null}
+        </>
+      ) : (
+        <Card>
+          {" "}
+          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
+        </Card>
+      )}
+    </>
+  );
+};
+
+const ImportTerminateContractEms = MotionHoc(Main);
+export default ImportTerminateContractEms;

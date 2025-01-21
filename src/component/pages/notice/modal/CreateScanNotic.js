@@ -1,6 +1,5 @@
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -8,34 +7,43 @@ import {
   Select,
   Spin,
   message,
+  Radio,
+  DatePicker,
 } from "antd";
-import { useEffect, useState } from "react";
 import {
   NOTICE,
+  STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_PROGRESS,
+  STATUS_PROCESS_SUCCESSFUL,
+  STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
+  POST_PARCELS,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
+import { useEffect, useRef, useState } from "react";
+import TokenCheck from "../../../../hook/TokenCheck";
 
-const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
+const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
-  const [preData, setPreData] = useState();
+  const [preData, setPreData] = useState(null);
   const { TextArea } = Input;
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
-  const [loanData, setLoanData] = useState(null);
-  const [loanType, setLoanType] = useState(dataDefault.LOAN_TYPE_ID);
+  const [loanData, setLoanData] = useState();
+  const [defaultRadio, setDefaultRadio] = useState(null);
   const userCompany = localStorage.getItem("COMPANY_ID");
+  const [loanType, setLoanType] = useState(dataDefault.LOAN_TYPE_ID);
 
   const optionsLoan = [
     {
@@ -51,17 +59,18 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   useEffect(() => {
     loadData();
     setLoadingDataCompany(true);
+    dateSet();
     console.log("dataDefault--->", dataDefault);
   }, [setLoadingDataCompany]);
+
+  const dateSet = () => {
+    const date = dayjs().format("YYYY-MM-DD");
+    return date;
+  };
 
   useEffect(() => {
     setOption();
   }, [companiesListCompany]);
-
-  useEffect(() => {
-    console.log("loanType", loanType);
-    guarantorSet();
-  }, [loanType]);
 
   const setOption = () => {
     const options = companiesListCompany.map((item) => ({
@@ -69,9 +78,6 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       label: item.company_name,
       address: item.address,
     }));
-
-    console.log("options", options);
-
     setCompaniesOption(options);
   };
 
@@ -101,7 +107,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         });
 
       await axios
-        .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault.CONTNO, {
+        .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefault?.CONTNO, {
           headers: HEADERS_EXPORT,
         })
         .then(async (res) => {
@@ -131,8 +137,8 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (data, lawsuit) => {
-    console.log("data-->", data, lawsuit);
+  const sendStatus = async (data, lawsuit, parcel) => {
+    console.log("data-->", data, lawsuit, parcel);
     if (data) {
       setLoading(true);
       try {
@@ -166,7 +172,8 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 DATE: data.DATE,
                 COMPANY_ID: lawsuit.COMPANY_ID,
                 MEMO: data.MEMO,
-                LOAN_TYPE_ID: lawsuit.LOAN_TYPE_ID,
+                PROCESS_ID: data.PROCESS_ID,
+                parcel_list: parcel,
               });
               setLoading(false);
             } else {
@@ -181,6 +188,36 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
+
+        const promises = parcel.map(async (item) => {
+          const arrayData = item;
+          console.log("arrayData", arrayData);
+
+          if (!arrayData) {
+            message.warning("พบค่าที่ไม่ถูกต้อง");
+            return null;
+          }
+          await axios
+            .post(baseUrl + POST_PARCELS, arrayData, {
+              headers: HEADERS_EXPORT,
+            })
+            .then((resQuery) => {
+              if (resQuery.status === 201) {
+                console.log(resQuery.data);
+                return resQuery.data;
+              } else {
+                console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
+                return null;
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
+            });
+        });
+
+        const response = await Promise.all(promises);
+        console.log("results", response);
       } catch (error) {
         console.error("Error fetching data:", error);
         message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
@@ -188,9 +225,9 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         setLoading(false);
         handleCancel();
         setLoading(false);
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
       }
     } else {
       message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
@@ -216,112 +253,89 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     setPreData({ ...preData, dateNotice: dateString });
   };
 
+  const onChangeInputParcel = (value) => {
+    console.log(value);
+  };
+
   const onChangeInput = (value) => {
     console.log(value);
   };
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    const putData = {
-      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+
+    const putStatus = {
+      WORK_LOG_ID: dataDefault?.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
       LOAN_ID: dataDefault.id,
       MEMO: values.memo,
-      PROCESS_ID: STATUS_PROCESS_PROGRESS,
-      DATE: preData
-        ? dayjs(preData.dateNotice).format("YYYY-MM-DD")
-        : dayjs(values.dateNotice).format("YYYY-MM-DD"),
+      PROCESS_ID: STATUS_PROCESS_PROCESS,
+      DATE: dayjs(values.dateNotice).format("YYYY-MM-DD"),
     };
+
     const putLawsuit = {
       ...lawsuitData,
       LOAN_TYPE_ID: loanType,
       COMPANY_ID: parseInt(values.company),
     };
 
-    console.log("putDataData", putData);
+    let parcelsSet = [];
+    const initData = {
+      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+      url_path: null,
+      parcel_typ_id: null,
+      response_status: null,
+      mark: values.memo,
+      installment_cont: null,
+      amount: 0,
+      dep_collection_fees: 0,
+    };
+
+    if (loanType === 2) {
+      console.log("if----->");
+
+      parcelsSet.push({
+        ...initData,
+        CUSTOMER_ID: values.cusId,
+        parcel_no: values.parcelNoCustomer,
+      });
+    } else {
+      console.log("else----->");
+
+      parcelsSet.push({
+        ...initData,
+        CUSTOMER_ID: values.cusId,
+        parcel_no: values.parcelNoCustomer,
+      });
+
+      loanData?.GUARANTORS?.forEach((guarantor, index) => {
+        parcelsSet.push({
+          ...initData,
+          CUSTOMER_ID: values[`guarantor${index + 1}`], // ใช้ดึงค่าไดนามิกจาก `values`
+          parcel_no: values[`parcelNoGuarantor${index + 1}`],
+        });
+      });
+    }
+
+    console.log("dataSet", parcelsSet);
+    console.log("putDataData", putStatus);
     console.log("putLawsuit", putLawsuit);
 
-    sendStatus(putData, putLawsuit);
-  };
-
-  const guarantorSet = () => {
-    if (loanType === 1) {
-      return (
-        <>
-          {loanData?.GUARANTORS.length > 0 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 1"
-                name="guarantor1"
-                initialValue={loanData?.GUARANTORS[0]?.id}
-              >
-                {`${loanData?.GUARANTORS[0]?.SNAM}${loanData?.GUARANTORS[0]?.NAME1} ${loanData?.GUARANTORS[0]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-          {loanData?.GUARANTORS.length > 1 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 2"
-                name="guarantor2"
-                initialValue={loanData?.GUARANTORS[1]?.id}
-              >
-                {`${loanData?.GUARANTORS[1]?.SNAM}${loanData?.GUARANTORS[1]?.NAME1} ${loanData?.GUARANTORS[1]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-          {loanData?.GUARANTORS.length > 2 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 3"
-                name="guarantor3"
-                initialValue={loanData?.GUARANTORS[2]?.id}
-              >
-                {`${loanData?.GUARANTORS[2]?.SNAM}${loanData?.GUARANTORS[2]?.NAME1} ${loanData?.GUARANTORS[2]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-          {loanData?.GUARANTORS.length > 3 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 4"
-                name="guarantor4"
-                initialValue={loanData?.GUARANTORS[3]?.id}
-              >
-                {`${loanData?.GUARANTORS[3]?.SNAM}${loanData?.GUARANTORS[3]?.NAME1} ${loanData?.GUARANTORS[3]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-          {loanData?.GUARANTORS.length > 4 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 5"
-                name="guarantor5"
-                initialValue={loanData?.GUARANTORS[4]?.id}
-              >
-                {`${loanData?.GUARANTORS[4]?.SNAM}${loanData?.GUARANTORS[4]?.NAME1} ${loanData?.GUARANTORS[4]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-          {loanData?.GUARANTORS.length > 5 ? (
-            <>
-              <Form.Item
-                label="ผู้ค้ำที่ 6"
-                name="guarantor6"
-                initialValue={loanData?.GUARANTORS[5]?.id}
-              >
-                {`${loanData?.GUARANTORS[5]?.SNAM}${loanData?.GUARANTORS[5]?.NAME1} ${loanData?.GUARANTORS[5]?.NAME2}`}
-              </Form.Item>
-            </>
-          ) : null}
-        </>
-      );
-    }
+    sendStatus(putStatus, putLawsuit, parcelsSet);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+
+  const inputRefs = useRef([]); // ใช้เก็บ refs ของ Input
+
+  const handleInputChange = (value, index) => {
+    if (value.length === 13 && inputRefs.current[index + 1]) {
+      inputRefs.current[index + 1].focus(); // เลื่อนไปยังช่องถัดไป
+    }
+    onChangeInputParcel(value); // เรียก callback เดิม
   };
 
   return (
@@ -350,6 +364,8 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinishFailed={onFinishFailed}
               initialValues={{
                 memo: null,
+                dateNotice: dayjs(),
+                cus: loanData?.CUSTOMER?.id,
                 company:
                   userCompany === "3"
                     ? 3
@@ -358,11 +374,10 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     : loanType === 2
                     ? 2
                     : 2,
-                dateNotice: dayjs(),
-                cus: loanData?.CUSTOMER?.id,
               }}
+              dependencies={["radioCus"]}
             >
-              <Form.Item label="เลขสัญญา">{dataDefault.CONTNO}</Form.Item>
+              <Form.Item label="เลขสัญญา">{dataDefault?.CONTNO}</Form.Item>
               <Form.Item label="ประเภทสัญญา" name="loanType">
                 <Select
                   showSearch
@@ -396,15 +411,15 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   optionFilterProp="value"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
-                  defaultValue={
-                    userCompany === "3"
-                      ? 3
-                      : loanType === 1
-                      ? 1
-                      : loanType === 2
-                      ? 2
-                      : 2
-                  }
+                  //   value={
+                  //     userCompany === "3"
+                  //       ? 3
+                  //       : loanType === 1
+                  //       ? 1
+                  //       : loanType === 2
+                  //       ? 2
+                  //       : 2
+                  //   }
                 />
               </Form.Item>
               <Form.Item
@@ -426,7 +441,108 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               >
                 {`${loanData?.CUSTOMER?.SNAM}${loanData?.CUSTOMER?.NAME1}  ${loanData?.CUSTOMER?.NAME2}`}
               </Form.Item>
-              {guarantorSet()}
+              {/* <Form.Item
+                label="กรอกหมายเลข EMS"
+                name="parcelNoCustomer"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดกรอกข้อมูล",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="ตัวอย่าง:EF582568151TH"
+                  maxLength={13}
+                  onChange={(e) => onChangeInputParcel(e.target.value)}
+                />
+              </Form.Item>
+
+              {loanType === 1 ? (
+                <>
+                  {loanType === 1 &&
+                    loanData?.GUARANTORS?.map((guarantor, index) => (
+                      <div key={guarantor.id}>
+                        <Form.Item
+                          label={`ผู้ค่ำที่ ${index + 1}`}
+                          name={`guarantor${index + 1}`}
+                          initialValue={guarantor.id}
+                        >
+                          {`${guarantor.SNAM}${guarantor.NAME1} ${guarantor.NAME2}`}
+                        </Form.Item>
+                        <Form.Item
+                          label="กรอกหมายเลข EMS"
+                          name={`parcelNoGuarantor${index + 1}`}
+                          rules={[
+                            {
+                              required: true,
+                              message: "โปรดกรอกข้อมูล",
+                            },
+                          ]}
+                        >
+                          <Input
+                            placeholder="ตัวอย่าง:EF582568151TH"
+                            maxLength={13}
+                            onChange={(e) =>
+                              onChangeInputParcel(e.target.value)
+                            }
+                          />
+                        </Form.Item>
+                      </div>
+                    ))}
+                </>
+              ) : null} */}
+
+              <Form.Item
+                label="กรอกหมายเลข EMS"
+                name="parcelNoCustomer"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดกรอกข้อมูล",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="ตัวอย่าง:EF582568151TH"
+                  maxLength={13}
+                  ref={(el) => (inputRefs.current[0] = el)} // เก็บ ref
+                  onChange={(e) => handleInputChange(e.target.value, 0)}
+                />
+              </Form.Item>
+
+              {/* กรอกข้อมูลผู้ค่ำ */}
+              {loanType === 1 &&
+                loanData?.GUARANTORS?.map((guarantor, index) => (
+                  <div key={guarantor.id}>
+                    <Form.Item
+                      label={`ผู้ค่ำที่ ${index + 1}`}
+                      name={`guarantor${index + 1}`}
+                      initialValue={guarantor.id}
+                    >
+                      {`${guarantor.SNAM}${guarantor.NAME1} ${guarantor.NAME2}`}
+                    </Form.Item>
+                    <Form.Item
+                      label="กรอกหมายเลข EMS"
+                      name={`parcelNoGuarantor${index + 1}`}
+                      rules={[
+                        {
+                          required: true,
+                          message: "โปรดกรอกข้อมูล",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="ตัวอย่าง:EF582568151TH"
+                        maxLength={13}
+                        ref={(el) => (inputRefs.current[index + 1] = el)} // เก็บ ref
+                        onChange={(e) =>
+                          handleInputChange(e.target.value, index + 1)
+                        }
+                      />
+                    </Form.Item>
+                  </div>
+                ))}
 
               <Form.Item label="หมายเหตุ" name="memo">
                 <TextArea
@@ -453,4 +569,4 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     </>
   );
 };
-export default CreateNotice;
+export default CreateScanNotice;

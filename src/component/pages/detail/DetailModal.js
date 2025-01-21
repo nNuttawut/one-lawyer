@@ -42,8 +42,12 @@ import dayjs from "dayjs";
 const DetailModal = ({ open, close, dataRec }) => {
   const [form] = Form.useForm();
   const [convertDateThai] = DateCustom();
-  const [currencyFormatNoPoint, currencyFormatPoint] = CurrencyFormat();
-
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [loading, setLoading] = useState();
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [tabsKey, setTabsKey] = useState("1");

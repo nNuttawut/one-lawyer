@@ -9,11 +9,12 @@ import {
   message,
   Spin,
   Select,
+  Tooltip,
 } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { PrinterOutlined } from "@ant-design/icons";
+import { FileExcelOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -49,6 +50,20 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [selectedOption, setSelectedOption] = useState(1);
   const [dataSearchByDate, setDataSearchByDate] = useState(null);
+
+  const [arrow, setArrow] = useState("Show");
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
 
   useEffect(() => {
     loadData();
@@ -645,7 +660,10 @@ const Main = () => {
         <Card>
           <Spin spinning={loading} size="large" tip=" Loading... ">
             <Row>
-              <Col span={"4"} style={{ textAlign: "start", margin: "10px" }}>
+              <Col
+                span={"4"}
+                style={{ textAlign: "start", marginBottom: "10px" }}
+              >
                 <Select
                   showSearch
                   style={{
@@ -655,10 +673,11 @@ const Main = () => {
                   options={options}
                   onChange={(value) => onChangeSelect(value)}
                   defaultValue={selectedOption}
+                  size="large"
                 />
               </Col>
               <Col
-                span={"19"}
+                span={"20"}
                 style={{ textAlign: "end", marginBottom: "10px" }}
               >
                 <Space direction="vertical" size={12}>
@@ -685,17 +704,25 @@ const Main = () => {
             <Row>
               <Col
                 span={"24"}
-                style={{
-                  textAlign: "end",
-                  marginRight: "20px",
-                  marginBottom: "10px",
-                }}
+                style={{ textAlign: "start", marginBottom: "10px" }}
               >
-                <PrinterOutlined
-                  style={{ fontSize: "30px", color: "blue" }}
-                  key="print"
-                  onClick={createAndDownloadExcel}
-                />
+                <Space direction="vertical" size={12}>
+                  <Tooltip
+                    placement="bottom"
+                    title="บันทึกข้อมูล excel"
+                    arrow={mergedArrow}
+                  >
+                    <FileExcelOutlined
+                      style={{
+                        fontSize: "40px",
+                        color: "green",
+                        cursor: "pointer",
+                      }}
+                      key="print"
+                      onClick={createAndDownloadExcel}
+                    />
+                  </Tooltip>
+                </Space>
               </Col>
               <Col span={"24"}>
                 <Table

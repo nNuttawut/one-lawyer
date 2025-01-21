@@ -18,7 +18,7 @@ import LoadCompanies from "../../hook/LoadCompanies";
 const Main = () => {
   const [form] = Form.useForm();
   const [roleList, setLoadingDataRole] = RoleSelect();
-  const [companiesList, setLoadingData] = LoadCompanies();
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [userData, setUserData] = useState(null);
   // ดึงค่าจาก localStorage
@@ -29,15 +29,15 @@ const Main = () => {
 
   useEffect(() => {
     loadData();
-    setLoadingData(true);
+    setLoadingDataCompany(true);
     setLoadingDataRole(true);
     // ตั้งค่าฟิลด์ในฟอร์ม
-  }, [setLoadingDataRole, setLoadingData]);
+  }, [setLoadingDataRole, setLoadingDataCompany]);
 
   useEffect(() => {
     setOptionRole();
     setOptionCompanies();
-  }, [companiesList, roleList]);
+  }, [companiesListCompany, roleList]);
 
   const loadData = async (data) => {
     setLoading(true);
@@ -52,6 +52,7 @@ const Main = () => {
           console.log(response.data);
           setDataDefualt(response.data);
           setLoading(false);
+          console.log(response.data);
         }
       }
     } catch (error) {
@@ -72,7 +73,7 @@ const Main = () => {
   };
 
   const setOptionCompanies = () => {
-    const options = companiesList.map((item) => ({
+    const options = companiesListCompany.map((item) => ({
       value: item.id,
       label: item.company_name,
       address: item.address,

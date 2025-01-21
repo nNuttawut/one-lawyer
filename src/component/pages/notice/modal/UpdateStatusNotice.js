@@ -120,7 +120,7 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       statusSelect = NEGOTIATE;
     }
     console.log("statusSelect", statusSelect);
-    const postData = {
+    const postStatus = {
       MAIN_STATUS_ID: statusSelect,
       LOAN_ID: dataDefault.id,
       USER_ID: dataDefault.LAWYER_ID,
@@ -132,8 +132,8 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ? dayjs(dataDefault.DATE).format("YYYY-MM-DD")
           : dayjs().format("YYYY-MM-DD"),
     };
-    console.log(postData);
-    sendStatus(postData);
+    console.log(postStatus);
+    sendStatus(postStatus);
   };
 
   const onChange = (e) => {

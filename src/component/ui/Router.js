@@ -36,7 +36,17 @@ import { AnimatePresence } from "framer-motion";
 // import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import CreateInvestigateAssets from "../pages/investigateAssets/CreateInvestigateAssets";
 import AssetsFound from "../pages/investigateAssets/AssetsFound";
-import ChargerIndict from "../pages/chargeCourt/ChargeIndict";
+import AdvanePay from "../pages/chargeIndict/AdvanePay";
+import ClearAdvanePay from "../pages/chargeIndict/ClearAdvanePay";
+import LawsuitAdvanePayment from "../pages/preLawsuitFiled/LawsuitAdvanePayment";
+import LawsuitClearAdvanePayment from "../pages/preLawsuitFiled/LawsuitClearAdvanePayment";
+import MainPreLawsuitFiled from "../pages/preLawsuitFiled/MainPreLawsuitFiled";
+import CreateScanNoticeMain from "../pages/notice/CreateScanNoticeMain";
+import ReplyNoticeEms from "../pages/notice/ReplyNoticeEms";
+import CreateTerminateContract from "../pages/terminateContract/CreateTerminateContract";
+import ReplyTerminateContract from "../pages/terminateContract/ReplyTerminateContract";
+import ImportTerminateContractEms from "../pages/terminateContract/ImportTerminateContractEms";
+import ReportTerminate from "../pages/report/ReportTerminate";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -53,8 +63,28 @@ export default function Router() {
           <Route path="/final-case" element={<FinalCase />} />
           <Route path="/debt-payment" element={<DebtPaymentRoute />} />
           <Route path="/disbursement/" element={<DisbursementRoute />} />
+
           <Route path="/notice/create-notice" element={<Notice />} />
           <Route path="/notice/reply-notice" element={<ReplyNotice />} />
+          <Route
+            path="/notice/create-notice-ems"
+            element={<CreateScanNoticeMain />}
+          />
+          <Route path="/notice/reply-notice-ems" element={<ReplyNoticeEms />} />
+
+          <Route
+            path="/terminate-contract/create-terminate-contract"
+            element={<CreateTerminateContract />}
+          />
+          <Route
+            path="/terminate-contract/import-terminate-contract-ems"
+            element={<ImportTerminateContractEms />}
+          />
+          <Route
+            path="/terminate-contract/reply-terminate-contract"
+            element={<ReplyTerminateContract />}
+          />
+
           <Route
             path="/investigate-assets"
             element={<InvestigateAssetsRoute />}
@@ -68,12 +98,24 @@ export default function Router() {
             element={<EstimateAssets />}
           />
           <Route
-            path="investigate-assets/create-invitigate-assets"
+            path="/investigate-assets/create-invitigate-assets"
             element={<CreateInvestigateAssets />}
           />
 
-          <Route path="/pre-lawsuit-filed" element={<PreLawsuitFiledRoute />} />
+          <Route
+            path="/lawsuit/pre-lawsuit-filed"
+            element={<MainPreLawsuitFiled />}
+          />
+          <Route
+            path="/lawsuit/advane-payment"
+            element={<LawsuitAdvanePayment />}
+          ></Route>
+          <Route
+            path="/lawsuit/clear-advane-payment"
+            element={<LawsuitClearAdvanePayment />}
+          ></Route>
           <Route path="/report/notice" element={<ReportNotice />} />
+          <Route path="/report/terminate" element={<ReportTerminate />} />
           <Route
             path="/sale-announcement"
             element={<SaleAnnouncementRoute />}
@@ -110,10 +152,12 @@ export default function Router() {
             path="/commission/commission-investigate"
             element={<CommissionInvestigate />}
           />
+          <Route path="/charge-indict/advane-pay" element={<AdvanePay />} />
           <Route
-            path="/charge-court/charge-indict"
-            element={<ChargerIndict />}
+            path="/charge-indict/clear-advane-pay"
+            element={<ClearAdvanePay />}
           />
+
           <Route path="/guidbook/read-text" element={<ReadText />} />
           <Route path="/guidbook/test" element={<Test />} />
           <Route path="/liff" element={<Liff />} />

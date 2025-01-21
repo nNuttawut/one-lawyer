@@ -406,6 +406,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       },
     }));
   };
+  console.log("governmentOfficers---->>>>", governmentOfficers);
 
   const handleCheckBoxGroupGoverment = () => {
     return (
@@ -420,7 +421,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 governmentOfficers?.NAME2
               } ${
                 governmentOfficers?.GOVMNT === 1
-                  ? ` เป็น ข้าราชการ${governmentOfficers?.OCCUP} อยู่ที่ ${governmentOfficers?.OFFIC}`
+                  ? ` เป็น ข้าราชการ ${governmentOfficers?.OCCUP}  อยู่ที่ ${governmentOfficers?.OFFIC}`
                   : ""
               }`
             : "-"}
@@ -470,9 +471,9 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 >
                   {`${guarantor?.SNAM} ${guarantor?.NAME1} ${
                     guarantor?.NAME2
-                  } ${
+                  } เป็น ${guarantor?.RELATN} ${
                     guarantor?.GOVMNT === 1
-                      ? `เป็น ข้าราชการ${guarantor?.OCCUP} อยู่ที่ ${guarantor?.OFFIC}`
+                      ? `ทำอาชีพ ${guarantor?.OCCUP} อยู่ที่ ${guarantor?.OFFIC}`
                       : ""
                   }`}
                 </Checkbox>

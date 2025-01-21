@@ -50,16 +50,18 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     if (dataLoadLawSuit && dataLoadLoan) {
+      console.log("dataLoadLawSuit?--->", dataLoadLawSuit);
+
       form.setFieldsValue({
         dateCourt: dayjs(dataDefault.DATE),
         court: dataLoadLawSuit?.provincial_court,
         subject: dataLoadLawSuit?.subject,
         trackingFee: dataLoadLawSuit?.tracking_fee
-          ? currencyFormatNoPoint(dataLoadLawSuit?.tracking_fee)
-          : null,
+          ? dataLoadLawSuit?.tracking_fee
+          : 0,
         suspensionAmount: dataLoadLawSuit?.suspension_amount
           ? currencyFormatNoPoint(dataLoadLawSuit?.suspension_amount)
-          : null,
+          : 0,
         lossBenefit: dataLoadLawSuit?.lack_of_benefits
           ? currencyFormatNoPoint(dataLoadLawSuit?.lack_of_benefits)
           : null,
@@ -295,11 +297,12 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         calStampDuty = 10000;
       }
 
-      console.log("calFeeCourt", Math.ceil(calFeeCourt));
+      console.log("calFeeCourt", Math.round(calFeeCourt));
 
       form.setFieldsValue({
         feeCourt: currencyFormatComma(calFeeCourt),
-        stampDuty: dataDefault.LOAN_TYPE_ID === 1 ? Math.ceil(calStampDuty) : 0,
+        stampDuty:
+          dataDefault.LOAN_TYPE_ID === 1 ? Math.round(calStampDuty) : 0,
       });
 
       setButtonCal(false);
@@ -344,7 +347,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             : parseInt(values.suspensionAmount)
             ? parseInt(values.suspensionAmount)
             : 0,
-        attorney_fees_payment_status:
+        stamp_cost:
           values?.stampDuty &&
           typeof values.stampDuty === "string" &&
           values.stampDuty.includes(",")
@@ -815,6 +818,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Input
+            suffix="บาท"
             autoComplete="off"
             name="trackingFee"
             onChange={(e) => onChangeTrackingFee(e.target.value)}
@@ -831,6 +835,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Input
+            suffix="บาท"
             autoComplete="off"
             name="suspensionAmount"
             onChange={(e) => onChangeSuspensionAmount(e.target.value)}
@@ -865,6 +870,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             {dataDefault.LOAN_TYPE_ID === 1 ? (
               <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
                 <Input
+                  suffix="บาท"
                   autoComplete="off"
                   name="lossBenefit"
                   onChange={(e) => onChangeInpuutLossBenefit(e.target.value)}
@@ -891,6 +897,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
               ]}
             >
               <Input
+                suffix="บาท"
                 autoComplete="off"
                 name="intigationFounds"
                 onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
@@ -907,34 +914,33 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
               ]}
             >
               <Input
+                suffix="บาท"
                 autoComplete="off"
                 name="feeCourt"
                 onChange={(e) => feeCourt(e.target.value)}
               />
             </Form.Item>
-            <Form.Item
-              label="ค่าอากรณ์แสตมป์"
-              name="stampDuty"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาใส่ค่าอากรณ์แสตมป์ !",
-                },
-              ]}
-            >
-              <Input
+            {dataDefault.LOAN_TYPE_ID === 1 ? (
+              <Form.Item
+                label="ค่าอากรสแตมป์"
                 name="stampDuty"
-                onChange={(e) => stampDutyCost(e.target.value)}
-              />
-            </Form.Item>
-            {/* <Form.Item label="ค่าส่งหมาย" name="docShipingCost">
-              <Input
-                name="docShipingCost"
-                onChange={(e) => docShipingCost(e.target.value)}
-              />
-            </Form.Item> */}
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่ค่าอากรสแตมป์ !",
+                  },
+                ]}
+              >
+                <Input
+                  suffix="บาท"
+                  name="stampDuty"
+                  onChange={(e) => stampDutyCost(e.target.value)}
+                />
+              </Form.Item>
+            ) : null}
           </>
         ) : null}
+
         <Form.Item label="คำนวณค่าธรรมเนียม">
           <Button
             style={{ color: "blue" }}

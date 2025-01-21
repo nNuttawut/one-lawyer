@@ -19,6 +19,7 @@ import {
   GET_LOAN_BY_CONTNO,
   GET_PARCELS,
   HEADERS_EXPORT,
+  POST_STATUS,
   PUT_LAWSUIT_DETAIL,
   PUT_PARCELS,
   PUT_STATUS,
@@ -28,13 +29,19 @@ import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
 import {
+  INDICT,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import TokenCheck from "../../../../hook/TokenCheck";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
-const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
+const UpdateReplyNoticeEms = ({
+  open,
+  close,
+  dataDefault,
+  funcUpdateStatus,
+}) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState();
@@ -209,13 +216,33 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (data, lawsuit, parcel) => {
-    console.log("data-->", data, lawsuit, parcel);
-    if (data) {
-      setLoading(true);
-      try {
+  const sendData = async (putStatus, lawsuit, parcel, postStatus) => {
+    setLoading(true);
+    try {
+      if (postStatus) {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
+          .post(baseUrl + POST_STATUS, postStatus, { headers: HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 201) {
+              console.log("resQuery", res.data);
+              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
+              setLoading(false);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      }
+      if (putStatus) {
+        await axios
+          .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -230,71 +257,67 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
+      }
+      await axios
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+          headers: HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            message.success("อัพเดทข้อมูลสำเร็จ");
+            funcUpdateStatus({
+              ...dataDefault,
+              MAIN_STATUS_ID: putStatus ? dataDefault.MAIN_STATUS_ID : INDICT,
+            });
+            setLoading(false);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status === 404) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
+
+      const promises = parcel.map(async (item) => {
+        const arrayData = item;
+        console.log("arrayData", arrayData);
+
+        if (!arrayData) {
+          message.warning("พบค่าที่ไม่ถูกต้อง");
+          return null;
+        }
         await axios
-          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuit, {
+          .put(baseUrl + PUT_PARCELS, arrayData, {
             headers: HEADERS_EXPORT,
           })
-          .then(async (res) => {
-            if (res.status === 200) {
-              message.success("อัพเดทข้อมูลสำเร็จ");
-              funcUpdateStatus({
-                ...dataDefault,
-                DATE: data.DATE,
-                PROCESS_ID: data.PROCESS_ID,
-                parcel_list: parcel,
-              });
-              setLoading(false);
+          .then((resQuery) => {
+            if (resQuery.status === 200) {
+              console.log(resQuery.data);
+              return resQuery.data;
             } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
+              console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
+              return null;
             }
           })
           .catch((err) => {
-            console.log(err);
-            if (err.status === 404) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
+            console.error(err);
+            message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
           });
+      });
 
-        const promises = parcel.map(async (item) => {
-          const arrayData = item;
-          console.log("arrayData", arrayData);
-
-          if (!arrayData) {
-            message.warning("พบค่าที่ไม่ถูกต้อง");
-            return null;
-          }
-          await axios
-            .put(baseUrl + PUT_PARCELS, arrayData, {
-              headers: HEADERS_EXPORT,
-            })
-            .then((resQuery) => {
-              if (resQuery.status === 200) {
-                console.log(resQuery.data);
-                return resQuery.data;
-              } else {
-                console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
-                return null;
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-              message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
-            });
-        });
-
-        const response = await Promise.all(promises);
-        console.log("results", response);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
-      } finally {
-        setLoading(false);
-        handleCancel();
-      }
-    } else {
-      message.error("โปรดตรวจสอบข้อมูลและกดบันทึกอีกครั้ง");
+      const response = await Promise.all(promises);
+      console.log("results", response);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+    } finally {
+      setLoading(false);
+      handleCancel();
     }
   };
 
@@ -312,7 +335,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     setPreData(dateString);
   };
 
-  const onChangeInputParcel = (value) => {
+  const onChangeRadio = (value) => {
     console.log(value);
   };
 
@@ -331,30 +354,49 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       values.radioGuarantor3 === 3 ||
       values.radioGuarantor4 === 3 ||
       values.radioGuarantor5 === 3 ||
-      values.radioGuarantor6 === 3
+      values.radioGuarantor6 === 3 ||
+      values.radioGuarantor7 === 3 ||
+      values.radioGuarantor8 === 3 ||
+      values.radioGuarantor9 === 3 ||
+      values.radioGuarantor10 === 3
     ) {
       statutProcess = STATUS_PROCESS_UNSUCCESSFUL;
     } else {
       statutProcess = STATUS_PROCESS_SUCCESSFUL;
     }
 
-    const putStatus = {
-      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
-      USER_ID: dataDefault.LAWYER_ID,
-      LOAN_ID: dataDefault.id,
-      MEMO: values.memo,
-      DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
-      PROCESS_ID: statutProcess,
-    };
+    let postStatus = null;
+    let putStatus = null;
+    if (statutProcess === STATUS_PROCESS_SUCCESSFUL) {
+      postStatus = {
+        MAIN_STATUS_ID: INDICT,
+        LOAN_ID: dataDefault.id,
+        USER_ID: dataDefault.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
+      };
+    } else {
+      putStatus = {
+        WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+        USER_ID: dataDefault.LAWYER_ID,
+        LOAN_ID: dataDefault.id,
+        MEMO: values.memo,
+        DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
+        PROCESS_ID: statutProcess,
+      };
+    }
+
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
     };
     let parcelsSet = [];
     const initData = {
-      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+      WORK_LOG_ID: parcelsData[0].WORK_LOG_ID,
+      process_id: statutProcess,
       url_path: values.imageReplyFile,
-      parcel_typ_id: 1,
     };
 
     if (dataDefault.LOAN_TYPE_ID === 2) {
@@ -367,95 +409,12 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor0,
           parcel_no: values.parcelNoGuarantor0,
           mark: values.memo,
-          response_status: values.radioGuarantor0 === 3 ? 0 : values.radioCus,
+          parcel_typ_id:
+            values.radioGuarantor0 === 3 ? null : values.radioGuarantor0,
+          response_status: values.radioGuarantor0,
         });
       });
     } else {
-      // parcelsSet.push({
-      //   ...initData,
-      //   id: parcelsData[0].id,
-      //   CUSTOMER_ID: values.cusId,
-      //   parcel_no: values.parcelNoCustomer,
-      //   mark: values.memo,
-      //   parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
-      //   response_status: values.radioCus === 3 ? 0 : 1,
-      // });
-
-      // if (loanData.GUARANTORS.length > 0) {
-      //   console.log("loadData.GUARANTORS.length > 0");
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[1].id,
-      //     CUSTOMER_ID: values.guarantor1,
-      //     parcel_no: values.parcelNoGuarantor1,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor1 === 3 ? null : values.radioGuarantor1,
-      //     response_status: values.radioGuarantor1 === 3 ? 0 : 1,
-      //   });
-      // }
-      // if (loanData.GUARANTORS.length > 1) {
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[2].id,
-      //     CUSTOMER_ID: values.guarantor2,
-      //     parcel_no: values.parcelNoGuarantor2,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor2 === 3 ? null : values.radioGuarantor2,
-      //     response_status: values.radioGuarantor2 === 3 ? 0 : 1,
-      //   });
-      // }
-      // if (loanData.GUARANTORS.length > 2) {
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[3].id,
-      //     CUSTOMER_ID: values.guarantor3,
-      //     parcel_no: values.parcelNoGuarantor3,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor3 === 3 ? null : values.radioGuarantor3,
-      //     response_status: values.radioGuarantor3 === 3 ? 0 : 1,
-      //   });
-      // }
-
-      // if (loanData.GUARANTORS.length > 3) {
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[4].id,
-      //     CUSTOMER_ID: values.guarantor4,
-      //     parcel_no: values.parcelNoGuarantor4,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor4 === 3 ? null : values.radioGuarantor4,
-      //     response_status: values.radioGuarantor4 === 3 ? 0 : 1,
-      //   });
-      // }
-
-      // if (loanData.GUARANTORS.length > 4) {
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[5].id,
-      //     CUSTOMER_ID: values.guarantor5,
-      //     parcel_no: values.parcelNoGuarantor5,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor5 === 3 ? null : values.radioGuarantor5,
-      //     response_status: values.radioGuarantor5 === 3 ? 0 : 1,
-      //   });
-      // }
-      // if (loanData.GUARANTORS.length > 5) {
-      //   parcelsSet.push({
-      //     ...initData,
-      //     id: parcelsData[6].id,
-      //     CUSTOMER_ID: values.guarantor6,
-      //     parcel_no: values.parcelNoGuarantor6,
-      //     mark: values.memo,
-      //     parcel_typ_id:
-      //       values.radioGuarantor6 === 3 ? null : values.radioGuarantor6,
-      //     response_status: values.radioGuarantor6 === 3 ? 0 : 1,
-      //   });
-      // }
       dataDefault.parcel_list.forEach((guarantor, index) => {
         console.log("index--->", index);
 
@@ -465,17 +424,19 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values[`guarantor${index}`], // ใช้ค่าจาก form
           parcel_no: values[`parcelNoGuarantor${index}`],
           mark: values.memo,
-          response_status:
+          parcel_typ_id:
             values[`radioGuarantor${index}`] === 3
-              ? 0
+              ? null
               : values[`radioGuarantor${index}`],
+          response_status: values[`radioGuarantor${index}`],
         });
       });
     }
     console.log("putStatus", putStatus);
     console.log("putLawsuit", putLawsuit);
     console.log("parcelsSet", parcelsSet);
-    // sendStatus(putStatus, putLawsuit, parcelsSet);
+    console.log("postStatus", postStatus);
+    sendData(putStatus, putLawsuit, parcelsSet, postStatus);
   };
   const onChangeReplyFile = (value) => {
     console.log(value);
@@ -501,7 +462,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       imageReplyFile: parcelsData[0]?.url_path,
     };
 
-    sortedParcels?.forEach((parcel, index) => {
+    parcelsData?.forEach((parcel, index) => {
       // กำหนดชื่อของฟิลด์เพื่อให้ตรงกับจำนวนของแต่ละตัวอย่าง (e.g., guarantor1, parcelNoGuarantor1)
       fieldsToSet[`guarantor${index}`] = parcel?.id;
       fieldsToSet[`parcelNoGuarantor${index}`] = parcel?.parcel_no;
@@ -586,11 +547,11 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 />
               </Form.Item>
 
-              {sortedParcels?.map((parcel, index) => (
+              {parcelsData?.map((parcel, index) => (
                 <div key={index}>
                   <Form.Item
                     label={
-                      parcel?.GARNO === 0 ? "ผู้ทำสัญญา" : `คำค้ำ ${index}`
+                      parcel?.GARNO === 0 ? "ผู้ทำสัญญา" : `คนค้ำที่ ${index}`
                     }
                     name={`guarantor${index}`}
                     initialValue={parcel?.id}
@@ -603,20 +564,15 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     name={`parcelNoGuarantor${index}`}
                     rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
                   >
-                    <Input
-                      placeholder="ตัวอย่าง:EF582568151TH"
-                      maxLength={13}
-                      onChange={(e) => onChangeInputParcel(e.target.value)}
-                    />
+                    {parcel?.parcel_no}
                   </Form.Item>
 
                   <Form.Item
                     label="การตอบกลับ"
                     name={`radioGuarantor${index}`}
                     rules={[{ required: true, message: "โปรดเลือกข้อมูล" }]}
-                    initialValue={parcel.response_status}
                   >
-                    <Radio.Group onChange={onChange}>
+                    <Radio.Group onChange={onChangeRadio}>
                       <Radio value={1}>จากใบตอบกลับ</Radio>
                       <Radio value={2}>จากเว็บไปรษณีย์</Radio>
                       <Radio value={3}>ยังไม่ตอบกลับ</Radio>
@@ -625,7 +581,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 </div>
               ))}
               <Form.Item
-                label="ลิ้งเก็บรูปตอบกลับ"
+                label="ลิ้งค์เก็บรูปตอบกลับ"
                 name="imageReplyFile"
                 rules={[
                   {
@@ -668,4 +624,4 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     </>
   );
 };
-export default EditReplyNotice;
+export default UpdateReplyNoticeEms;

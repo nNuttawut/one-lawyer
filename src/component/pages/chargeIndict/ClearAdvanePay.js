@@ -35,13 +35,22 @@ import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import LoadLawyers from "../../../hook/LoadLawyers";
-import { Option } from "antd/es/mentions";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import "../../../assets/font/AngsanaNew-normal";
+import "../../../assets/font/THSarabunNew-normal";
+import logo from "../../../assets/images/drawable-header.png";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-  const [currencyFormatNoPoint] = CurrencyFormat();
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -56,8 +65,10 @@ const Main = () => {
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [lawyerId, setLawyerId] = useState(null);
+  const [lawyerName, setLawyerName] = useState();
   const [lawyersOption, setLawyersOption] = useState();
   const [statusId, setStatusId] = useState(0);
+
   const { Option } = Select;
   const [selectedOption, setSelectedOption] = useState(1);
 
@@ -261,10 +272,11 @@ const Main = () => {
     setTableLength(result.length);
   };
 
-  const onChangeSelectLawyer = (value) => {
-    console.log("onChangeSelectLawyer-->", value);
+  const onChangeSelectLawyer = (value, label) => {
+    console.log("onChangeSelectLawyer-->", value, label);
     onSearchLawyers(value);
     setLawyerId(value);
+    setLawyerName(label.label);
   };
 
   const onChangeSelectStatus = (value) => {
@@ -413,7 +425,7 @@ const Main = () => {
         width: 20,
       },
       {
-        header: "ค่าอากรณ์สแตมป์",
+        header: "ค่าอากรสแตมป์",
         key: "chargeStamp",
         width: 20,
       },
@@ -522,6 +534,156 @@ const Main = () => {
     setTableLength(newData.length);
   };
 
+  const createPdf = () => {
+    const pdf = new jsPDF();
+
+    const imageWidth = 45; // Adjust width to fit your needs
+    const imageHeight = 25; // Adjust height to fit your needs
+    const imageUrl = logo; // Replace with your image URL or base64
+    // PDF configuration
+    pdf.addImage(imageUrl, "PNG", 150, 0, imageWidth, imageHeight);
+
+    // เพิ่มฟอนต์ภาษาไทย
+    pdf.setFont("THSarabunNew", "normal");
+    pdf.setFontSize(14);
+    pdf.text("บริษัท วัน ลิสซิ่ง จำกัด สำนักงานใหญ่", 150, 30);
+    pdf.text(
+      " 20-24 ถ. มิตรภาพ ในเมือง อำเภอเมืองขอนแก่น ขอนแก่น 40000",
+      112,
+      35
+    );
+    // เพิ่มข้อความ
+    pdf.text("ใบเบิกเงินค่าฤชาส่วนฟ้อง", 100, 45);
+
+    // เพิ่มตาราง
+    pdf.autoTable({
+      head: [
+        [
+          "ลำดับ",
+          "เลขที่สัญญา",
+          "วันที่ฟ้อง",
+          "สถานะ",
+          "วันที่ทำรายการ",
+          "ค่าธรรมเนียมศาล",
+          "ค่าอากรสแตมป์",
+          "ค่าส่งเอกสาร/ค่าจัดทำเอกสาร",
+          "จำนวนรวม",
+        ],
+      ],
+      body: [
+        [
+          "1",
+          "12345",
+          "01/01/2025",
+          "เปิด",
+          "01/01/2025",
+          "500",
+          "50",
+          "100",
+          "650",
+        ],
+        [
+          "2",
+          "67890",
+          "02/01/2025",
+          "ปิด",
+          "02/01/2025",
+          "300",
+          "30",
+          "70",
+          "400",
+        ],
+      ],
+      startY: 50,
+      styles: {
+        font: "THSarabunNew", // ฟอนต์ภาษาไทย
+        fontSize: 10,
+      },
+      columnStyles: {
+        0: { halign: "center" }, // ลำดับอยู่ตรงกลาง
+        5: { halign: "center" }, // ค่าธรรมเนียมศาลอยู่ตรงกลาง
+        6: { halign: "center" }, // ค่าอากรณ์สแตมป์อยู่ตรงกลาง
+        7: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
+        8: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
+      },
+      margin: { top: 10, left: 10, right: 10 },
+    });
+
+    // page 2
+    pdf.addPage();
+    pdf.setFont("THSarabunNew", "normal"); // Set font family
+    pdf.setTextColor("black"); // Set font color with hex color code
+    // เพิ่มตาราง
+    pdf.autoTable({
+      head: [
+        [
+          "ลำดับ",
+          "เลขที่สัญญา",
+          "วันที่ฟ้อง",
+          "สถานะ",
+          "วันที่ทำรายการ",
+          "ค่าธรรมเนียมศาล",
+          "ค่าอากรสแตมป์",
+          "ค่าส่งเอกสาร/ค่าจัดทำเอกสาร",
+          "จำนวนรวม",
+        ],
+      ],
+      body: [
+        [
+          "1",
+          "12345",
+          "01/01/2025",
+          "เปิด",
+          "01/01/2025",
+          "500",
+          "50",
+          "100",
+          "650",
+        ],
+        [
+          "2",
+          "67890",
+          "02/01/2025",
+          "ปิด",
+          "02/01/2025",
+          "300",
+          "30",
+          "70",
+          "400",
+        ],
+      ],
+      startY: 10,
+      styles: {
+        font: "THSarabunNew", // ฟอนต์ภาษาไทย
+        fontSize: 10,
+      },
+      columnStyles: {
+        0: { halign: "center" }, // ลำดับอยู่ตรงกลาง
+        5: { halign: "center" }, // ค่าธรรมเนียมศาลอยู่ตรงกลาง
+        6: { halign: "center" }, // ค่าอากรณ์สแตมป์อยู่ตรงกลาง
+        7: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
+        8: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
+      },
+      margin: { top: 10, left: 10, right: 10 },
+    });
+
+    // สร้าง Blob ของ PDF
+    const pdfBlob = pdf.output("blob");
+
+    // เปิดในหน้าต่างใหม่
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const newWindow = window.open(pdfUrl);
+
+    // สั่งพิมพ์
+    if (newWindow) {
+      newWindow.onload = () => {
+        newWindow.print();
+      };
+    } else {
+      alert("กรุณาปิดการบล็อกป๊อปอัปเพื่อใช้งานฟังก์ชันนี้");
+    }
+  };
+
   const columns = [
     {
       title: "ลำดับ",
@@ -622,7 +784,9 @@ const Main = () => {
                   <Select
                     placeholder="เลือกทนาย"
                     optionFilterProp="value"
-                    onChange={(value) => onChangeSelectLawyer(value)}
+                    onChange={(value, label) =>
+                      onChangeSelectLawyer(value, label)
+                    }
                     options={lawyersOption}
                     style={{
                       width: 150,
@@ -678,7 +842,7 @@ const Main = () => {
                 <PrinterOutlined
                   style={{ fontSize: "30px", color: "blue" }}
                   key="print"
-                  onClick={createAndDownloadExcel}
+                  onClick={createPdf}
                 />
               </Col>
               <Col span={"24"}>
@@ -696,48 +860,48 @@ const Main = () => {
                     expandedRowRender: (record) => (
                       <p style={{ margin: 0 }}>
                         {/* {!record.DATE ? (
-                          <Button
-                            name="create"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setDataModal(record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                        ) : null}
-                        {record.DATE ? (
-                          <>
                             <Button
-                              name="formPrint"
+                              name="create"
                               style={{
                                 boxShadow: "0 4px 3px",
                                 marginRight: "10px",
                               }}
-                              onClick={() => {}}
-                            >
-                              <FileDoneOutlined
-                                style={{ color: "green", fontSize: "16px" }}
-                              />
-                            </Button>
-                            <Button
-                              name="updateStatus"
-                              style={{ boxShadow: "0 4px 3px" }}
                               onClick={() => {
                                 setDataModal(record);
                               }}
                             >
-                              <SyncOutlined
-                                style={{ color: "green", fontSize: "16px" }}
+                              <EditOutlined
+                                style={{ color: "orange", fontSize: "16px" }}
                               />
                             </Button>
-                          </>
-                        ) : null} */}
+                          ) : null}
+                          {record.DATE ? (
+                            <>
+                              <Button
+                                name="formPrint"
+                                style={{
+                                  boxShadow: "0 4px 3px",
+                                  marginRight: "10px",
+                                }}
+                                onClick={() => {}}
+                              >
+                                <FileDoneOutlined
+                                  style={{ color: "green", fontSize: "16px" }}
+                                />
+                              </Button>
+                              <Button
+                                name="updateStatus"
+                                style={{ boxShadow: "0 4px 3px" }}
+                                onClick={() => {
+                                  setDataModal(record);
+                                }}
+                              >
+                                <SyncOutlined
+                                  style={{ color: "green", fontSize: "16px" }}
+                                />
+                              </Button>
+                            </>
+                          ) : null} */}
                       </p>
                     ),
                     rowExpandable: (record) => !record,
@@ -757,5 +921,5 @@ const Main = () => {
   }
 };
 
-const ChargerIndict = MotionHoc(Main);
-export default ChargerIndict;
+const ClearAdvanePay = MotionHoc(Main);
+export default ClearAdvanePay;

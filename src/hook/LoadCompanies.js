@@ -9,13 +9,13 @@ import {
 
 const LoadCompanies = () => {
   const [companiesList, setCompaniesList] = useState([]);
-  const [loadingData, setLoadingData] = useState(false);
+  const [loadingDataCompany, setLoadingDataCompany] = useState(false);
 
   useEffect(() => {
-    if (loadingData) {
+    if (loadingDataCompany) {
       loadData();
     }
-  }, [loadingData]);
+  }, [loadingDataCompany]);
 
   const loadData = async () => {
     console.log("loadData LoadLawyers");
@@ -41,7 +41,7 @@ const LoadCompanies = () => {
     }
   };
 
-  return [companiesList, setLoadingData];
+  return [companiesList, setLoadingDataCompany];
 };
 
 export default LoadCompanies;

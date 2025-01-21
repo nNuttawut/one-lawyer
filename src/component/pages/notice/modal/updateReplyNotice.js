@@ -34,7 +34,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
   const [preData, setPreData] = useState(null);
   const { TextArea } = Input;
-  const [companiesList, setLoadingData] = LoadCompanies();
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
@@ -43,10 +43,10 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     loadData();
-    setLoadingData(true);
+    setLoadingDataCompany(true);
     dateSet();
     console.log("dataDefault--->", dataDefault);
-  }, [setLoadingData]);
+  }, [setLoadingDataCompany]);
 
   const dateSet = () => {
     const date = dayjs().format("YYYY-MM-DD");
@@ -55,10 +55,10 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     setOption();
-  }, [companiesList]);
+  }, [companiesListCompany]);
 
   const setOption = () => {
-    const options = companiesList.map((item) => ({
+    const options = companiesListCompany.map((item) => ({
       value: item.id,
       label: item.company_name,
       address: item.address,
@@ -122,13 +122,13 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (data, lawsuit, parcel) => {
-    console.log("data-->", data, lawsuit, parcel);
-    if (data) {
+  const sendStatus = async (status, lawsuit, parcel) => {
+    console.log("data-->", status, lawsuit, parcel);
+    if (status) {
       setLoading(true);
       try {
         await axios
-          .put(baseUrl + PUT_STATUS, data, { headers: HEADERS_EXPORT })
+          .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
             if (res.status === 200) {
               console.log("resQuery", res.data);
@@ -154,10 +154,10 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               funcUpdateStatus({
                 ...dataDefault,
                 MAIN_STATUS_ID: NOTICE,
-                DATE: data.DATE,
+                DATE: status.DATE,
                 COMPANY_ID: lawsuit.COMPANY_ID,
-                MEMO: data.MEMO,
-                PROCESS_ID: data.PROCESS_ID,
+                MEMO: status.MEMO,
+                PROCESS_ID: status.PROCESS_ID,
                 parcel_list: parcel,
               });
               setLoading(false);
@@ -209,7 +209,6 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } finally {
         setLoading(false);
         handleCancel();
-        setLoading(false);
         setTimeout(() => {
           window.location.reload();
         }, 1000);
@@ -262,7 +261,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       statutProcess = STATUS_PROCESS_SUCCESSFUL;
     }
 
-    const postData = {
+    const putStatus = {
       WORK_LOG_ID: dataDefault?.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
       LOAN_ID: dataDefault.id,
@@ -270,6 +269,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
       PROCESS_ID: statutProcess,
       DATE: dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
     };
+
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
@@ -278,8 +278,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     let parcelsSet = [];
     const initData = {
       WORK_LOG_ID: dataDefault.WORK_LOG_ID,
-      process_id: dataDefault.PROCESS_ID,
       url_path: values.imageReplyFile,
+      parcel_typ_id: 1,
     };
 
     if (dataDefault.LOAN_TYPE_ID === 2) {
@@ -288,8 +288,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
         mark: values.memo,
-        parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
-        response_status: values.radioCus === 3 ? 0 : 1,
+        response_status: values.radioCus === 3 ? 0 : values.radioCus,
       });
     } else {
       parcelsSet.push({
@@ -297,8 +296,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
         mark: values.memo,
-        parcel_typ_id: values.radioCus === 3 ? null : values.radioCus,
-        response_status: values.radioCus === 3 ? 0 : 1,
+        response_status: values.radioCus === 3 ? 0 : values.radioCus,
       });
 
       if (loanData.GUARANTORS.length > 0) {
@@ -308,9 +306,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor1,
           parcel_no: values.parcelNoGuarantor1,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor1 === 3 ? null : values.radioGuarantor1,
-          response_status: values.radioGuarantor1 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor1 === 3 ? 0 : values.radioGuarantor1,
         });
       }
       if (loanData.GUARANTORS.length > 1) {
@@ -319,9 +316,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor2,
           parcel_no: values.parcelNoGuarantor2,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor2 === 3 ? null : values.radioGuarantor2,
-          response_status: values.radioGuarantor2 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor2 === 3 ? 0 : values.radioGuarantor2,
         });
       }
       if (loanData.GUARANTORS.length > 2) {
@@ -330,9 +326,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor3,
           parcel_no: values.parcelNoGuarantor3,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor3 === 3 ? null : values.radioGuarantor3,
-          response_status: values.radioGuarantor3 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor3 === 3 ? 0 : values.radioGuarantor3,
         });
       }
 
@@ -342,9 +337,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor4,
           parcel_no: values.parcelNoGuarantor4,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor4 === 3 ? null : values.radioGuarantor4,
-          response_status: values.radioGuarantor4 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor4 === 3 ? 0 : values.radioGuarantor4,
         });
       }
 
@@ -354,9 +348,8 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor5,
           parcel_no: values.parcelNoGuarantor5,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor5 === 3 ? null : values.radioGuarantor5,
-          response_status: values.radioGuarantor5 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor5 === 3 ? 0 : values.radioGuarantor5,
         });
       }
       if (loanData.GUARANTORS.length > 5) {
@@ -365,16 +358,15 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values.guarantor6,
           parcel_no: values.parcelNoGuarantor6,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor6 === 3 ? null : values.radioGuarantor6,
-          response_status: values.radioGuarantor6 === 3 ? 0 : 1,
+          response_status:
+            values.radioGuarantor6 === 3 ? 0 : values.radioGuarantor6,
         });
       }
     }
     console.log("dataSet", parcelsSet);
-    console.log("putDataData", postData);
+    console.log("putDataData", putStatus);
 
-    sendStatus(postData, putLawsuit, parcelsSet);
+    sendStatus(putStatus, putLawsuit, parcelsSet);
   };
 
   const onFinishFailed = (errorInfo) => {
