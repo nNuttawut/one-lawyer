@@ -78,13 +78,13 @@ function Sidenav({ color, onClick }) {
           path: "terminate-contract/reply-terminate-Contract",
           label: "ตอบกลับบอกเลิกสัญญา",
         },
-        // {
-        //   key: "23",
-        //   icon: <CaretRightOutlined />,
-        //   pageName: "report-notice",
-        //   path: "terminate-contract/report",
-        //   label: "รายงานเบิกเลิกสัญญา",
-        // },
+        {
+          key: "24",
+          icon: <CaretRightOutlined />,
+          pageName: "terminate-Contract-to-lawsuit",
+          path: "terminate-contract/terminate-Contract-to-lawsuit",
+          label: "สัญญาเตรียมส่งฟ้อง",
+        },
       ],
     },
     {
@@ -297,22 +297,29 @@ function Sidenav({ color, onClick }) {
       label: "charge-indict",
       path: "/charge-indict",
       icon: <WalletOutlined />,
-      title: "ค่าฤชาส่วนฟ้อง",
+      title: "เบิกเงินทดรองจ่าย",
       children: [
         {
           key: "161",
           icon: <CaretRightOutlined />,
           pageName: "advane-pay",
           path: "charge-indict/advane-pay",
-          label: "เบิกเงินทดรองจ่าย",
+          label: "ค่าฤชาส่วนคำฟ้อง",
         },
         {
           key: "162",
           icon: <CaretRightOutlined />,
           pageName: "clear-advane-pay",
           path: "charge-indict/clear-advane-pay",
-          label: "เคลียร์เงินทดรองจ่าย",
+          label: "การเงินตรวจสอบจ่ายจริง",
         },
+        // {
+        //   key: "163",
+        //   icon: <CaretRightOutlined />,
+        //   pageName: "approved-clear-advane-pay",
+        //   path: "charge-indict/approved-clear-advane-pay",
+        //   label: "บัญชีตรวจสอบจ่ายจริง",
+        // },
       ],
     },
     // {

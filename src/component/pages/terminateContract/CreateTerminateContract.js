@@ -13,7 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect, useMemo } from "react";
 import MotionHoc from "../../../utils/MotionHoc";
-import { FileExcelOutlined } from "@ant-design/icons";
+import { PrinterOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -31,6 +31,7 @@ const Main = () => {
     currencyFormatPoint,
     currencyFormatNoPoint,
   ] = CurrencyFormat();
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const [loading, setLoading] = useState(false);
   const [arrData, setArrData] = useState([]);
   const [arrayTable, setArrayTable] = useState();
@@ -41,9 +42,8 @@ const Main = () => {
   const [selectedGCode, setSelectedGCode] = useState([]);
   const [datePicker, setDatePicker] = useState(dayjs());
   const [selectedContract, setSelectedContract] = useState("vsfhp");
-  const [customData, setCustomData] = useState();
   const [arrow, setArrow] = useState("Show");
-
+  let mockFCode;
   const optionsForPay = [
     { value: "116", label: "จดหมายส่งผู้คนค้ำ(116)" },
     { value: "119", label: "บอกเลิกสัญญา(119)" },
@@ -58,8 +58,10 @@ const Main = () => {
   ];
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (datePicker) {
+      loadData();
+    }
+  }, [datePicker]);
 
   useEffect(() => {
     let optionsGCodeData = [];
@@ -140,10 +142,12 @@ const Main = () => {
     setSelectedGCode([]);
     console.log("forPaySelect---->", forPaySelect);
     if (forPaySelect === "116") {
+      mockFCode = "115";
       console.log("handleChangeContract if ---->", forPaySelect);
       let dataFilter = arrData.filter(
         (item) =>
-          forPaySelect.includes(item.FORCODE) &&
+          (forPaySelect.includes(item.FORCODE) ||
+            mockFCode.includes(item.FORCODE)) &&
           value.includes(item.DATA_TYPE) &&
           item.cusType > 0
       );
@@ -166,10 +170,10 @@ const Main = () => {
     setSelectedGCode([]);
     if (value === "116") {
       console.log("forPaySelect if-->", forPaySelect);
-
+      mockFCode = "115";
       let dataFilter = arrData.filter(
         (item) =>
-          value.includes(item.FORCODE) &&
+          (value.includes(item.FORCODE) || mockFCode.includes(item.FORCODE)) &&
           selectedContract.includes(item.DATA_TYPE) &&
           item.cusType > 0
       );
@@ -193,6 +197,7 @@ const Main = () => {
     console.log(values);
     setSelectedGCode(values); // อัปเดตค่าที่เลือกใน Select ด้านล่าง
     if (forPaySelect === "116") {
+      mockFCode = "115";
       console.log("1");
       if (values.length > 0) {
         console.log("2");
@@ -209,7 +214,8 @@ const Main = () => {
         console.log("3");
         let dataFilter = arrData.filter(
           (item) =>
-            item.FORCODE === forPaySelect &&
+            (forPaySelect.includes(item.FORCODE) ||
+              mockFCode.includes(item.FORCODE)) &&
             selectedContract.includes(item.DATA_TYPE) &&
             item.cusType > 0
         );
@@ -250,7 +256,6 @@ const Main = () => {
     if (date) {
       setDatePicker(date); // อัปเดตค่าเมื่อผู้ใช้เลือกวันที่
       console.log("Selected date:", date.format("YYYY-MM-DD"));
-      loadData();
     } else {
       setDatePicker(null); // หากล้างค่าให้ตั้งเป็น null
     }
@@ -266,8 +271,7 @@ const Main = () => {
         .then(async (res) => {
           if (res.status === 200) {
             console.log("setLawsuitData", res.data);
-            setArrData(mergeDataWithGuarantors(res.data));
-            filterData();
+            filterData(mergeDataWithGuarantors(res.data));
           } else {
             message.error("ไม่สามารถดึงข้อมูลได้");
             console.log("ไม่สามารถดึงข้อมูลได้", res.status);
@@ -306,7 +310,7 @@ const Main = () => {
       // ข้อมูลผู้ค้ำประกัน (guarantors)
       const guarantorData = (record.guarantors || []).map((guarantor) => ({
         ...record,
-        cusType: guarantor.GARNO,
+        cusType: parseInt(guarantor.GARNO),
         NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`,
       }));
 
@@ -315,18 +319,34 @@ const Main = () => {
     }, []);
   };
 
-  const filterData = () => {
-    let dataFilter = arrData.filter(
-      (item) =>
-        item.FORCODE === forPaySelect &&
-        selectedContract.includes(item.DATA_TYPE) &&
-        item.cusType === "ผู้ค้ำประกัน"
-    );
-    console.log("dataFilter", dataFilter);
+  const filterData = (value) => {
+    if (value) {
+      let data = [];
+      if (userCompany === "3") {
+        data = value.filter((item) => item.LOCAT.includes("K"));
+      } else {
+        console.log("else----->");
+        data = value.filter((item) => !item.LOCAT.includes("K"));
+      }
 
-    setArrayTable(dataFilter);
-    setTableLength(dataFilter.length);
-    setLoading(false);
+      console.log("data------->", data);
+      console.log("forPaySelect---->", forPaySelect);
+
+      setArrData(data);
+      let dataFilter = data.filter(
+        (item) =>
+          (forPaySelect.includes(item.FORCODE) ||
+            item.FORCODE.includes("115")) &&
+          selectedContract.includes(item.DATA_TYPE) &&
+          item.cusType > 0
+      );
+      // console.log("dataFilter", dataFilter);
+      console.log("dataFilter--->", dataFilter);
+
+      setArrayTable(dataFilter);
+      setTableLength(dataFilter.length);
+      setLoading(false);
+    }
   };
 
   const search = (event) => {
@@ -341,13 +361,15 @@ const Main = () => {
         (item.NAME && item.NAME.includes(value)) ||
         (item.REGNO && item.REGNO.includes(value))
     );
+    console.log("result-->", result);
+
     if (value) {
       setArrayTable(result);
       setTableLength(result.length);
     } else {
       if (forPaySelect === "116") {
         console.log("1");
-        console.log();
+        mockFCode = "115";
         if (selectedGCode?.length > 0) {
           console.log("2");
           let dataFilter = arrData.filter(
@@ -363,7 +385,8 @@ const Main = () => {
           console.log("3");
           let dataFilter = arrData.filter(
             (item) =>
-              item?.FORCODE === forPaySelect &&
+              (forPaySelect?.includes(item?.FORCODE) ||
+                mockFCode?.includes(item?.FORCODE)) &&
               selectedContract?.includes(item?.DATA_TYPE) &&
               item?.cusType > 0
           );
@@ -654,7 +677,7 @@ const Main = () => {
                       title="บันทึกข้อมูล excel"
                       arrow={mergedArrow}
                     >
-                      <FileExcelOutlined
+                      <PrinterOutlined
                         style={{
                           fontSize: "40px",
                           color: "green",

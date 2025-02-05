@@ -8,6 +8,7 @@ import {
   Card,
   message,
   Spin,
+  InputNumber,
 } from "antd";
 import {
   baseUrl,
@@ -312,6 +313,22 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             : parseInt(values.feeCourt)
             ? parseInt(values.feeCourt)
             : 0,
+        delivery_of_summons:
+          values?.docShipingCost &&
+          typeof values.docShipingCost === "string" &&
+          values.docShipingCost.includes(",")
+            ? parseInt(values.docShipingCost.replace(/,/g, ""))
+            : parseInt(values.docShipingCost)
+            ? parseInt(values.docShipingCost)
+            : 0,
+        document_cost:
+          values?.documentCost &&
+          typeof values.documentCost === "string" &&
+          values.documentCost.includes(",")
+            ? parseInt(values.documentCost.replace(/,/g, ""))
+            : parseInt(values.documentCost)
+            ? parseInt(values.documentCost)
+            : 0,
       };
 
       const putStatus = {
@@ -346,6 +363,22 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         lossBenefit: dataForm.lossBenefit,
         suspensionAmount: dataForm.suspensionAmount,
         nopay: dataForm.nopay,
+        delivery_of_summons:
+          values?.docShipingCost &&
+          typeof values.docShipingCost === "string" &&
+          values.docShipingCost.includes(",")
+            ? parseInt(values.docShipingCost.replace(/,/g, ""))
+            : parseInt(values.docShipingCost)
+            ? parseInt(values.docShipingCost)
+            : 0,
+        document_cost:
+          values?.documentCost &&
+          typeof values.documentCost === "string" &&
+          values.documentCost.includes(",")
+            ? parseInt(values.documentCost.replace(/,/g, ""))
+            : parseInt(values.documentCost)
+            ? parseInt(values.documentCost)
+            : 0,
       }));
       console.log("putData", putData);
 
@@ -652,6 +685,14 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
+  const docShipingCost = (value) => {
+    console.log(value);
+  };
+
+  const documentCost = (value) => {
+    console.log(value);
+  };
+
   const handleLossPay = (value) => {
     console.log("date", value);
     let dateCurrent = dayjs(value);
@@ -938,13 +979,59 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Input
+                  suffix="บาท"
                   name="stampDuty"
                   onChange={(e) => stampDutyCost(e.target.value)}
                 />
               </Form.Item>
             ) : null}
+            <Form.Item
+              label="ค่าส่งหมาย"
+              name="docShipingCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าส่งหมาย !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกค่าส่งหมาย"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => docShipingCost(value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าจัดทำเอกสาร"
+              name="documentCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าจัดทำเอกสาร !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => documentCost(value)}
+              />
+            </Form.Item>
           </>
         ) : null}
+
         <Form.Item label="คำนวณค่าธรรมเนียม">
           <Button
             style={{ color: "blue" }}

@@ -1,14 +1,4 @@
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Card,
-  Select,
-  Spin,
-  message,
-  Radio,
-} from "antd";
+import { Button, Form, Input, Modal, Card, Spin, message, Radio } from "antd";
 import {
   NOTICE,
   STATUS_PROCESS_SUCCESSFUL,
@@ -16,9 +6,7 @@ import {
 } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import { baseUrl, HEADERS_EXPORT, PUT_CANCEL } from "../../../API/apiUrls";
-import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import TokenCheck from "../../../../hook/TokenCheck";
+import { useState } from "react";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 
@@ -45,9 +33,9 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
         .then(async (res) => {
           if (res.status === 200) {
             message.success("อัพเดทข้อมูลสำเร็จ");
-            // funcUpdateStatus({
-            //   data,
-            // });
+            funcUpdateStatus({
+              ...data,
+            });
             setLoading(false);
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
@@ -78,21 +66,9 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     close(false);
   };
 
-  const onChangeSelect = (value) => {
-    console.log(`selected ${value} `);
-  };
-
   const onChange = (date, dateString) => {
     console.log(date, dateString);
     setPreData({ ...preData, dateNotice: dateString });
-  };
-
-  const onChangeInputParcel = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInput = (value) => {
-    console.log(value);
   };
 
   const onChangeReplyFile = (value) => {
@@ -103,7 +79,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("Success:", values);
     const putData = {
       ...dataDefault,
-      remark: values.imageReplyFile,
+      url_path: values.imageReplyFile,
       status: values.radioCus,
     };
 
@@ -160,7 +136,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               initialValues={{
-                imageReplyFile: dataDefault.remark,
+                imageReplyFile: dataDefault.url_path,
                 radioCus: dataDefault.status,
               }}
             >

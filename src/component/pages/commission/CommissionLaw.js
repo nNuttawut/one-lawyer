@@ -198,8 +198,9 @@ const Main = () => {
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
             return item;
           } else {
             return false;
@@ -207,11 +208,10 @@ const Main = () => {
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
-
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
           } else {
             return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
@@ -491,7 +491,7 @@ const Main = () => {
     },
   ];
 
-  if (ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "5") {
+  if (ROLE_ID === "1" || ROLE_ID === "6") {
     return (
       <>
         <Card>

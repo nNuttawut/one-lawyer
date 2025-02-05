@@ -14,7 +14,7 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
-import { EditOutlined, FileExcelOutlined } from "@ant-design/icons";
+import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -57,7 +57,7 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
-  const [selectCallback, setSelectCallback] = useState("ทั้งหมด");
+  const [selectCallback, setSelectCallback] = useState("all");
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [searchEdit, setSearchEdit] = useState(null);
   const [arrow, setArrow] = useState("Show");
@@ -96,7 +96,7 @@ const Main = () => {
         if (response.data) {
           console.log(response.data);
 
-          mergeDataWithGuarantors(response.data);
+          filterDataLawyer(mergeDataWithGuarantors(response.data));
           // setSearchEdit(response.data);
           setLoading(false);
         }
@@ -109,7 +109,7 @@ const Main = () => {
         error.response ? error.response.data : error.message
       );
       setLoading(false);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
+      message.error(`ไม่พบข้อมูล`);
     }
   };
 
@@ -134,15 +134,15 @@ const Main = () => {
       return a.contract_no.localeCompare(b.contract_no);
     });
     let i = 1;
-    const newData = sortedData.map((item) => ({
+    return sortedData.map((item) => ({
       ...item,
       key: i++,
     }));
 
-    setArrayTable(newData);
-    setDataArr(newData);
-    setTableLength(newData.length);
-    console.log("preData", newData);
+    // setArrayTable(newData);
+    // setDataArr(newData);
+    // setTableLength(newData.length);
+    // console.log("preData", newData);
   };
 
   const filterDataLawyer = (data) => {
@@ -152,11 +152,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID &&
-          (item.PROCESS_ID === STATUS_PROCESS_SUCCESSFUL ||
-            item.PROCESS_ID === STATUS_PROCESS_PROCESS ||
-            item.PROCESS_ID === STATUS_PROCESS_UNSUCCESSFUL)
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -170,8 +166,9 @@ const Main = () => {
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
+          const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
             return item;
           } else {
             return false;
@@ -179,11 +176,10 @@ const Main = () => {
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
-
+          const containsNo = containsNumber(item.contract_no.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
           } else {
             return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
@@ -191,9 +187,9 @@ const Main = () => {
         });
       }
 
-      setArrayTable(data);
-      setDataArr(data);
-      setTableLength(data.length);
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData.length);
       // console.log("newData", filteredData);
       // console.log("Length of filtered data:", filteredData.length);
     } else {
@@ -273,19 +269,43 @@ const Main = () => {
   };
 
   const handleUpdateData = (data) => {
-    console.log("data---->update", data);
-    console.log("dataArr", dataArr);
+    console.log("data---->update", data); // ข้อมูลที่ต้องการอัปเดต
     if (data) {
-      const updatedDataArr = dataArr.map((item) =>
-        item.id === data.id ? { ...data } : { ...item }
+      // ใช้ .map เพื่อสร้าง array ใหม่ โดยเปรียบเทียบ id
+      const updatedDataArr = dataArr.map(
+        (item) => (item.id === data.id ? { ...data } : { ...item }) // ถ้า id ตรงกัน อัปเดตข้อมูล, ถ้าไม่ตรง คงเดิม
       );
+
       console.log("updatedDataArr", updatedDataArr);
-      setDataArr(updatedDataArr); // อัปเดต state dataArr
-      const arr = updatedDataArr.filter(
-        (item) => item.status === selectCallback
-      );
-      setArrayTable(arr); // อัปเดต state arrayTable
+
+      // อัปเดต state ของ dataArr ด้วยข้อมูลใหม่
+      setDataArr(updatedDataArr);
+
+      if (selectCallback === "all") {
+        console.log("all");
+
+        setArrayTable(updatedDataArr); // อัปเดตตารางด้วยข้อมูลใหม่ทั้งหมด
+      } else {
+        let callback = null;
+        let callback2 = null;
+        if (selectCallback === 1) {
+          callback = null;
+        } else if (selectCallback === 2) {
+          callback = 1;
+          callback2 = 2;
+        } else {
+          callback = 3;
+        }
+        console.log("no all");
+        // ถ้า selectCallback ไม่ใช่ "all" (ในส่วนที่คอมเมนต์ไว้)
+        // สามารถกรองข้อมูลตามเงื่อนไข และอัปเดต arrayTable ได้
+        const arr = updatedDataArr.filter(
+          (item) => item.status === callback || item.status === callback2
+        );
+        setArrayTable(arr);
+      }
     } else {
+      // ถ้าไม่มี data ที่ส่งมา เรียก loadData เพื่อโหลดข้อมูลใหม่
       loadData();
       console.log("handleUpdateData loadData");
     }
@@ -475,7 +495,7 @@ const Main = () => {
             : 3
             ? "ยังไม่ตอบกลับ"
             : "รอดำเนินการ",
-          data.remark,
+          data.url_path,
         ]);
       });
 
@@ -723,7 +743,7 @@ const Main = () => {
                       title="บันทึกข้อมูล excel"
                       arrow={mergedArrow}
                     >
-                      <FileExcelOutlined
+                      <PrinterOutlined
                         style={{
                           fontSize: "40px",
                           color: "green",

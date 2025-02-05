@@ -343,6 +343,10 @@ const UpdateReplyNoticeEms = ({
     console.log(value);
   };
 
+  const onChangeReplyFile = (value) => {
+    console.log(value);
+  };
+
   const onFinish = (values) => {
     console.log("Success:", values);
     let statutProcess;
@@ -405,18 +409,17 @@ const UpdateReplyNoticeEms = ({
 
         parcelsSet.push({
           ...initData,
-          id: parcelsData[0].id,
+          id: parcelsData[index].id,
           CUSTOMER_ID: values.guarantor0,
           parcel_no: values.parcelNoGuarantor0,
           mark: values.memo,
-          parcel_typ_id:
-            values.radioGuarantor0 === 3 ? null : values.radioGuarantor0,
+          parcel_type_id: guarantor.parcel_type_id,
           response_status: values.radioGuarantor0,
         });
       });
     } else {
       dataDefault.parcel_list.forEach((guarantor, index) => {
-        console.log("index--->", index);
+        console.log("index--->", index, guarantor);
 
         parcelsSet.push({
           ...initData,
@@ -424,10 +427,7 @@ const UpdateReplyNoticeEms = ({
           CUSTOMER_ID: values[`guarantor${index}`], // ใช้ค่าจาก form
           parcel_no: values[`parcelNoGuarantor${index}`],
           mark: values.memo,
-          parcel_typ_id:
-            values[`radioGuarantor${index}`] === 3
-              ? null
-              : values[`radioGuarantor${index}`],
+          parcel_type_id: guarantor.parcel_type_id,
           response_status: values[`radioGuarantor${index}`],
         });
       });
@@ -437,9 +437,6 @@ const UpdateReplyNoticeEms = ({
     console.log("parcelsSet", parcelsSet);
     console.log("postStatus", postStatus);
     sendData(putStatus, putLawsuit, parcelsSet, postStatus);
-  };
-  const onChangeReplyFile = (value) => {
-    console.log(value);
   };
 
   const onFinishFailed = (errorInfo) => {

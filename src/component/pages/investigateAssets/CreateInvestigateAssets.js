@@ -102,8 +102,9 @@ const Main = () => {
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
             return item;
           } else {
             return false;
@@ -111,11 +112,10 @@ const Main = () => {
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
-
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
           } else {
             return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
@@ -352,110 +352,116 @@ const Main = () => {
       sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
     },
   ];
-
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (!ROLE_ID === "5" || !ROLE_ID === "6" || !ROLE_ID === "7") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {!record.investigation_date ? (
-                        <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalInvestigateAssets(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <p style={{ margin: 0 }}>
+                        {!record.investigation_date ? (
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalInvestigateAssets(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <FormOutlined
+                              style={{ color: "blue", fontSize: "16px" }}
+                            />
+                          </Button>
+                        ) : null}
 
-                      {record.investigation_date ? (
-                        <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalEditInvestigateAssets(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) =>
-                    ROLE_ID === "2" ||
-                    ROLE_ID === "3" ||
-                    ROLE_ID === "4" ||
-                    ROLE_ID === "1",
-                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                }}
-                rowKey="key"
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalInvestigateAssets ? (
-        <InvestigateAssets
-          open={isModalInvestigateAssets}
-          close={setIsModalInvestigateAssets}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEditInvestigateAssets ? (
-        <EditInvestigateAssets
-          open={isModalEditInvestigateAssets}
-          close={setIsModalEditInvestigateAssets}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-    </>
-  );
+                        {record.investigation_date ? (
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalEditInvestigateAssets(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <FormOutlined
+                              style={{ color: "orange", fontSize: "16px" }}
+                            />
+                          </Button>
+                        ) : null}
+                      </p>
+                    ),
+                    rowExpandable: (record) =>
+                      ROLE_ID === "2" ||
+                      ROLE_ID === "3" ||
+                      ROLE_ID === "4" ||
+                      ROLE_ID === "1",
+                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                  }}
+                  rowKey="key"
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+        {isModalInvestigateAssets ? (
+          <InvestigateAssets
+            open={isModalInvestigateAssets}
+            close={setIsModalInvestigateAssets}
+            dataDefualt={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+        {isModalEditInvestigateAssets ? (
+          <EditInvestigateAssets
+            open={isModalEditInvestigateAssets}
+            close={setIsModalEditInvestigateAssets}
+            dataDefualt={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+      </>
+    );
+  } else {
+    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
+  }
 };
 
 const CreateInvestigateAssets = MotionHoc(Main);

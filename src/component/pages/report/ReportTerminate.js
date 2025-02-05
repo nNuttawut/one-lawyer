@@ -13,7 +13,7 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
-import { FileExcelOutlined } from "@ant-design/icons";
+import { PrinterOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import { baseUrl, GET_CANCEL, HEADERS_EXPORT } from "../../API/apiUrls";
@@ -607,7 +607,7 @@ const Main = () => {
                       title="บันทึกข้อมูล excel"
                       arrow={mergedArrow}
                     >
-                      <FileExcelOutlined
+                      <PrinterOutlined
                         style={{
                           fontSize: "40px",
                           color: "green",

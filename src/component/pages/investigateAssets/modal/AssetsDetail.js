@@ -796,10 +796,6 @@ const AssetsDetail = ({
             disabled
           />
         </Form.Item>
-
-        <Form.Item label="ผู้ถือกรรมสิทธิ์" name="ownerAsset">
-          <Input onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)} />
-        </Form.Item>
         <Form.Item
           label="ติดภาระจำนอง"
           name="mortgageStatus"
@@ -870,20 +866,38 @@ const AssetsDetail = ({
           />
         </Form.Item>
         {sequestrateStatus === 1 ? (
-          <Form.Item
-            label="เจ้าหนี้คำพิพากษา"
-            name="preferenceCreditor"
-            rules={[
-              {
-                required: true,
-                message: "กรณากรอกข้อมูล !",
-              },
-            ]}
-          >
-            <Input
-              onChange={(e) => onChangeInputPreferenceCreditor(e.target.value)}
-            />
-          </Form.Item>
+          <>
+            <Form.Item
+              label="เจ้าหนี้คำพิพากษา"
+              name="preferenceCreditor"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input
+                onChange={(e) =>
+                  onChangeInputPreferenceCreditor(e.target.value)
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              label="เลขคดีแดง"
+              name="ownerAsset"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input
+                onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)}
+              />
+            </Form.Item>{" "}
+          </>
         ) : null}
 
         <Form.Item

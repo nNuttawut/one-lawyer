@@ -12,15 +12,19 @@ import {
   Popconfirm,
   Select,
   Switch,
+  Divider,
+  Tooltip,
 } from "antd";
 import {
   DollarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   PrinterOutlined,
+  CheckOutlined,
+  FileImageOutlined,
 } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -57,9 +61,7 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
-import lawyerJumbo from "../../../assets/images/license/lawyerJumbo.png";
-import lawyerYut from "../../../assets/images/license/lawyerYut.png";
-import lawyerTon from "../../../assets/images/license/lawyerTon.png";
+import { read } from "xlsx";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -94,6 +96,8 @@ const Main = () => {
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [lawsuitsData, setLawsuitsData] = useState([]);
   const [selectedDate, setSelectedDate] = useState([]);
+  const [arrow, setArrow] = useState("Show");
+  const [statusClear, setStatusClear] = useState();
 
   const onExpand = (expanded, record) => {
     if (expanded) {
@@ -127,10 +131,21 @@ const Main = () => {
   const loadSelectCompany = (value) => {
     const selectedOption = value.find((option) => option.value === 2);
     if (selectedOption) {
-      console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
       setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
     }
   };
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
 
   const setOptionCompany = () => {
     const options = companiesListCompany.map((item) => ({
@@ -138,8 +153,6 @@ const Main = () => {
       label: item.company_name,
       address: item.address,
     }));
-
-    console.log("options", options);
     setCompaniesOption(options);
     loadSelectCompany(options);
   };
@@ -177,14 +190,15 @@ const Main = () => {
 
   const loadData = async () => {
     setLoading(true);
+    let setExpense;
+    let setLawsuits;
     try {
       const response = await axios.get(baseUrl + GET_EXPENSES_LIST, {
         headers: HEADERS_EXPORT,
       });
       if (response.data) {
         if (response.data) {
-          filterData(response.data);
-          console.log(response.data);
+          setExpense = response.data;
           setLoading(false);
         }
       } else {
@@ -204,9 +218,11 @@ const Main = () => {
       });
       if (response.data) {
         if (response.data) {
-          console.log(response.data);
+          setLawsuits = response.data;
           setLawsuitsData(response.data);
         }
+      } else {
+        setArrayTable([]);
       }
     } catch (error) {
       console.error(
@@ -216,17 +232,15 @@ const Main = () => {
       setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
+    filterData(setExpense, setLawsuits);
   };
 
-  const filterData = (data) => {
+  const filterData = (data, lawsuit) => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.withdraw_process_id <= 4 && (ROLE_ID === "1" || ROLE_ID === "6")
+          (item.withdraw_process_id <= 4 && ROLE_ID === "1") || ROLE_ID === "2"
       );
-
-      console.log("newData-->", newData);
-
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -259,39 +273,39 @@ const Main = () => {
           }
         });
       }
-      const preData = groupByCreatedDateWithContno(filteredData);
+      const preData = groupByCreatedDateWithContno(filteredData, lawsuit);
 
-      const useData = preData.filter(
-        (item) =>
-          item.withdraw_process_id === statusId &&
-          lawyerName?.NNAME?.includes(item.lawyerName)
-      );
+      const useData = preData.filter((item) => item.pay_type_id === statusId);
 
       setArrayTable(useData);
       setDataArr(preData);
       setTableLength(useData.length);
       console.log("newData", useData);
-      console.log("Length of filtered data:", useData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
     }
   };
 
-  const groupByCreatedDateWithContno = (data) => {
+  const groupByCreatedDateWithContno = (data, preLawsuit) => {
     if (!Array.isArray(data)) {
       console.error("Input data is not an array");
       return [];
     }
+    console.log("------->", data, preLawsuit);
 
     const groupedData = data.reduce((acc, current, index) => {
       const {
         created_date,
         CONTNO,
         withdraw_datetime,
+        withdraw_process_id,
+        pay_type_id,
+        pay_datetime,
+        file_path,
+        withdraw_mark,
         COMPANY_ID,
         NNAME,
-        withdraw_process_id,
       } = current;
 
       if (!acc[created_date]) {
@@ -299,11 +313,16 @@ const Main = () => {
           created_date,
           contnoList: new Set(), // ใช้ Set เพื่อเก็บ contno ที่ไม่ซ้ำกัน
           expenseList: [],
+          lawsuit: [], // เพิ่ม lawsuit เป็น array
           withdraw_datetime: null, // เพิ่มค่าของ withdraw_datetime
           key: index + 1, // สร้าง key โดยใช้ index (เริ่มจาก 1)
+          withdraw_process_id: withdraw_process_id,
+          pay_type_id: pay_type_id,
+          pay_datetime: pay_datetime,
+          file_path: file_path,
+          withdraw_mark: withdraw_mark,
           COMPANY_ID: COMPANY_ID,
           NNAME: NNAME,
-          withdraw_process_id: withdraw_process_id,
         };
       }
 
@@ -315,23 +334,38 @@ const Main = () => {
         acc[created_date].withdraw_datetime = withdraw_datetime;
         acc[created_date].COMPANY_ID = COMPANY_ID;
         acc[created_date].lawyerName = NNAME;
-        acc[created_date].withdraw_process_id = withdraw_process_id;
       }
 
       return acc;
     }, {});
 
     // แปลง contnoList จาก Set เป็น Array
-    return Object.values(groupedData).map((group, groupIndex) => ({
-      created_date: group.created_date,
-      contnoList: Array.from(group.contnoList), // แปลง Set เป็น Array
-      expenseList: group.expenseList,
-      withdraw_datetime: group.withdraw_datetime, // เพิ่มข้อมูล withdraw_datetime
-      key: groupIndex + 1, // กำหนด key สำหรับแต่ละกลุ่ม (เริ่มจาก 1)
-      COMPANY_ID: group.COMPANY_ID,
-      lawyerName: group.NNAME,
-      withdraw_process_id: group.withdraw_process_id,
-    }));
+    return Object.values(groupedData).map((group, groupIndex) => {
+      const contnoArray = Array.from(group.contnoList);
+
+      // ค้นหา lawsuit ที่ตรงกับ contnoList
+      const lawsuits = preLawsuit.filter((lawsuit) =>
+        contnoArray.includes(lawsuit.CONTNO)
+      );
+      // console.log("contnoArray", contnoArray);
+      // console.log("lawsuits", lawsuits);
+
+      return {
+        created_date: group.created_date,
+        contnoList: contnoArray, // แปลง Set เป็น Array
+        expenseList: group.expenseList,
+        lawsuit: lawsuits, // เพิ่ม lawsuit[]
+        withdraw_datetime: group.withdraw_datetime,
+        key: groupIndex + 1,
+        withdraw_process_id: group.withdraw_process_id,
+        pay_type_id: group.pay_type_id,
+        pay_datetime: group.pay_datetime,
+        file_path: group.file_path,
+        withdraw_mark: group.withdraw_mark,
+        COMPANY_ID: group.COMPANY_ID,
+        lawyerName: group.NNAME,
+      };
+    });
   };
 
   const sendData = async (data) => {
@@ -372,7 +406,7 @@ const Main = () => {
       setLoading(false);
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 1000);
     }
   };
 
@@ -395,14 +429,13 @@ const Main = () => {
 
   const onSearchLawyers = (value) => {
     let dataUse;
-
     if (value && !selectedDate.timestampEnd && !selectedDate.timestampStart) {
       console.log("onSearchLawyers 1  ----->");
 
       dataUse = dataArr.filter(
         (item) =>
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           item.lawyerName === value
       );
     } else if (
@@ -420,7 +453,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
         );
@@ -439,7 +472,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           item.lawyerName === value &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -451,7 +484,7 @@ const Main = () => {
       dataUse = dataArr.filter(
         (item) =>
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === statusId
+          item.pay_type_id === statusId
       );
     }
     setArrayTable(dataUse);
@@ -460,7 +493,6 @@ const Main = () => {
 
   const onSearchStatus = (value) => {
     let dataUse;
-
     if (
       lawyerId &&
       !selectedDate.timestampEnd &&
@@ -471,7 +503,7 @@ const Main = () => {
       dataUse = dataArr.filter(
         (item) =>
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === value &&
+          item.pay_type_id === value &&
           item.lawyerName === lawyerId
       );
     } else if (
@@ -489,7 +521,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === value &&
+          item.pay_type_id === value &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
         );
@@ -508,7 +540,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === value &&
+          item.pay_type_id === value &&
           item.lawyerName === lawyerId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -519,8 +551,7 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === companieSelect.value &&
-          item.withdraw_process_id === value
+          item.COMPANY_ID === companieSelect.value && item.pay_type_id === value
       );
     }
 
@@ -551,7 +582,7 @@ const Main = () => {
       dataUse = dataArr.filter(
         (item) =>
           item.COMPANY_ID === selectedOption.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           item.lawyerName === lawyerId
       );
     } else if (
@@ -569,7 +600,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === selectedOption.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
         );
@@ -588,7 +619,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === selectedOption.value &&
-          item.withdraw_process_id === statusId &&
+          item.pay_type_id === statusId &&
           item.lawyerName === lawyerId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -612,9 +643,11 @@ const Main = () => {
     console.log("onChangeSelectLawyer-->", value, label);
 
     onSearchLawyers(label.label);
-    setLawyerId(label.label);
+    console.log("label.label", label.label);
 
+    setLawyerId(label.label);
     let lawyerSet = lawyersList.find((item) => item.NNAME === label.label);
+    console.log(lawyerSet);
 
     setLawyerName(lawyerSet);
   };
@@ -697,15 +730,11 @@ const Main = () => {
       <>
         <Option value={4}>
           <span style={{ marginRight: 8 }}>🕒</span>
-          รอดำเนินการ
+          รอตรวจสอบ
         </Option>
-        <Option value={3}>
+        <Option value={5}>
           <CheckCircleOutlined style={{ color: "green", marginRight: 8 }} />
-          อนุมัติ
-        </Option>
-        <Option value={2}>
-          <CloseCircleOutlined style={{ color: "red", marginRight: 8 }} />
-          ไม่อนุมัติ
+          ตรวจสอบแล้ว
         </Option>
       </>
     );
@@ -714,12 +743,12 @@ const Main = () => {
   const confirmInsertOne = (data) => {
     const preData = {
       ...data,
-      withdraw_datetime: dayjs().format("YYYY-MM-DD"),
-      withdraw_process_id: STATUS_WITHDRAW_SUCCESSFUL,
+      pay_datetime: dayjs().format("YYYY-MM-DD"),
+      pay_type_id: 5,
     };
     const putExpense = preData.expenseList.forEach((expense) => {
-      expense.withdraw_process_id = STATUS_WITHDRAW_SUCCESSFUL;
-      expense.withdraw_datetime = dayjs().format("YYYY-MM-DD");
+      expense.pay_type_id = 5;
+      expense.pay_datetime = dayjs().format("YYYY-MM-DD");
     });
     console.log(preData);
     sendData(preData);
@@ -897,7 +926,12 @@ const Main = () => {
   const setDataExportPrint = () => {
     let preData = [];
     let totalResult = 0;
+    let totalResultPay = 0;
     let groupedData = {}; // ใช้เก็บข้อมูลที่รวมแล้ว
+
+    const isValidDate = (date) => {
+      return date && !isNaN(new Date(date).getTime());
+    };
 
     if (arrayTable) {
       arrayTable.forEach((expense) => {
@@ -909,7 +943,9 @@ const Main = () => {
           if (!groupedData[key]) {
             groupedData[key] = {
               CONTNO: element.CONTNO,
-              created_date: convertDateThai(element.created_date),
+              pay_datetime: isValidDate(element.pay_datetime)
+                ? convertDateThai(element.pay_datetime)
+                : "ไม่มีข้อมูลวันที่",
               expenses: [],
             };
           }
@@ -919,11 +955,13 @@ const Main = () => {
             groupedData[key].expenses.push({
               description: element.expense_description,
               amount: currencyFormatPoint(element.withdraw),
+              amountPay: currencyFormatPoint(element.pay),
               expense_type_id: element.expense_type_id, // เพิ่มเพื่อการจัดเรียง
             });
           }
 
           totalResult += element.withdraw;
+          totalResultPay += element.pay;
         });
       });
 
@@ -938,19 +976,45 @@ const Main = () => {
           preData.push([
             expenseIndex === 0 ? index + 1 : "", // ลำดับ (rowspan)
             expenseIndex === 0 ? item.CONTNO : "", // เลขที่สัญญา (rowspan)
-            expenseIndex === 0 ? item.created_date : "", // วันที่ทำรายการ (rowspan)
+            expenseIndex === 0 && isValidDate(item.pay_datetime)
+              ? item.pay_datetime
+              : "", // วันที่ทำรายการ (rowspan)
             expense.description, // รายการ
             expense.amount, // จำนวนเงิน
+            expense.amountPay,
           ]);
         });
       });
 
       // เพิ่มแถวรวมยอด
-      preData.push(["", "", "", "รวม", currencyFormatPoint(totalResult)]);
+      preData.push([
+        "",
+        "",
+        "",
+        "รวม",
+        currencyFormatPoint(totalResult),
+        currencyFormatPoint(totalResultPay),
+      ]);
+      preData.push([
+        "",
+        "",
+        "",
+        "",
+        "ยอดสุทธิ",
+        currencyFormatPoint(totalResultPay - totalResult),
+      ]);
+      if (totalResultPay < totalResult) {
+        setStatusClear(2);
+      } else if (totalResultPay > totalResult) {
+        setStatusClear(3);
+      } else if (totalResultPay === totalResult) {
+        setStatusClear(4);
+      } else {
+        setStatusClear(1);
+      }
     }
 
     setDataExport(preData);
-    console.log("preData", preData);
   };
 
   const createPdf = () => {
@@ -963,8 +1027,6 @@ const Main = () => {
     const marginC = 0;
     let imageWidth = 45; // Adjust width to fit your needs
     let imageHeight = 25; // Adjust height to fit your needs
-    let imageWidthImg = 25; // Adjust width to fit your needs
-    let imageHeightImg = 15; // Adjust height to fit your needs
 
     const imageUrl =
       companieSelect.value === 1
@@ -1024,25 +1086,37 @@ const Main = () => {
     pdfPositionY += 10;
     // เพิ่มข้อความ
     pdf.text(
-      "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
+      "ใบเคลียร์เงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
       pdfPositionX + 90,
       pdfPositionY
     );
-    if (statusId === 3) {
-      pdf.setTextColor(144, 238, 144);
-      pdf.text(" (อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
-    } else if (statusId === 2) {
+    if (statusClear === 2) {
       pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-      pdf.text(" (ไม่อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
+      pdf.text(" (ทนายโอนคืนการเงิน)", pdfPositionXCenter, pdfPositionY);
+    } else if (statusClear === 3) {
+      pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
+      pdf.text(" (การเงินโอนให้ทนาย)", pdfPositionXCenter, pdfPositionY);
+    } else if (statusClear === 4) {
+      pdf.setTextColor(144, 238, 144);
+      pdf.text(" (ยอดตรง)", pdfPositionXCenter + 28, pdfPositionY);
     } else {
-      pdf.setTextColor(0, 0, 255);
-      pdf.text(" (รอดำเนินการ)", pdfPositionXCenter + 28, pdfPositionY);
+      pdf.setTextColor(144, 238, 144);
+      pdf.text(" (สำเร็จ)", pdfPositionXCenter + 28, pdfPositionY);
     }
 
     pdfPositionY += 5;
     // เพิ่มตาราง
     pdf.autoTable({
-      head: [["ลำดับ", "เลขที่สัญญา", "วันที่ขอเบิก", "รายการ", "จำนวน"]],
+      head: [
+        [
+          "ลำดับ",
+          "เลขที่สัญญา",
+          "วันที่อนุมัติเคลียร์เงิน",
+          "รายการ",
+          "จำนวนเบิก",
+          "จ่ายจริง",
+        ],
+      ],
       body: dataExport,
       startY: pdfPositionY,
       styles: {
@@ -1069,47 +1143,9 @@ const Main = () => {
     });
     const finalY = pdf.lastAutoTable.finalY;
     pdf.setTextColor(0, 0, 0);
-
     // เพิ่มข้อความด้านล่างตาราง
-    if (lawyerName.id === 2) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerYut; // Replace with your image URL or base64
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    } else if (lawyerName.id === 3) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerJumbo; // Replace with your image URL or base64
-      pdfPositionY += 40;
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    } else if (lawyerName.id === 11) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerTon; // Replace with your image URL or base64
-      pdfPositionY += 40;
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    }
-
     pdf.text(
-      `ลงชื่อผู้เบิก...................................`,
+      `ลงชื่อผู้เคลียร์...................................`,
       40,
       finalY + 20
     ); // (x, y)
@@ -1149,6 +1185,294 @@ const Main = () => {
     }
   };
 
+  const renderContnoList = (record) => {
+    return record.contnoList.map((contno, index) => (
+      <React.Fragment key={index}>
+        {contno}
+        <br />
+      </React.Fragment>
+    ));
+  };
+
+  const renderStatus = (record) => {
+    if (!Array.isArray(record.expenseList)) {
+      console.error("record is not an array");
+      return null;
+    }
+
+    let totalPay = 0;
+    let totalWithdraw = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalPay += expense.pay;
+    });
+
+    record.expenseList.forEach((expense) => {
+      totalWithdraw += expense.withdraw;
+    });
+    let status =
+      record.pay_type_id === 5
+        ? "สำเร็จ"
+        : record.pay_type_id === 4
+        ? "รอตรวจสอบ"
+        : null;
+    let color =
+      record.pay_type_id === 5
+        ? "green"
+        : record.pay_type_id === 4
+        ? "blue"
+        : null;
+    // แสดงข้อมูล totalWithdraw
+    return <Tag color={color}>{status}</Tag>;
+  };
+
+  const renderTotalAmount = (record) => {
+    // ตรวจสอบว่า record เป็น array หรือไม่
+    if (!Array.isArray(record.expenseList)) {
+      console.error("record is not an array");
+      return null;
+    }
+
+    let totalWithdraw = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalWithdraw += expense.withdraw;
+    });
+
+    let totalPay = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalPay += expense.pay;
+    });
+
+    let color =
+      record.pay_type_id === 5
+        ? "green"
+        : record.pay_type_id === 4
+        ? "blue"
+        : null;
+
+    // แสดงข้อมูล totalWithdraw
+    return (
+      <div>
+        <p style={{ fontWeight: "bold" }}>
+          {" "}
+          {currencyFormatPoint(totalWithdraw)} บาท
+        </p>
+      </div>
+    );
+  };
+
+  const renderTotalAmountPay = (record) => {
+    // ตรวจสอบว่า record เป็น array หรือไม่
+    if (!Array.isArray(record.expenseList)) {
+      console.error("record is not an array");
+      return null;
+    }
+
+    let totalWithdraw = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalWithdraw += expense.withdraw;
+    });
+
+    let totalPay = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalPay += expense.pay;
+    });
+
+    let color =
+      record.pay_type_id === 5
+        ? "green"
+        : record.pay_type_id === 4
+        ? "blue"
+        : null;
+    // แสดงข้อมูล totalWithdraw
+    return (
+      <div>
+        <p style={{ fontWeight: "bold" }}>
+          {" "}
+          {currencyFormatPoint(totalPay)} บาท
+        </p>
+      </div>
+    );
+  };
+
+  const renderTotalAmountCal = (record) => {
+    // ตรวจสอบว่า record เป็น array หรือไม่
+    if (!Array.isArray(record.expenseList)) {
+      console.error("record is not an array");
+      return null;
+    }
+    let totalWithdraw = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalWithdraw += expense.withdraw;
+    });
+
+    let totalPay = 0;
+
+    record.expenseList.forEach((expense) => {
+      totalPay += expense.pay;
+    });
+
+    let color =
+      totalPay === totalWithdraw
+        ? "black"
+        : totalPay > totalWithdraw
+        ? "green"
+        : "red";
+    // แสดงข้อมูล totalWithdraw
+    return (
+      <div>
+        <p style={{ color: color, fontWeight: "bold" }}>
+          {" "}
+          {currencyFormatPoint(totalPay - totalWithdraw)} บาท
+        </p>
+      </div>
+    );
+  };
+
+  const renderDataDetail = (record) => {
+    if (Array.isArray(record.contnoList)) {
+      // ✅ จัดกลุ่ม expenses ตาม CONTNO
+      const groupedExpenses = record.expenseList.reduce((acc, expense) => {
+        const { CONTNO } = expense;
+        if (!acc[CONTNO]) {
+          acc[CONTNO] = [];
+        }
+        acc[CONTNO].push(expense);
+        return acc;
+      }, {});
+
+      // ✅ แปลง Object เป็น Array
+      const expenseArray = Object.keys(groupedExpenses).map((contno) => ({
+        CONTNO: contno,
+        expenses: groupedExpenses[contno],
+      }));
+
+      console.log("expenseArray-----?", expenseArray);
+
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: "20px",
+          }}
+        >
+          {expenseArray.map((data, index) => {
+            const totalWithdraw = data.expenses.reduce(
+              (sum, expense) => sum + (expense.withdraw || 0),
+              0
+            );
+            const totalPay = data.expenses.reduce(
+              (sum, expense) => sum + (expense.pay || 0),
+              0
+            );
+
+            return (
+              <div
+                key={index}
+                style={{
+                  flex: "1 1 calc(30% - 20px)", // แสดงข้อมูลเป็น 3 คอลัมน์ (ปรับได้ตามหน้าจอ)
+                  padding: "20px",
+                  border: "1px solid #ddd",
+                  borderRadius: "12px",
+                  backgroundColor: "#fff",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <h3
+                  style={{
+                    color: "#027a3a",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {`เลขสัญญา: ${data.CONTNO}`}
+                </h3>
+                <div style={{ marginTop: "10px" }}>
+                  {data.expenses
+                    .sort((a, b) => a.expense_type_id - b.expense_type_id)
+                    .map((expense, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          marginBottom: "10px",
+                          padding: "10px",
+                          backgroundColor: "#f8f8f8",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        <div style={{ color: "#333", fontSize: "14px" }}>
+                          {expense.expense_description}:
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <p style={{ color: "#1a73e8", fontSize: "14px" }}>
+                            {`เบิก: ${expense.withdraw}`}
+                          </p>
+                          <p style={{ color: "#e53935", fontSize: "14px" }}>
+                            {`จ่ายจริง: ${expense.pay}`}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                <div
+                  style={{
+                    marginTop: "20px",
+                    borderTop: "1px solid #ddd",
+                    paddingTop: "10px",
+                    textAlign: "right",
+                  }}
+                >
+                  <p
+                    style={{
+                      color: "#1a73e8",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {`รวมเบิกทั้งหมด: ${currencyFormatPoint(
+                      totalWithdraw
+                    )} บาท`}
+                  </p>
+                  <p
+                    style={{
+                      color: "#e53935",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {`รวมจ่ายจริงทั้งหมด: ${currencyFormatPoint(totalPay)} บาท`}
+                  </p>
+                  <p
+                    style={{
+                      color: "green",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {`ผลลัพธ์: ${currencyFormatPoint(
+                      totalPay - totalWithdraw
+                    )} บาท`}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    } else {
+      console.error("record is not an array");
+      return null;
+    }
+  };
+
   const renderDate = (record, status) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
     if (!record) {
@@ -1177,205 +1501,20 @@ const Main = () => {
 
     // color = remainingDays > 7 ? "red" : "green";
 
-    color =
-      status === STATUS_PROCESS_SUCCESSFUL
-        ? "green"
-        : status === STATUS_PROCESS_UNSUCCESSFUL
-        ? "red"
-        : remainingDays > 7 && status === STATUS_PROCESS_PROCESS
-        ? "red"
-        : "blue";
+    color = status === 5 ? "green" : status === 4 ? "blue" : null;
 
     const formattedDate = record ? convertDateThaiShort(record) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
-        {status !== 3 && (
+        {status !== 5 && (
           <>
             {remainingDays > 7 ? "นาน" : null} {remainingDays} วัน
           </>
         )}
       </Tag>
     );
-  };
-
-  const renderContnoList = (record) => {
-    console.log(record.contnoList);
-
-    return record.contnoList.map((contno, index) => (
-      <React.Fragment key={index}>
-        {contno}
-        <br />
-      </React.Fragment>
-    ));
-  };
-
-  const renderStatus = (record) => {
-    let status;
-    let color;
-    status =
-      record.withdraw_process_id === 4
-        ? "รอดำเนินการ"
-        : record.withdraw_process_id === 3
-        ? "อนุมัติ"
-        : record.withdraw_process_id === 2
-        ? "ไม่อนุมัติ"
-        : null;
-    color =
-      record.withdraw_process_id === 4
-        ? "blue"
-        : record.withdraw_process_id === 3
-        ? "green"
-        : "red";
-    console.log("ทุก withdraw_process_id ตรงกัน:", status);
-
-    // แสดงข้อมูล status หรืออย่างอื่นตามที่ต้องการ
-    return <Tag color={color}>{status}</Tag>;
-  };
-
-  const renderTotalAmount = (record) => {
-    // ตรวจสอบว่า record เป็น array หรือไม่
-    if (!Array.isArray(record.expenseList)) {
-      console.error("record is not an array");
-      return null;
-    }
-
-    let totalWithdraw = 0;
-
-    record.expenseList.forEach((expense) => {
-      totalWithdraw += expense.withdraw;
-    });
-
-    let color =
-      record.withdraw_process_id === 3
-        ? "green"
-        : record.withdraw_process_id === 4
-        ? "blue"
-        : "red";
-    // แสดงข้อมูล totalWithdraw
-    return (
-      <div>
-        <p style={{ color: color, fontWeight: "bold" }}>
-          {" "}
-          {currencyFormatPoint(totalWithdraw)} บาท
-        </p>
-      </div>
-    );
-  };
-
-  const renderDataDetail = (record) => {
-    console.log("recordxxxx", record);
-    console.log("lawsuitsData:", lawsuitsData);
-    // ตรวจสอบว่า record เป็น array หรือไม่
-    if (Array.isArray(record.contnoList) && lawsuitsData) {
-      const data = lawsuitsData.filter((item) =>
-        record.contnoList.some((contno) => item.CONTNO === contno)
-      );
-
-      console.log("Filtered Data:", data);
-      return (
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "20px",
-            justifyContent: "space-between", // ช่วยจัดวางกล่องให้อยู่ในแนวเสมอกัน
-          }}
-        >
-          {data.map((lawsuit, index) => (
-            <div
-              key={index}
-              style={{
-                flex: "1 1 calc(30% - 20px)", // แสดงผลใน 3 คอลัมน์ (ปรับได้ตามขนาดหน้าจอ)
-                minWidth: "300px", // กำหนดขนาดกล่องขั้นต่ำ
-                maxWidth: "400px",
-                padding: "20px",
-                border: "1px solid #ddd",
-                borderRadius: "12px",
-                backgroundColor: "#ffffff", // เพิ่มพื้นหลังให้สีขาว
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // เพิ่มเงาให้กล่อง
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <h3
-                style={{
-                  color: "#027a3a",
-                  fontSize: "18px",
-                  fontWeight: "bold",
-                  marginBottom: "10px",
-                }}
-              >
-                {`เลขสัญญา: ${lawsuit.CONTNO}`}
-              </h3>
-              <div style={{ marginBottom: "10px" }}>
-                <p style={{ color: "#333", fontSize: "14px", margin: "5px 0" }}>
-                  {`ค่าธรรมเนียมศาล: `}
-                  <span style={{ fontWeight: "bold" }}>
-                    {`${currencyFormatPoint(
-                      lawsuit.fee ? lawsuit.fee : 0
-                    )} บาท`}
-                  </span>
-                </p>
-                <p style={{ color: "#333", fontSize: "14px", margin: "5px 0" }}>
-                  {`ค่าอากรณ์สแตมป์: `}
-                  <span style={{ fontWeight: "bold" }}>
-                    {`${currencyFormatComma(
-                      lawsuit.stamp_cost ? lawsuit.stamp_cost : 0
-                    )} บาท`}
-                  </span>
-                </p>
-                <p style={{ color: "#333", fontSize: "14px", margin: "5px 0" }}>
-                  {`ค่าส่งหมาย: `}
-                  <span style={{ fontWeight: "bold" }}>
-                    {`${currencyFormatComma(
-                      lawsuit.delivery_of_summons
-                        ? lawsuit.delivery_of_summons
-                        : 0
-                    )} บาท`}
-                  </span>
-                </p>
-                <p style={{ color: "#333", fontSize: "14px", margin: "5px 0" }}>
-                  {`ค่าจัดทำเอกสาร: `}
-                  <span style={{ fontWeight: "bold" }}>
-                    {`${currencyFormatComma(
-                      lawsuit.document_cost ? lawsuit.document_cost : 0
-                    )} บาท`}
-                  </span>
-                </p>
-              </div>
-              <hr
-                style={{
-                  margin: "10px 0",
-                  border: "none",
-                  borderTop: "1px solid #ddd",
-                }}
-              />
-              <p
-                style={{
-                  color: "#1a73e8",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  textAlign: "right",
-                }}
-              >
-                {`รวมทั้งหมด: ${currencyFormatComma(
-                  lawsuit.document_cost +
-                    lawsuit.delivery_of_summons +
-                    lawsuit.stamp_cost +
-                    lawsuit.fee
-                )} บาท`}
-              </p>
-            </div>
-          ))}
-        </div>
-      );
-    } else {
-      console.error("record is not an array");
-      return [];
-    }
   };
 
   const columns = [
@@ -1411,27 +1550,24 @@ const Main = () => {
       render: (record) => <>{renderTotalAmount(record)}</>,
     },
     {
-      title: "วันที่ขอเบิก",
+      title: "จำนวนที่เคลียร์",
       align: "center",
-      render: (record) => (
-        <>{renderDate(record.created_date, record.withdraw_process_id)}</>
-      ),
+      render: (record) => <>{renderTotalAmountPay(record)}</>,
     },
-
-    // {
-    //   title: "ผู้รับผิดชอบคดี",
-    //   align: "center",
-    //   render: (record) => <>{record.NNAME ? record.NNAME : null}</>,
-    // },
     {
-      title: "วันที่อนุมัติ",
+      title: "ส่วนต่าง",
+      align: "center",
+      render: (record) => <>{renderTotalAmountCal(record)}</>,
+    },
+    {
+      title: "วันที่ส่งให้บัญชี",
       align: "center",
       render: (record) => (
-        <>{renderDate(record.withdraw_datetime, record.withdraw_process_id)}</>
+        <>{renderDate(record.pay_datetime, record.pay_type_id)}</>
       ),
     },
     {
-      title: "สถานะการอนุมัติ",
+      title: "สถานะ",
       align: "center",
       render: (record) => <>{renderStatus(record)}</>,
     },
@@ -1440,21 +1576,41 @@ const Main = () => {
       align: "center",
       render: (record) => (
         <>
-          {record.pay || record.withdraw_process_id === 4 ? (
-            <Popconfirm
-              placement="topLeft"
-              title="อัพเดทสถานะ"
-              description="คุณต้องการอัพเดทสถานะค่าฤชาใช่หรือไม่ ?"
-              onConfirm={() => confirmInsertOne(record)}
-              onCancel={() => cancel(record)}
-              okText="อนุมัติ"
-              cancelText="ไม่อนุมัติ"
+          <Tooltip
+            placement="bottom"
+            title="กรุณากดเพื่อดูรูปใบเสร็จ !"
+            arrow={mergedArrow}
+          >
+            <Button
+              style={{ fontSize: "20px", marginRight: "5px", color: "blue" }}
+              onClick={() => {
+                if (record?.file_path) {
+                  window.open(
+                    record.file_path,
+                    "_blank",
+                    "noopener,noreferrer"
+                  );
+                } else {
+                  alert("ไม่มีไฟล์ให้ดาวน์โหลด");
+                }
+              }}
             >
-              <Button style={{ fontSize: "20px", color: "green" }}>
-                <DollarOutlined />
-              </Button>
-            </Popconfirm>
-          ) : null}
+              <FileImageOutlined />
+            </Button>
+          </Tooltip>
+          <Popconfirm
+            placement="topLeft"
+            title="อัพเดทสถานะ"
+            description="คุณต้องการอัพเดทสถานะให้บัญชีตรวจสอบ ?"
+            onConfirm={() => confirmInsertOne(record)}
+            // onCancel={() => cancel(record)}
+            okText="ยืนยัน"
+            cancelText="ปิด"
+          >
+            <Button style={{ fontSize: "20px", color: "green" }}>
+              <CheckOutlined />
+            </Button>
+          </Popconfirm>
         </>
       ),
     },
@@ -1624,5 +1780,5 @@ const Main = () => {
   }
 };
 
-const AdvanePay = MotionHoc(Main);
-export default AdvanePay;
+const ApprovedClearAdvanePay = MotionHoc(Main);
+export default ApprovedClearAdvanePay;

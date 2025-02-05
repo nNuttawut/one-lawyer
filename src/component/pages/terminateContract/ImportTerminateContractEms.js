@@ -87,20 +87,20 @@ const Main = () => {
 
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
+          key: row["ลำดับ"],
           contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
           pay_type: row["ประเภทจ่าย"] || "", // เลขที่สัญญา
           account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
           datetime: row["รอบวันออกจดหมายในระบบ"] || "", // เลขที่สัญญา
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
           customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
-          customer_type_id: row["ประเภทลูกค้า"] || "" || 0,
+          customer_type_id: row["ประเภทลูกค้า"],
           brand: row["ยี่ห้อ"] || "", // ยี่ห้อ
           register_no: row["ทะเบียน"] || "", // ทะเบียน
           overdue_installment_count: row["ค้างงวด"] || "", // ค้างงวด
           overdue_installment_amount: row["เงินค้าง"] || "", // เงินค้าง
           dept_collection_fees: row["ค่าทวงถาม"] || "", // ค่าทวงถาม
           parcel_no: row["ems no."] || "", // ค่าทวงถาม
-          status: null,
         }));
 
         // รวมข้อมูลจากชีตนี้เข้าไปใน allData
@@ -134,7 +134,7 @@ const Main = () => {
   const confirm = (e) => {
     console.log("eeeee", e);
     let deleteItem = arrayTable.filter((item) => {
-      if (item.contno !== e.contno) {
+      if (item.key !== e.key) {
         return { item };
       }
     });
@@ -179,6 +179,8 @@ const Main = () => {
               success += 1;
               console.log(resQuery.data);
               setImportLoad(false);
+              setArrayTable([]);
+              setTableLength([]);
               return resQuery.data;
             } else {
               if (resQuery.data === "Duplicate Contract No.") {

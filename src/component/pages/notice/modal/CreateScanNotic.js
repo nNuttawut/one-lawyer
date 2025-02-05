@@ -283,7 +283,6 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     const initData = {
       WORK_LOG_ID: dataDefault.WORK_LOG_ID,
       url_path: null,
-      parcel_typ_id: null,
       response_status: null,
       mark: values.memo,
       installment_cont: null,
@@ -298,6 +297,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         ...initData,
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
+        parcel_type_id: 2,
       });
     } else {
       console.log("else----->");
@@ -306,6 +306,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         ...initData,
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
+        parcel_type_id: 2,
       });
 
       loanData?.GUARANTORS?.forEach((guarantor, index) => {
@@ -313,6 +314,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ...initData,
           CUSTOMER_ID: values[`guarantor${index + 1}`], // ใช้ดึงค่าไดนามิกจาก `values`
           parcel_no: values[`parcelNoGuarantor${index + 1}`],
+          parcel_type_id: 3,
         });
       });
     }

@@ -47,6 +47,8 @@ import CreateTerminateContract from "../pages/terminateContract/CreateTerminateC
 import ReplyTerminateContract from "../pages/terminateContract/ReplyTerminateContract";
 import ImportTerminateContractEms from "../pages/terminateContract/ImportTerminateContractEms";
 import ReportTerminate from "../pages/report/ReportTerminate";
+import ContractToLawuit from "../pages/terminateContract/ContractToLawuit";
+import ApprovedClearAdvanePay from "../pages/chargeIndict/ApprovedClearAdvanePay";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -61,7 +63,7 @@ export default function Router() {
         <Routes>
           <Route path="/" element={<DashboardRoute />} />
           <Route path="/final-case" element={<FinalCase />} />
-          <Route path="/debt-payment" element={<DebtPaymentRoute />} />
+          <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
           <Route path="/disbursement/" element={<DisbursementRoute />} />
 
           <Route path="/notice/create-notice" element={<Notice />} />
@@ -83,6 +85,10 @@ export default function Router() {
           <Route
             path="/terminate-contract/reply-terminate-contract"
             element={<ReplyTerminateContract />}
+          />
+          <Route
+            path="/terminate-contract/terminate-contract-to-lawsuit"
+            element={<ContractToLawuit />}
           />
 
           <Route
@@ -117,12 +123,12 @@ export default function Router() {
           <Route path="/report/notice" element={<ReportNotice />} />
           <Route path="/report/terminate" element={<ReportTerminate />} />
           <Route
-            path="/sale-announcement"
+            path="/sale-announcement/*"
             element={<SaleAnnouncementRoute />}
           />
-          <Route path="/send-to-enforcement" element={<EnforcementRoute />} />
-          <Route path="/negotiate" element={<NegotiateRoute />} />
-          <Route path="/notifications" element={<NotificationRouter />} />
+          <Route path="/send-to-enforcement/*" element={<EnforcementRoute />} />
+          <Route path="/negotiate/*" element={<NegotiateRoute />} />
+          <Route path="/notifications/*" element={<NotificationRouter />} />
           <Route path="/detail-status" element={<DetailStatusRouter />} />
 
           <Route path="/court/case-is-final" element={<CaseIsFinal />} />
@@ -156,6 +162,11 @@ export default function Router() {
           <Route
             path="/charge-indict/clear-advane-pay"
             element={<ClearAdvanePay />}
+          />
+
+          <Route
+            path="/charge-indict/approved-clear-advane-pay"
+            element={<ApprovedClearAdvanePay />}
           />
 
           <Route path="/guidbook/read-text" element={<ReadText />} />

@@ -57,9 +57,7 @@ const EditUpdateStatusBlackNumber = ({
     if (dataLoadLawSuit) {
       form.setFieldsValue({
         blackNumber: dataLoadLawSuit?.black_case_number,
-        docShipingCost: dataLoadLawSuit?.attorney_fees,
         imageReplyFile: dataLoadLawSuit?.file_path,
-        documentCost: dataLoadLawSuit?.document_cost,
       });
       setDateDefault(
         dayjs(dataLoadLawSuit?.consideration_date).format("YYYY-MM-DD HH:mm")
@@ -189,23 +187,7 @@ const EditUpdateStatusBlackNumber = ({
       consideration_date: values.considerationDate
         ? dayjs(values.considerationDate).format("YYYY-MM-DD HH:mm")
         : dateDefault,
-      delivery_of_summons:
-        values?.docShipingCost &&
-        typeof values.docShipingCost === "string" &&
-        values.docShipingCost.includes(",")
-          ? parseInt(values.docShipingCost.replace(/,/g, ""))
-          : parseInt(values.docShipingCost)
-          ? parseInt(values.docShipingCost)
-          : 0,
       file_path: values.imageReplyFile,
-      document_cost:
-        values?.documentCost &&
-        typeof values.documentCost === "string" &&
-        values.documentCost.includes(",")
-          ? parseInt(values.documentCost.replace(/,/g, ""))
-          : parseInt(values.documentCost)
-          ? parseInt(values.documentCost)
-          : 0,
     };
     const putStatus = {
       WORK_LOG_ID: dataDefault.WORK_LOG_ID,
@@ -295,50 +277,7 @@ const EditUpdateStatusBlackNumber = ({
               />
             </Form.Item>
           </Tooltip>
-          <Form.Item
-            label="ค่าส่งหมาย"
-            name="docShipingCost"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกค่าส่งหมาย !",
-              },
-            ]}
-          >
-            <InputNumber
-              addonAfter="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณากรอกค่าส่งหมาย"
-              style={{ width: "100%", color: "black" }}
-              onChange={(value) => docShipingCost(value)}
-            />
-          </Form.Item>
-          <Form.Item
-            label="ค่าจัดทำเอกสาร"
-            name="documentCost"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกค่าจัดทำเอกสาร !",
-              },
-            ]}
-          >
-            <InputNumber
-              addonAfter="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณากรอกจัดทำเอกสาร"
-              style={{ width: "100%", color: "black" }}
-              onChange={(value) => documentCost(value)}
-            />
-          </Form.Item>
+
           <Form.Item
             label="ลิ้งเก็บรูปส่วนฟ้อง"
             name="imageReplyFile"

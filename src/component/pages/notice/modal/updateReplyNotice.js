@@ -279,7 +279,6 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     const initData = {
       WORK_LOG_ID: dataDefault.WORK_LOG_ID,
       url_path: values.imageReplyFile,
-      parcel_typ_id: 1,
     };
 
     if (dataDefault.LOAN_TYPE_ID === 2) {
@@ -289,6 +288,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         parcel_no: values.parcelNoCustomer,
         mark: values.memo,
         response_status: values.radioCus === 3 ? 0 : values.radioCus,
+        parcel_typ_id: 2,
       });
     } else {
       parcelsSet.push({
@@ -297,6 +297,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         parcel_no: values.parcelNoCustomer,
         mark: values.memo,
         response_status: values.radioCus === 3 ? 0 : values.radioCus,
+        parcel_typ_id: 2,
       });
 
       if (loanData.GUARANTORS.length > 0) {
@@ -308,6 +309,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor1 === 3 ? 0 : values.radioGuarantor1,
+          parcel_typ_id: 3,
         });
       }
       if (loanData.GUARANTORS.length > 1) {
@@ -318,6 +320,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor2 === 3 ? 0 : values.radioGuarantor2,
+          parcel_typ_id: 3,
         });
       }
       if (loanData.GUARANTORS.length > 2) {
@@ -328,6 +331,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor3 === 3 ? 0 : values.radioGuarantor3,
+          parcel_typ_id: 3,
         });
       }
 
@@ -339,6 +343,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor4 === 3 ? 0 : values.radioGuarantor4,
+          parcel_typ_id: 3,
         });
       }
 
@@ -350,6 +355,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor5 === 3 ? 0 : values.radioGuarantor5,
+          parcel_typ_id: 3,
         });
       }
       if (loanData.GUARANTORS.length > 5) {
@@ -360,6 +366,7 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           mark: values.memo,
           response_status:
             values.radioGuarantor6 === 3 ? 0 : values.radioGuarantor6,
+          parcel_typ_id: 3,
         });
       }
     }

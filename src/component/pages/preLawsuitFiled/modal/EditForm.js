@@ -8,6 +8,7 @@ import {
   Card,
   message,
   Spin,
+  InputNumber,
 } from "antd";
 import {
   baseUrl,
@@ -71,8 +72,14 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         feeCourt: dataLoadLawSuit?.fee
           ? currencyFormatComma(dataLoadLawSuit?.fee)
           : null,
-        stampDuty: dataLoadLawSuit?.attorney_fees_payment_status
-          ? currencyFormatComma(dataLoadLawSuit?.attorney_fees_payment_status)
+        stampDuty: dataLoadLawSuit?.stamp_cost
+          ? currencyFormatComma(dataLoadLawSuit?.stamp_cost)
+          : null,
+        docShipingCost: dataLoadLawSuit?.delivery_of_summons
+          ? currencyFormatComma(dataLoadLawSuit?.delivery_of_summons)
+          : null,
+        documentCost: dataLoadLawSuit?.document_cost
+          ? currencyFormatComma(dataLoadLawSuit?.document_cost)
           : null,
       });
 
@@ -379,6 +386,22 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             ? parseInt(values.feeCourt.replace(/,/g, ""))
             : parseInt(values.feeCourt)
             ? parseInt(values.feeCourt)
+            : 0,
+        delivery_of_summons:
+          values?.docShipingCost &&
+          typeof values.docShipingCost === "string" &&
+          values.docShipingCost.includes(",")
+            ? parseInt(values.docShipingCost.replace(/,/g, ""))
+            : parseInt(values.docShipingCost)
+            ? parseInt(values.docShipingCost)
+            : 0,
+        document_cost:
+          values?.documentCost &&
+          typeof values.documentCost === "string" &&
+          values.documentCost.includes(",")
+            ? parseInt(values.documentCost.replace(/,/g, ""))
+            : parseInt(values.documentCost)
+            ? parseInt(values.documentCost)
             : 0,
       };
 
@@ -712,6 +735,14 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
+  const docShipingCost = (value) => {
+    console.log(value);
+  };
+
+  const documentCost = (value) => {
+    console.log(value);
+  };
+
   const handleLossPay = (value) => {
     console.log("date", value);
     let dateCurrent = dayjs(value);
@@ -940,7 +971,50 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             ) : null}
           </>
         ) : null}
-
+        <Form.Item
+          label="ค่าส่งหมาย"
+          name="docShipingCost"
+          rules={[
+            {
+              required: true,
+              message: "กรุณากรอกค่าส่งหมาย !",
+            },
+          ]}
+        >
+          <InputNumber
+            suffix="บาท"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+            size="large"
+            placeholder="กรุณากรอกค่าส่งหมาย"
+            style={{ width: "100%", color: "black" }}
+            onChange={(value) => docShipingCost(value)}
+          />
+        </Form.Item>
+        <Form.Item
+          label="ค่าจัดทำเอกสาร"
+          name="documentCost"
+          rules={[
+            {
+              required: true,
+              message: "กรุณากรอกค่าจัดทำเอกสาร !",
+            },
+          ]}
+        >
+          <InputNumber
+            suffix="บาท"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+            size="large"
+            placeholder="กรุณากรอกจัดทำเอกสาร"
+            style={{ width: "100%", color: "black" }}
+            onChange={(value) => documentCost(value)}
+          />
+        </Form.Item>
         <Form.Item label="คำนวณค่าธรรมเนียม">
           <Button
             style={{ color: "blue" }}

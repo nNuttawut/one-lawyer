@@ -303,83 +303,89 @@ const Main = () => {
       defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
   ];
-
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (ROLE_ID === "1" || ROLE_ID === "7") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      <Button
-                        style={{
-                          boxShadow: "0 4px 3px",
-                          marginRight: "10px",
-                        }}
-                        onClick={() => {
-                          setIsModalEstimateAssetsResult(true);
-                          setDataModal(record);
-                        }}
-                      >
-                        <FormOutlined
-                          style={{ color: "blue", fontSize: "16px" }}
-                        />
-                      </Button>
-                    </p>
-                  ),
-                  rowExpandable: (record) =>
-                    ROLE_ID === "2" ||
-                    ROLE_ID === "3" ||
-                    ROLE_ID === "4" ||
-                    ROLE_ID === "1",
-                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                }}
-                rowKey="key"
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalEstimateAssetsResult ? (
-        <EstimateAssetsResult
-          open={isModalEstimateAssetsResult}
-          close={setIsModalEstimateAssetsResult}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-    </>
-  );
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <p style={{ margin: 0 }}>
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalEstimateAssetsResult(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
+                          />
+                        </Button>
+                      </p>
+                    ),
+                    rowExpandable: (record) =>
+                      ROLE_ID === "2" ||
+                      ROLE_ID === "3" ||
+                      ROLE_ID === "4" ||
+                      ROLE_ID === "1",
+                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                  }}
+                  rowKey="key"
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+        {isModalEstimateAssetsResult ? (
+          <EstimateAssetsResult
+            open={isModalEstimateAssetsResult}
+            close={setIsModalEstimateAssetsResult}
+            dataDefualt={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+      </>
+    );
+  } else {
+    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
+  }
 };
 
 const CreateInvestigateAssets = MotionHoc(Main);

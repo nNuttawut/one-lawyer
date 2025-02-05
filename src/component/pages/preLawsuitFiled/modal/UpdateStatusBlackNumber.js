@@ -9,12 +9,9 @@ import {
   message,
   InputNumber,
 } from "antd";
-import { LoadingOutlined, AuditOutlined } from "@ant-design/icons";
 import {
   baseUrl,
-  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LAWSUIT_DETAIL_BY_LOAN,
-  GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   POST_STATUS,
   PUT_LAWSUIT_DETAIL,
@@ -147,14 +144,6 @@ const UpdateStatusBlackNumber = ({
     console.log(value);
   };
 
-  const docShipingCost = (value) => {
-    console.log(value);
-  };
-
-  const documentCost = (value) => {
-    console.log(value);
-  };
-
   const onChangeReplyFile = (value) => {
     console.log(value);
   };
@@ -173,22 +162,6 @@ const UpdateStatusBlackNumber = ({
           ? 2500
           : 0,
       file_path: values.imageReplyFile,
-      delivery_of_summons:
-        values?.docShipingCost &&
-        typeof values.docShipingCost === "string" &&
-        values.docShipingCost.includes(",")
-          ? parseInt(values.docShipingCost.replace(/,/g, ""))
-          : parseInt(values.docShipingCost)
-          ? parseInt(values.docShipingCost)
-          : 0,
-      document_cost:
-        values?.documentCost &&
-        typeof values.documentCost === "string" &&
-        values.documentCost.includes(",")
-          ? parseInt(values.documentCost.replace(/,/g, ""))
-          : parseInt(values.documentCost)
-          ? parseInt(values.documentCost)
-          : 0,
     };
     const postStatus = {
       MAIN_STATUS_ID: AWAITING_JUDMENT,
@@ -269,53 +242,10 @@ const UpdateStatusBlackNumber = ({
               onChange={onChangeConsiderationDate}
             />
           </Form.Item>
-          <Form.Item
-            label="ค่าส่งหมาย"
-            name="docShipingCost"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกค่าส่งหมาย !",
-              },
-            ]}
-          >
-            <InputNumber
-              addonAfter="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณากรอกค่าส่งหมาย"
-              style={{ width: "100%", color: "black" }}
-              onChange={(value) => docShipingCost(value)}
-            />
-          </Form.Item>
-          <Form.Item
-            label="ค่าจัดทำเอกสาร"
-            name="documentCost"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกค่าจัดทำเอกสาร !",
-              },
-            ]}
-          >
-            <InputNumber
-              addonAfter="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณากรอกจัดทำเอกสาร"
-              style={{ width: "100%", color: "black" }}
-              onChange={(value) => documentCost(value)}
-            />
-          </Form.Item>
+
           <Form.Item
             label="ลิ้งเก็บรูปส่วนฟ้อง"
-            name="imageReplyFile"
+            name="imageUrlFile"
             rules={[
               {
                 required: true,

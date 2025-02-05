@@ -124,8 +124,9 @@ const Main = () => {
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
             return item;
           } else {
             return false;
@@ -133,11 +134,10 @@ const Main = () => {
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
-
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
           } else {
             return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
@@ -350,61 +350,64 @@ const Main = () => {
       defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
   ];
-
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (ROLE_ID === "1" || ROLE_ID === "3") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {record.PROCESS_ID !== 3 &&
-                      record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                        <Button
-                          name="create"
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : record.PROCESS_ID === 3 &&
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                  expandable={{
+                    expandedRowRender: (record) => (
+                      <p style={{ margin: 0 }}>
+                        {record.PROCESS_ID !== 3 &&
                         record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                        <>
-                          {/* <Button
+                          <Button
+                            name="create"
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalCreate(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <FormOutlined
+                              style={{ color: "blue", fontSize: "16px" }}
+                            />
+                          </Button>
+                        ) : record.PROCESS_ID === 3 &&
+                          record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                          <>
+                            {/* <Button
                             name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
@@ -418,101 +421,104 @@ const Main = () => {
                               style={{ color: "green", fontSize: "16px" }}
                             />
                           </Button> */}
+                            <Button
+                              name="edit"
+                              style={{
+                                boxShadow: "0 4px 3px",
+                                marginRight: "10px",
+                              }}
+                              onClick={() => {
+                                setIsModalEdit(true);
+                                setDataModal(record);
+                              }}
+                            >
+                              <EditOutlined
+                                style={{ color: "orange", fontSize: "16px" }}
+                              />
+                            </Button>
+                            <Button
+                              name="updateStatus"
+                              style={{ boxShadow: "0 4px 3px" }}
+                              onClick={() => {
+                                setIsModalUpdate(true);
+                                setDataModal(record);
+                              }}
+                            >
+                              <SyncOutlined
+                                style={{ color: "green", fontSize: "16px" }}
+                              />
+                            </Button>
+                          </>
+                        ) : null}
+                        {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
                           <Button
-                            name="edit"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalEdit(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            name="updateStatus"
+                            name="EditupdateStatus"
                             style={{ boxShadow: "0 4px 3px" }}
                             onClick={() => {
-                              setIsModalUpdate(true);
+                              setIsModalEditUpdate(true);
                               setDataModal(record);
                             }}
                           >
                             <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
+                              style={{ color: "orange", fontSize: "16px" }}
                             />
                           </Button>
-                        </>
-                      ) : null}
-                      {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
-                        <Button
-                          name="EditupdateStatus"
-                          style={{ boxShadow: "0 4px 3px" }}
-                          onClick={() => {
-                            setIsModalEditUpdate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <SyncOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) => userId === record.LAWYER_ID,
-                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                }}
-                rowKey="key"
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null}
-      {isModalUpdate ? (
-        <UpdateStatusBlackNumber
-          open={isModalUpdate}
-          close={setIsModalUpdate}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEditUpdate ? (
-        <EditUpdateStatusBlackNumber
-          open={isModalEditUpdate}
-          close={setIsModalEditUpdate}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalEdit ? (
-        <EditFrom
-          open={isModalEdit}
-          close={setIsModalEdit}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-    </>
-  );
+                        ) : null}
+                      </p>
+                    ),
+                    rowExpandable: (record) => userId === record.LAWYER_ID,
+                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                  }}
+                  rowKey="key"
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+        {isModalCreate ? (
+          <CreateDocument
+            open={isModalCreate}
+            close={setIsModalCreate}
+            dataDefault={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+        {isModalDocument ? (
+          <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
+        ) : null}
+        {isModalUpdate ? (
+          <UpdateStatusBlackNumber
+            open={isModalUpdate}
+            close={setIsModalUpdate}
+            dataDefault={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+        {isModalEditUpdate ? (
+          <EditUpdateStatusBlackNumber
+            open={isModalEditUpdate}
+            close={setIsModalEditUpdate}
+            dataDefault={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+        {isModalEdit ? (
+          <EditFrom
+            open={isModalEdit}
+            close={setIsModalEdit}
+            dataDefault={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+      </>
+    );
+  } else {
+    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
+  }
 };
 
 const PreLawsuitFiled = MotionHoc(Main);

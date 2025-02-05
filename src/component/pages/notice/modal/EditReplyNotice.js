@@ -477,6 +477,7 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("parcelsSet", parcelsSet);
     // sendStatus(putStatus, putLawsuit, parcelsSet);
   };
+
   const onChangeReplyFile = (value) => {
     console.log(value);
   };

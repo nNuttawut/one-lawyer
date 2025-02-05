@@ -42,7 +42,7 @@ const Main = () => {
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
-  const [dataModal, setDataModal] = useState();
+  const [dataModal, setDataModal] = useState([]);
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
   const [searchEdit, setSearchEdit] = useState(null);
@@ -109,9 +109,9 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.black_case_number &&
-          !item.fee_payment_status
+          (item.USER_ID === userId || ROLE_ID === "1") &&
+          !item.fee_payment_status &&
+          item.provincial_court
       );
 
       console.log("newData-->", newData);
@@ -128,8 +128,9 @@ const Main = () => {
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
             return item;
           } else {
             return false;
@@ -137,11 +138,10 @@ const Main = () => {
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
-
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
+          if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
           } else {
             return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
@@ -220,8 +220,8 @@ const Main = () => {
     let result = arrayTable.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
-          (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
-          (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value)) ||
+          (item.customer_name && item.customer_name.includes(value)) ||
+          (item.customer_lastname && item.customer_lastname.includes(value)) ||
           (item.provincial_court && item.provincial_court.includes(value))) &&
         item.USER_ID === userId &&
         !item.fee_payment_status &&
@@ -250,7 +250,7 @@ const Main = () => {
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
-        const date = dayjs(item.DATE, "YYYY-MM-DD");
+        const date = dayjs(item.date_of_plaint, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
@@ -266,20 +266,20 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    if (data !== 0) {
-      const result = dataArr.map((item) => {
-        if (item.id === data.id) {
-          return { ...data };
-        } else {
-          return { ...item };
-        }
-      });
-      console.log(result);
-      setDataArr(result);
-      const arr = result.filter(
+
+    if (data && data.id) {
+      // ตรวจสอบว่า data มีค่าและมี id
+      const updatedDataArr = dataArr.map((item) =>
+        item.id === data.id ? { ...data } : { ...item }
+      );
+      console.log("updatedDataArr", updatedDataArr);
+      setDataArr(updatedDataArr);
+
+      const arr = updatedDataArr.filter(
         (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          (item.LAWYER_ID === userId || ROLE_ID === "1") &&
+          item.black_case_number &&
+          !item.fee_payment_status
       );
       console.log("arr", arr);
       setArrayTable(arr);
@@ -295,6 +295,7 @@ const Main = () => {
     console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
     console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
+    setDataModal(selectedRows);
   };
 
   const rowSelection = {
@@ -399,17 +400,8 @@ const Main = () => {
       ),
     },
     {
-      title: "ที่ตั้งศาล",
-      dataIndex: "CUSTOMER_TNAM",
-      key: "CUSTOMER_TNAM",
+      title: "ศาล",
       align: "center",
-      // render: (text, record) => (
-      //   <>
-      //     {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
-      //     {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
-      //     {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
-      //   </>
-      // ),
       render: (text, record) => (
         <>{record.provincial_court ? record.provincial_court : null}</>
       ),
@@ -425,197 +417,202 @@ const Main = () => {
       title: "วันประทับฟ้อง",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
-      // sorter: (a, b) => {
-      //   // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
-
-      //   return dayjs(a.DATE).isBefore(b.DATE) ? -1 : 1;
-      // },
-      // defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
   ];
-
-  return (
-    <>
-      <Card>
-        <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Select
-                placeholder="เลือกบริษัท"
-                optionFilterProp="value"
-                options={companiesOption}
-                onChange={(value) => onChangeSelect(value)}
-                defaultValue={userCompany === "3" ? 3 : 2}
-                popupMatchSelectWidth={false}
-                style={{
-                  width: "auto", // ทำให้ Select ขยายตามเนื้อหา
-                  // maxWidth: 200, // จำกัดความกว้างสูงสุด
-                }}
-                size="large"
-              />
-            </Col>
-            <Col
-              span={"6"}
-              style={{ textAlign: "start", marginBottom: "10px" }}
-            >
-              <Flex align="center" gap="middle">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />} // ไอคอน
-                  size="small" // ขนาดเล็ก
-                  onClick={() => setIsModalCreateAdvanePayment(true)}
-                  disabled={selectedRowKeys.length <= 0}
-                  loading={loading}
-                >
-                  สร้างรายการ
-                </Button>
-              </Flex>
-            </Col>
-            <Col span={"18"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
+  if (ROLE_ID === "1" || ROLE_ID === "3") {
+    return (
+      <>
+        <Card>
+          <Spin spinning={loading} size="large" tip=" Loading... ">
+            <Row>
+              <Col
+                span={"24"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Select
+                  placeholder="เลือกบริษัท"
+                  optionFilterProp="value"
+                  options={companiesOption}
+                  onChange={(value) => onChangeSelect(value)}
+                  defaultValue={userCompany === "3" ? 3 : 2}
+                  popupMatchSelectWidth={false}
+                  style={{
+                    width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+                    // maxWidth: 200, // จำกัดความกว้างสูงสุด
+                  }}
                   size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col span={"24"}>
-              <Table
-                size="small"
-                columns={columns}
-                dataSource={arrayTable}
-                scroll={{ x: 850 }}
-                footer={() => (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
-                      alignItems: "center",
-                    }}
+              </Col>
+              <Col
+                span={"6"}
+                style={{ textAlign: "start", marginBottom: "10px" }}
+              >
+                <Flex align="center" gap="middle">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />} // ไอคอน
+                    size="small" // ขนาดเล็ก
+                    onClick={() => setIsModalCreateAdvanePayment(true)}
+                    disabled={selectedRowKeys.length <= 0}
+                    loading={loading}
                   >
-                    <p style={{ margin: 0 }}>
-                      เลือก {selectedRowKeys.length} สัญญา
-                    </p>
+                    สร้างรายการ
+                  </Button>
+                </Flex>
+              </Col>
+              <Col
+                span={"18"}
+                style={{ textAlign: "end", marginBottom: "10px" }}
+              >
+                <Space direction="vertical" size={12}>
+                  <RangePicker
+                    size="large"
+                    style={{ marginRight: "10px" }}
+                    onChange={onSearchByDate}
+                  />
+                </Space>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  onChange={search}
+                  enterButton
+                  style={{
+                    width: 200,
+                  }}
+                  size="large"
+                />
+              </Col>
+              <Col span={"24"}>
+                <Table
+                  size="small"
+                  columns={columns}
+                  dataSource={arrayTable}
+                  scroll={{ x: 850 }}
+                  footer={() => (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                        alignItems: "center",
+                      }}
+                    >
+                      <p style={{ margin: 0 }}>
+                        เลือก {selectedRowKeys.length} สัญญา
+                      </p>
 
-                    <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
-                  </div>
-                )}
-                rowSelection={rowSelection}
-                // expandable={{
-                //   expandedRowRender: (record) => (
-                //     <p style={{ margin: 0 }}>
-                //       {record.PROCESS_ID !== 3 &&
-                //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <Button
-                //           name="create"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalCreate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <FormOutlined
-                //             style={{ color: "blue", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : record.PROCESS_ID === 3 &&
-                //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <>
-                //           {/* <Button
-                //           name="formPrint"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalDocument(true);
-                //           }}
-                //         >
-                //           <FileDoneOutlined
-                //             style={{ color: "green", fontSize: "16px" }}
-                //           />
-                //         </Button> */}
-                //           <Button
-                //             name="edit"
-                //             style={{
-                //               boxShadow: "0 4px 3px",
-                //               marginRight: "10px",
-                //             }}
-                //             onClick={() => {
-                //               setIsModalEdit(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <EditOutlined
-                //               style={{ color: "orange", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //           <Button
-                //             name="updateStatus"
-                //             style={{ boxShadow: "0 4px 3px" }}
-                //             onClick={() => {
-                //               setIsModalUpdate(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <SyncOutlined
-                //               style={{ color: "green", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //         </>
-                //       ) : null}
-                //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
-                //         <Button
-                //           name="EditupdateStatus"
-                //           style={{ boxShadow: "0 4px 3px" }}
-                //           onClick={() => {
-                //             setIsModalEditUpdate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <SyncOutlined
-                //             style={{ color: "orange", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : null}
-                //     </p>
-                //   ),
-                //   rowExpandable: (record) => userId === record.LAWYER_ID,
-                //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                // }}
-                // rowKey="key"
-              />
-            </Col>
-          </Row>
-        </Spin>
-      </Card>
-      {isModal ? (
-        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-      ) : null}
-      {isModalCreateAdvanePayment ? (
-        <CreateAdvanePayment
-          open={isModalCreateAdvanePayment}
-          close={setIsModalCreateAdvanePayment}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-    </>
-  );
+                      <p style={{ margin: 0 }}>
+                        จำนวนสัญญาทั้งหมด {tableLength}
+                      </p>
+                    </div>
+                  )}
+                  rowSelection={rowSelection}
+                  // expandable={{
+                  //   expandedRowRender: (record) => (
+                  //     <p style={{ margin: 0 }}>
+                  //       {record.PROCESS_ID !== 3 &&
+                  //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                  //         <Button
+                  //           name="create"
+                  //           style={{
+                  //             boxShadow: "0 4px 3px",
+                  //             marginRight: "10px",
+                  //           }}
+                  //           onClick={() => {
+                  //             setIsModalCreate(true);
+                  //             setDataModal(record);
+                  //           }}
+                  //         >
+                  //           <FormOutlined
+                  //             style={{ color: "blue", fontSize: "16px" }}
+                  //           />
+                  //         </Button>
+                  //       ) : record.PROCESS_ID === 3 &&
+                  //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                  //         <>
+                  //           {/* <Button
+                  //           name="formPrint"
+                  //           style={{
+                  //             boxShadow: "0 4px 3px",
+                  //             marginRight: "10px",
+                  //           }}
+                  //           onClick={() => {
+                  //             setIsModalDocument(true);
+                  //           }}
+                  //         >
+                  //           <FileDoneOutlined
+                  //             style={{ color: "green", fontSize: "16px" }}
+                  //           />
+                  //         </Button> */}
+                  //           <Button
+                  //             name="edit"
+                  //             style={{
+                  //               boxShadow: "0 4px 3px",
+                  //               marginRight: "10px",
+                  //             }}
+                  //             onClick={() => {
+                  //               setIsModalEdit(true);
+                  //               setDataModal(record);
+                  //             }}
+                  //           >
+                  //             <EditOutlined
+                  //               style={{ color: "orange", fontSize: "16px" }}
+                  //             />
+                  //           </Button>
+                  //           <Button
+                  //             name="updateStatus"
+                  //             style={{ boxShadow: "0 4px 3px" }}
+                  //             onClick={() => {
+                  //               setIsModalUpdate(true);
+                  //               setDataModal(record);
+                  //             }}
+                  //           >
+                  //             <SyncOutlined
+                  //               style={{ color: "green", fontSize: "16px" }}
+                  //             />
+                  //           </Button>
+                  //         </>
+                  //       ) : null}
+                  //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
+                  //         <Button
+                  //           name="EditupdateStatus"
+                  //           style={{ boxShadow: "0 4px 3px" }}
+                  //           onClick={() => {
+                  //             setIsModalEditUpdate(true);
+                  //             setDataModal(record);
+                  //           }}
+                  //         >
+                  //           <SyncOutlined
+                  //             style={{ color: "orange", fontSize: "16px" }}
+                  //           />
+                  //         </Button>
+                  //       ) : null}
+                  //     </p>
+                  //   ),
+                  //   rowExpandable: (record) => userId === record.LAWYER_ID,
+                  //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                  // }}
+                  // rowKey="key"
+                />
+              </Col>
+            </Row>
+          </Spin>
+        </Card>
+        {isModal ? (
+          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+        ) : null}
+        {isModalCreateAdvanePayment ? (
+          <CreateAdvanePayment
+            open={isModalCreateAdvanePayment}
+            close={setIsModalCreateAdvanePayment}
+            dataDefault={dataModal}
+            funcUpdateStatus={handleUpdateData}
+          />
+        ) : null}
+      </>
+    );
+  } else {
+    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
+  }
 };
 
 const LawsuitAdvanePayment = MotionHoc(Main);
