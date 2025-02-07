@@ -837,13 +837,11 @@ const Main = () => {
 
   return (
     <>
-      {roleId === "1" || roleId === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col span={"12"} style={{ textAlign: "start" }}>
-                  {/* <Popconfirm
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"12"} style={{ textAlign: "start" }}>
+              {/* <Popconfirm
                     title="มอบงานให้ทนาย"
                     description="คุณต้องการนมอบหมายงานให้ทนายตามข้อมูลในตารางหรือไม่ ?"
                     onConfirm={confirmInsert}
@@ -857,52 +855,45 @@ const Main = () => {
                       />
                     </Button>
                   </Popconfirm> */}
-                </Col>
-                <Col span={"12"} style={{ textAlign: "end" }}>
-                  <Space direction="vertical" size={12}>
-                    <DatePicker
-                      size="large"
-                      style={{ marginRight: "10px" }}
-                      onChange={onSearchByDate}
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    enterButton
-                    onChange={search}
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    style={{ marginTop: "10px" }}
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModal ? (
-            <TerminateDetail
-              open={isModal}
-              close={setIsModal}
-              dataDefault={dataRecord}
-            />
-          ) : null}
-        </>
-      ) : (
-        <Card>
-          {" "}
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end" }}>
+              <Space direction="vertical" size={12}>
+                <DatePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                enterButton
+                onChange={search}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                style={{ marginTop: "10px" }}
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <TerminateDetail
+          open={isModal}
+          close={setIsModal}
+          dataDefault={dataRecord}
+        />
+      ) : null}
     </>
   );
 };

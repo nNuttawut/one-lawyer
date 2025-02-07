@@ -654,96 +654,89 @@ const Main = () => {
     },
   ];
 
-  if (ROLE_ID === "1" || ROLE_ID === "5") {
-    return (
-      <>
-        <Card>
-          <Spin spinning={loading} size="large" tip=" Loading... ">
-            <Row>
-              <Col
-                span={"4"}
-                style={{ textAlign: "start", marginBottom: "10px" }}
-              >
-                <Select
-                  showSearch
-                  style={{
-                    width: 150,
-                  }}
-                  optionFilterProp="value"
-                  options={options}
-                  onChange={(value) => onChangeSelect(value)}
-                  defaultValue={selectedOption}
+  return (
+    <>
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col
+              span={"4"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Select
+                showSearch
+                style={{
+                  width: 150,
+                }}
+                optionFilterProp="value"
+                options={options}
+                onChange={(value) => onChangeSelect(value)}
+                defaultValue={selectedOption}
+                size="large"
+              />
+            </Col>
+            <Col span={"20"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
                   size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
                 />
-              </Col>
-              <Col
-                span={"20"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <RangePicker
-                    size="large"
-                    style={{ marginRight: "10px" }}
-                    onChange={onSearchByDate}
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                type="number"
+                min="1" // กำหนดค่าต่ำสุดเป็น 1
+                max="31" // กำหนดค่ามากสุดเป็น 31
+                style={{
+                  width: 120,
+                }}
+                size="large"
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              span={"24"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Space direction="vertical" size={12}>
+                <Tooltip
+                  placement="bottom"
+                  title="บันทึกข้อมูล excel"
+                  arrow={mergedArrow}
+                >
+                  <PrinterOutlined
+                    style={{
+                      fontSize: "40px",
+                      color: "green",
+                      cursor: "pointer",
+                    }}
+                    key="print"
+                    onClick={createAndDownloadExcel}
                   />
-                </Space>
-                <Search
-                  placeholder="ค้นหาสัญญา"
-                  onChange={search}
-                  enterButton
-                  type="number"
-                  min="1" // กำหนดค่าต่ำสุดเป็น 1
-                  max="31" // กำหนดค่ามากสุดเป็น 31
-                  style={{
-                    width: 120,
-                  }}
-                  size="large"
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col
-                span={"24"}
-                style={{ textAlign: "start", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <Tooltip
-                    placement="bottom"
-                    title="บันทึกข้อมูล excel"
-                    arrow={mergedArrow}
-                  >
-                    <PrinterOutlined
-                      style={{
-                        fontSize: "40px",
-                        color: "green",
-                        cursor: "pointer",
-                      }}
-                      key="print"
-                      onClick={createAndDownloadExcel}
-                    />
-                  </Tooltip>
-                </Space>
-              </Col>
-              <Col span={"24"}>
-                <Table
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  scroll={{ x: 850 }}
-                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                />
-              </Col>
-            </Row>
-          </Spin>
-        </Card>
-        {isModal ? (
-          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-        ) : null}
-      </>
-    );
-  } else {
-    return <b>ไม่มีสิทธ์เข้าถึง</b>;
-  }
+                </Tooltip>
+              </Space>
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+    </>
+  );
 };
 
 const ReportNotice = MotionHoc(Main);

@@ -690,126 +690,115 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col
-                  span={"12"}
-                  style={{ textAlign: "start", marginBottom: "10px" }}
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col
+              span={"12"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Select
+                style={{
+                  width: "auto",
+                  marginRight: "5px",
+                  marginBottom: "5px",
+                }}
+                onChange={handleChangeSelect}
+                popupMatchSelectWidth={false}
+                options={optionSelectCallback}
+                value={selectCallback}
+                size="large"
+              />
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <DatePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col
+              span={"24"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Space direction="vertical" size={12}>
+                <Tooltip
+                  placement="bottom"
+                  title="บันทึกข้อมูล excel"
+                  arrow={mergedArrow}
                 >
-                  <Select
+                  <PrinterOutlined
                     style={{
-                      width: "auto",
-                      marginRight: "5px",
-                      marginBottom: "5px",
+                      fontSize: "40px",
+                      color: "green",
+                      cursor: "pointer",
                     }}
-                    onChange={handleChangeSelect}
-                    popupMatchSelectWidth={false}
-                    options={optionSelectCallback}
-                    value={selectCallback}
-                    size="large"
+                    key="print"
+                    onClick={createAndDownloadExcel}
                   />
-                </Col>
-                <Col
-                  span={"12"}
-                  style={{ textAlign: "end", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <DatePicker
-                      size="large"
-                      style={{ marginRight: "10px" }}
-                      onChange={onSearchByDate}
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    onChange={search}
-                    enterButton
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col
-                  span={"24"}
-                  style={{ textAlign: "start", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <Tooltip
-                      placement="bottom"
-                      title="บันทึกข้อมูล excel"
-                      arrow={mergedArrow}
-                    >
-                      <PrinterOutlined
+                </Tooltip>
+              </Space>
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      <Button
                         style={{
-                          fontSize: "40px",
-                          color: "green",
-                          cursor: "pointer",
+                          boxShadow: "0 4px 3px",
+                          marginLeft: "10px",
                         }}
-                        key="print"
-                        onClick={createAndDownloadExcel}
-                      />
-                    </Tooltip>
-                  </Space>
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                    expandable={{
-                      expandedRowRender: (record) => (
-                        <p style={{ margin: 0 }}>
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginLeft: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalUpdateEms(true);
-                              setDataModal(record);
-                              console.log("---->", record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                          {/* )} */}
-                        </p>
-                      ),
-                      rowExpandable: (record) =>
-                        (userId === record.LAWYER_ID && ROLE_ID === "3") ||
-                        ROLE_ID === "2" ||
-                        ROLE_ID === "1",
-                      expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                      onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                    }}
-                    rowKey="key"
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModalUpdateEms ? (
-            <UpdateReplyEms
-              open={isModalUpdateEms}
-              close={setIsModalUpdateEms}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-        </>
-      ) : (
-        <Card>
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+                        onClick={() => {
+                          setIsModalUpdateEms(true);
+                          setDataModal(record);
+                          console.log("---->", record);
+                        }}
+                      >
+                        <EditOutlined
+                          style={{ color: "green", fontSize: "16px" }}
+                        />
+                      </Button>
+                      {/* )} */}
+                    </p>
+                  ),
+                  rowExpandable: (record) =>
+                    (userId === record.LAWYER_ID && ROLE_ID === "3") ||
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "1",
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModalUpdateEms ? (
+        <UpdateReplyEms
+          open={isModalUpdateEms}
+          close={setIsModalUpdateEms}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
     </>
   );
 };

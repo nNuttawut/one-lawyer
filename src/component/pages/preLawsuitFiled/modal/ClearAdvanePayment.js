@@ -51,7 +51,6 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
           created_date: item.created_date,
           withdraw_process_id: item.withdraw_process_id,
           expenses: [], // เก็บรายการค่าใช้จ่ายที่เกี่ยวข้อง
-          lawsuit: null, //
         };
       }
 
@@ -59,14 +58,6 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
       groupedData[item.CONTNO].expenses.push({
         ...item,
       });
-    });
-
-    // ค้นหาข้อมูล lawsuit ที่ตรงกับ CONTNO
-    Object.keys(groupedData).forEach((contno) => {
-      const matchedLawsuit = dataDefault.lawsuit.find(
-        (lawsuit) => lawsuit.CONTNO === contno
-      );
-      groupedData[contno].lawsuit = matchedLawsuit || null; // ถ้าไม่เจอให้เป็น null
     });
 
     // แปลง Object เป็น Array เพื่อใช้กับ `map`
@@ -161,7 +152,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     const checkData = dataset.filter((item) => item); // กรองค่า null, undefined, false ออก
     setdataSend.push(...checkData);
 
-    sendData(setdataSend);
+    // sendData(setdataSend);
     console.log("dataSend", setdataSend);
   };
 
@@ -173,7 +164,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const checkItem = (value) => {
     console.log(value);
 
-    if (value) {
+    if (value === 0 || value) {
       setBtnOn(true);
     } else {
       setBtnOn(false);
@@ -220,56 +211,74 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 }}
                 form={form}
               >
-                {dataRender?.map((data, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      marginBottom: "20px",
-                      border: "1px solid #ccc",
-                      padding: "10px",
-                      background:
-                        index % 2 === 0
-                          ? "linear-gradient(135deg, #f5f7fa 0%, #FFEBB7 100%)"
-                          : "linear-gradient(135deg, #f5f7fa 0%,  #c3cfe2 100%)",
-                      borderRadius: "10px",
-                      boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                    }}
-                  >
-                    <Form.Item label="สัญญา">
-                      {`${data.CONTNO}/ ${data.lawsuit.customer_title}${data.lawsuit.customer_name}  ${data.lawsuit.customer_lastname}`}{" "}
-                    </Form.Item>
-                    <Form.Item label="เลขคดีดำ">
-                      {data.lawsuit.black_case_number}
-                    </Form.Item>
-                    {data.expenses?.map((item, expenseIndex) => (
-                      <div key={expenseIndex} style={{ paddingLeft: "20px" }}>
-                        <Form.Item
-                          label={item.expense_description}
-                          name={item.id}
-                        >
-                          <InputNumber
-                            suffix="บาท"
-                            formatter={(value) =>
-                              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                            }
-                            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-                            size="large"
-                            placeholder="กรุณากรอกจำนวนเงิน"
-                            defaultValue={item.pay || 0}
-                            style={{ width: "80%", color: "black" }}
-                            onChange={(value) =>
-                              handleInputChange(
-                                value,
-                                data.CONTNO,
-                                item.expense_name
-                              )
-                            }
-                          />
-                        </Form.Item>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                {dataRender?.map((data, index) => {
+                  // ✅ คำนวณผลรวมของค่าใช้จ่ายแต่ละสัญญา
+                  const total = data.expenses?.reduce(
+                    (sum, item) => sum + (item.pay || 0),
+                    0
+                  );
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        marginBottom: "20px",
+                        border: "1px solid #ccc",
+                        padding: "10px",
+                        background:
+                          index % 2 === 0
+                            ? "linear-gradient(135deg, #f5f7fa 0%, #FFEBB7 100%)"
+                            : "linear-gradient(135deg, #f5f7fa 0%,  #c3cfe2 100%)",
+                        borderRadius: "10px",
+                        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <Form.Item label="สัญญา">{`${data.CONTNO}`}</Form.Item>
+
+                      {data.expenses?.map((item, expenseIndex) => (
+                        <div key={expenseIndex} style={{ paddingLeft: "20px" }}>
+                          <Form.Item
+                            label={item.expense_description}
+                            name={item.id}
+                          >
+                            <InputNumber
+                              suffix="บาท"
+                              formatter={(value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                              }
+                              parser={(value) =>
+                                value.replace(/\$\s?|(,*)/g, "")
+                              }
+                              size="large"
+                              placeholder="ไม่มีให้เติม 0"
+                              defaultValue={item.pay}
+                              style={{ width: "80%", color: "black" }}
+                              onChange={(value) =>
+                                handleInputChange(
+                                  value,
+                                  data.CONTNO,
+                                  item.expense_name
+                                )
+                              }
+                            />
+                          </Form.Item>
+                        </div>
+                      ))}
+                      <Form.Item label="รวม">
+                        <InputNumber
+                          suffix="บาท"
+                          value={total} // ใช้ค่าที่คำนวณได้
+                          style={{
+                            width: "80%",
+                            color: "black",
+                            fontWeight: "bold",
+                          }}
+                          disabled // ไม่ให้แก้ไข
+                        />
+                      </Form.Item>
+                    </div>
+                  );
+                })}
                 <Form.Item
                   label="ลิ้งเก็บรูปส่วนฟ้อง"
                   name="imageReplyFile"

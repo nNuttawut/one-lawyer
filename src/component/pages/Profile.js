@@ -92,6 +92,7 @@ const Main = () => {
         COMPANY_ID: data?.COMPANY_ID ? data?.COMPANY_ID : "-",
         ROLE_ID: data?.ROLE_ID ? data?.ROLE_ID : "-",
         ACTIVE_STATUS: data?.ACTIVE_STATUS,
+        bookBank: data?.book_bank ? data?.book_bank : "-",
       });
     }
   };
@@ -117,6 +118,7 @@ const Main = () => {
       COMPANY_ID: values.COMPANY_ID,
       ROLE_ID: values.ROLE_ID,
       ACTIVE_STATUS: values.ACTIVE_STATUS,
+      book_bank: values.bookBank,
     });
   };
 
@@ -155,6 +157,9 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
@@ -223,6 +228,10 @@ const Main = () => {
               },
             ]}
           >
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="บัญชีธนาคาร" name="bookBank">
             <Input />
           </Form.Item>
           {userData.ROLE_ID === 3 ? (

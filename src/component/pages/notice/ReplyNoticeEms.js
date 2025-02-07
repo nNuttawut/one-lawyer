@@ -366,96 +366,80 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col
-                  span={"24"}
-                  style={{ textAlign: "end", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <RangePicker
-                      size="large"
-                      style={{ marginRight: "10px" }}
-                      onChange={onSearchByDate}
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    onChange={search}
-                    enterButton
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                    expandable={{
-                      expandedRowRender: (record) => (
-                        <p style={{ margin: 0 }}>
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginLeft: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalUpdateNoticeEms(true);
-                              setDataModal(record);
-                              console.log("---->", record);
-                            }}
-                          >
-                            <EditOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                          {/* )} */}
-                        </p>
-                      ),
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      <Button
+                        style={{
+                          boxShadow: "0 4px 3px",
+                          marginLeft: "10px",
+                        }}
+                        onClick={() => {
+                          setIsModalUpdateNoticeEms(true);
+                          setDataModal(record);
+                          console.log("---->", record);
+                        }}
+                      >
+                        <EditOutlined
+                          style={{ color: "orange", fontSize: "16px" }}
+                        />
+                      </Button>
+                    </p>
+                  ),
 
-                      rowExpandable: (record) =>
-                        (userId === record.LAWYER_ID && ROLE_ID === "3") ||
-                        ROLE_ID === "2" ||
-                        ROLE_ID === "1",
+                  rowExpandable: (record) =>
+                    (userId === record.LAWYER_ID && ROLE_ID === "3") ||
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "1",
 
-                      expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                      onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                    }}
-                    rowKey="key"
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModal ? (
-            <DetailModal
-              open={isModal}
-              close={setIsModal}
-              dataRec={dataRecord}
-            />
-          ) : null}
-          {isModalUpdateNoticeEms ? (
-            <UpdateReplyNoticeEms
-              open={isModalUpdateNoticeEms}
-              close={setIsModalUpdateNoticeEms}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-        </>
-      ) : (
-        <Card>
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+      {isModalUpdateNoticeEms ? (
+        <UpdateReplyNoticeEms
+          open={isModalUpdateNoticeEms}
+          close={setIsModalUpdateNoticeEms}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
     </>
   );
 };

@@ -28,6 +28,7 @@ import { baseUrl, GET_COMPANIES_LIST, HEADERS_EXPORT } from "../API/apiUrls";
 function Sidenav({ color, onClick }) {
   const [signOut] = TokenCheck();
   const [openKeys, setOpenKeys] = useState([]);
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
 
   const { pathname } = useLocation();
   const page = pathname.replace("/", "");
@@ -49,279 +50,310 @@ function Sidenav({ color, onClick }) {
     //   icon: <CalendarOutlined />,
     //   title: "ปฏิทินนัดหมาย",
     // },
-    {
-      key: "2",
-      pageName: "terminate",
-      label: "terminate-contract",
-      path: "/terminate-contract",
-      icon: <FileExcelOutlined />,
-      title: "บอกเลิกสัญญา",
-      children: [
-        {
-          key: "21",
-          icon: <CaretRightOutlined />,
-          pageName: "create-terminate-Contract",
-          path: "terminate-contract/create-terminate-Contract",
-          label: "ออกบอกเลิกสัญญา",
-        },
-        {
-          key: "22",
-          icon: <CaretRightOutlined />,
-          pageName: "create-terminate-Contract",
-          path: "terminate-contract/import-terminate-Contract-ems",
-          label: "นำเข้าข้อมูล EMS",
-        },
-        {
-          key: "23",
-          icon: <CaretRightOutlined />,
-          pageName: "reply-terminate-Contract",
-          path: "terminate-contract/reply-terminate-Contract",
-          label: "ตอบกลับบอกเลิกสัญญา",
-        },
-        {
-          key: "24",
-          icon: <CaretRightOutlined />,
-          pageName: "terminate-Contract-to-lawsuit",
-          path: "terminate-contract/terminate-Contract-to-lawsuit",
-          label: "สัญญาเตรียมส่งฟ้อง",
-        },
-      ],
-    },
-    {
-      key: "3",
-      pageName: "notice",
-      label: "notice",
-      path: "/notice",
-      icon: <FormOutlined />,
-      title: "โนติสทนาย",
-      children: [
-        {
-          key: "31",
-          icon: <CaretRightOutlined />,
-          pageName: "create-notice",
-          path: "notice/create-notice",
-          label: "ออกโนติส",
-        },
-        {
-          key: "32",
-          icon: <CaretRightOutlined />,
-          pageName: "reply-notice",
-          path: "notice/reply-notice",
-          label: "ตอบกลับโนติส",
-        },
-        {
-          key: "33",
-          icon: <CaretRightOutlined />,
-          pageName: "create-notice-ems",
-          path: "notice/create-notice-ems",
-          label: "สร้างโนติส EMS",
-        },
-        {
-          key: "34",
-          icon: <CaretRightOutlined />,
-          pageName: "reply-notice-ems",
-          path: "notice/reply-notice-ems",
-          label: "ตอบกลับโนติส EMS",
-        },
-      ],
-    },
-    {
-      key: "4",
-      pageName: "lawsuit",
-      label: "lawsuit",
-      path: "/lawsuit",
-      icon: <FormOutlined />,
-      title: "ส่วนฟ้อง",
-      children: [
-        {
-          key: "41",
-          icon: <CaretRightOutlined />,
-          pageName: "create-lawsuit",
-          path: "lawsuit/pre-lawsuit-filed",
-          label: "สร้างคำฟ้อง",
-        },
-        {
-          key: "42",
-          icon: <CaretRightOutlined />,
-          pageName: "lawsuit-advane-patment",
-          path: "lawsuit/advane-payment",
-          label: "เบิกเงินทดรองจ่าย",
-        },
-        {
-          key: "43",
-          icon: <CaretRightOutlined />,
-          pageName: "lawsuit-clear-advane-patment",
-          path: "lawsuit/clear-advane-payment",
-          label: "เคลียร์เงินทดรองจ่าย",
-        },
-      ],
-    },
-    {
-      key: "5",
-      pageName: "investigate-assets",
-      label: "investigate-assets",
-      path: "/investigate-assets",
-      icon: <SearchOutlined />,
-      title: "สืบทรัพย์ลูกหนี้",
-      children: [
-        {
-          key: "51",
-          icon: <CaretRightOutlined />,
-          pageName: "create-invitigate-assets",
-          path: "investigate-assets/create-invitigate-assets",
-          label: "สืบทรัพย์",
-        },
-        {
-          key: "52",
-          icon: <CaretRightOutlined />,
-          pageName: "estimate-assets",
-          path: "investigate-assets/estimate-assets",
-          label: "ประเมินทรัพย์",
-        },
-        {
-          key: "53",
-          icon: <CaretRightOutlined />,
-          pageName: "assets-found",
-          path: "investigate-assets/assets-found",
-          label: "ทรัพย์สินที่พบ",
-        },
-      ],
-    },
-    {
-      key: "6",
-      pageName: "awaiting-judgment",
-      label: "awaiting-judgment",
-      path: "/awaiting-judgment",
-      icon: <SnippetsOutlined />,
-      title: "ชั้นศาล",
-      children: [
-        {
-          key: "61",
-          icon: <CaretRightOutlined />,
+
+    ROLE_ID === "1" || ROLE_ID === "2"
+      ? {
+          key: "2",
+          pageName: "terminate",
+          label: "terminate-contract",
+          path: "/terminate-contract",
+          icon: <FileExcelOutlined />,
+          title: "บอกเลิกสัญญา",
+          children: [
+            {
+              key: "21",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract/create-terminate-Contract",
+              label: "ออกบอกเลิกสัญญา",
+            },
+            {
+              key: "22",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract/import-terminate-Contract-ems",
+              label: "นำเข้าข้อมูล EMS",
+            },
+            {
+              key: "23",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-terminate-Contract",
+              path: "terminate-contract/reply-terminate-Contract",
+              label: "ตอบกลับบอกเลิกสัญญา",
+            },
+            {
+              key: "24",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract/terminate-Contract-to-lawsuit",
+              label: "สัญญาเตรียมส่งฟ้อง",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2"
+      ? {
+          key: "3",
+          pageName: "notice",
+          label: "notice",
+          path: "/notice",
+          icon: <FormOutlined />,
+          title: "โนติสทนาย",
+          children: [
+            {
+              key: "31",
+              icon: <CaretRightOutlined />,
+              pageName: "create-notice",
+              path: "notice/create-notice",
+              label: "ออกโนติส",
+            },
+            {
+              key: "32",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-notice",
+              path: "notice/reply-notice",
+              label: "ตอบกลับโนติส",
+            },
+            {
+              key: "33",
+              icon: <CaretRightOutlined />,
+              pageName: "create-notice-ems",
+              path: "notice/create-notice-ems",
+              label: "สร้างโนติส EMS",
+            },
+            {
+              key: "34",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-notice-ems",
+              path: "notice/reply-notice-ems",
+              label: "ตอบกลับโนติส EMS",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
+      ? {
+          key: "4",
+          pageName: "lawsuit",
+          label: "lawsuit",
+          path: "/lawsuit",
+          icon: <FormOutlined />,
+          title: "ส่วนฟ้อง",
+          children: [
+            {
+              key: "41",
+              icon: <CaretRightOutlined />,
+              pageName: "create-lawsuit",
+              path: "lawsuit/pre-lawsuit-filed",
+              label: "สร้างคำฟ้อง",
+            },
+            {
+              key: "42",
+              icon: <CaretRightOutlined />,
+              pageName: "lawsuit-advane-patment",
+              path: "lawsuit/advane-payment",
+              label: "เบิกเงินทดรองจ่าย",
+            },
+            {
+              key: "43",
+              icon: <CaretRightOutlined />,
+              pageName: "lawsuit-clear-advane-patment",
+              path: "lawsuit/clear-advane-payment",
+              label: "เคลียร์เงินทดรองจ่าย",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" ||
+    ROLE_ID === "2" ||
+    ROLE_ID === "3" ||
+    ROLE_ID === "4" ||
+    ROLE_ID === "7"
+      ? {
+          key: "5",
+          pageName: "investigate-assets",
+          label: "investigate-assets",
+          path: "/investigate-assets",
+          icon: <SearchOutlined />,
+          title: "สืบทรัพย์ลูกหนี้",
+          children: [
+            {
+              key: "51",
+              icon: <CaretRightOutlined />,
+              pageName: "create-invitigate-assets",
+              path: "investigate-assets/create-invitigate-assets",
+              label: "สืบทรัพย์",
+            },
+            {
+              key: "52",
+              icon: <CaretRightOutlined />,
+              pageName: "estimate-assets",
+              path: "investigate-assets/estimate-assets",
+              label: "ประเมินทรัพย์",
+            },
+            {
+              key: "53",
+              icon: <CaretRightOutlined />,
+              pageName: "assets-found",
+              path: "investigate-assets/assets-found",
+              label: "ทรัพย์สินที่พบ",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
+      ? {
+          key: "6",
           pageName: "awaiting-judgment",
-          path: "court/awaiting-judgment",
-          label: "พิพากษา",
-        },
-        {
-          key: "62",
-          icon: <CaretRightOutlined />,
-          pageName: "judgement",
-          path: "court/judgement",
-          label: "หมายคดีตั้ง",
-        },
-        {
-          key: "63",
-          icon: <CaretRightOutlined />,
-          pageName: "adjudge",
-          path: "court/case-is-final",
-          label: "คดีถึงที่สุด",
-        },
+          label: "awaiting-judgment",
+          path: "/awaiting-judgment",
+          icon: <SnippetsOutlined />,
+          title: "ชั้นศาล",
+          children: [
+            {
+              key: "61",
+              icon: <CaretRightOutlined />,
+              pageName: "awaiting-judgment",
+              path: "court/awaiting-judgment",
+              label: "พิพากษา",
+            },
+            {
+              key: "62",
+              icon: <CaretRightOutlined />,
+              pageName: "judgement",
+              path: "court/judgement",
+              label: "หมายคดีตั้ง",
+            },
+            {
+              key: "63",
+              icon: <CaretRightOutlined />,
+              pageName: "adjudge",
+              path: "court/case-is-final",
+              label: "คดีถึงที่สุด",
+            },
+            // {
+            //   key: "64",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "report-court",
+            //   path: "court/report-court",
+            //   label: "รายงาน",
+            // },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
+      ? {
+          key: "7",
+          pageName: "negotiate",
+          label: "negotiate",
+          path: "/negotiate",
+          icon: <ScheduleOutlined />,
+          title: "เจรจาทรัพย์",
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
+      ? {
+          key: "8",
+          pageName: "debt-payment",
+          label: "debt-payment",
+          path: "/debt-payment",
+          icon: <BarcodeOutlined />,
+          title: "ทำยอม/รีสัญญา",
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
+      ? {
+          key: "9",
+          pageName: "send-to-enforcement",
+          label: "send-to-enforcement",
+          path: "/send-to-enforcement",
+          icon: <AuditOutlined />,
+          title: "ส่วนบังคับคดี",
+        }
+      : null,
 
-        // {
-        //   key: "64",
-        //   icon: <CaretRightOutlined />,
-        //   pageName: "report-court",
-        //   path: "court/report-court",
-        //   label: "รายงาน",
-        // },
-      ],
-    },
-    {
-      key: "7",
-      pageName: "negotiate",
-      label: "negotiate",
-      path: "/negotiate",
-      icon: <ScheduleOutlined />,
-      title: "เจรจาทรัพย์",
-    },
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
+      ? {
+          key: "10",
+          pageName: "sale-announcement",
+          label: "sale-announcement",
+          path: "/sale-announcement",
+          icon: <NotificationOutlined />,
+          title: "ประกาศขายทรัพย์",
+        }
+      : null,
 
-    {
-      key: "8",
-      pageName: "debt-payment",
-      label: "debt-payment",
-      path: "/debt-payment",
-      icon: <BarcodeOutlined />,
-      title: "ทำยอม/รีสัญญา",
-    },
-    {
-      key: "9",
-      pageName: "send-to-enforcement",
-      label: "send-to-enforcement",
-      path: "/send-to-enforcement",
-      icon: <AuditOutlined />,
-      title: "ส่วนบังคับคดี",
-    },
-    {
-      key: "10",
-      pageName: "sale-announcement",
-      label: "sale-announcement",
-      path: "/sale-announcement",
-      icon: <NotificationOutlined />,
-      title: "ประกาศขายทรัพย์",
-    },
-    {
-      key: "11",
-      pageName: "final-case",
-      label: "final-case",
-      path: "/final-case",
-      icon: <CheckOutlined />,
-      title: "คดีสิ้นสุด",
-    },
-    {
-      key: "12",
-      pageName: "commission",
-      label: "commission",
-      path: "/commission",
-      icon: <DollarOutlined />,
-      title: "คอมมิชชั่นทนาย",
-      children: [
-        {
-          key: "121",
-          icon: <CaretRightOutlined />,
-          pageName: "commission-law",
-          path: "commission/commission-law",
-          label: "คดีในชั้นศาล",
-        },
-        // {
-        //   key: "122",
-        //   icon: <CaretRightOutlined />,
-        //   pageName: "commission-investigate",
-        //   path: "commission/commission-investigate",
-        //   label: "ค่าคอมมิชชั่นสืบทรัพย์",
-        // },
-      ],
-    },
-    {
-      key: "16",
-      pageName: "charge-indict",
-      label: "charge-indict",
-      path: "/charge-indict",
-      icon: <WalletOutlined />,
-      title: "เบิกเงินทดรองจ่าย",
-      children: [
-        {
-          key: "161",
-          icon: <CaretRightOutlined />,
-          pageName: "advane-pay",
-          path: "charge-indict/advane-pay",
-          label: "ค่าฤชาส่วนคำฟ้อง",
-        },
-        {
-          key: "162",
-          icon: <CaretRightOutlined />,
-          pageName: "clear-advane-pay",
-          path: "charge-indict/clear-advane-pay",
-          label: "การเงินตรวจสอบจ่ายจริง",
-        },
-        // {
-        //   key: "163",
-        //   icon: <CaretRightOutlined />,
-        //   pageName: "approved-clear-advane-pay",
-        //   path: "charge-indict/approved-clear-advane-pay",
-        //   label: "บัญชีตรวจสอบจ่ายจริง",
-        // },
-      ],
-    },
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
+      ? {
+          key: "11",
+          pageName: "final-case",
+          label: "final-case",
+          path: "/final-case",
+          icon: <CheckOutlined />,
+          title: "คดีสิ้นสุด",
+        }
+      : null,
+
+    ROLE_ID === "1" || ROLE_ID === "6" || ROLE_ID === "5"
+      ? {
+          key: "12",
+          pageName: "commission",
+          label: "commission",
+          path: "/commission",
+          icon: <DollarOutlined />,
+          title: "คอมมิชชั่นทนาย",
+          children: [
+            {
+              key: "121",
+              icon: <CaretRightOutlined />,
+              pageName: "commission-law",
+              path: "commission/commission-law",
+              label: "คดีในชั้นศาล",
+            },
+            // {
+            //   key: "122",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "commission-investigate",
+            //   path: "commission/commission-investigate",
+            //   label: "ค่าคอมมิชชั่นสืบทรัพย์",
+            // },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "6" || ROLE_ID === "5"
+      ? {
+          key: "16",
+          pageName: "charge-indict",
+          label: "charge-indict",
+          path: "/charge-indict",
+          icon: <WalletOutlined />,
+          title: "เบิกเงินทดรองจ่าย",
+          children: [
+            {
+              key: "161",
+              icon: <CaretRightOutlined />,
+              pageName: "advane-pay",
+              path: "charge-indict/advane-pay",
+              label: "ค่าฤชาส่วนคำฟ้อง",
+            },
+            {
+              key: "162",
+              icon: <CaretRightOutlined />,
+              pageName: "clear-advane-pay",
+              path: "charge-indict/clear-advane-pay",
+              label: "การเงินตรวจสอบจ่ายจริง",
+            },
+            // {
+            //   key: "163",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "approved-clear-advane-pay",
+            //   path: "charge-indict/approved-clear-advane-pay",
+            //   label: "บัญชีตรวจสอบจ่ายจริง",
+            // },
+          ],
+        }
+      : null,
+
     // {
     //   key: "16",
     //   pageName: "disbursement",
@@ -347,62 +379,65 @@ function Sidenav({ color, onClick }) {
     //   icon: <UsergroupAddOutlined />,
     //   title: "ลูกหนี้สูญ",
     // },
-    {
-      key: "13",
-      pageName: "import",
-      label: "manage-data",
-      path: "/manage-data",
-      icon: <ImportOutlined />,
-      title: "จัดการข้อมูล",
-      children: [
-        {
-          key: "131",
-          icon: <CaretRightOutlined />,
-          pageName: "import-data",
-          path: "manage-data/import-data",
-          label: "นำข้อมูลเข้า",
-        },
-        {
-          key: "132",
-          icon: <CaretRightOutlined />,
-          pageName: "assign-lawyers",
-          path: "manage-data/assign-lawyers",
-          label: "มอบหมายงาน",
-        },
-        {
-          key: "133",
-          icon: <CaretRightOutlined />,
-          pageName: "change-lawyers-jobs",
-          path: "manage-data/change-lawyers-jobs",
-          label: "เปลี่ยนทนาย",
-        },
-      ],
-    },
-
-    {
-      key: "14",
-      pageName: "report",
-      label: "report",
-      path: "/report",
-      icon: <FileTextOutlined />,
-      title: "รายงาน",
-      children: [
-        {
-          key: "141",
-          icon: <CaretRightOutlined />,
-          pageName: "notice",
-          path: "report/terminate",
-          label: "รายงาน บอกเลิกสัญญา",
-        },
-        {
-          key: "142",
-          icon: <CaretRightOutlined />,
-          pageName: "notice",
-          path: "report/notice",
-          label: "รายงาน โนติส",
-        },
-      ],
-    },
+    ROLE_ID === "1" || ROLE_ID === "2"
+      ? {
+          key: "13",
+          pageName: "import",
+          label: "manage-data",
+          path: "/manage-data",
+          icon: <ImportOutlined />,
+          title: "จัดการข้อมูล",
+          children: [
+            {
+              key: "131",
+              icon: <CaretRightOutlined />,
+              pageName: "import-data",
+              path: "manage-data/import-data",
+              label: "นำข้อมูลเข้า",
+            },
+            {
+              key: "132",
+              icon: <CaretRightOutlined />,
+              pageName: "assign-lawyers",
+              path: "manage-data/assign-lawyers",
+              label: "มอบหมายงาน",
+            },
+            {
+              key: "133",
+              icon: <CaretRightOutlined />,
+              pageName: "change-lawyers-jobs",
+              path: "manage-data/change-lawyers-jobs",
+              label: "เปลี่ยนทนาย",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "5"
+      ? {
+          key: "14",
+          pageName: "report",
+          label: "report",
+          path: "/report",
+          icon: <FileTextOutlined />,
+          title: "รายงาน",
+          children: [
+            {
+              key: "141",
+              icon: <CaretRightOutlined />,
+              pageName: "notice",
+              path: "report/terminate",
+              label: "รายงาน บอกเลิกสัญญา",
+            },
+            {
+              key: "142",
+              icon: <CaretRightOutlined />,
+              pageName: "notice",
+              path: "report/notice",
+              label: "รายงาน โนติส",
+            },
+          ],
+        }
+      : null,
     {
       key: "15",
       pageName: "import",
@@ -427,7 +462,7 @@ function Sidenav({ color, onClick }) {
         },
       ],
     },
-  ];
+  ].filter(Boolean);
 
   const handleClick = (value) => {
     // console.log(value);

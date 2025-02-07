@@ -47,6 +47,7 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userName = localStorage.getItem("NNAME");
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -75,18 +76,16 @@ const Main = () => {
 
   const loadData = async () => {
     setLoading(true);
-    let setExpense;
-    let setLawsuits;
+
     try {
       const response = await axios.get(baseUrl + GET_EXPENSES_LIST, {
         headers: HEADERS_EXPORT,
       });
       if (response.data) {
         if (response.data) {
-          console.log(response.data);
-          setExpense = response.data;
           setSearchEdit(response.data);
           setLoading(false);
+          filterData(response.data);
         }
       } else {
         setArrayTable([]);
@@ -99,38 +98,18 @@ const Main = () => {
       setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
-    try {
-      const response = await axios.get(baseUrl + GET_LAWSUIT_LIST, {
-        headers: HEADERS_EXPORT,
-      });
-      if (response.data) {
-        if (response.data) {
-          console.log(response.data);
-          setLawsuits = response.data;
-          setLawsuitsData(response.data);
-        }
-      } else {
-        setArrayTable([]);
-      }
-    } catch (error) {
-      console.error(
-        "Error posting data:",
-        error.response ? error.response.data : error.message
-      );
-      setLoading(false);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
-    }
-    filterData(setExpense, setLawsuits);
   };
 
-  const filterData = (data, preLawsuit) => {
+  const filterData = (data) => {
     if (Array.isArray(data)) {
+      console.log("data00", data);
+
       const newData = data.filter(
         (item) =>
-          (item.withdraw_process_id <= 4 && item.LAWYER_ID === userId) ||
-          ROLE_ID === "1" ||
-          ROLE_ID === "2"
+          (item.withdraw_process_id <= 4 && item.USER_ID === userId) ||
+          ROLE_ID === "1"
       );
+      console.log("newData", newData);
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -163,12 +142,14 @@ const Main = () => {
           }
         });
       }
-      const preData = groupByCreatedDateWithContno(filteredData, preLawsuit);
+      const preData = groupByCreatedDateWithContno(filteredData);
 
-      setArrayTable(preData);
+      const useData = preData.filter((item) => item.reference_no);
+
+      setArrayTable(useData);
       setDataArr(preData);
-      setTableLength(preData.length);
-      console.log("newData", preData);
+      setTableLength(useData.length);
+      console.log("newData", useData);
       // console.log("Length of filtered data:", preData.length);
     } else {
       console.error("data is not an array or is undefined");
@@ -176,7 +157,7 @@ const Main = () => {
     }
   };
 
-  const groupByCreatedDateWithContno = (data, preLawsuit) => {
+  const groupByCreatedDateWithContno = (data) => {
     if (!Array.isArray(data)) {
       console.error("Input data is not an array");
       return [];
@@ -184,68 +165,65 @@ const Main = () => {
 
     const groupedData = data.reduce((acc, current, index) => {
       const {
-        created_date,
+        reference_no,
         CONTNO,
         withdraw_datetime,
+        COMPANY_ID,
+        NNAME,
         withdraw_process_id,
+        USER_ID,
+        created_date,
+        withdraw_mark,
         pay_type_id,
         pay_datetime,
         file_path,
-        withdraw_mark,
       } = current;
 
-      if (!acc[created_date]) {
-        acc[created_date] = {
-          created_date,
-          contnoList: new Set(), // ใช้ Set เพื่อเก็บ contno ที่ไม่ซ้ำกัน
+      // ถ้ายังไม่มี reference_no นี้ใน acc ให้สร้าง object ใหม่
+      if (!acc[reference_no]) {
+        acc[reference_no] = {
+          reference_no,
+          contnoList: new Set(), // ใช้ Set เพื่อเก็บ contno ไม่ให้ซ้ำ
           expenseList: [],
-          lawsuit: [], // เพิ่ม lawsuit เป็น array
-          withdraw_datetime: null, // เพิ่มค่าของ withdraw_datetime
-          key: index + 1, // สร้าง key โดยใช้ index (เริ่มจาก 1)
-          withdraw_process_id: withdraw_process_id,
-          pay_type_id: pay_type_id,
-          pay_datetime: pay_datetime,
-          file_path: file_path,
-          withdraw_mark: withdraw_mark,
+          withdraw_datetime: withdraw_datetime || null, // กำหนดค่า withdraw_datetime
+          key: index + 1, // กำหนด key โดยใช้ index + 1
+          COMPANY_ID,
+          NNAME,
+          withdraw_process_id,
+          USER_ID,
+          created_date,
+          withdraw_mark,
+          pay_type_id,
+          pay_datetime,
+          file_path,
         };
       }
 
-      acc[created_date].contnoList.add(CONTNO); // เพิ่ม contno ลงใน Set
-      acc[created_date].expenseList.push(current); // เพิ่มข้อมูลทั้งหมดลงใน expenseList
-
-      // ถ้ายังไม่มีค่าของ withdraw_datetime ในกลุ่มนั้น ๆ ให้ใช้ค่าจาก current
-      if (!acc[created_date].withdraw_datetime) {
-        acc[created_date].withdraw_datetime = withdraw_datetime;
-      }
+      // เพิ่ม CONTNO ลงใน Set (ป้องกันค่าซ้ำ)
+      acc[reference_no].contnoList.add(CONTNO);
+      // เพิ่มข้อมูลทั้งหมดลงใน expenseList
+      acc[reference_no].expenseList.push(current);
 
       return acc;
     }, {});
 
-    // แปลง contnoList จาก Set เป็น Array
-    return Object.values(groupedData).map((group, groupIndex) => {
-      const contnoArray = Array.from(group.contnoList);
-
-      // ค้นหา lawsuit ที่ตรงกับ contnoList
-      const lawsuits = preLawsuit.filter((lawsuit) =>
-        contnoArray.includes(lawsuit.CONTNO)
-      );
-      // console.log("contnoArray", contnoArray);
-      // console.log("lawsuits", lawsuits);
-
-      return {
-        created_date: group.created_date,
-        contnoList: contnoArray, // แปลง Set เป็น Array
-        expenseList: group.expenseList,
-        lawsuit: lawsuits, // เพิ่ม lawsuit[]
-        withdraw_datetime: group.withdraw_datetime,
-        key: groupIndex + 1,
-        withdraw_process_id: group.withdraw_process_id,
-        pay_type_id: group.pay_type_id,
-        pay_datetime: group.pay_datetime,
-        file_path: group.file_path,
-        withdraw_mark: group.withdraw_mark,
-      };
-    });
+    // แปลง Object กลับเป็น Array และเปลี่ยน Set เป็น Array
+    return Object.values(groupedData).map((group, groupIndex) => ({
+      reference_no: group.reference_no,
+      contnoList: Array.from(group.contnoList), // แปลง Set เป็น Array
+      expenseList: group.expenseList,
+      withdraw_datetime: group.withdraw_datetime,
+      key: groupIndex + 1, // ใช้ index ใหม่ใน array ที่ถูก map
+      COMPANY_ID: group.COMPANY_ID,
+      lawyerName: group.NNAME, // เปลี่ยนชื่อ NNAME → lawyerName
+      withdraw_process_id: group.withdraw_process_id,
+      USER_ID: group.USER_ID,
+      created_date: group.created_date,
+      withdraw_mark: group.withdraw_mark,
+      pay_type_id: group.pay_type_id,
+      pay_datetime: group.pay_datetime,
+      file_path: group.file_path,
+    }));
   };
 
   const search = (event) => {
@@ -420,9 +398,6 @@ const Main = () => {
 
   const renderStatusPay = (record) => {
     let i = 0;
-
-    console.log(i++, record);
-
     const allMatch = record.expenseList.every((expense) => expense.pay);
     let status;
     let color;
@@ -450,7 +425,7 @@ const Main = () => {
         record.pay_type_id === 1
           ? "green"
           : record.pay_type_id === 4
-          ? "orange"
+          ? "blue"
           : "red";
       // console.log("ทุก pay id ตรงกัน:", status);
     } else {
@@ -458,8 +433,6 @@ const Main = () => {
       // console.log("บางรายการ withdraw_process_id ไม่ตรงกัน");
       status = "กรุณาทำรายการให้ครบ"; // หรือข้อความอื่นๆ ที่คุณต้องการ
     }
-    console.log("status---->", status);
-    console.log("allMatch", allMatch);
 
     // แสดงข้อมูล status หรืออย่างอื่นตามที่ต้องการ
     return (
@@ -488,17 +461,7 @@ const Main = () => {
     // แสดงข้อมูล totalWithdraw
     return (
       <div>
-        <p
-          style={{
-            color:
-              record.withdraw_process_id === STATUS_PROCESS_SUCCESSFUL
-                ? "green"
-                : "red",
-          }}
-        >
-          {" "}
-          {currencyFormatPoint(totalWithdraw)} บาท
-        </p>
+        <p> {currencyFormatPoint(totalWithdraw)} บาท</p>
       </div>
     );
   };
@@ -527,7 +490,7 @@ const Main = () => {
         style={{
           color:
             totalPay === totalWithdraw
-              ? "blue"
+              ? null
               : totalPay > totalWithdraw
               ? "green"
               : "red",
@@ -550,10 +513,10 @@ const Main = () => {
         <br />
         {totalPay !== 0 && (
           <>
-            {totalPay < totalWithdraw
-              ? `ขาด ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
-              : totalPay > totalWithdraw
-              ? `เกิน ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+            {totalPay > totalWithdraw
+              ? `เบิกขาด ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              : totalPay < totalWithdraw
+              ? `เบิกเกิน ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
               : null}
           </>
         )}
@@ -573,6 +536,20 @@ const Main = () => {
         compare: (a, b) => a.key - b.key,
         multiple: 5,
       },
+    },
+    {
+      title: "เลขที่อ้างอิง",
+      align: "center",
+      render: (text, record) => (
+        <p
+        // onClick={() => {
+        //   setIsModal(true);
+        //   setDataRecord(record);
+        // }}
+        >
+          {record.reference_no}
+        </p>
+      ),
     },
     {
       title: "เลขที่สัญญา",

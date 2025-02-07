@@ -290,46 +290,43 @@ const Main = () => {
       ),
     },
   ];
-  if (ROLE_ID === "1" || ROLE_ID === "3") {
-    return (
-      <>
-        <Card>
-          <Spin spinning={loading} size="large" tip=" Loading... ">
-            <Row>
-              <Col
-                span={"24"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <RangePicker
-                    size="large"
-                    style={{ marginRight: "10px" }}
-                    onChange={onSearchByDate}
-                  />
-                </Space>
-                <Search
-                  placeholder="ค้นหาสัญญา"
-                  onChange={search}
-                  enterButton
-                  style={{
-                    width: 200,
-                  }}
+
+  return (
+    <>
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
                   size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
                 />
-              </Col>
-              <Col span={"24"}>
-                <Table
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  scroll={{ x: 850 }}
-                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                  expandable={{
-                    expandedRowRender: (record) => (
-                      <p style={{ margin: 0 }}>
-                        {record.MAIN_STATUS_ID === AWAITING_JUDMENT ? (
-                          <>
-                            {/* <Button
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      {record.MAIN_STATUS_ID === AWAITING_JUDMENT ? (
+                        <>
+                          {/* <Button
                             name="formPrint"
                             style={{
                               boxShadow: "0 4px 3px",
@@ -343,86 +340,83 @@ const Main = () => {
                               style={{ color: "green", fontSize: "16px" }}
                             />
                           </Button> */}
-                            <Tooltip
-                              placement="bottom"
-                              title="บันทึกคำพิพากษา!"
-                              arrow={mergedArrow}
+                          <Tooltip
+                            placement="bottom"
+                            title="บันทึกคำพิพากษา!"
+                            arrow={mergedArrow}
+                          >
+                            <Button
+                              name="updateStatus"
+                              style={{ boxShadow: "0 4px 3px" }}
+                              onClick={() => {
+                                setIsModalUpdate(true);
+                                setDataModal(record);
+                              }}
                             >
-                              <Button
-                                name="updateStatus"
-                                style={{ boxShadow: "0 4px 3px" }}
-                                onClick={() => {
-                                  setIsModalUpdate(true);
-                                  setDataModal(record);
-                                }}
-                              >
-                                <FormOutlined
-                                  style={{ color: "blue", fontSize: "16px" }}
-                                />
-                              </Button>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <>
-                            <Tooltip
-                              placement="bottom"
-                              title="แก้่ไขคำพิพากษา!"
-                              arrow={mergedArrow}
+                              <FormOutlined
+                                style={{ color: "blue", fontSize: "16px" }}
+                              />
+                            </Button>
+                          </Tooltip>
+                        </>
+                      ) : (
+                        <>
+                          <Tooltip
+                            placement="bottom"
+                            title="แก้่ไขคำพิพากษา!"
+                            arrow={mergedArrow}
+                          >
+                            <Button
+                              name="editStatus"
+                              style={{ boxShadow: "0 4px 3px" }}
+                              onClick={() => {
+                                setIsModalEdit(true);
+                                setDataModal(record);
+                              }}
                             >
-                              <Button
-                                name="editStatus"
-                                style={{ boxShadow: "0 4px 3px" }}
-                                onClick={() => {
-                                  setIsModalEdit(true);
-                                  setDataModal(record);
-                                }}
-                              >
-                                <FormOutlined
-                                  style={{ color: "orange", fontSize: "16px" }}
-                                />
-                              </Button>
-                            </Tooltip>
-                          </>
-                        )}
-                      </p>
-                    ),
-                    rowExpandable: (record) => userId === record.LAWYER_ID,
-                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                  }}
-                  rowKey="key"
-                />
-              </Col>
-            </Row>
-          </Spin>
-        </Card>
-        {isModal ? (
-          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-        ) : null}
-        {isModalEdit ? (
-          <EditAwaitingJudgement
-            open={isModalEdit}
-            close={setIsModalEdit}
-            dataDefualt={dataModal}
-            funcUpdateStatus={handleUpdateData}
-          />
-        ) : null}
-        {/* {isModalDocument ? (
+                              <FormOutlined
+                                style={{ color: "orange", fontSize: "16px" }}
+                              />
+                            </Button>
+                          </Tooltip>
+                        </>
+                      )}
+                    </p>
+                  ),
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+      {isModalEdit ? (
+        <EditAwaitingJudgement
+          open={isModalEdit}
+          close={setIsModalEdit}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {/* {isModalDocument ? (
         <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
       ) : null} */}
-        {isModalUpdate ? (
-          <UpdateStatusAwaitingJudgment
-            open={isModalUpdate}
-            close={setIsModalUpdate}
-            dataDefualt={dataModal}
-            funcUpdateStatus={handleUpdateData}
-          />
-        ) : null}
-      </>
-    );
-  } else {
-    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
-  }
+      {isModalUpdate ? (
+        <UpdateStatusAwaitingJudgment
+          open={isModalUpdate}
+          close={setIsModalUpdate}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+    </>
+  );
 };
 
 const AwaitingJudgment = MotionHoc(Main);

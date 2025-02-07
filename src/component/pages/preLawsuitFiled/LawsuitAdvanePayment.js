@@ -419,200 +419,189 @@ const Main = () => {
       render: (record) => <>{renderDate(record)}</>,
     },
   ];
-  if (ROLE_ID === "1" || ROLE_ID === "3") {
-    return (
-      <>
-        <Card>
-          <Spin spinning={loading} size="large" tip=" Loading... ">
-            <Row>
-              <Col
-                span={"24"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Select
-                  placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
-                  options={companiesOption}
-                  onChange={(value) => onChangeSelect(value)}
-                  defaultValue={userCompany === "3" ? 3 : 2}
-                  popupMatchSelectWidth={false}
-                  style={{
-                    width: "auto", // ทำให้ Select ขยายตามเนื้อหา
-                    // maxWidth: 200, // จำกัดความกว้างสูงสุด
-                  }}
-                  size="large"
-                />
-              </Col>
-              <Col
-                span={"6"}
-                style={{ textAlign: "start", marginBottom: "10px" }}
-              >
-                <Flex align="center" gap="middle">
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />} // ไอคอน
-                    size="small" // ขนาดเล็ก
-                    onClick={() => setIsModalCreateAdvanePayment(true)}
-                    disabled={selectedRowKeys.length <= 0}
-                    loading={loading}
-                  >
-                    สร้างรายการ
-                  </Button>
-                </Flex>
-              </Col>
-              <Col
-                span={"18"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <RangePicker
-                    size="large"
-                    style={{ marginRight: "10px" }}
-                    onChange={onSearchByDate}
-                  />
-                </Space>
-                <Search
-                  placeholder="ค้นหาสัญญา"
-                  onChange={search}
-                  enterButton
-                  style={{
-                    width: 200,
-                  }}
-                  size="large"
-                />
-              </Col>
-              <Col span={"24"}>
-                <Table
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  scroll={{ x: 850 }}
-                  footer={() => (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
-                        alignItems: "center",
-                      }}
-                    >
-                      <p style={{ margin: 0 }}>
-                        เลือก {selectedRowKeys.length} สัญญา
-                      </p>
 
-                      <p style={{ margin: 0 }}>
-                        จำนวนสัญญาทั้งหมด {tableLength}
-                      </p>
-                    </div>
-                  )}
-                  rowSelection={rowSelection}
-                  // expandable={{
-                  //   expandedRowRender: (record) => (
-                  //     <p style={{ margin: 0 }}>
-                  //       {record.PROCESS_ID !== 3 &&
-                  //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                  //         <Button
-                  //           name="create"
-                  //           style={{
-                  //             boxShadow: "0 4px 3px",
-                  //             marginRight: "10px",
-                  //           }}
-                  //           onClick={() => {
-                  //             setIsModalCreate(true);
-                  //             setDataModal(record);
-                  //           }}
-                  //         >
-                  //           <FormOutlined
-                  //             style={{ color: "blue", fontSize: "16px" }}
-                  //           />
-                  //         </Button>
-                  //       ) : record.PROCESS_ID === 3 &&
-                  //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                  //         <>
-                  //           {/* <Button
-                  //           name="formPrint"
-                  //           style={{
-                  //             boxShadow: "0 4px 3px",
-                  //             marginRight: "10px",
-                  //           }}
-                  //           onClick={() => {
-                  //             setIsModalDocument(true);
-                  //           }}
-                  //         >
-                  //           <FileDoneOutlined
-                  //             style={{ color: "green", fontSize: "16px" }}
-                  //           />
-                  //         </Button> */}
-                  //           <Button
-                  //             name="edit"
-                  //             style={{
-                  //               boxShadow: "0 4px 3px",
-                  //               marginRight: "10px",
-                  //             }}
-                  //             onClick={() => {
-                  //               setIsModalEdit(true);
-                  //               setDataModal(record);
-                  //             }}
-                  //           >
-                  //             <EditOutlined
-                  //               style={{ color: "orange", fontSize: "16px" }}
-                  //             />
-                  //           </Button>
-                  //           <Button
-                  //             name="updateStatus"
-                  //             style={{ boxShadow: "0 4px 3px" }}
-                  //             onClick={() => {
-                  //               setIsModalUpdate(true);
-                  //               setDataModal(record);
-                  //             }}
-                  //           >
-                  //             <SyncOutlined
-                  //               style={{ color: "green", fontSize: "16px" }}
-                  //             />
-                  //           </Button>
-                  //         </>
-                  //       ) : null}
-                  //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
-                  //         <Button
-                  //           name="EditupdateStatus"
-                  //           style={{ boxShadow: "0 4px 3px" }}
-                  //           onClick={() => {
-                  //             setIsModalEditUpdate(true);
-                  //             setDataModal(record);
-                  //           }}
-                  //         >
-                  //           <SyncOutlined
-                  //             style={{ color: "orange", fontSize: "16px" }}
-                  //           />
-                  //         </Button>
-                  //       ) : null}
-                  //     </p>
-                  //   ),
-                  //   rowExpandable: (record) => userId === record.LAWYER_ID,
-                  //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                  //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                  // }}
-                  // rowKey="key"
+  return (
+    <>
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Select
+                placeholder="เลือกบริษัท"
+                optionFilterProp="value"
+                options={companiesOption}
+                onChange={(value) => onChangeSelect(value)}
+                defaultValue={userCompany === "3" ? 3 : 2}
+                popupMatchSelectWidth={false}
+                style={{
+                  width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+                  // maxWidth: 200, // จำกัดความกว้างสูงสุด
+                }}
+                size="large"
+              />
+            </Col>
+            <Col
+              span={"6"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Flex align="center" gap="middle">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />} // ไอคอน
+                  size="small" // ขนาดเล็ก
+                  onClick={() => setIsModalCreateAdvanePayment(true)}
+                  disabled={selectedRowKeys.length <= 0}
+                  loading={loading}
+                >
+                  สร้างรายการ
+                </Button>
+              </Flex>
+            </Col>
+            <Col span={"18"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
                 />
-              </Col>
-            </Row>
-          </Spin>
-        </Card>
-        {isModal ? (
-          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-        ) : null}
-        {isModalCreateAdvanePayment ? (
-          <CreateAdvanePayment
-            open={isModalCreateAdvanePayment}
-            close={setIsModalCreateAdvanePayment}
-            dataDefault={dataModal}
-            funcUpdateStatus={handleUpdateData}
-          />
-        ) : null}
-      </>
-    );
-  } else {
-    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
-  }
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                      alignItems: "center",
+                    }}
+                  >
+                    <p style={{ margin: 0 }}>
+                      เลือก {selectedRowKeys.length} สัญญา
+                    </p>
+
+                    <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
+                  </div>
+                )}
+                rowSelection={rowSelection}
+                // expandable={{
+                //   expandedRowRender: (record) => (
+                //     <p style={{ margin: 0 }}>
+                //       {record.PROCESS_ID !== 3 &&
+                //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                //         <Button
+                //           name="create"
+                //           style={{
+                //             boxShadow: "0 4px 3px",
+                //             marginRight: "10px",
+                //           }}
+                //           onClick={() => {
+                //             setIsModalCreate(true);
+                //             setDataModal(record);
+                //           }}
+                //         >
+                //           <FormOutlined
+                //             style={{ color: "blue", fontSize: "16px" }}
+                //           />
+                //         </Button>
+                //       ) : record.PROCESS_ID === 3 &&
+                //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                //         <>
+                //           {/* <Button
+                //           name="formPrint"
+                //           style={{
+                //             boxShadow: "0 4px 3px",
+                //             marginRight: "10px",
+                //           }}
+                //           onClick={() => {
+                //             setIsModalDocument(true);
+                //           }}
+                //         >
+                //           <FileDoneOutlined
+                //             style={{ color: "green", fontSize: "16px" }}
+                //           />
+                //         </Button> */}
+                //           <Button
+                //             name="edit"
+                //             style={{
+                //               boxShadow: "0 4px 3px",
+                //               marginRight: "10px",
+                //             }}
+                //             onClick={() => {
+                //               setIsModalEdit(true);
+                //               setDataModal(record);
+                //             }}
+                //           >
+                //             <EditOutlined
+                //               style={{ color: "orange", fontSize: "16px" }}
+                //             />
+                //           </Button>
+                //           <Button
+                //             name="updateStatus"
+                //             style={{ boxShadow: "0 4px 3px" }}
+                //             onClick={() => {
+                //               setIsModalUpdate(true);
+                //               setDataModal(record);
+                //             }}
+                //           >
+                //             <SyncOutlined
+                //               style={{ color: "green", fontSize: "16px" }}
+                //             />
+                //           </Button>
+                //         </>
+                //       ) : null}
+                //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
+                //         <Button
+                //           name="EditupdateStatus"
+                //           style={{ boxShadow: "0 4px 3px" }}
+                //           onClick={() => {
+                //             setIsModalEditUpdate(true);
+                //             setDataModal(record);
+                //           }}
+                //         >
+                //           <SyncOutlined
+                //             style={{ color: "orange", fontSize: "16px" }}
+                //           />
+                //         </Button>
+                //       ) : null}
+                //     </p>
+                //   ),
+                //   rowExpandable: (record) => userId === record.LAWYER_ID,
+                //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                // }}
+                // rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+      {isModalCreateAdvanePayment ? (
+        <CreateAdvanePayment
+          open={isModalCreateAdvanePayment}
+          close={setIsModalCreateAdvanePayment}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+    </>
+  );
 };
 
 const LawsuitAdvanePayment = MotionHoc(Main);

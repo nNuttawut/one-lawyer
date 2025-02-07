@@ -449,49 +449,36 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col span={"24"} style={{ textAlign: "end" }}>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    enterButton
-                    onChange={search}
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    style={{ marginTop: "10px" }}
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModal ? (
-            <DetailModal
-              open={isModal}
-              close={setIsModal}
-              dataRec={dataRecord}
-            />
-          ) : null}
-        </>
-      ) : (
-        <Card>
-          {" "}
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end" }}>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                enterButton
+                onChange={search}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                style={{ marginTop: "10px" }}
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
     </>
   );
 };

@@ -158,6 +158,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               funcUpdateStatus({
                 ...dataDefualt,
                 MAIN_STATUS_ID: statusSend,
+                DATE: dayjs(status.considerationDate)
+                  .add(7, "hour")
+                  .format("YYYY-MM-DD HH:mm"),
               });
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
@@ -247,7 +250,9 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               message.success("อัพเดทข้อมูลสำเร็จ");
               funcUpdateStatus({
                 ...dataDefualt,
-                DATE: putData.consideration_date,
+                DATE: dayjs(status.considerationDate)
+                  .add(7, "hour")
+                  .format("YYYY-MM-DD HH:mm"),
               });
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
@@ -1088,7 +1093,13 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <DatePicker onChange={onChangeDate} />
+            <DatePicker
+              showTime={{
+                format: "HH:mm",
+              }}
+              format="YYYY-MM-DD HH:mm"
+              onChange={onChangeDate}
+            />
           </Form.Item>
           <Form.Item label="หมายเหตุ" name="memo">
             <TextArea

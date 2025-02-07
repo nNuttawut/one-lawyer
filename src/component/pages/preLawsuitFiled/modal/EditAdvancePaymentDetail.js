@@ -21,7 +21,7 @@ const EditAdvancePaymentDetail = ({ open, close, dataDefault, handleEdit }) => {
       form.setFieldsValue({
         feeCourt: dataDefault?.fee,
         stampDuty: dataDefault?.stamp_cost,
-        docShipingCost: dataDefault?.attorney_fees,
+        docShipingCost: dataDefault?.delivery_of_summons,
         documentCost: dataDefault?.document_cost,
       });
       setLoading(false);
@@ -269,7 +269,7 @@ const EditAdvancePaymentDetail = ({ open, close, dataDefault, handleEdit }) => {
   return (
     <>
       <Modal
-        title="แก้ไขข้อมูลเปลี่ยนสถานะ"
+        title="แก้ไขข้อมูล"
         open={open}
         onCancel={handleCancel}
         width={850}

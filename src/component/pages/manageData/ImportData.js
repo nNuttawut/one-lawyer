@@ -372,94 +372,83 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col span={"12"} style={{ textAlign: "start" }}>
-                  <Popconfirm
-                    title="นำเข้าข้อมูล"
-                    description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
-                    onConfirm={confirmInsert}
-                    onCancel={cancelInsert}
-                    okText="ยืนยัน"
-                    cancelText="ยกเลิก"
-                  >
-                    <Button style={{ marginRight: "10px" }}>
-                      <PlusCircleOutlined
-                        style={{ color: "green", fontSize: "16px" }}
-                        onClick={() => {
-                          // storeData(record);
-                        }}
-                      />
-                    </Button>
-                  </Popconfirm>
-                  <Popconfirm
-                    title="เลขสัญญาที่ค้นหาไม่เจอ"
-                    description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
-                    onConfirm={confirmModal}
-                    onCancel={cancelModal}
-                    okText="ตกลง"
-                    cancelText="ยกเลิก"
-                  >
-                    <Button style={{ color: "red" }}>
-                      <CloseCircleOutlined style={{ fontSize: "16px" }} />
-                    </Button>
-                  </Popconfirm>
-                </Col>
-                <Col span={"12"} style={{ textAlign: "end" }}>
-                  <Space direction="vertical" size={12}>
-                    <Upload {...uploadProps}>
-                      <Button
-                        style={{ color: "green", marginRight: "5px" }}
-                        icon={<ImportOutlined />}
-                      >
-                        นำเข้า Excel
-                      </Button>
-                    </Upload>
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    onSearch={onQuery}
-                    enterButton
-                    onChange={(e) => setQueryContno(e.target.value)}
-                    style={{
-                      width: 200,
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"12"} style={{ textAlign: "start" }}>
+              <Popconfirm
+                title="นำเข้าข้อมูล"
+                description="คุณต้องการนำเข้าข้อมูลทั้งหมดใช่หรือไม่"
+                onConfirm={confirmInsert}
+                onCancel={cancelInsert}
+                okText="ยืนยัน"
+                cancelText="ยกเลิก"
+              >
+                <Button style={{ marginRight: "10px" }}>
+                  <PlusCircleOutlined
+                    style={{ color: "green", fontSize: "16px" }}
+                    onClick={() => {
+                      // storeData(record);
                     }}
-                    size="large"
                   />
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    style={{ marginTop: "10px" }}
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => (
-                      <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength}</p>
-                    )}
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
-          {isModalFailed ? (
-            <FailedImport
-              open={isModalFailed}
-              close={setIsModalFailed}
-              data={failedData}
-            />
-          ) : null}
-        </>
-      ) : (
-        <Card>
-          {" "}
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+                </Button>
+              </Popconfirm>
+              <Popconfirm
+                title="เลขสัญญาที่ค้นหาไม่เจอ"
+                description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
+                onConfirm={confirmModal}
+                onCancel={cancelModal}
+                okText="ตกลง"
+                cancelText="ยกเลิก"
+              >
+                <Button style={{ color: "red" }}>
+                  <CloseCircleOutlined style={{ fontSize: "16px" }} />
+                </Button>
+              </Popconfirm>
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end" }}>
+              <Space direction="vertical" size={12}>
+                <Upload {...uploadProps}>
+                  <Button
+                    style={{ color: "green", marginRight: "5px" }}
+                    icon={<ImportOutlined />}
+                  >
+                    นำเข้า Excel
+                  </Button>
+                </Upload>
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onSearch={onQuery}
+                enterButton
+                onChange={(e) => setQueryContno(e.target.value)}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                style={{ marginTop: "10px" }}
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength}</p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModalFailed ? (
+        <FailedImport
+          open={isModalFailed}
+          close={setIsModalFailed}
+          data={failedData}
+        />
+      ) : null}
     </>
   );
 };

@@ -352,116 +352,110 @@ const Main = () => {
       sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
     },
   ];
-  if (!ROLE_ID === "5" || !ROLE_ID === "6" || !ROLE_ID === "7") {
-    return (
-      <>
-        <Card>
-          <Spin spinning={loading} size="large" tip=" Loading... ">
-            <Row>
-              <Col
-                span={"24"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <RangePicker
-                    size="large"
-                    style={{ marginRight: "10px" }}
-                    onChange={onSearchByDate}
-                  />
-                </Space>
-                <Search
-                  placeholder="ค้นหาสัญญา"
-                  onChange={search}
-                  enterButton
-                  style={{
-                    width: 200,
-                  }}
-                  size="large"
-                />
-              </Col>
-              <Col span={"24"}>
-                <Table
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  scroll={{ x: 850 }}
-                  footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                  expandable={{
-                    expandedRowRender: (record) => (
-                      <p style={{ margin: 0 }}>
-                        {!record.investigation_date ? (
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalInvestigateAssets(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <FormOutlined
-                              style={{ color: "blue", fontSize: "16px" }}
-                            />
-                          </Button>
-                        ) : null}
 
-                        {record.investigation_date ? (
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalEditInvestigateAssets(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <FormOutlined
-                              style={{ color: "orange", fontSize: "16px" }}
-                            />
-                          </Button>
-                        ) : null}
-                      </p>
-                    ),
-                    rowExpandable: (record) =>
-                      ROLE_ID === "2" ||
-                      ROLE_ID === "3" ||
-                      ROLE_ID === "4" ||
-                      ROLE_ID === "1",
-                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                  }}
-                  rowKey="key"
+  return (
+    <>
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
                 />
-              </Col>
-            </Row>
-          </Spin>
-        </Card>
-        {isModal ? (
-          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-        ) : null}
-        {isModalInvestigateAssets ? (
-          <InvestigateAssets
-            open={isModalInvestigateAssets}
-            close={setIsModalInvestigateAssets}
-            dataDefualt={dataModal}
-            funcUpdateStatus={handleUpdateData}
-          />
-        ) : null}
-        {isModalEditInvestigateAssets ? (
-          <EditInvestigateAssets
-            open={isModalEditInvestigateAssets}
-            close={setIsModalEditInvestigateAssets}
-            dataDefualt={dataModal}
-            funcUpdateStatus={handleUpdateData}
-          />
-        ) : null}
-      </>
-    );
-  } else {
-    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
-  }
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      {!record.investigation_date ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalInvestigateAssets(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+
+                      {record.investigation_date ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalEditInvestigateAssets(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                    </p>
+                  ),
+                  rowExpandable: (record) =>
+                    ROLE_ID === "2" ||
+                    ROLE_ID === "3" ||
+                    ROLE_ID === "4" ||
+                    ROLE_ID === "1",
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+      {isModalInvestigateAssets ? (
+        <InvestigateAssets
+          open={isModalInvestigateAssets}
+          close={setIsModalInvestigateAssets}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEditInvestigateAssets ? (
+        <EditInvestigateAssets
+          open={isModalEditInvestigateAssets}
+          close={setIsModalEditInvestigateAssets}
+          dataDefualt={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+    </>
+  );
 };
 
 const CreateInvestigateAssets = MotionHoc(Main);

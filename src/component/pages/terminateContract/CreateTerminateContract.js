@@ -297,27 +297,56 @@ const Main = () => {
   const mergeDataWithGuarantors = (data) => {
     console.log("mergeDataWithGuarantors");
 
-    return data.reduce((acc, record, index) => {
-      // ข้อมูลหลัก
-      const mainData = {
+    return data.reduce((acc, record) => {
+      // ✅ เพิ่มข้อมูลหลัก (mainData) ตามจำนวน address
+      const mainData = (record.address || []).map((addr) => ({
         ...record,
         cusType: 0,
         GCODE: record.GCODE,
         REGNO: record.REGNO,
-        NAME: `${record.SNAM} ${record.NAME1} ${record.NAME2}`,
-      };
-
-      // ข้อมูลผู้ค้ำประกัน (guarantors)
-      const guarantorData = (record.guarantors || []).map((guarantor) => ({
-        ...record,
-        cusType: parseInt(guarantor.GARNO),
-        NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`,
+        NAME: `${record.SNAM} ${record.NAME1 || ""} ${
+          record.NAME2 || ""
+        }`.trim(),
+        address: addr,
       }));
 
-      // รวมข้อมูลหลักและผู้ค้ำประกันใน array เดียว
-      return [...acc, mainData, ...guarantorData];
+      const guarantorData = (record.guarantors || []).flatMap((guarantor) =>
+        (guarantor.address || []).map((addr) => ({
+          ...record,
+          cusType: parseInt(guarantor.GARNO),
+          NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`.trim(),
+          address: addr,
+        }))
+      );
+
+      return [...acc, ...mainData, ...guarantorData];
     }, []);
   };
+
+  // const mergeDataWithGuarantors = (data) => {
+  //   console.log("mergeDataWithGuarantors");
+
+  //   return data.reduce((acc, record, index) => {
+  //     // ข้อมูลหลัก
+  //     const mainData = {
+  //       ...record,
+  //       cusType: 0,
+  //       GCODE: record.GCODE,
+  //       REGNO: record.REGNO,
+  //       NAME: `${record.SNAM} ${record.NAME1} ${record.NAME2}`,
+  //     };
+
+  //     // ข้อมูลผู้ค้ำประกัน (guarantors)
+  //     const guarantorData = (record.guarantors || []).map((guarantor) => ({
+  //       ...record,
+  //       cusType: parseInt(guarantor.GARNO),
+  //       NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`,
+  //     }));
+
+  //     // รวมข้อมูลหลักและผู้ค้ำประกันใน array เดียว
+  //     return [...acc, mainData, ...guarantorData];
+  //   }, []);
+  // };
 
   const filterData = (value) => {
     if (value) {
@@ -601,118 +630,104 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col span={"14"} style={{ textAlign: "start" }}>
-                  <Select
-                    style={{
-                      width: "auto",
-                      marginRight: "5px",
-                      marginBottom: "5px",
-                    }}
-                    onChange={handleChangeContract}
-                    popupMatchSelectWidth={false}
-                    options={optionsContract}
-                    value={selectedContract}
-                    size="large"
-                  />
-                  <Select
-                    style={{
-                      width: "auto",
-                      marginRight: "5px",
-                      marginBottom: "5px",
-                    }}
-                    onChange={handleChangeForPay}
-                    popupMatchSelectWidth={false}
-                    options={optionsForPay}
-                    value={forPaySelect}
-                    size="large"
-                  />
-                  <Select
-                    style={{
-                      width: selectedGCode.length > 0 ? "auto" : "150px",
-                      marginBottom: "5px",
-                    }}
-                    mode="multiple"
-                    allowClear
-                    value={selectedGCode} // ใช้ state ในการควบคุมค่า
-                    popupMatchSelectWidth={false}
-                    onChange={handleChangeGCode}
-                    options={optionsGCode}
-                    placeholder="เลือกประเภท"
-                    size="large"
-                  />
-                </Col>
-                <Col span={"10"} style={{ textAlign: "end" }}>
-                  <Space direction="vertical" size={12}>
-                    <DatePicker
-                      value={datePicker}
-                      onChange={handleChange}
-                      format="YYYY-MM-DD"
-                      style={{ width: "auto", marginRight: "5px" }}
-                      size="large"
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    // onSearch={onQuery}
-                    enterButton
-                    onChange={search}
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col
-                  span={"24"}
-                  style={{ textAlign: "start", marginTop: "10px" }}
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"14"} style={{ textAlign: "start" }}>
+              <Select
+                style={{
+                  width: "auto",
+                  marginRight: "5px",
+                  marginBottom: "5px",
+                }}
+                onChange={handleChangeContract}
+                popupMatchSelectWidth={false}
+                options={optionsContract}
+                value={selectedContract}
+                size="large"
+              />
+              <Select
+                style={{
+                  width: "auto",
+                  marginRight: "5px",
+                  marginBottom: "5px",
+                }}
+                onChange={handleChangeForPay}
+                popupMatchSelectWidth={false}
+                options={optionsForPay}
+                value={forPaySelect}
+                size="large"
+              />
+              <Select
+                style={{
+                  width: selectedGCode.length > 0 ? "auto" : "150px",
+                  marginBottom: "5px",
+                }}
+                mode="multiple"
+                allowClear
+                value={selectedGCode} // ใช้ state ในการควบคุมค่า
+                popupMatchSelectWidth={false}
+                onChange={handleChangeGCode}
+                options={optionsGCode}
+                placeholder="เลือกประเภท"
+                size="large"
+              />
+            </Col>
+            <Col span={"10"} style={{ textAlign: "end" }}>
+              <Space direction="vertical" size={12}>
+                <DatePicker
+                  value={datePicker}
+                  onChange={handleChange}
+                  format="YYYY-MM-DD"
+                  style={{ width: "auto", marginRight: "5px" }}
+                  size="large"
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                // onSearch={onQuery}
+                enterButton
+                onChange={search}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"} style={{ textAlign: "start", marginTop: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <Tooltip
+                  placement="bottom"
+                  title="บันทึกข้อมูล excel"
+                  arrow={mergedArrow}
                 >
-                  <Space direction="vertical" size={12}>
-                    <Tooltip
-                      placement="bottom"
-                      title="บันทึกข้อมูล excel"
-                      arrow={mergedArrow}
-                    >
-                      <PrinterOutlined
-                        style={{
-                          fontSize: "40px",
-                          color: "green",
-                          cursor: "pointer",
-                        }}
-                        key="print"
-                        onClick={createAndDownloadExcel}
-                      />
-                    </Tooltip>
-                  </Space>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={"24"}>
-                  <Table
-                    style={{ marginTop: "10px" }}
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => (
-                      <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength} </p>
-                    )}
+                  <PrinterOutlined
+                    style={{
+                      fontSize: "40px",
+                      color: "green",
+                      cursor: "pointer",
+                    }}
+                    key="print"
+                    onClick={createAndDownloadExcel}
                   />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-        </>
-      ) : (
-        <Card>
-          {" "}
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+                </Tooltip>
+              </Space>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={"24"}>
+              <Table
+                style={{ marginTop: "10px" }}
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength} </p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
     </>
   );
 };

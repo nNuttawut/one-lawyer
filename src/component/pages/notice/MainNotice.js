@@ -351,235 +351,216 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col
-                  span={"24"}
-                  style={{ textAlign: "end", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <RangePicker
-                      size="large"
-                      style={{ marginRight: "10px" }}
-                      onChange={onSearchByDate}
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    onChange={search}
-                    enterButton
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                    // expandable={{
-                    //   expandedRowRender: (record) => (
-                    //     <p style={{ margin: 0 }}>
-                    //       {!record.DATE ? (
-                    //         <Button
-                    //           style={{
-                    //             boxShadow: "0 4px 3px",
-                    //             marginRight: "10px",
-                    //           }}
-                    //           onClick={() => {
-                    //             setIsModalCreate(true);
-                    //             setDataModal(record);
-                    //           }}
-                    //         >
-                    //           <FormOutlined
-                    //             style={{ color: "blue", fontSize: "16px" }}
-                    //           />
-                    //         </Button>
-                    //       ) : null}
-                    //       {record.DATE ? (
-                    //         <>
-                    //           <Button
-                    //             style={{
-                    //               boxShadow: "0 4px 3px",
-                    //               marginRight: "10px",
-                    //             }}
-                    //             onClick={() => {
-                    //               setIsModalEdit(true);
-                    //               setDataModal(record);
-                    //               setExpandedRowKeys(record.key);
-                    //               onExpand();
-                    //             }}
-                    //           >
-                    //             <EditOutlined
-                    //               style={{
-                    //                 color: "orange",
-                    //                 fontSize: "16px",
-                    //                 marginLeft: "10px",
-                    //               }}
-                    //             />
-                    //           </Button>
-                    //           <Button
-                    //             style={{
-                    //               boxShadow: "0 4px 3px",
-                    //               marginRight: "10px",
-                    //             }}
-                    //             onClick={() => {
-                    //               if (record.LOAN_TYPE_ID === 1) {
-                    //                 setIsModalDoc1(true);
-                    //               } else {
-                    //                 setIsModalDoc2(true);
-                    //               }
-                    //               setDataModal(record);
-                    //             }}
-                    //           >
-                    //             <SyncOutlined
-                    //               style={{
-                    //                 color: "green",
-                    //                 fontSize: "16px",
-                    //                 marginLeft: "10px",
-                    //               }}
-                    //             />
-                    //           </Button>
-                    //           {/* {updateDate(record)} */}
-                    //         </>
-                    //       ) : null}
-                    //     </p>
-                    //   ),
-                    //   rowExpandable: (record) =>
-                    //     ROLE_ID === "1" || ROLE_ID === "2",
-                    // }}
-                    expandable={{
-                      expandedRowRender: (record) => (
-                        <p style={{ margin: 0 }}>
-                          {!record.DATE ? (
-                            <Button
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+                // expandable={{
+                //   expandedRowRender: (record) => (
+                //     <p style={{ margin: 0 }}>
+                //       {!record.DATE ? (
+                //         <Button
+                //           style={{
+                //             boxShadow: "0 4px 3px",
+                //             marginRight: "10px",
+                //           }}
+                //           onClick={() => {
+                //             setIsModalCreate(true);
+                //             setDataModal(record);
+                //           }}
+                //         >
+                //           <FormOutlined
+                //             style={{ color: "blue", fontSize: "16px" }}
+                //           />
+                //         </Button>
+                //       ) : null}
+                //       {record.DATE ? (
+                //         <>
+                //           <Button
+                //             style={{
+                //               boxShadow: "0 4px 3px",
+                //               marginRight: "10px",
+                //             }}
+                //             onClick={() => {
+                //               setIsModalEdit(true);
+                //               setDataModal(record);
+                //               setExpandedRowKeys(record.key);
+                //               onExpand();
+                //             }}
+                //           >
+                //             <EditOutlined
+                //               style={{
+                //                 color: "orange",
+                //                 fontSize: "16px",
+                //                 marginLeft: "10px",
+                //               }}
+                //             />
+                //           </Button>
+                //           <Button
+                //             style={{
+                //               boxShadow: "0 4px 3px",
+                //               marginRight: "10px",
+                //             }}
+                //             onClick={() => {
+                //               if (record.LOAN_TYPE_ID === 1) {
+                //                 setIsModalDoc1(true);
+                //               } else {
+                //                 setIsModalDoc2(true);
+                //               }
+                //               setDataModal(record);
+                //             }}
+                //           >
+                //             <SyncOutlined
+                //               style={{
+                //                 color: "green",
+                //                 fontSize: "16px",
+                //                 marginLeft: "10px",
+                //               }}
+                //             />
+                //           </Button>
+                //           {/* {updateDate(record)} */}
+                //         </>
+                //       ) : null}
+                //     </p>
+                //   ),
+                //   rowExpandable: (record) =>
+                //     ROLE_ID === "1" || ROLE_ID === "2",
+                // }}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      {!record.DATE ? (
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalCreate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <FormOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                      {record.DATE ? (
+                        <>
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalEdit(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <EditOutlined
                               style={{
-                                boxShadow: "0 4px 3px",
-                                marginRight: "10px",
+                                color: "orange",
+                                fontSize: "16px",
+                                marginLeft: "10px",
                               }}
-                              onClick={() => {
-                                setIsModalCreate(true);
-                                setDataModal(record);
+                            />
+                          </Button>
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              if (record.LOAN_TYPE_ID === 1) {
+                                setIsModalDoc1(true);
+                              } else {
+                                setIsModalDoc2(true);
+                              }
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{
+                                color: "green",
+                                fontSize: "16px",
+                                marginLeft: "10px",
                               }}
-                            >
-                              <FormOutlined
-                                style={{ color: "blue", fontSize: "16px" }}
-                              />
-                            </Button>
-                          ) : null}
-                          {record.DATE ? (
-                            <>
-                              <Button
-                                style={{
-                                  boxShadow: "0 4px 3px",
-                                  marginRight: "10px",
-                                }}
-                                onClick={() => {
-                                  setIsModalEdit(true);
-                                  setDataModal(record);
-                                }}
-                              >
-                                <EditOutlined
-                                  style={{
-                                    color: "orange",
-                                    fontSize: "16px",
-                                    marginLeft: "10px",
-                                  }}
-                                />
-                              </Button>
-                              <Button
-                                style={{
-                                  boxShadow: "0 4px 3px",
-                                  marginRight: "10px",
-                                }}
-                                onClick={() => {
-                                  if (record.LOAN_TYPE_ID === 1) {
-                                    setIsModalDoc1(true);
-                                  } else {
-                                    setIsModalDoc2(true);
-                                  }
-                                  setDataModal(record);
-                                }}
-                              >
-                                <SyncOutlined
-                                  style={{
-                                    color: "green",
-                                    fontSize: "16px",
-                                    marginLeft: "10px",
-                                  }}
-                                />
-                              </Button>
-                              {/* {updateDate(record)} */}
-                            </>
-                          ) : null}
-                        </p>
-                      ),
-                      rowExpandable: (record) =>
-                        ROLE_ID === "1" || ROLE_ID === "2",
-                      expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                      onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                    }}
-                    rowKey="key"
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-          {isModal ? (
-            <DetailModal
-              open={isModal}
-              close={setIsModal}
-              dataRec={dataRecord}
-            />
-          ) : null}
-          {isModalCreate ? (
-            <CreateNotice
-              open={isModalCreate}
-              close={setIsModalCreate}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-          {isModalDoc1 ? (
-            <DocumentNotice1
-              open={isModalDoc1}
-              close={setIsModalDoc1}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-          {isModalDoc2 ? (
-            <DocumentNotice2
-              open={isModalDoc2}
-              close={setIsModalDoc2}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-          {isModalEdit ? (
-            <EditNotice
-              open={isModalEdit}
-              close={setIsModalEdit}
-              dataDefault={dataModal}
-              funcUpdateStatus={handleUpdateData}
-            />
-          ) : null}
-        </>
-      ) : (
-        <>
-          <Card>
-            {" "}
-            <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-          </Card>
-        </>
-      )}
+                            />
+                          </Button>
+                          {/* {updateDate(record)} */}
+                        </>
+                      ) : null}
+                    </p>
+                  ),
+                  rowExpandable: (record) => ROLE_ID === "1" || ROLE_ID === "2",
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+      {isModalCreate ? (
+        <CreateNotice
+          open={isModalCreate}
+          close={setIsModalCreate}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalDoc1 ? (
+        <DocumentNotice1
+          open={isModalDoc1}
+          close={setIsModalDoc1}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalDoc2 ? (
+        <DocumentNotice2
+          open={isModalDoc2}
+          close={setIsModalDoc2}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEdit ? (
+        <EditNotice
+          open={isModalEdit}
+          close={setIsModalEdit}
+          dataDefault={dataModal}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
     </>
   );
 };

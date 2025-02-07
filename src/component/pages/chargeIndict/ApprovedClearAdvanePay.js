@@ -1616,168 +1616,155 @@ const Main = () => {
     },
   ];
 
-  if (ROLE_ID === "1" || ROLE_ID === "6") {
-    return (
-      <>
-        <Card>
-          <Spin spinning={loading} size="large" tip=" Loading... ">
-            <Row>
-              <Col
-                span={"24"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Select
-                  placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
-                  options={companiesOption}
-                  onChange={(value) => onChangeSelectCompany(value)}
-                  defaultValue={userCompany === "3" ? 3 : 2}
-                  popupMatchSelectWidth={false}
-                  style={{
-                    width: "auto", // ทำให้ Select ขยายตามเนื้อหา
-                    // maxWidth: 200, // จำกัดความกว้างสูงสุด
-                  }}
-                  size="large"
-                />
-              </Col>
-              <Col
-                span={"24"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <Select
-                    placeholder="เลือกทนาย"
-                    optionFilterProp="value"
-                    onChange={(value, label) =>
-                      onChangeSelectLawyer(value, label)
-                    }
-                    defaultValue={"ทนายยุทธ"}
-                    options={lawyersOption}
-                    style={{
-                      width: 150,
-                      marginRight: "10px",
-                    }}
-                    size="large"
-                  />
-                </Space>
-                <Select
-                  placeholder="เลือกสถานะ"
-                  optionFilterProp="value"
-                  onChange={(value) => onChangeSelectStatus(value)}
-                  defaultValue={4}
-                  style={{
-                    width: 200,
-                  }}
-                  size="large"
-                >
-                  {renderOpteionStatus()}
-                </Select>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col
-                span={6}
+  return (
+    <>
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Select
+                placeholder="เลือกบริษัท"
+                optionFilterProp="value"
+                options={companiesOption}
+                onChange={(value) => onChangeSelectCompany(value)}
+                defaultValue={userCompany === "3" ? 3 : 2}
+                popupMatchSelectWidth={false}
                 style={{
-                  display: "flex", // ใช้ Flexbox
-                  alignItems: "center", // จัดให้อยู่ในแนวเดียวกัน (แนวตั้ง)
-                  gap: "10px", // ระยะห่างระหว่าง Switch และ Icon
-                  textAlign: "start",
-                  marginBottom: "10px",
+                  width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+                  // maxWidth: 200, // จำกัดความกว้างสูงสุด
                 }}
-              >
-                <Switch
-                  checkedChildren="EXCEL"
-                  unCheckedChildren="PDF"
-                  checked={printOption}
-                  onChange={() => setPrintOption(!printOption)}
+                size="large"
+              />
+            </Col>
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <Select
+                  placeholder="เลือกทนาย"
+                  optionFilterProp="value"
+                  onChange={(value, label) =>
+                    onChangeSelectLawyer(value, label)
+                  }
+                  defaultValue={"ทนายยุทธ"}
+                  options={lawyersOption}
                   style={{
-                    backgroundColor: printOption ? "green" : "blue", // สีพื้นหลังตามสถานะ
-                    color: "white", // สีตัวอักษร
-                  }}
-                />
-                {printOption ? (
-                  <PrinterOutlined
-                    style={{
-                      fontSize: "40px",
-                      color: printOption ? "green" : "blue",
-                      cursor: "pointer",
-                    }}
-                    key="print"
-                    onClick={() => {
-                      console.log("createAndDownloadExcel");
-                      createAndDownloadExcel();
-                    }}
-                  />
-                ) : (
-                  <PrinterOutlined
-                    style={{
-                      fontSize: "40px",
-                      color: printOption ? "green" : "blue",
-                      cursor: "pointer",
-                    }}
-                    key="print"
-                    onClick={() => {
-                      createPdf();
-                    }}
-                  />
-                )}
-              </Col>
-
-              <Col
-                span={"18"}
-                style={{ textAlign: "end", marginBottom: "10px" }}
-              >
-                <Space direction="vertical" size={12}>
-                  <RangePicker
-                    size="large"
-                    style={{ marginRight: "10px", width: 310 }}
-                    onChange={onSearchByDate}
-                  />
-                </Space>
-                <Search
-                  placeholder="ค้นหาสัญญา"
-                  onChange={search}
-                  enterButton
-                  style={{
-                    width: 200,
+                    width: 150,
+                    marginRight: "10px",
                   }}
                   size="large"
                 />
-              </Col>
+              </Space>
+              <Select
+                placeholder="เลือกสถานะ"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectStatus(value)}
+                defaultValue={4}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              >
+                {renderOpteionStatus()}
+              </Select>
+            </Col>
+          </Row>
 
-              <Col span={"24"}>
-                <Table
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  scroll={{ x: 850 }}
-                  footer={() => (
-                    <>
-                      <p>จำนวนสัญญาทั้งหมด {tableLength}</p>
-                    </>
-                  )}
-                  expandable={{
-                    expandedRowRender: (record) => (
-                      <p style={{ margin: 0 }}>{renderDataDetail(record)}</p>
-                    ),
-                    rowExpandable: (record) => record,
-                    expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                    onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+          <Row>
+            <Col
+              span={6}
+              style={{
+                display: "flex", // ใช้ Flexbox
+                alignItems: "center", // จัดให้อยู่ในแนวเดียวกัน (แนวตั้ง)
+                gap: "10px", // ระยะห่างระหว่าง Switch และ Icon
+                textAlign: "start",
+                marginBottom: "10px",
+              }}
+            >
+              <Switch
+                checkedChildren="EXCEL"
+                unCheckedChildren="PDF"
+                checked={printOption}
+                onChange={() => setPrintOption(!printOption)}
+                style={{
+                  backgroundColor: printOption ? "green" : "blue", // สีพื้นหลังตามสถานะ
+                  color: "white", // สีตัวอักษร
+                }}
+              />
+              {printOption ? (
+                <PrinterOutlined
+                  style={{
+                    fontSize: "40px",
+                    color: printOption ? "green" : "blue",
+                    cursor: "pointer",
+                  }}
+                  key="print"
+                  onClick={() => {
+                    console.log("createAndDownloadExcel");
+                    createAndDownloadExcel();
                   }}
                 />
-              </Col>
-            </Row>
-          </Spin>
-        </Card>
-        {isModal ? (
-          <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
-        ) : null}
-      </>
-    );
-  } else {
-    return <>ไม่มีสิทธ์เข้าถึงข้อมูล</>;
-  }
+              ) : (
+                <PrinterOutlined
+                  style={{
+                    fontSize: "40px",
+                    color: printOption ? "green" : "blue",
+                    cursor: "pointer",
+                  }}
+                  key="print"
+                  onClick={() => {
+                    createPdf();
+                  }}
+                />
+              )}
+            </Col>
+
+            <Col span={"18"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px", width: 310 }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => (
+                  <>
+                    <p>จำนวนสัญญาทั้งหมด {tableLength}</p>
+                  </>
+                )}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>{renderDataDetail(record)}</p>
+                  ),
+                  rowExpandable: (record) => record,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
+      {isModal ? (
+        <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
+      ) : null}
+    </>
+  );
 };
 
 const ApprovedClearAdvanePay = MotionHoc(Main);

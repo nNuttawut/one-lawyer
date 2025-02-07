@@ -134,6 +134,9 @@ const CreateAdvanePayment = ({
     } finally {
       setLoading(false);
       handleCancel();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
@@ -171,6 +174,7 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
+      reference_no: "BN" + dayjs().format("YYYYMMDDHHmmss"),
     };
 
     dataPropertyList?.forEach((lawsuit, index) => {

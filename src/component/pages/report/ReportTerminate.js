@@ -554,89 +554,78 @@ const Main = () => {
 
   return (
     <>
-      {ROLE_ID === "1" || ROLE_ID === "2" ? (
-        <>
-          <Card>
-            <Spin spinning={loading} size="large" tip=" Loading... ">
-              <Row>
-                <Col
-                  span={"12"}
-                  style={{ textAlign: "start", marginBottom: "10px" }}
+      <Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Row>
+            <Col
+              span={"12"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Select
+                style={{
+                  width: "auto",
+                  marginRight: "5px",
+                  marginBottom: "5px",
+                }}
+                onChange={handleChangeSelect}
+                popupMatchSelectWidth={false}
+                options={optionSelectCallback}
+                value={selectCallback}
+                size="large"
+              />
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <DatePicker
+                  size="large"
+                  style={{ marginRight: "10px" }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col
+              span={"24"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Space direction="vertical" size={12}>
+                <Tooltip
+                  placement="bottom"
+                  title="บันทึกข้อมูล excel"
+                  arrow={mergedArrow}
                 >
-                  <Select
+                  <PrinterOutlined
                     style={{
-                      width: "auto",
-                      marginRight: "5px",
-                      marginBottom: "5px",
+                      fontSize: "40px",
+                      color: "green",
+                      cursor: "pointer",
                     }}
-                    onChange={handleChangeSelect}
-                    popupMatchSelectWidth={false}
-                    options={optionSelectCallback}
-                    value={selectCallback}
-                    size="large"
+                    key="print"
+                    onClick={createAndDownloadExcel}
                   />
-                </Col>
-                <Col
-                  span={"12"}
-                  style={{ textAlign: "end", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <DatePicker
-                      size="large"
-                      style={{ marginRight: "10px" }}
-                      onChange={onSearchByDate}
-                    />
-                  </Space>
-                  <Search
-                    placeholder="ค้นหาสัญญา"
-                    onChange={search}
-                    enterButton
-                    style={{
-                      width: 200,
-                    }}
-                    size="large"
-                  />
-                </Col>
-                <Col
-                  span={"24"}
-                  style={{ textAlign: "start", marginBottom: "10px" }}
-                >
-                  <Space direction="vertical" size={12}>
-                    <Tooltip
-                      placement="bottom"
-                      title="บันทึกข้อมูล excel"
-                      arrow={mergedArrow}
-                    >
-                      <PrinterOutlined
-                        style={{
-                          fontSize: "40px",
-                          color: "green",
-                          cursor: "pointer",
-                        }}
-                        key="print"
-                        onClick={createAndDownloadExcel}
-                      />
-                    </Tooltip>
-                  </Space>
-                </Col>
-                <Col span={"24"}>
-                  <Table
-                    size="small"
-                    columns={columns}
-                    dataSource={arrayTable}
-                    scroll={{ x: 850 }}
-                    footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                  />
-                </Col>
-              </Row>
-            </Spin>
-          </Card>
-        </>
-      ) : (
-        <Card>
-          <b>ไม่มีสิทธ์เข้าถึงข้อมูล</b>
-        </Card>
-      )}
+                </Tooltip>
+              </Space>
+            </Col>
+            <Col span={"24"}>
+              <Table
+                size="small"
+                columns={columns}
+                dataSource={arrayTable}
+                scroll={{ x: 850 }}
+                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
+              />
+            </Col>
+          </Row>
+        </Spin>
+      </Card>
     </>
   );
 };

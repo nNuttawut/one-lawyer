@@ -10,12 +10,12 @@ import {
   message,
   Radio,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { CameraOutlined } from "@ant-design/icons";
 import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   GET_PARCELS,
   HEADERS_EXPORT,
@@ -34,6 +34,7 @@ import {
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import TokenCheck from "../../../../hook/TokenCheck";
+import { stream } from "xlsx";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const UpdateReplyNoticeEms = ({
@@ -52,6 +53,9 @@ const UpdateReplyNoticeEms = ({
   const [loanData, setLoanData] = useState(null);
   const [parcelsData, setParcelsData] = useState(null);
   const [defaultRadio, setDefaultRadio] = useState(null);
+  const videoRef = useRef(null);
+  const [imageCap, setImageCap] = useState(null);
+  const [capturedImage, setCapturedImage] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -264,7 +268,6 @@ const UpdateReplyNoticeEms = ({
         })
         .then(async (res) => {
           if (res.status === 200) {
-            message.success("อัพเดทข้อมูลสำเร็จ");
             funcUpdateStatus({
               ...dataDefault,
               MAIN_STATUS_ID: putStatus ? dataDefault.MAIN_STATUS_ID : INDICT,
@@ -471,6 +474,37 @@ const UpdateReplyNoticeEms = ({
     form.setFieldsValue(fieldsToSet);
   };
 
+  const startWebcam = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      const track = stream.getVideoTracks()[0];
+      const imageCapture = new ImageCapture(track);
+      setImageCap(imageCapture); // ตั้งค่า imageCap
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดในการเปิดกล้อง: ", err);
+    }
+  };
+
+  const takeScreenShot = async () => {
+    if (!imageCap) {
+      console.error("imageCap ยังไม่ได้ถูกตั้งค่า");
+      return;
+    }
+
+    try {
+      const blob = await imageCap.takePhoto();
+      const imgUrl = URL.createObjectURL(blob);
+      setCapturedImage(imgUrl);
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดในการถ่ายภาพ: ", err);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -524,7 +558,6 @@ const UpdateReplyNoticeEms = ({
                   onChange={(value) => onChangeSelect(value)}
                 />
               </Form.Item>
-
               <Form.Item
                 label="วันที่ออกหนังสือ"
                 name="dateNotice"
@@ -543,7 +576,6 @@ const UpdateReplyNoticeEms = ({
                   onChange={onChange}
                 />
               </Form.Item>
-
               {parcelsData?.map((parcel, index) => (
                 <div key={index}>
                   <Form.Item
@@ -563,6 +595,34 @@ const UpdateReplyNoticeEms = ({
                   >
                     {parcel?.parcel_no}
                   </Form.Item>
+
+                  {/* <Form.Item
+                    label="ถ่ายรูปใบตอบกลับ"
+                    name={`parcelNoGuarantor${index}`}
+                    rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
+                  >
+                    <Button onClick={startWebcam} style={{ color: "blue" }}>
+                      เปิดกล้อง
+                    </Button>
+
+                    <div>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        width="300px"
+                      ></video>
+                    </div>
+
+                    <button onClick={takeScreenShot} style={{ color: "blue" }}>
+                      ถ่ายภาพ
+                    </button>
+                  </Form.Item> */}
+                  <div>
+                    {capturedImage && (
+                      <img src={capturedImage} alt="Captured" width="300px" />
+                    )}
+                  </div>
 
                   <Form.Item
                     label="การตอบกลับ"
