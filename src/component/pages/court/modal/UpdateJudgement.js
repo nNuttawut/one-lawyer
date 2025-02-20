@@ -92,7 +92,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         await axios
           .post(baseUrl + POST_STATUS, statusData, { headers: HEADERS_EXPORT })
           .then(async (res) => {
-            if (res.status === 201) {
+            if (res.status === 200) {
               console.log("resQuery", res.data);
               setLoading(false);
             } else {

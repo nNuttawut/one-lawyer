@@ -1737,7 +1737,10 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+            <Col
+              span={"12"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
               <Select
                 placeholder="เลือกบริษัท"
                 optionFilterProp="value"
@@ -1752,7 +1755,29 @@ const Main = () => {
                 size="large"
               />
             </Col>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+
+            <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Space direction="vertical" size={12}>
+                <RangePicker
+                  size="large"
+                  style={{ marginRight: "10px", width: 310 }}
+                  onChange={onSearchByDate}
+                />
+              </Space>
+              <Search
+                placeholder="ค้นหาสัญญา"
+                onChange={search}
+                enterButton
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              />
+            </Col>
+            <Col
+              span={"12"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
               <Space direction="vertical" size={12}>
                 <Select
                   placeholder="เลือกทนาย"
@@ -1782,13 +1807,11 @@ const Main = () => {
                 {renderOpteionStatus()}
               </Select>
             </Col>
-          </Row>
-
-          <Row>
             <Col
-              span={6}
+              span={12}
               style={{
                 display: "flex", // ใช้ Flexbox
+                justifyContent: "flex-end", // จัดไปที่มุมขวาสุด
                 alignItems: "center", // จัดให้อยู่ในแนวเดียวกัน (แนวตั้ง)
                 gap: "10px", // ระยะห่างระหว่าง Switch และ Icon
                 textAlign: "start",
@@ -1844,26 +1867,9 @@ const Main = () => {
                 </Tooltip>
               )}
             </Col>
+          </Row>
 
-            <Col span={"18"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <RangePicker
-                  size="large"
-                  style={{ marginRight: "10px", width: 310 }}
-                  onChange={onSearchByDate}
-                />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                onChange={search}
-                enterButton
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-
+          <Row>
             <Col span={"24"}>
               <Table
                 size="small"

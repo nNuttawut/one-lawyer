@@ -119,6 +119,8 @@
 // //get ข้อมูลบอกเลิกสัญญาเบน
 // const POST_TERMINATE_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki`;
 // const POST_TERMINATE_CONTRACT_RECORD = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki2`;
+// const POST_TERMINATE_BY_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/detail-contno`;
+
 // //get GeoThailand ของเอื้อ
 // const GET_PROVICE = `https://eua-i67f6gaaqa-as.a.run.app/Api/provinces`;
 // const GET_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/districted/`;
@@ -188,6 +190,7 @@
 //   GET_PARCELS,
 //   POST_TERMINATE_CONTRACT,
 //   POST_TERMINATE_CONTRACT_RECORD,
+//   POST_TERMINATE_BY_CONTRACT,
 //   POST_CANCEL,
 //   PUT_CANCEL,
 //   GET_CANCEL,
@@ -198,7 +201,7 @@
 //   GET_EXPENSES_CONTNO,
 //   POST_DELETE_ID,
 //   GET_EXPENSES_CONTNO_LIST,
-//   GET_EXPENSE_REF_GROUP
+//   GET_EXPENSE_REF_GROUP,
 // };
 
 // ----production-----
@@ -321,6 +324,7 @@ const HEADERS_LOGIN = {
 //get ข้อมูลบอกเลิกสัญญาเบน
 const POST_TERMINATE_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki`;
 const POST_TERMINATE_CONTRACT_RECORD = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki2`;
+const POST_TERMINATE_BY_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/detail-contno`;
 
 //get GeoThailand ของเอื้อ
 const GET_PROVICE = `https://eua-i67f6gaaqa-as.a.run.app/Api/provinces`;
@@ -391,6 +395,7 @@ export {
   GET_PARCELS,
   POST_TERMINATE_CONTRACT,
   POST_TERMINATE_CONTRACT_RECORD,
+  POST_TERMINATE_BY_CONTRACT,
   POST_CANCEL,
   PUT_CANCEL,
   GET_CANCEL,

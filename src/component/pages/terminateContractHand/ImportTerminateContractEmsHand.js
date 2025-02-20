@@ -16,7 +16,6 @@ import MotionHoc from "../../../utils/MotionHoc";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
-  CloseCircleOutlined,
   ImportOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
@@ -25,7 +24,6 @@ import FailedImport from "./modal/FailedImport";
 import { HEADERS_EXPORT, POST_CANCEL, baseUrl } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import { color } from "framer-motion";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -87,9 +85,6 @@ const Main = () => {
         const sheetData = XLSX.utils.sheet_to_json(sheet);
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
-          contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
-          pay_type: row["ประเภทจ่าย"] || "", // เลขที่สัญญา
-          account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
           datetime: row["รอบวันออกจดหมายในระบบ"] || "", // เลขที่สัญญา
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
           customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
@@ -97,9 +92,6 @@ const Main = () => {
           zipcode: row["zipcode"],
           brand: row["ยี่ห้อ"] || "", // ยี่ห้อ
           register_no: row["ทะเบียน"] || "", // ทะเบียน
-          overdue_installment_count: row["ค้างงวด"] || "", // ค้างงวด
-          overdue_installment_amount: row["เงินค้าง"] || "", // เงินค้าง
-          dept_collection_fees: row["ค่าทวงถาม"] || "", // ค่าทวงถาม
           parcel_no: row["ems จดหมาย"] || "", // ค่าทวงถาม
           parcel_no_response: row["ems ใบตอบกลับ"] || "", // ค่าทวงถาม
         }));
@@ -277,26 +269,7 @@ const Main = () => {
         <>{index + 1}</> // ใช้ index ที่ถูกส่งมาจาก Table เพื่อเพิ่มลำดับแถว
       ),
     },
-    {
-      title: "สัญญา",
-      dataIndex: "contract_schema",
-      key: "contract_schema", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-      render: (text, record) => <>{renderType(record.contract_schema)}</>,
-    },
-    {
-      title: "ประเภทจ่าย",
-      dataIndex: "pay_type",
-      key: "pay_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-      render: (text, record) => <>{renderType(record.pay_type)}</>,
-    },
-    {
-      title: "ประเภทบัญชี",
-      dataIndex: "account_type",
-      key: "account_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-    },
+
     {
       title: "วันที่ออกจดหมาย",
       align: "center",
@@ -344,39 +317,6 @@ const Main = () => {
       dataIndex: "register_no",
       key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
       align: "center",
-    },
-    {
-      title: "ค้างงวด",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.overdue_installment_count
-            ? record.overdue_installment_count
-            : null}{" "}
-        </>
-      ),
-    },
-    {
-      title: "เงินค้าง",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.overdue_installment_amount
-            ? currencyFormatPoint(record.overdue_installment_amount)
-            : null}{" "}
-        </>
-      ),
-    },
-    {
-      title: "ค่าทวงถาม",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.dept_collection_fees
-            ? currencyFormatComma(record.dept_collection_fees)
-            : null}{" "}
-        </>
-      ),
     },
     {
       title: "ems จดหมาย",
@@ -496,5 +436,5 @@ const Main = () => {
   );
 };
 
-const ImportTerminateContractEms = MotionHoc(Main);
-export default ImportTerminateContractEms;
+const ImportTerminateContractEmsHand = MotionHoc(Main);
+export default ImportTerminateContractEmsHand;

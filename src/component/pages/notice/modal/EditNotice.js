@@ -242,7 +242,7 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("Success:", values);
 
     const putStatus = {
-      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+      id: dataDefault.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
       LOAN_ID: dataDefault.id,
       MEMO: values.memo,

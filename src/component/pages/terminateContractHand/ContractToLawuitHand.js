@@ -902,5 +902,5 @@ const Main = () => {
   );
 };
 
-const ContractToLawuit = MotionHoc(Main);
-export default ContractToLawuit;
+const ContractToLawuitHand = MotionHoc(Main);
+export default ContractToLawuitHand;

@@ -35,6 +35,7 @@ import {
 } from "../../../../utils/constant/StatusConstant";
 import TokenCheck from "../../../../hook/TokenCheck";
 import { stream } from "xlsx";
+import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const UpdateReplyNoticeEms = ({
@@ -49,6 +50,7 @@ const UpdateReplyNoticeEms = ({
   const { TextArea } = Input;
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
+  const [loanOption, setLoanOption] = useState(null);
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
   const [parcelsData, setParcelsData] = useState(null);
@@ -65,6 +67,7 @@ const UpdateReplyNoticeEms = ({
 
   useEffect(() => {
     setOption();
+    setLoan();
     if (parcelsData) {
       setDataDefualt();
     }
@@ -151,6 +154,26 @@ const UpdateReplyNoticeEms = ({
     setCompaniesOption(options);
   };
 
+  const setLoan = () => {
+    const options = optionsLone.map((item) => {
+      if (dataDefault.LOAN_TYPE_ID === 2) {
+        return {
+          value: item.value,
+          label: item.label,
+          disabled: true,
+        };
+      } else {
+        return {
+          value: item.value,
+          label: item.label,
+        };
+      }
+    });
+
+    console.log("options", options);
+    setLoanOption(options);
+  };
+
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
@@ -223,27 +246,6 @@ const UpdateReplyNoticeEms = ({
   const sendData = async (putStatus, lawsuit, parcel, postStatus) => {
     setLoading(true);
     try {
-      if (postStatus) {
-        await axios
-          .post(baseUrl + POST_STATUS, postStatus, { headers: HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 201) {
-              console.log("resQuery", res.data);
-              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
-              setLoading(false);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status === 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
-      }
       if (putStatus) {
         await axios
           .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
@@ -258,6 +260,27 @@ const UpdateReplyNoticeEms = ({
           .catch((err) => {
             console.log(err);
             if (err.status === 404) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      }
+      if (postStatus) {
+        await axios
+          .post(baseUrl + POST_STATUS, postStatus, { headers: HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
+              setLoading(false);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status === 400) {
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
@@ -333,6 +356,10 @@ const UpdateReplyNoticeEms = ({
     console.log(`selected ${value} `);
   };
 
+  const onChangeSelectLoanType = (value) => {
+    console.log(`selected ${value} `);
+  };
+
   const onChange = (date, dateString) => {
     console.log(date, dateString);
     setPreData(dateString);
@@ -347,6 +374,10 @@ const UpdateReplyNoticeEms = ({
   };
 
   const onChangeReplyFile = (value) => {
+    console.log(value);
+  };
+
+  const handleInputChange = (value) => {
     console.log(value);
   };
 
@@ -379,25 +410,33 @@ const UpdateReplyNoticeEms = ({
         MAIN_STATUS_ID: INDICT,
         LOAN_ID: dataDefault.id,
         USER_ID: dataDefault.LAWYER_ID,
-        LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+        LOAN_TYPE_ID: values.loanTypeId
+          ? values.loanTypeId
+          : dataDefault.LOAN_TYPE_ID,
         LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
         MEMO: values.memo,
         DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
       };
-    } else {
-      putStatus = {
-        WORK_LOG_ID: dataDefault.WORK_LOG_ID,
-        USER_ID: dataDefault.LAWYER_ID,
-        LOAN_ID: dataDefault.id,
-        MEMO: values.memo,
-        DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
-        PROCESS_ID: statutProcess,
-      };
     }
+
+    putStatus = {
+      id: dataDefault.WORK_LOG_ID,
+      USER_ID: dataDefault.LAWYER_ID,
+      LOAN_ID: dataDefault.id,
+      LOAN_TYPE_ID: values.loanTypeId
+        ? values.loanTypeId
+        : dataDefault.LOAN_TYPE_ID,
+      MEMO: values.memo,
+      DATE: preData ? dayjs(preData).format("YYYY-MM-DD") : dataDefault.DATE,
+      PROCESS_ID: statutProcess,
+    };
 
     const putLawsuit = {
       ...lawsuitData,
       COMPANY_ID: parseInt(values.company),
+      LOAN_TYPE_ID: values.loanTypeId
+        ? values.loanTypeId
+        : dataDefault.LOAN_TYPE_ID,
     };
     let parcelsSet = [];
     const initData = {
@@ -418,6 +457,7 @@ const UpdateReplyNoticeEms = ({
           mark: values.memo,
           parcel_type_id: guarantor.parcel_type_id,
           response_status: values.radioGuarantor0,
+          parcel_no_response: values.parcelNoResponseGuarantor0,
         });
       });
     } else {
@@ -432,6 +472,9 @@ const UpdateReplyNoticeEms = ({
           mark: values.memo,
           parcel_type_id: guarantor.parcel_type_id,
           response_status: values[`radioGuarantor${index}`],
+          parcel_no_response: values[`parcelNoResponseGuarantor${index}`]
+            ? values[`parcelNoResponseGuarantor${index}`]
+            : guarantor.parcel_no_response,
         });
       });
     }
@@ -460,6 +503,7 @@ const UpdateReplyNoticeEms = ({
       dateNotice: dayjs(dataDefault.DATE),
       memo: parcelsData[0]?.mark,
       imageReplyFile: parcelsData[0]?.url_path,
+      loanTypeId: dataDefault.LOAN_TYPE_ID,
     };
 
     parcelsData?.forEach((parcel, index) => {
@@ -534,8 +578,28 @@ const UpdateReplyNoticeEms = ({
               // initialValues={{ memo: null }}
             >
               <Form.Item label="เลขสัญญา">{dataDefault.CONTNO}</Form.Item>
-              <Form.Item label="ประเภทสัญญา">
-                {dataDefault.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}
+              <Form.Item
+                label="ประเภทสัญญา"
+                name="loanTypeId"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดเลือกข้อมูล",
+                  },
+                ]}
+              >
+                <Select
+                  showSearch
+                  popupMatchSelectWidth={false}
+                  style={{
+                    width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+                    // maxWidth: 200, // จำกัดความกว้างสูงสุด
+                  }}
+                  placeholder="เลือกประเภทสัญญา"
+                  optionFilterProp="value"
+                  options={loanOption}
+                  onChange={(value) => onChangeSelectLoanType(value)}
+                />
               </Form.Item>
               <Form.Item
                 label="บริษัทที่ออกหนังสือ"
@@ -580,7 +644,9 @@ const UpdateReplyNoticeEms = ({
                 <div key={index}>
                   <Form.Item
                     label={
-                      parcel?.GARNO === 0 ? "ผู้ทำสัญญา" : `คนค้ำที่ ${index}`
+                      parcel?.GARNO === 0 || !parcel?.GARNO
+                        ? "ผู้ทำสัญญา"
+                        : `คนค้ำที่ ${index}`
                     }
                     name={`guarantor${index}`}
                     initialValue={parcel?.id}
@@ -589,13 +655,23 @@ const UpdateReplyNoticeEms = ({
                   </Form.Item>
 
                   <Form.Item
-                    label="กรอกหมายเลข EMS"
+                    label="EMS จดหมาย"
                     name={`parcelNoGuarantor${index}`}
-                    rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
                   >
                     {parcel?.parcel_no}
                   </Form.Item>
 
+                  <Form.Item
+                    label="EMS ใบตอบกลับ"
+                    name={`parcelNoResponseGuarantor${index}`}
+                  >
+                    <Input
+                      placeholder="ตัวอย่าง:EF582568151TH"
+                      maxLength={13}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      defaultValue={parcel?.parcel_no_response}
+                    />
+                  </Form.Item>
                   {/* <Form.Item
                     label="ถ่ายรูปใบตอบกลับ"
                     name={`parcelNoGuarantor${index}`}

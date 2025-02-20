@@ -18,6 +18,11 @@ import axios from "axios";
 import LoadLawyers from "../../../hook/LoadLawyers";
 import { optionsLaw } from "../../../utils/constant/LawTypeConstant";
 import {
+  optionsLone,
+  MORTGAGE,
+  HIRE_PURCASE,
+} from "../../../utils/constant/LoanTypeConstant";
+import {
   HEADERS_EXPORT,
   baseUrl,
   PUT_STATUS,
@@ -225,7 +230,7 @@ const Main = () => {
       console.log("updatedData1", updatedData);
       //เปลี่ยน body และ put lawsuit ด้วย
       const newItem = {
-        WORK_LOG_ID: ownData[0]?.WORK_LOG_ID,
+        id: ownData[0]?.WORK_LOG_ID,
         USER_ID: userId,
         LOAN_ID: id,
         LOAN_TYPE_ID: ownData[0]?.LOAN_TYPE_ID,
@@ -316,7 +321,12 @@ const Main = () => {
   };
 
   const renderLoan = (recordData) => {
-    return recordData.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง";
+    const dataLoan = optionsLone.filter((item) => {
+      return recordData.LOAN_TYPE_ID === item.value;
+    });
+    console.log("dataLoan", dataLoan);
+
+    return dataLoan[0]?.label;
   };
 
   const renderLaw = (recordData) => {

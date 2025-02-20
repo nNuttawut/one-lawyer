@@ -1,4 +1,5 @@
 export const interest = {
+  ZERO: [0, "0%"],
   ONE: [0.01, "1%"],
   ONE_POINT_FIVE: [0.015, "1.5%"],
   TWO: [0.02, "2%"],
@@ -28,6 +29,24 @@ export const interest = {
   FOURTEEN: [0.14, "14%"],
   FOURTEEN_POINT_FIVE: [0.145, "14.5%"],
   FIFTEEN: [0.15, "15%"],
+  FIFTEEN_POINT_FIVE: [0.155, "15.5%"],
+  SIXTEEN: [0.16, "16%"],
+  SIXTEEN_POINT_FIVE: [0.165, "16.5%"],
+  SEVENTEEN: [0.17, "17%"],
+  SEVENTEEN_POINT_FIVE: [0.175, "17.5%"],
+  EIGHTTEEN: [0.18, "18%"],
+  EIGHTTEEN_POINT_FIVE: [0.185, "18.5%"],
+  NINETEEN: [0.19, "19%"],
+  NINETEEN_POINT_FIVE: [0.195, "19.5%"],
+  TWENTY: [0.2, "20%"],
+  TWENTY_POINT_FIVE: [0.205, "20.5%"],
+  TWENTYONE: [0.21, "21%"],
+  TWENTYONE_POINT_FIVE: [0.215, "21.5%"],
+  TWENTYTWO: [0.22, "22%"],
+  TWENTYTWO_POINT_FIVE: [0.225, "22.5%"],
+  TWENTYTHREE: [0.23, "23%"],
+  TWENTYTHREE_POINT_FIVE: [0.235, "23.5%"],
+  TWENTYFOUR: [0.24, "24%"],
 };
 
 export const getSelectOptions = (list) =>

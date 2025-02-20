@@ -24,8 +24,8 @@ import {
   HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
 import {
+  ENFORCEMENT,
   JOB_NULL,
-  NOTICE,
   STATUS_PROCESS_PROGRESS,
 } from "../../../utils/constant/StatusConstant";
 import {
@@ -35,12 +35,13 @@ import {
   GET_JOB_IN_PROGRESS_BY_STATUS,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
+import dayjs from "dayjs";
+import CreateJudgement from "./modal/CreateJudgement";
 
 const Main = () => {
   //set hook
 
   const [lawyersList, setLoadingData] = LoadLawyers();
-  const [lawyersOption, setLawyersOption] = useState();
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -50,8 +51,11 @@ const Main = () => {
   let [dataFunc, setDataFunc] = useState(0);
   const [tableLength, setTableLength] = useState(0);
   const roleId = localStorage.getItem("ROLE_ID");
-  const companyId = localStorage.getItem("COMPANY_ID");
-
+  const COMPANY_ID = localStorage.getItem("COMPANY_ID");
+  const USER_ID_LOCAL = localStorage.getItem("USER_ID");
+  const [isModalJudgement, setIsModalJudgement] = useState(false);
+  const [dataRecord, setDataRecord] = useState(null);
+  const [responseData, setResponseData] = useState(null);
   const defaultValue = [1];
 
   //call redux action
@@ -63,35 +67,11 @@ const Main = () => {
   }, [setLoadingData]);
 
   useEffect(() => {
-    if (lawyersList) {
-      setOption();
+    if (dataRecord) {
+      console.log("dataRecord", dataRecord);
+      setIsModalJudgement(true);
     }
-  }, [lawyersList]);
-
-  const setOption = () => {
-    let companySelect = null;
-
-    if (companyId === "1" || companyId === "2") {
-      companySelect = lawyersList.filter(
-        (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          item.ROLE_ID === 3 &&
-          item.ACTIVE_STATUS === 1
-      );
-    } else {
-      companySelect = lawyersList.filter(
-        (item) =>
-          item.COMPANY_ID === 3 &&
-          item.ROLE_ID === 3 &&
-          item.ACTIVE_STATUS === 1
-      );
-    }
-    const options = companySelect.map((item) => ({
-      value: item.id,
-      label: item.NNAME,
-    }));
-    setLawyersOption(options);
-  };
+  }, [dataRecord]);
 
   const loadData = async () => {
     setLoading(true);
@@ -138,7 +118,7 @@ const Main = () => {
 
     let filteredData;
 
-    if (companyId === "3") {
+    if (COMPANY_ID === "3") {
       filteredData = value.filter((item) => {
         // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
         if (
@@ -281,15 +261,6 @@ const Main = () => {
             LAW_TYPE_ID: 1,
           };
         }
-        if (!data.LOAN_TYPE_ID) {
-          dataApprove = {
-            ...dataApprove,
-            LOAN_TYPE_ID:
-              dataApprove.contno.substring(0, 1) === "2"
-                ? HIRE_PURCASE
-                : MORTGAGE,
-          };
-        }
         if (data?.LAW_TYPE_ID && data?.LOAN_TYPE_ID) {
           dataApprove = data;
         }
@@ -302,12 +273,15 @@ const Main = () => {
           .post(baseUrl + POST_STATUS, dataApprove, { headers: HEADERS_EXPORT })
           .then((resQuery) => {
             if (resQuery.status === 200) {
-              const dataToUpdate = {
-                ...filteredData,
-                MAIN_STATUS_ID: 1,
-              };
-              setSucess += 1;
-              handleChangeStatus(dataToUpdate);
+              //   const dataToUpdate = {
+              //     ...filteredData,
+              //     MAIN_STATUS_ID: 1,
+              //   };
+              //   setSucess += 1;
+              //   handleChangeStatus(dataToUpdate);
+              console.log("setDataRecord(dataApprove);");
+              setResponseData(resQuery.data);
+              setDataRecord(dataApprove);
               return resQuery.data;
             }
           })
@@ -322,37 +296,17 @@ const Main = () => {
         setLoading(false);
       } finally {
         setLoading(false);
-        console.log(dataApprove, setSucess);
-        if (data) {
-          if (data.USER_ID && setSucess > 0) {
-            message.success(
-              `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
-            );
-          }
-        }
       }
     } else {
-      message.error(`กรุณาเลือกทนาย`);
+      message.error(`กรุณาเลือกประเภทสัญญา`);
       setLoading(false);
     }
   };
 
-  const onChangeSelect = (value, contno, id) => {
-    console.log(`selected ${value} contno ${contno} id ${id}`);
-    onApporvedData(value, contno, id);
-  };
-
-  const onApporvedData = (userId, contno, id, lawType, loanType) => {
+  const onApporvedData = (contno, id, lawType, loanType) => {
     console.log(
-      `selected ${userId} contno ${contno} id ${id} lawType ${lawType} loanType ${loanType}`
+      `contno ${contno} id ${id} lawType ${lawType} loanType ${loanType}`
     );
-
-    if (!userId) {
-      let setUser = dataSend
-        .filter((item) => item.LOAN_ID === id)
-        .map((item) => Number(item.USER_ID));
-      userId = setUser[0];
-    }
 
     if (!lawType) {
       let setLawType = dataSend
@@ -375,13 +329,13 @@ const Main = () => {
       const updatedData = prevFailedData.filter((item) => item.LOAN_ID !== id);
       // เพิ่มข้อมูลใหม่เข้า array
       const newItem = {
-        MAIN_STATUS_ID: NOTICE,
-        USER_ID: userId,
+        MAIN_STATUS_ID: ENFORCEMENT,
+        USER_ID: parseInt(USER_ID_LOCAL),
         LOAN_ID: id,
         LOAN_TYPE_ID: loanType,
         LAW_TYPE_ID: lawType,
         MEMO: null,
-        DATE: null,
+        DATE: dayjs().format("YYYY-MM-DD"),
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
         contno: contno,
       };
@@ -405,17 +359,16 @@ const Main = () => {
     console.log("Loan ID:", loanId, contno);
     console.log("Selected Value:", value);
 
-    onApporvedData(null, null, loanId, null, value);
+    onApporvedData(contno, loanId, null, value);
   };
 
   const confirmInsert = () => {
     console.log("confirmInsert", dataSend);
-
     insertDataAll();
   };
 
   const cancelInsert = () => {
-    message.error("ยกเลิกการมอบงาน");
+    message.error("ยกเลิกการนำเข้าข้อมูล");
   };
 
   const confirmInsertOne = (id) => {
@@ -483,24 +436,6 @@ const Main = () => {
     console.log("newData", newData);
   };
 
-  // random ทนาย
-  // const getJobsLawyers = () => {
-  //   if (loadLawyerJobs !== "No records") {
-  //     const dataJobs = loadLawyerJobs.map((item) => ({
-  //       USER_ID: item.USER_ID,
-  //       USER_JOBS: item.USER_JOBS,
-  //     }));
-
-  //     const data = arrayTable.map((item) => ({
-  //       LOAN_ID: item.LOAN.id,
-  //     }));
-
-  //     console.log("ssssss", data);
-  //     console.log(dataJobs);
-  //     return dataJobs;
-  //   }
-  // };
-
   const columns = [
     {
       title: "ลำดับ",
@@ -552,9 +487,9 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <Select
-          defaultValue={
-            record.CONTNO.substring(0, 1) === "2" ? HIRE_PURCASE : MORTGAGE
-          }
+          // defaultValue={
+          //   record.CONTNO.substring(0, 1) === "2" ? HIRE_PURCASE : MORTGAGE
+          // }
           popupMatchSelectWidth={false}
           style={{
             width: "auto",
@@ -567,30 +502,13 @@ const Main = () => {
       ),
     },
     {
-      title: "เลือกทนายรับงาน",
-      align: "center",
-      render: (text, record) => (
-        <>
-          <Select
-            placeholder="เลือกทนายรับงาน"
-            optionFilterProp="value"
-            onChange={(value) =>
-              onChangeSelect(value, record.CONTNO, record.id)
-            }
-            options={lawyersOption}
-            style={{ width: "100%" }}
-          />
-        </>
-      ),
-    },
-    {
       title: "การจัดการ",
       align: "center",
       render: (record) => (
         <>
           <Popconfirm
-            title="มอบงานให้ทนาย"
-            description="คุณต้องการมอบงานให้ทนายตามข้อมูลนี้ใช่หรือไม่ ?"
+            title="นำข้อมูลเข้า"
+            description="คุณต้องการนำข้อมูลพิพากษาเข้าใช่หรือไม่ ?"
             onConfirm={() => confirmInsertOne(record.id)}
             onCancel={cancel}
             okText="ยืนยัน"
@@ -610,7 +528,7 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"12"} style={{ textAlign: "start" }}>
+            {/* <Col span={"12"} style={{ textAlign: "start" }}>
               <Popconfirm
                 title="มอบงานให้ทนาย"
                 description="คุณต้องการนมอบหมายงานให้ทนายตามข้อมูลในตารางหรือไม่ ?"
@@ -625,8 +543,8 @@ const Main = () => {
                   />
                 </Button>
               </Popconfirm>
-            </Col>
-            <Col span={"12"} style={{ textAlign: "end" }}>
+            </Col> */}
+            <Col span={"24"} style={{ textAlign: "end" }}>
               <Search
                 placeholder="ค้นหาสัญญา"
                 enterButton
@@ -651,9 +569,17 @@ const Main = () => {
         </Spin>
       </Card>
       {isModal ? <DetailModal open={isModal} close={setIsModal} /> : null}
+      {isModalJudgement ? (
+        <CreateJudgement
+          open={isModalJudgement}
+          close={setIsModalJudgement}
+          dataDefualt={dataRecord}
+          responseData={responseData}
+        />
+      ) : null}
     </>
   );
 };
 
-const AssignLawyers = MotionHoc(Main);
-export default AssignLawyers;
+const ImportLawsuitData = MotionHoc(Main);
+export default ImportLawsuitData;

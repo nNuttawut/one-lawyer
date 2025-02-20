@@ -9,6 +9,7 @@ import {
   message,
   Spin,
   InputNumber,
+  Select,
 } from "antd";
 import {
   baseUrl,
@@ -23,8 +24,12 @@ import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import DocumentEnforce from "./DocumentEnforce";
 import dayjs from "dayjs";
 import TokenCheck from "../../../../hook/TokenCheck";
+import LoadCompanies from "../../../../hook/LoadCompanies";
+import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 
 const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
+  const [companiesOption, setCompaniesOption] = useState(null);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
@@ -39,12 +44,14 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [buttonCalFounds, setButtonCalFounds] = useState(false);
   const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
     CurrencyFormat();
+  const [loanType, setLoanType] = useState(dataDefault?.LOAN_TYPE_ID);
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
       setLawType();
+      setLoadingDataCompany(true);
       console.log("dataDefault", dataDefault);
     }
   }, [isModal]);
@@ -119,6 +126,19 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       }));
     }
   }, [dataLoadLawSuit, dataLoadLoan]);
+
+  useEffect(() => {
+    setOption();
+  }, [companiesListCompany]);
+
+  const setOption = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+    }));
+    setCompaniesOption(options);
+  };
 
   const handleCancel = () => {
     close(false);
@@ -264,13 +284,16 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("intLostbenefit", intLostbenefit);
       console.log("intSuspensionAmount", intSuspensionAmount);
 
-      if (dataDefault?.LOAN_TYPE_ID === 1) {
+      if (
+        (dataDefault?.LOAN_TYPE_ID !== 2 && dataDefault?.LOAN_TYPE_ID !== 5) ||
+        (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
+      ) {
+        balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
+        calIntigationFounds = balance + intTrackingFee - intSuspensionAmount;
+      } else {
         balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
         calIntigationFounds =
           balance + intTrackingFee + intLostbenefit - intSuspensionAmount;
-      } else {
-        balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
-        calIntigationFounds = balance + intTrackingFee - intSuspensionAmount;
       }
 
       console.log("calIntigationFounds--->", calIntigationFounds);
@@ -309,14 +332,18 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       form.setFieldsValue({
         feeCourt: currencyFormatComma(calFeeCourt),
         stampDuty:
-          dataDefault.LOAN_TYPE_ID === 1 ? Math.round(calStampDuty) : 0,
+          (dataDefault?.LOAN_TYPE_ID !== 2 &&
+            dataDefault?.LOAN_TYPE_ID !== 5) ||
+          (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
+            ? Math.round(calStampDuty)
+            : 0,
       });
 
       setButtonCal(false);
     }
     if (buttonSubmit) {
       const putStatus = {
-        WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+        id: dataDefault.WORK_LOG_ID,
         USER_ID: dataDefault.LAWYER_ID,
         LOAN_ID: dataDefault.id,
         MEMO: values.memo ? values.memo : dataDefault.MEMO,
@@ -324,10 +351,14 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         DATE: dataForm.dateCourt
           ? dataForm.dateCourt
           : dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
+        LOAN_TYPE_ID: values.loanType,
       };
 
       const putData = {
         ...dataLoadLawSuit,
+        COMPANY_ID: values.company
+          ? values.company
+          : dataLoadLawSuit.COMPANY_ID,
         subject: values.subject,
         provincial_court: values.court,
         tracking_fee:
@@ -403,6 +434,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             : parseInt(values.documentCost)
             ? parseInt(values.documentCost)
             : 0,
+        LOAN_TYPE_ID: values.loanType,
       };
 
       setDataStore((prev) => ({
@@ -421,7 +453,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         MAIN_STATUS_ID: dataDefault.MAIN_STATUS_ID,
         LOAN_ID: dataDefault.id,
         USER_ID: dataDefault.LAWYER_ID,
-        LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+        LOAN_TYPE_ID: values.loanType,
         LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
         MEMO: values.memo,
         DATE: dataForm.dateCourt,
@@ -448,6 +480,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   const onChangeInputSubject = (value) => {
     console.log(value);
+    setLoanType(value);
   };
 
   const onChangeInputMemo = (value) => {
@@ -735,6 +768,11 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
+  const onChangeSelectLoanType = (value) => {
+    console.log(`selected ${value} `);
+    setLoanType(value);
+  };
+
   const docShipingCost = (value) => {
     console.log(value);
   };
@@ -775,6 +813,10 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
     return result;
   };
 
+  const onChangeSelect = (value) => {
+    console.log(`selected ${value} `);
+  };
+
   const formDataSet = () => {
     return (
       <Form
@@ -791,6 +833,8 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         initialValues={{
           memo: null,
           suspensionAmount: 0,
+          company: dataDefault?.COMPANY_ID,
+          loanType: dataDefault?.LOAN_TYPE_ID,
         }}
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
@@ -812,6 +856,28 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           <DatePicker onChange={onChangeCourt} />
         </Form.Item>
         <Form.Item
+          label="บริษัทที่ส่งคำฟ้อง"
+          name="company"
+          rules={[
+            {
+              required: true,
+              message: "โปรดเลือกข้อมูล",
+            },
+          ]}
+        >
+          <Select
+            showSearch
+            popupMatchSelectWidth={false}
+            style={{
+              width: "auto",
+            }}
+            placeholder="เลือกบริษัท"
+            optionFilterProp="value"
+            options={companiesOption}
+            onChange={(value) => onChangeSelect(value)}
+          />
+        </Form.Item>
+        <Form.Item
           label="ศาล"
           name="court"
           rules={[
@@ -823,8 +889,27 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         >
           <Input onChange={(e) => onChangeInputCourt(e.target.value)} />
         </Form.Item>
-        <Form.Item label="ความ">
-          <p>{dataForm.lawTypeTH ? dataForm.lawTypeTH : "-"}</p>
+        <Form.Item
+          label="ความ"
+          name="loanType"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาเลือกประเภทสัญญา",
+            },
+          ]}
+        >
+          <Select
+            showSearch
+            popupMatchSelectWidth={false}
+            style={{
+              width: "auto",
+            }}
+            placeholder="โปรดเลือกประเภทสัญญา"
+            optionFilterProp="value"
+            options={optionsLone}
+            onChange={(value) => onChangeSelectLoanType(value)}
+          />
         </Form.Item>
         <Form.Item
           label="เรื่อง"
@@ -951,7 +1036,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 onChange={(e) => feeCourt(e.target.value)}
               />
             </Form.Item>
-            {dataDefault.LOAN_TYPE_ID === 1 ? (
+            {loanType !== 2 && loanType !== 5 ? (
               <Form.Item
                 label="ค่าอากรสแตมป์"
                 name="stampDuty"

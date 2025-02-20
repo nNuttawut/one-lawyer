@@ -659,9 +659,6 @@ const Main = () => {
   };
 
   const onSearchByDate = (startDate, endDate) => {
-    console.log(endDate[0]);
-    console.log(endDate[1]);
-
     const start = dayjs(endDate[0], "YYYY-MM-DD");
     const end = dayjs(endDate[1], "YYYY-MM-DD");
 

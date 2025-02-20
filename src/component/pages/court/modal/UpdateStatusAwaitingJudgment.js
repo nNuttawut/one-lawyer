@@ -14,6 +14,9 @@ import {
   Tooltip,
   Checkbox,
   Space,
+  Col,
+  Row,
+  InputNumber,
 } from "antd";
 import {
   baseUrl,
@@ -147,7 +150,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         await axios
           .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
           .then(async (res) => {
-            if (res.status === 201) {
+            if (res.status === 200) {
               console.log("resQuery", res.data);
               let statusSend;
               if (defaultRadio === "normal") {
@@ -310,7 +313,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     if (defaultRadio === "postponed") {
       statusData = {
-        WORK_LOG_ID: dataDefualt.WORK_LOG_ID,
+        id: dataDefualt.WORK_LOG_ID,
         MEMO: values.memo,
         DATE: preData.considerationDate,
         USER_ID: dataDefualt.LAWYER_ID,
@@ -382,7 +385,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
         LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
         MEMO: values.memo,
-        DATE: dayjs(dataDefualt.DATE).format("YYYY-MM-DD"),
+        DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
         MAIN_STATUS_ID: JUDGEMENT,
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
       };
@@ -402,7 +405,6 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         interest_rate: values.interestRate,
         final_case_date: null,
         final_case_filepath: null,
-        suspension_amount: dataLoadLawSuit.lawsuit.suspension_amount,
         tracking_fee:
           values?.trackingFeeEnforce &&
           typeof values.trackingFeeEnforce === "string" &&
@@ -422,6 +424,15 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             : parseInt(values.lawyerFeeEnforce)
             ? parseInt(values.lawyerFeeEnforce)
             : 0,
+        suspension_amount: values.suspensionAmount
+          ? values.suspensionAmount
+          : dataLoadLawSuit?.lawsuit?.suspension_amount
+          ? dataLoadLawSuit?.lawsuit?.suspension_amount
+          : 0,
+        judgement_lack: values.judgement_lack ? values.judgement_lack : 0,
+        interest_rate_of_lack: values.interestRateLack
+          ? values.interestRateLack
+          : 0,
       };
     } else {
       statusData = {
@@ -494,199 +505,38 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChangeJudgement = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        judgement1: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        judgement1: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangPaymentAmount = (value) => {
     console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        paymentAmount: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        paymentAmount: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangeInputCost1 = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        costUnless1: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        costUnless1: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangeInputCost2 = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        costUnless2: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        costUnless2: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangecostPermonth1 = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        costPermonth1: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        costPermonth1: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangPaymentPerMonthAmount = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        paymentPerMonthAmount: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        paymentPerMonthAmount: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangecostPermonth2 = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        costPermonth2: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        costPermonth2: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangTrackingFeeEnforce = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        trackingFeeEnforce: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        trackingFeeEnforce: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangLawyerFeeEnforce = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        lawyerFeeEnforce: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        lawyerFeeEnforce: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangeJudgementFile = (value) => {
@@ -762,7 +612,6 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         {dataDefualt.LOAN_TYPE_ID === 1 ? (
           <Button
             style={{ color: "blue" }}
-            htmlType="submit"
             onClick={() => {
               setTabsKey("2");
             }}
@@ -876,6 +725,14 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
+  const onChangeCourt = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
+  const onChangSuspensionAmount = (value) => {
+    console.log(value);
+  };
+
   const formJudge1 = () => {
     return (
       <Card>
@@ -890,18 +747,21 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           layout="horizontal"
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          initialValues={{
+          nitialValues={{
             memo: null,
-            costUnless1: null,
+            costUnless1: 0,
             interest: null,
-            costPermonth1: null,
+            costPermonth1: 0,
             costMonth1: null,
-            trackingFeeEnforce: null,
-            lawyerFeeEnforce: null,
+            trackingFeeEnforce: 0,
+            lawyerFeeEnforce: 0,
             costUnless2: null,
-            costPermonth2: null,
+            costPermonth2: 0,
             costMonth2: null,
-            judgement2: null,
+            judgement2: 0,
+            suspensionAmount: dataLoadLawSuit?.lawsuit?.suspension_amount
+              ? dataLoadLawSuit?.lawsuit?.suspension_amount
+              : 0,
           }}
         >
           <Form.Item
@@ -931,34 +791,168 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               onChange={(e) => onChangeJudgement(e.target.value)}
             />
           </Form.Item>
-          <Form.Item label="ค่าขาดประโยชน์" name="costUnless1">
-            <Input
-              name="costUnless1"
-              onChange={(e) => onChangeInputCost1(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item label="ดอกเบี้ยคำพิพากษา" name="interestRate">
-            <Select name="interestRate" options={optionsInterest} />
-          </Form.Item>
-          <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth1">
-            <Input
-              name="costPermonth1"
-              onChange={(e) => onChangecostPermonth1(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item label="จำนวนกี่เดือน" name="costMonth1">
-            <Select type="number" name="costMonth1" options={optionsMonth} />
-          </Form.Item>
+          <Row gutter={16} align="middle" style={{ marginBottom: "20px" }}>
+            {/* ค่าขาดประโยชน์ */}
+            <Col span={12}>
+              <Form.Item
+                label="ต้นเงิน"
+                name="judgement_lack"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 12 }}
+              >
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  // placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangeInputCost1(value)}
+                />
+              </Form.Item>
+            </Col>
+
+            {/* ดอกเบี้ยคำพิพากษา */}
+            <Col span={12}>
+              <Form.Item
+                label="ให้ดอกเบี้ย"
+                name="interestRate"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 6 }}
+              >
+                <Select
+                  name="interestRate"
+                  options={optionsInterest}
+                  size="large"
+                  style={{ width: "auto" }}
+                  placeholder="เลือกอัตราดอกเบี้ย"
+                  popupMatchSelectWidth={false}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16} align="middle" style={{ marginBottom: "20px" }}>
+            {/* ค่าขาดประโยชน์ */}
+            <Col span={12}>
+              <Form.Item
+                label="ค่าขาดประโยชน์"
+                name="costUnless1"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 12 }}
+              >
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  // placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangeInputCost1(value)}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col span={12}>
+              <Form.Item
+                label="ให้ดอกเบี้ย"
+                name="interestRateLack"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 6 }}
+              >
+                <Select
+                  name="interestRateLack"
+                  options={optionsInterest}
+                  size="large"
+                  style={{ width: "auto" }}
+                  placeholder="เลือกอัตราดอกเบี้ย"
+                  popupMatchSelectWidth={false}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16} align="middle" style={{ marginBottom: "20px" }}>
+            {/* ค่าขาดประโยชน์ */}
+            <Col span={12}>
+              <Form.Item
+                label="ค่าขาดประโยชน์เดือนละ"
+                name="costPermonth1"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 12 }}
+              >
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  // placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangecostPermonth1(value)}
+                />
+              </Form.Item>
+            </Col>
+
+            {/* ดอกเบี้ยคำพิพากษา */}
+            <Col span={12}>
+              <Form.Item
+                label="จำนวน"
+                name="costMonth1"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 6 }}
+              >
+                <Select
+                  size="large"
+                  style={{ width: "auto" }}
+                  placeholder="กรอกจำนวนเดือน"
+                  popupMatchSelectWidth={false}
+                  options={optionsMonth}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Form.Item label="ค่าติดตาม" name="trackingFeeEnforce">
-            <Input
-              name="trackingFeeEnforce"
-              onChange={(e) => onChangTrackingFeeEnforce(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="ไม่มีไม่ต้องกรอก"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangTrackingFeeEnforce(value)}
             />
           </Form.Item>
           <Form.Item label="ค่าทนายความ" name="lawyerFeeEnforce">
-            <Input
-              name="lawyerFeeEnforce"
-              onChange={(e) => onChangLawyerFeeEnforce(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="ไม่มีไม่ต้องกรอก"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangLawyerFeeEnforce(value)}
+            />
+          </Form.Item>
+          <Form.Item label="เบี้ยตั้งพัก" name="suspensionAmount">
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="ไม่มีไม่ต้องกรอก"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangSuspensionAmount(value)}
             />
           </Form.Item>
           <Form.Item
@@ -1023,21 +1017,59 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           onFinishFailed={onFinishFailed}
         >
           <Form.Item label="ค่าขาดประโยชน์" name="costUnless2">
-            <Input
-              name="costUnless2"
-              onChange={(e) => onChangeInputCost2(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              // placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangeInputCost2(value)}
             />
           </Form.Item>
-          <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth2">
-            <Input
-              name="costPermonth2"
-              onChange={(e) => onChangecostPermonth2(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item label="จำนวนกี่เดือน" name="costMonth2">
-            <Select type="number" name="costMonth2" options={optionsMonth} />
-          </Form.Item>
+          <Row gutter={16} align="middle" style={{ marginBottom: "20px" }}>
+            {/* ค่าขาดประโยชน์ */}
+            <Col span={12}>
+              <Form.Item
+                label="ค่าขาดประโยชน์เดือนละ"
+                name="costPermonth2"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 12 }}
+              >
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  // placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangecostPermonth2(value)}
+                />
+              </Form.Item>
+            </Col>
 
+            {/* ดอกเบี้ยคำพิพากษา */}
+            <Col span={12}>
+              <Form.Item
+                label="จำนวน"
+                name="costMonth2"
+                style={{ marginBottom: 0 }}
+                labelCol={{ span: 6 }}
+              >
+                <Select
+                  size="large"
+                  style={{ width: "auto" }}
+                  placeholder="กรอกจำนวนเดือน"
+                  popupMatchSelectWidth={false}
+                  options={optionsMonth}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
           <Tooltip
             placement="bottom"
             title="เลือกจำเลยที่โดนพิพากษาในคำตัดสินนี้ !"

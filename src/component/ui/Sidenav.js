@@ -24,6 +24,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import TokenCheck from "../../hook/TokenCheck";
 import { baseUrl, GET_COMPANIES_LIST, HEADERS_EXPORT } from "../API/apiUrls";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faScaleBalanced,
+  faGavel,
+  faFileSignature,
+} from "@fortawesome/free-solid-svg-icons";
 
 function Sidenav({ color, onClick }) {
   const [signOut] = TokenCheck();
@@ -65,28 +71,68 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract/create-terminate-Contract",
-              label: "ออกบอกเลิกสัญญา",
+              label: "1. ออกบอกเลิกสัญญา",
             },
             {
               key: "22",
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract/import-terminate-Contract-ems",
-              label: "นำเข้าข้อมูล EMS",
+              label: "2. นำเข้าข้อมูล EMS",
             },
             {
               key: "23",
               icon: <CaretRightOutlined />,
               pageName: "reply-terminate-Contract",
               path: "terminate-contract/reply-terminate-Contract",
-              label: "ตอบกลับบอกเลิกสัญญา",
+              label: "3. ตอบกลับบอกเลิกสัญญา",
             },
             {
               key: "24",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract/terminate-Contract-to-lawsuit",
-              label: "สัญญาเตรียมส่งฟ้อง",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
+            },
+          ],
+        }
+      : null,
+    ROLE_ID === "1" || ROLE_ID === "2"
+      ? {
+          key: "17",
+          pageName: "terminate",
+          label: "terminate-contract-hand",
+          path: "/terminate-contract-hand",
+          icon: <FileExcelOutlined />,
+          title: "บอกเลิกสัญญา(มือ)",
+          children: [
+            {
+              key: "171",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-hand/create-terminate-Contract",
+              label: "1. ออกบอกเลิกสัญญา",
+            },
+            {
+              key: "172",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-hand/import-terminate-Contract-ems",
+              label: "2. นำเข้าข้อมูล EMS",
+            },
+            {
+              key: "173",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-terminate-Contract",
+              path: "terminate-contract-hand/reply-terminate-Contract",
+              label: "3. ตอบกลับบอกเลิกสัญญา",
+            },
+            {
+              key: "174",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
             },
           ],
         }
@@ -97,36 +143,44 @@ function Sidenav({ color, onClick }) {
           pageName: "notice",
           label: "notice",
           path: "/notice",
-          icon: <FormOutlined />,
-          title: "โนติสทนาย",
+          icon: <FileExcelOutlined />,
+          title: "ออก notice",
           children: [
             {
               key: "31",
               icon: <CaretRightOutlined />,
-              pageName: "create-notice",
-              path: "notice/create-notice",
-              label: "ออกโนติส",
+              pageName: "assign-lawyers",
+              path: "manage-data/assign-lawyers",
+              label: "1. มอบหมายงาน",
             },
+
             {
               key: "32",
               icon: <CaretRightOutlined />,
-              pageName: "reply-notice",
-              path: "notice/reply-notice",
-              label: "ตอบกลับโนติส",
+              pageName: "create-notice",
+              path: "notice/create-notice",
+              label: "2. ออกโนติส",
             },
             {
               key: "33",
               icon: <CaretRightOutlined />,
-              pageName: "create-notice-ems",
-              path: "notice/create-notice-ems",
-              label: "สร้างโนติส EMS",
+              pageName: "reply-notice",
+              path: "notice/reply-notice",
+              label: "3. ตอบกลับโนติส",
             },
             {
               key: "34",
               icon: <CaretRightOutlined />,
+              pageName: "create-notice-ems",
+              path: "notice/create-notice-ems",
+              label: "2. สร้างโนติส EMS",
+            },
+            {
+              key: "35",
+              icon: <CaretRightOutlined />,
               pageName: "reply-notice-ems",
               path: "notice/reply-notice-ems",
-              label: "ตอบกลับโนติส EMS",
+              label: "3. ตอบกลับโนติส EMS",
             },
           ],
         }
@@ -145,21 +199,28 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "create-lawsuit",
               path: "lawsuit/pre-lawsuit-filed",
-              label: "สร้างคำฟ้อง",
+              label: "1. สร้างคำฟ้อง",
             },
             {
               key: "42",
               icon: <CaretRightOutlined />,
               pageName: "lawsuit-advane-patment",
               path: "lawsuit/advane-payment",
-              label: "เบิกเงินทดรองจ่าย",
+              label: "2. เบิกเงินทดรองจ่าย",
             },
             {
               key: "43",
               icon: <CaretRightOutlined />,
               pageName: "lawsuit-clear-advane-patment",
               path: "lawsuit/clear-advane-payment",
-              label: "เคลียร์เงินทดรองจ่าย",
+              label: "3. เคลียร์เงินทดรองจ่าย",
+            },
+            {
+              key: "44",
+              icon: <CaretRightOutlined />,
+              pageName: "lawsuit-import-old-data",
+              path: "lawsuit/import-old-data",
+              label: "นำเข้าสัญญาส่วนฟ้อง",
             },
           ],
         }
@@ -182,21 +243,21 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "create-invitigate-assets",
               path: "investigate-assets/create-invitigate-assets",
-              label: "สืบทรัพย์",
+              label: "1. สืบทรัพย์",
             },
             {
               key: "52",
               icon: <CaretRightOutlined />,
               pageName: "estimate-assets",
               path: "investigate-assets/estimate-assets",
-              label: "ประเมินทรัพย์",
+              label: "2. ประเมินทรัพย์",
             },
             {
               key: "53",
               icon: <CaretRightOutlined />,
               pageName: "assets-found",
               path: "investigate-assets/assets-found",
-              label: "ทรัพย์สินที่พบ",
+              label: "3. ทรัพย์สินที่พบ",
             },
           ],
         }
@@ -207,7 +268,7 @@ function Sidenav({ color, onClick }) {
           pageName: "awaiting-judgment",
           label: "awaiting-judgment",
           path: "/awaiting-judgment",
-          icon: <SnippetsOutlined />,
+          icon: <FontAwesomeIcon icon={faScaleBalanced} />,
           title: "ชั้นศาล",
           children: [
             {
@@ -215,21 +276,21 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "awaiting-judgment",
               path: "court/awaiting-judgment",
-              label: "พิพากษา",
+              label: "1. พิพากษา",
             },
             {
               key: "62",
               icon: <CaretRightOutlined />,
               pageName: "judgement",
               path: "court/judgement",
-              label: "หมายคดีตั้ง",
+              label: "2. หมายคดีตั้ง",
             },
             {
               key: "63",
               icon: <CaretRightOutlined />,
               pageName: "adjudge",
               path: "court/case-is-final",
-              label: "คดีถึงที่สุด",
+              label: "3. คดีถึงที่สุด",
             },
             // {
             //   key: "64",
@@ -257,7 +318,7 @@ function Sidenav({ color, onClick }) {
           pageName: "debt-payment",
           label: "debt-payment",
           path: "/debt-payment",
-          icon: <BarcodeOutlined />,
+          icon: <FontAwesomeIcon icon={faFileSignature} />,
           title: "ทำยอม/รีสัญญา",
         }
       : null,
@@ -265,10 +326,26 @@ function Sidenav({ color, onClick }) {
       ? {
           key: "9",
           pageName: "send-to-enforcement",
-          label: "send-to-enforcement",
-          path: "/send-to-enforcement",
-          icon: <AuditOutlined />,
+          label: "enforcement",
+          path: "/enforcement",
+          icon: <FontAwesomeIcon icon={faGavel} />,
           title: "ส่วนบังคับคดี",
+          children: [
+            {
+              key: "91",
+              icon: <CaretRightOutlined />,
+              pageName: "send-to-enforcement",
+              path: "enforcement/send-to-enforcement",
+              label: "1. เคสบังคับคดี",
+            },
+            {
+              key: "92",
+              icon: <CaretRightOutlined />,
+              pageName: "import-lawsuit-data",
+              path: "enforcement/import-lawsuit-data",
+              label: "นำเข้าสัญญาบังคับคดี",
+            },
+          ],
         }
       : null,
 
@@ -334,14 +411,14 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "advane-pay",
               path: "charge-indict/advane-pay",
-              label: "ค่าฤชาส่วนคำฟ้อง",
+              label: "1. ค่าฤชาส่วนคำฟ้อง",
             },
             {
               key: "162",
               icon: <CaretRightOutlined />,
               pageName: "clear-advane-pay",
               path: "charge-indict/clear-advane-pay",
-              label: "การเงินตรวจสอบจ่ายจริง",
+              label: "2. การเงินตรวจสอบจ่ายจริง",
             },
             // {
             //   key: "163",
@@ -397,13 +474,6 @@ function Sidenav({ color, onClick }) {
             },
             {
               key: "132",
-              icon: <CaretRightOutlined />,
-              pageName: "assign-lawyers",
-              path: "manage-data/assign-lawyers",
-              label: "มอบหมายงาน",
-            },
-            {
-              key: "133",
               icon: <CaretRightOutlined />,
               pageName: "change-lawyers-jobs",
               path: "manage-data/change-lawyers-jobs",

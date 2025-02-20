@@ -106,7 +106,7 @@ const UpdateStatusBlackNumber = ({
       await axios
         .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
         .then(async (res) => {
-          if (res.status === 201) {
+          if (res.status === 200) {
             console.log("resQuery", res.data);
             message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefault.CONTNO}`);
             funcUpdateStatus({

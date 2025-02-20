@@ -25,6 +25,7 @@ import {
 } from "../../../API/apiUrls";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
+import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 
 const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -36,17 +37,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loanData, setLoanData] = useState(null);
   const [loanType, setLoanType] = useState(dataDefault.LOAN_TYPE_ID);
   const userCompany = localStorage.getItem("COMPANY_ID");
-
-  const optionsLoan = [
-    {
-      value: 1,
-      label: "เช่าซื้อ",
-    },
-    {
-      value: 2,
-      label: "จำนอง",
-    },
-  ];
+  const [loanOption, setLoanOption] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -56,6 +47,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     setOption();
+    setLoan();
   }, [companiesListCompany]);
 
   useEffect(() => {
@@ -73,6 +65,18 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("options", options);
 
     setCompaniesOption(options);
+  };
+
+  const setLoan = () => {
+    const options = optionsLone.map((item) => {
+      return {
+        value: item.value,
+        label: item.label,
+      };
+    });
+
+    console.log("options", options);
+    setLoanOption(options);
   };
 
   const loadData = async () => {
@@ -223,9 +227,10 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const onFinish = (values) => {
     console.log("Success:", values);
     const putData = {
-      WORK_LOG_ID: dataDefault.WORK_LOG_ID,
+      id: dataDefault.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
       LOAN_ID: dataDefault.id,
+      LOAN_TYPE_ID: loanType ? loanType : dataDefault.LOAN_TYPE_ID,
       MEMO: values.memo,
       PROCESS_ID: STATUS_PROCESS_PROGRESS,
       DATE: preData
@@ -245,7 +250,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const guarantorSet = () => {
-    if (loanType === 1) {
+    if (loanType !== 2) {
       return (
         <>
           {loanData?.GUARANTORS.length > 0 ? (
@@ -349,6 +354,7 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               initialValues={{
+                loanTypeId: dataDefault.LOAN_TYPE_ID,
                 memo: null,
                 company:
                   userCompany === "3"
@@ -363,18 +369,26 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               }}
             >
               <Form.Item label="เลขสัญญา">{dataDefault.CONTNO}</Form.Item>
-              <Form.Item label="ประเภทสัญญา" name="loanType">
+              <Form.Item
+                label="ประเภทสัญญา"
+                name="loanTypeId"
+                rules={[
+                  {
+                    required: true,
+                    message: "โปรดเลือกข้อมูล",
+                  },
+                ]}
+              >
                 <Select
                   showSearch
+                  popupMatchSelectWidth={false}
                   style={{
-                    width: 150,
+                    width: "auto",
                   }}
+                  placeholder="เลือกประเภทสัญญา"
                   optionFilterProp="value"
-                  options={optionsLoan}
+                  options={loanOption}
                   onChange={(value) => onChangeSelectLoanType(value)}
-                  defaultValue={
-                    dataDefault.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"
-                  }
                 />
               </Form.Item>
               <Form.Item
@@ -389,8 +403,9 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               >
                 <Select
                   showSearch
+                  popupMatchSelectWidth={false}
                   style={{
-                    width: 350,
+                    width: "auto",
                   }}
                   placeholder="เลือกบริษัท"
                   optionFilterProp="value"

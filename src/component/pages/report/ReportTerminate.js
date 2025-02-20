@@ -592,10 +592,7 @@ const Main = () => {
                 size="large"
               />
             </Col>
-            <Col
-              span={"24"}
-              style={{ textAlign: "start", marginBottom: "10px" }}
-            >
+            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Space direction="vertical" size={12}>
                 <Tooltip
                   placement="bottom"

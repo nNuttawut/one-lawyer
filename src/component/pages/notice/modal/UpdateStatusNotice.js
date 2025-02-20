@@ -50,7 +50,7 @@ const UpdateStatusNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         await axios
           .post(baseUrl + POST_STATUS, data, { headers: HEADERS_EXPORT })
           .then(async (res) => {
-            if (res.status === 201) {
+            if (res.status === 200) {
               console.log("resQuery", res.data);
               funcUpdateStatus({
                 ...dataDefault,

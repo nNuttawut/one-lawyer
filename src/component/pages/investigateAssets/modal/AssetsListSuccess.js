@@ -171,7 +171,7 @@ const InvestigateAssets = ({
       await axios
         .post(baseUrl + POST_STATUS, postStatus, { headers: HEADERS_EXPORT })
         .then(async (res) => {
-          if (res.status === 201) {
+          if (res.status === 200) {
             console.log("resQuery", res.data);
             message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
             setLoading(false);

@@ -164,7 +164,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.contract_schema
+          !item.contract_schema
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -1016,7 +1016,7 @@ const Main = () => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(blob, `นำส่งไปษณีย์ ${dayjs().format("DD-MM-YYYY")}.xlsx`);
+      saveAs(blob, `นำส่งไปษณีย์(มือ) ${dayjs().format("DD-MM-YYYY")}.xlsx`);
     });
   };
 
@@ -1329,5 +1329,5 @@ const Main = () => {
   );
 };
 
-const ReplyTerminateContract = MotionHoc(Main);
-export default ReplyTerminateContract;
+const ReplyTerminateContractHand = MotionHoc(Main);
+export default ReplyTerminateContractHand;

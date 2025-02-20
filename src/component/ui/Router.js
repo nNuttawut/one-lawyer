@@ -49,6 +49,12 @@ import ImportTerminateContractEms from "../pages/terminateContract/ImportTermina
 import ReportTerminate from "../pages/report/ReportTerminate";
 import ContractToLawuit from "../pages/terminateContract/ContractToLawuit";
 import ApprovedClearAdvanePay from "../pages/chargeIndict/ApprovedClearAdvanePay";
+import ImportOldData from "../pages/preLawsuitFiled/ImportOldData";
+import ImportLawsuitData from "../pages/enforcement/ImportLawsuitData";
+import ContractToLawuitHand from "../pages/terminateContractHand/ContractToLawuitHand";
+import ReplyTerminateContractHand from "../pages/terminateContractHand/ReplyTerminateContractHand";
+import ImportTerminateContractEmsHand from "../pages/terminateContractHand/ImportTerminateContractEmsHand";
+import CreateTerminateContractHand from "../pages/terminateContractHand/CreateTerminateContractHand";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -92,6 +98,23 @@ export default function Router() {
           />
 
           <Route
+            path="/terminate-contract-hand/create-terminate-contract"
+            element={<CreateTerminateContractHand />}
+          />
+          <Route
+            path="/terminate-contract-hand/import-terminate-contract-ems"
+            element={<ImportTerminateContractEmsHand />}
+          />
+          <Route
+            path="/terminate-contract-hand/reply-terminate-contract"
+            element={<ReplyTerminateContractHand />}
+          />
+          <Route
+            path="/terminate-contract-hand/terminate-contract-to-lawsuit"
+            element={<ContractToLawuitHand />}
+          />
+
+          <Route
             path="/investigate-assets"
             element={<InvestigateAssetsRoute />}
           />
@@ -115,18 +138,29 @@ export default function Router() {
           <Route
             path="/lawsuit/advane-payment"
             element={<LawsuitAdvanePayment />}
-          ></Route>
+          />
           <Route
             path="/lawsuit/clear-advane-payment"
             element={<LawsuitClearAdvanePayment />}
-          ></Route>
+          />
+          <Route path="/lawsuit/import-old-data" element={<ImportOldData />} />
+
           <Route path="/report/notice" element={<ReportNotice />} />
           <Route path="/report/terminate" element={<ReportTerminate />} />
           <Route
             path="/sale-announcement/*"
             element={<SaleAnnouncementRoute />}
           />
-          <Route path="/send-to-enforcement/*" element={<EnforcementRoute />} />
+          <Route
+            path="enforcement/send-to-enforcement/*"
+            element={<EnforcementRoute />}
+          />
+
+          <Route
+            path="enforcement/import-lawsuit-data/*"
+            element={<ImportLawsuitData />}
+          />
+
           <Route path="/negotiate/*" element={<NegotiateRoute />} />
           <Route path="/notifications/*" element={<NotificationRouter />} />
           <Route path="/detail-status" element={<DetailStatusRouter />} />

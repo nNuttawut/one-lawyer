@@ -267,7 +267,7 @@ const Main = () => {
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "วันที่พิพากษา",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
@@ -354,7 +354,7 @@ const Main = () => {
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
+                  rowExpandable: (record) => !record,
                 }}
               />
             </Col>

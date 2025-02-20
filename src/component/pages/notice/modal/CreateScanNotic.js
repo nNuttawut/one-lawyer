@@ -13,15 +13,11 @@ import {
 import {
   NOTICE,
   STATUS_PROCESS_PROCESS,
-  STATUS_PROCESS_PROGRESS,
-  STATUS_PROCESS_SUCCESSFUL,
-  STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import axios from "axios";
 import {
   baseUrl,
   GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
   POST_PARCELS,
@@ -31,7 +27,9 @@ import {
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
+
 import TokenCheck from "../../../../hook/TokenCheck";
+import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 
 const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -44,17 +42,6 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [defaultRadio, setDefaultRadio] = useState(null);
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [loanType, setLoanType] = useState(dataDefault.LOAN_TYPE_ID);
-
-  const optionsLoan = [
-    {
-      value: 1,
-      label: "เช่าซื้อ",
-    },
-    {
-      value: 2,
-      label: "จำนอง",
-    },
-  ];
 
   useEffect(() => {
     loadData();
@@ -265,7 +252,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("Success:", values);
 
     const putStatus = {
-      WORK_LOG_ID: dataDefault?.WORK_LOG_ID,
+      id: dataDefault?.WORK_LOG_ID,
       USER_ID: dataDefault.LAWYER_ID,
       LOAN_ID: dataDefault.id,
       MEMO: values.memo,
@@ -298,6 +285,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
         parcel_type_id: 2,
+        parcel_no_response: values.parcelNoResponseCustomer,
       });
     } else {
       console.log("else----->");
@@ -307,6 +295,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
         CUSTOMER_ID: values.cusId,
         parcel_no: values.parcelNoCustomer,
         parcel_type_id: 2,
+        parcel_no_response: values.parcelNoResponseCustomer,
       });
 
       loanData?.GUARANTORS?.forEach((guarantor, index) => {
@@ -315,6 +304,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
           CUSTOMER_ID: values[`guarantor${index + 1}`], // ใช้ดึงค่าไดนามิกจาก `values`
           parcel_no: values[`parcelNoGuarantor${index + 1}`],
           parcel_type_id: 3,
+          parcel_no_response: values[`parcelNoResponseGuarantor${index + 1}`],
         });
       });
     }
@@ -365,6 +355,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               initialValues={{
+                loanType: dataDefault.LOAN_TYPE_ID,
                 memo: null,
                 dateNotice: dayjs(),
                 cus: loanData?.CUSTOMER?.id,
@@ -383,15 +374,13 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               <Form.Item label="ประเภทสัญญา" name="loanType">
                 <Select
                   showSearch
+                  popupMatchSelectWidth={false}
                   style={{
-                    width: 150,
+                    width: "auto",
                   }}
                   optionFilterProp="value"
-                  options={optionsLoan}
+                  options={optionsLone}
                   onChange={(value) => onChangeSelectLoanType(value)}
-                  defaultValue={
-                    dataDefault.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"
-                  }
                 />
               </Form.Item>
               <Form.Item
@@ -406,22 +395,14 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               >
                 <Select
                   showSearch
+                  popupMatchSelectWidth={false}
                   style={{
-                    width: 350,
+                    width: "auto",
                   }}
                   placeholder="เลือกบริษัท"
                   optionFilterProp="value"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
-                  //   value={
-                  //     userCompany === "3"
-                  //       ? 3
-                  //       : loanType === 1
-                  //       ? 1
-                  //       : loanType === 2
-                  //       ? 2
-                  //       : 2
-                  //   }
                 />
               </Form.Item>
               <Form.Item
@@ -443,8 +424,8 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               >
                 {`${loanData?.CUSTOMER?.SNAM}${loanData?.CUSTOMER?.NAME1}  ${loanData?.CUSTOMER?.NAME2}`}
               </Form.Item>
-              {/* <Form.Item
-                label="กรอกหมายเลข EMS"
+              <Form.Item
+                label="EMS จดหมาย"
                 name="parcelNoCustomer"
                 rules={[
                   {
@@ -456,48 +437,13 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 <Input
                   placeholder="ตัวอย่าง:EF582568151TH"
                   maxLength={13}
-                  onChange={(e) => onChangeInputParcel(e.target.value)}
+                  ref={(el) => (inputRefs.current[0] = el)} // เก็บ ref
+                  onChange={(e) => handleInputChange(e.target.value, 0)}
                 />
               </Form.Item>
-
-              {loanType === 1 ? (
-                <>
-                  {loanType === 1 &&
-                    loanData?.GUARANTORS?.map((guarantor, index) => (
-                      <div key={guarantor.id}>
-                        <Form.Item
-                          label={`ผู้ค่ำที่ ${index + 1}`}
-                          name={`guarantor${index + 1}`}
-                          initialValue={guarantor.id}
-                        >
-                          {`${guarantor.SNAM}${guarantor.NAME1} ${guarantor.NAME2}`}
-                        </Form.Item>
-                        <Form.Item
-                          label="กรอกหมายเลข EMS"
-                          name={`parcelNoGuarantor${index + 1}`}
-                          rules={[
-                            {
-                              required: true,
-                              message: "โปรดกรอกข้อมูล",
-                            },
-                          ]}
-                        >
-                          <Input
-                            placeholder="ตัวอย่าง:EF582568151TH"
-                            maxLength={13}
-                            onChange={(e) =>
-                              onChangeInputParcel(e.target.value)
-                            }
-                          />
-                        </Form.Item>
-                      </div>
-                    ))}
-                </>
-              ) : null} */}
-
               <Form.Item
-                label="กรอกหมายเลข EMS"
-                name="parcelNoCustomer"
+                label="EMS ใบตอบกลับ"
+                name="parcelNoResponseCustomer"
                 rules={[
                   {
                     required: true,
@@ -514,7 +460,7 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               </Form.Item>
 
               {/* กรอกข้อมูลผู้ค่ำ */}
-              {loanType === 1 &&
+              {loanType !== 2 &&
                 loanData?.GUARANTORS?.map((guarantor, index) => (
                   <div key={guarantor.id}>
                     <Form.Item
@@ -525,8 +471,27 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                       {`${guarantor.SNAM}${guarantor.NAME1} ${guarantor.NAME2}`}
                     </Form.Item>
                     <Form.Item
-                      label="กรอกหมายเลข EMS"
+                      label="EMS จดหมาย"
                       name={`parcelNoGuarantor${index + 1}`}
+                      rules={[
+                        {
+                          required: true,
+                          message: "โปรดกรอกข้อมูล",
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="ตัวอย่าง:EF582568151TH"
+                        maxLength={13}
+                        ref={(el) => (inputRefs.current[index + 1] = el)} // เก็บ ref
+                        onChange={(e) =>
+                          handleInputChange(e.target.value, index + 1)
+                        }
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      label="EMS ใบตอบกลับ"
+                      name={`parcelNoResponseGuarantor${index + 1}`}
                       rules={[
                         {
                           required: true,

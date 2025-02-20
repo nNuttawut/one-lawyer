@@ -163,15 +163,23 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
+    console.log("searchEdit", searchEdit);
+
+    console.log(value);
+
     let result = searchEdit.filter(
       (item) =>
         (item.CONTNO && item.CONTNO.includes(value)) ||
         (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
         (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value)) ||
         (item.parcel_list &&
-          item.parcel_list.some((parcel) => parcel.parcel_no.includes(value)))
+          item.parcel_list.some(
+            (parcel) =>
+              (parcel.parcel_no && parcel.parcel_no.includes(value)) ||
+              (parcel.parcel_no_response &&
+                parcel.parcel_no_response.includes(value))
+          ))
     );
-    console.log("ssdss", value.length);
 
     if (value.length === 13 && result.length > 0) {
       console.log("ssdss--->", value.length);
@@ -252,11 +260,11 @@ const Main = () => {
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color;
-    if (record.LOAN_TYPE_ID === 1) {
-      color = daysDifference > 30 ? "red" : "green";
-      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
-    } else if (record.LOAN_TYPE_ID === 2) {
+    if (record.LOAN_TYPE_ID === 2) {
       color = daysDifference > 60 ? "red" : "green";
+      console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
+    } else {
+      color = daysDifference > 30 ? "red" : "green";
       console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
     }
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;

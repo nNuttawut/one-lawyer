@@ -9,6 +9,7 @@ import {
   DatePicker,
   message,
   Tooltip,
+  Modal,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect, useMemo } from "react";
@@ -40,14 +41,19 @@ const Main = () => {
   const [forPaySelect, setForPaySelect] = useState("116");
   const [optionsGCode, setOptionGCode] = useState();
   const [selectedGCode, setSelectedGCode] = useState([]);
-  const [datePicker, setDatePicker] = useState(dayjs());
+  const [datePicker1, setDatePicker1] = useState();
+  const [datePicker2, setDatePicker2] = useState();
   const [selectedContract, setSelectedContract] = useState("vsfhp");
   const [arrow, setArrow] = useState("Show");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const { RangePicker } = DatePicker;
   let mockFCode;
+
   const optionsForPay = [
     { value: "116", label: "จดหมายส่งผู้คนค้ำ(116)" },
     { value: "119", label: "บอกเลิกสัญญา(119)" },
-    { value: "129", label: "ค่าบอกเลิกสัญญา(No ems)(129)" },
+    { value: "129", label: "ค่าบอกเลิกสัญญา(No ems)(129)", disabled: true },
   ];
 
   const optionsContract = [
@@ -57,11 +63,24 @@ const Main = () => {
     { value: "sfhp", label: "สัญญา 8" },
   ];
 
+  const optionsCheckData = [
+    { value: "P21", label: "P21" },
+    { value: "P22", label: "P22" },
+    { value: "P23", label: "P23" },
+    { value: "P31", label: "P31" },
+    { value: "P32", label: "P32" },
+    { value: "P33", label: "P33" },
+    { value: "P41", label: "P41" },
+    { value: "P11", label: "P11" },
+    { value: "P12", label: "P12" },
+    { value: "P13", label: "P13" },
+  ];
+
   useEffect(() => {
-    if (datePicker) {
+    if (datePicker1 && datePicker2) {
       loadData();
     }
-  }, [datePicker]);
+  }, [datePicker1, datePicker2]);
 
   useEffect(() => {
     let optionsGCodeData = [];
@@ -148,7 +167,7 @@ const Main = () => {
         (item) =>
           (forPaySelect.includes(item.FORCODE) ||
             mockFCode.includes(item.FORCODE)) &&
-          value.includes(item.DATA_TYPE) &&
+          value === item.DATA_TYPE &&
           item.cusType > 0
       );
       setArrayTable(dataFilter);
@@ -157,7 +176,7 @@ const Main = () => {
       console.log("handleChangeContract else ---->", forPaySelect);
       let dataFilter = arrData.filter(
         (item) =>
-          forPaySelect.includes(item.FORCODE) && value.includes(item.DATA_TYPE)
+          forPaySelect.includes(item.FORCODE) && value === item.DATA_TYPE
       );
       setArrayTable(dataFilter);
       setTableLength(dataFilter.length);
@@ -174,7 +193,7 @@ const Main = () => {
       let dataFilter = arrData.filter(
         (item) =>
           (value.includes(item.FORCODE) || mockFCode.includes(item.FORCODE)) &&
-          selectedContract.includes(item.DATA_TYPE) &&
+          selectedContract === item.DATA_TYPE &&
           item.cusType > 0
       );
       setArrayTable(dataFilter);
@@ -184,8 +203,7 @@ const Main = () => {
       console.log("forPaySelect else-->", forPaySelect);
       let dataFilter = arrData.filter(
         (item) =>
-          value.includes(item.FORCODE) &&
-          selectedContract.includes(item.DATA_TYPE)
+          value.includes(item.FORCODE) && selectedContract === item.DATA_TYPE
       );
       setArrayTable(dataFilter);
       setTableLength(dataFilter.length);
@@ -204,7 +222,7 @@ const Main = () => {
         let dataFilter = arrData.filter(
           (item) =>
             values.includes(item.GCODE) &&
-            selectedContract.includes(item.DATA_TYPE) &&
+            selectedContract === item.DATA_TYPE &&
             item.cusType > 0
         );
         setArrayTable(dataFilter);
@@ -216,7 +234,7 @@ const Main = () => {
           (item) =>
             (forPaySelect.includes(item.FORCODE) ||
               mockFCode.includes(item.FORCODE)) &&
-            selectedContract.includes(item.DATA_TYPE) &&
+            selectedContract === item.DATA_TYPE &&
             item.cusType > 0
         );
         console.log("dataFilter else", dataFilter);
@@ -231,7 +249,7 @@ const Main = () => {
         let dataFilter = arrData.filter(
           (item) =>
             values.includes(item.GCODE) &&
-            selectedContract.includes(item.DATA_TYPE) &&
+            selectedContract === item.DATA_TYPE &&
             item.cusType > 0
         );
         setArrayTable(dataFilter);
@@ -241,8 +259,7 @@ const Main = () => {
         console.log("6");
         let dataFilter = arrData.filter(
           (item) =>
-            item.FORCODE === forPaySelect &&
-            selectedContract.includes(item.DATA_TYPE)
+            item.FORCODE === forPaySelect && selectedContract === item.DATA_TYPE
         );
         console.log("dataFilter else", dataFilter);
 
@@ -252,12 +269,20 @@ const Main = () => {
     }
   };
 
-  const handleChange = (date) => {
-    if (date) {
-      setDatePicker(date); // อัปเดตค่าเมื่อผู้ใช้เลือกวันที่
-      console.log("Selected date:", date.format("YYYY-MM-DD"));
+  const handleChange = (startDate, endDate) => {
+    console.log("sssss");
+
+    console.log(endDate[0]);
+    console.log(endDate[1]);
+
+    if (endDate[0] && endDate[1]) {
+      setDatePicker1(endDate[0]); // อัปเดตค่าเมื่อผู้ใช้เลือกวันที่
+      setDatePicker2(endDate[1]); // อัปเดตค่าเมื่อผู้ใช้เลือกวันที่
     } else {
-      setDatePicker(null); // หากล้างค่าให้ตั้งเป็น null
+      setDatePicker1(null); // หากล้างค่าให้ตั้งเป็น null
+      setDatePicker2(null); // หากล้างค่าให้ตั้งเป็น null
+      setArrayTable([]);
+      setArrData([]);
     }
   };
 
@@ -266,15 +291,18 @@ const Main = () => {
     try {
       await axios
         .post(POST_TERMINATE_CONTRACT_RECORD, {
-          date: dayjs(datePicker).format("YYYY-MM-DD"),
+          date1: dayjs(datePicker1).format("YYYY-MM-DD"),
+          date2: dayjs(datePicker2).format("YYYY-MM-DD"),
         })
         .then(async (res) => {
           if (res.status === 200) {
             console.log("setLawsuitData", res.data);
             filterData(mergeDataWithGuarantors(res.data));
           } else {
-            message.error("ไม่สามารถดึงข้อมูลได้");
+            message.error("ไม่มีข้อมูล");
             console.log("ไม่สามารถดึงข้อมูลได้", res.status);
+            setArrayTable([]);
+            setArrData([]);
             setLoading(false);
           }
         })
@@ -294,16 +322,44 @@ const Main = () => {
     }
   };
 
+  // const mergeDataWithGuarantors = (data) => {
+  //   console.log("mergeDataWithGuarantors");
+
+  //   return data.reduce((acc, record) => {
+  //     const mainData = (record.address || []).map((addr) => ({
+  //       ...record,
+  //       cusType: 0,
+  //       GCODE: record.GCODE,
+  //       REGNO: record.REGNO,
+  //       NAME: `${record.SNAM} ${record.NAME1 || ""} ${
+  //         record.NAME2 || ""
+  //       }`.trim(),
+  //       address: addr,
+  //     }));
+
+  //     const guarantorData = (record.guarantors || []).flatMap((guarantor) =>
+  //       (guarantor.address || []).map((addr) => ({
+  //         ...record,
+  //         cusType: parseInt(guarantor.GARNO),
+  //         NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`.trim(),
+  //         address: addr,
+  //       }))
+  //     );
+
+  //     return [...acc, ...mainData, ...guarantorData];
+  //   }, []);
+  // };
+
   const mergeDataWithGuarantors = (data) => {
     console.log("mergeDataWithGuarantors");
 
-    return data.reduce((acc, record) => {
-      // ✅ เพิ่มข้อมูลหลัก (mainData) ตามจำนวน address
+    const mergedData = data.reduce((acc, record) => {
       const mainData = (record.address || []).map((addr) => ({
         ...record,
         cusType: 0,
         GCODE: record.GCODE,
         REGNO: record.REGNO,
+        CONTNO: record.CONTNO, // เพิ่ม CONTNO ให้ชัดเจน
         NAME: `${record.SNAM} ${record.NAME1 || ""} ${
           record.NAME2 || ""
         }`.trim(),
@@ -321,55 +377,66 @@ const Main = () => {
 
       return [...acc, ...mainData, ...guarantorData];
     }, []);
+
+    // เรียงลำดับ CONTNO ก่อน แล้ว GARNO ทีหลัง
+    const sortedData = mergedData.sort((a, b) => {
+      const contnoComparison = a.CONTNO.localeCompare(b.CONTNO, undefined, {
+        numeric: true,
+      });
+      if (contnoComparison !== 0) return contnoComparison; // เรียงตาม CONTNO ก่อน
+
+      return (a.cusType || 0) - (b.cusType || 0); // GARNO: 0 (ลูกค้าหลัก) จะมาก่อน, จากนั้นเรียง 1, 2, 3...
+    });
+
+    // เพิ่ม key ให้แต่ละ record เริ่มจาก 1
+    return sortedData.map((item, index) => ({
+      ...item,
+      key: index + 1, // เริ่ม key จาก 1
+    }));
   };
-
-  // const mergeDataWithGuarantors = (data) => {
-  //   console.log("mergeDataWithGuarantors");
-
-  //   return data.reduce((acc, record, index) => {
-  //     // ข้อมูลหลัก
-  //     const mainData = {
-  //       ...record,
-  //       cusType: 0,
-  //       GCODE: record.GCODE,
-  //       REGNO: record.REGNO,
-  //       NAME: `${record.SNAM} ${record.NAME1} ${record.NAME2}`,
-  //     };
-
-  //     // ข้อมูลผู้ค้ำประกัน (guarantors)
-  //     const guarantorData = (record.guarantors || []).map((guarantor) => ({
-  //       ...record,
-  //       cusType: parseInt(guarantor.GARNO),
-  //       NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`,
-  //     }));
-
-  //     // รวมข้อมูลหลักและผู้ค้ำประกันใน array เดียว
-  //     return [...acc, mainData, ...guarantorData];
-  //   }, []);
-  // };
 
   const filterData = (value) => {
     if (value) {
       let data = [];
       if (userCompany === "3") {
-        data = value.filter((item) => item.LOCAT.includes("K"));
+        data = value.filter(
+          (item) =>
+            item.LOCAT.includes("K") &&
+            optionsCheckData.some((option) => item.GCODE.includes(option.value))
+        );
       } else {
         console.log("else----->");
-        data = value.filter((item) => !item.LOCAT.includes("K"));
+        data = value.filter(
+          (item) =>
+            !item.LOCAT.includes("K") &&
+            optionsCheckData.some((option) => item.GCODE.includes(option.value))
+        );
       }
 
       console.log("data------->", data);
-      console.log("forPaySelect---->", forPaySelect);
+      console.log("forPaySelect---->", selectedContract);
 
       setArrData(data);
-      let dataFilter = data.filter(
-        (item) =>
-          (forPaySelect.includes(item.FORCODE) ||
-            item.FORCODE.includes("115")) &&
-          selectedContract.includes(item.DATA_TYPE) &&
-          item.cusType > 0
-      );
-      // console.log("dataFilter", dataFilter);
+      let dataFilter;
+
+      if (forPaySelect === "116") {
+        console.log("if");
+        dataFilter = data.filter(
+          (item) =>
+            (forPaySelect.includes(item.FORCODE) ||
+              item.FORCODE.includes("115")) &&
+            selectedContract === item.DATA_TYPE &&
+            item.cusType > 0
+        );
+      } else {
+        console.log("else");
+
+        dataFilter = data.filter(
+          (item) =>
+            forPaySelect.includes(item.FORCODE) &&
+            selectedContract === item.DATA_TYPE
+        );
+      }
       console.log("dataFilter--->", dataFilter);
 
       setArrayTable(dataFilter);
@@ -383,12 +450,24 @@ const Main = () => {
     onSearch(event.target.value);
   };
 
+  const onClickDownload = () => {
+    Modal.confirm({
+      title: "ต้องการดาวน์ข้อมูล excel ?",
+      okText: "ยืนยัน",
+      cancelText: "ปิด",
+      onOk: () => {
+        createAndDownloadExcel();
+      },
+    });
+  };
+
   const onSearch = (value) => {
-    let result = arrData.filter(
+    let result = arrayTable.filter(
       (item) =>
         (item.CONTNO && item.CONTNO.includes(value)) ||
         (item.NAME && item.NAME.includes(value)) ||
-        (item.REGNO && item.REGNO.includes(value))
+        (item.REGNO && item.REGNO.includes(value)) ||
+        convertDateThaiShort(item.DOCDT).includes(value)
     );
     console.log("result-->", result);
 
@@ -456,9 +535,15 @@ const Main = () => {
   const createAndDownloadExcel = async () => {
     // สร้าง Workbook
     const workbook = new ExcelJS.Workbook();
-
+    let uniqueGCodes = [];
     // กำหนดประเภท GCODE ที่ต้องการแยก (ไม่ซ้ำกัน)
-    const uniqueGCodes = [...new Set(arrayTable.map((data) => data.GCODE))];
+    if (selectedRows && selectedRows.length > 0) {
+      uniqueGCodes = [...new Set(selectedRows.map((data) => data.GCODE))];
+      console.log("selectedRows if1", uniqueGCodes);
+    } else {
+      uniqueGCodes = [...new Set(arrayTable.map((data) => data.GCODE))];
+      console.log("arrayTable else1", uniqueGCodes);
+    }
 
     // วนลูปสร้าง Sheet สำหรับแต่ละ GCODE
     uniqueGCodes.forEach((gCode) => {
@@ -474,28 +559,39 @@ const Main = () => {
         { header: "เลขที่สัญญา", key: "contno", width: 20 },
         { header: "ชื่อลูกค้า", key: "cusName", width: 30 },
         { header: "ประเภทลูกค้า", key: "cusType", width: 10 },
+        { header: "zipcode", key: "zipcode", width: 10 },
         { header: "ยี่ห้อ", key: "type", width: 15 },
         { header: "ทะเบียน", key: "regNo", width: 15 },
         { header: "ค้างงวด", key: "overdue", width: 15 },
         { header: "เงินค้าง", key: "arrears", width: 20 },
         { header: "ค่าทวงถาม", key: "letter", width: 15 },
-        { header: "ems no.", key: "emsNo", width: 25 },
+        { header: "ems จดหมาย", key: "emsNo", width: 25 },
+        { header: "ems ใบตอบกลับ", key: "emsResponeNo", width: 25 },
       ];
 
       // กรองข้อมูลที่ตรงกับ GCODE
-      const filteredData = arrayTable.filter((data) => data.GCODE === gCode);
+      let filteredData = [];
+
+      if (selectedRows && selectedRows.length > 0) {
+        filteredData = selectedRows.filter((data) => data.GCODE === gCode);
+        console.log("selectedRows if2", filteredData);
+      } else {
+        filteredData = arrayTable.filter((data) => data.GCODE === gCode);
+        console.log("arrayTable else2", filteredData);
+      }
 
       // เพิ่มข้อมูลในแต่ละแถว
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
           data.DATA_TYPE,
-          data.FORCODE,
+          parseInt(data.FORCODE),
           data.GCODE,
           dayjs(data.DOCDT).format("YYYY-MM-DD"), // วันที่ส่ง
           data.CONTNO,
           data.NAME,
           data.cusType,
+          data.address.ZIP,
           data.TYPE,
           data.REGNO,
           data.EXP_PRD,
@@ -503,31 +599,6 @@ const Main = () => {
           data.LETTER,
         ]);
       });
-
-      // // คำนวณยอดรวม
-      // const totalArrears = filteredData.reduce(
-      //   (sum, data) => sum + data.TOTPRC - data.SMPAY,
-      //   0
-      // );
-
-      // const totalLetter = filteredData.reduce(
-      //   (sum, data) => sum + data.LETTER,
-      //   0
-      // );
-
-      // // เพิ่มแถวสำหรับสรุปยอดรวม
-      // worksheet.addRow([
-      //   "",
-      //   "",
-      //   "",
-      //   "",
-      //   "",
-      //   "",
-      //   "",
-      //   "รวมทั้งหมด",
-      //   `${currencyFormatPoint(totalArrears)} บาท`,
-      //   `${currencyFormatComma(totalLetter)} บาท`,
-      // ]);
 
       // จัดรูปแบบเซลล์ใน Worksheet
       worksheet.eachRow((row) => {
@@ -542,9 +613,32 @@ const Main = () => {
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
+    let contract = optionsContract.find(
+      (item) => item.value === selectedContract
+    );
 
     // ดาวน์โหลดไฟล์
-    saveAs(blob, `รายงานบอกเลิกสัญญา ${dayjs().format("YYYY_MM_DD")}.xlsx`);
+    saveAs(
+      blob,
+      `รายงานบอกเลิกสัญญา${contract?.label}(${forPaySelect}) ${dayjs().format(
+        "YYYY_MM_DD"
+      )}.xlsx`
+    );
+  };
+
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    console.log("selectedRowKeys changed: ", selectedRowKeys);
+    setSelectedRowKeys(selectedRowKeys);
+    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
+    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
+    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (rowKeys, selectedRows) => {
+      onSelectChange(rowKeys, selectedRows);
+    },
   };
 
   const columns = [
@@ -633,7 +727,7 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"14"} style={{ textAlign: "start" }}>
+            <Col span={"12"} style={{ textAlign: "start" }}>
               <Select
                 style={{
                   width: "auto",
@@ -673,14 +767,16 @@ const Main = () => {
                 size="large"
               />
             </Col>
-            <Col span={"10"} style={{ textAlign: "end" }}>
+            <Col span={"12"} style={{ textAlign: "end" }}>
               <Space direction="vertical" size={12}>
-                <DatePicker
-                  value={datePicker}
-                  onChange={handleChange}
-                  format="YYYY-MM-DD"
-                  style={{ width: "auto", marginRight: "5px" }}
+                <RangePicker
                   size="large"
+                  style={{
+                    marginRight: "10px",
+                    marginBottom: "10px",
+                    width: 310,
+                  }}
+                  onChange={handleChange}
                 />
               </Space>
               <Search
@@ -694,7 +790,13 @@ const Main = () => {
                 size="large"
               />
             </Col>
-            <Col span={"24"} style={{ textAlign: "start", marginTop: "10px" }}>
+            <Col
+              span={"24"}
+              style={{
+                textAlign: "end",
+                marginTop: "10px",
+              }}
+            >
               <Space direction="vertical" size={12}>
                 <Tooltip
                   placement="bottom"
@@ -708,7 +810,7 @@ const Main = () => {
                       cursor: "pointer",
                     }}
                     key="print"
-                    onClick={createAndDownloadExcel}
+                    onClick={onClickDownload}
                   />
                 </Tooltip>
               </Space>
@@ -721,6 +823,7 @@ const Main = () => {
                 size="small"
                 columns={columns}
                 dataSource={arrayTable}
+                rowSelection={rowSelection}
                 scroll={{ x: 850 }}
                 footer={() => <p>จำนวนสัญญาที่ค้นหาทั้งหมด {tableLength} </p>}
               />

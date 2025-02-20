@@ -24,6 +24,7 @@ import {
   HIRE_PURCASE,
 } from "../../../utils/constant/LoanTypeConstant";
 import {
+  INDICT,
   JOB_NULL,
   NOTICE,
   STATUS_PROCESS_PROGRESS,
@@ -35,6 +36,7 @@ import {
   GET_JOB_IN_PROGRESS_BY_STATUS,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
+import dayjs from "dayjs";
 
 const Main = () => {
   //set hook
@@ -375,17 +377,16 @@ const Main = () => {
       const updatedData = prevFailedData.filter((item) => item.LOAN_ID !== id);
       // เพิ่มข้อมูลใหม่เข้า array
       const newItem = {
-        MAIN_STATUS_ID: NOTICE,
+        MAIN_STATUS_ID: INDICT,
         USER_ID: userId,
         LOAN_ID: id,
         LOAN_TYPE_ID: loanType,
         LAW_TYPE_ID: lawType,
         MEMO: null,
-        DATE: null,
+        DATE: dayjs().format("YYYY-MM-DD"),
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
         contno: contno,
       };
-
       // Return อัพเดท array
       return [...updatedData, newItem];
     });
@@ -655,5 +656,5 @@ const Main = () => {
   );
 };
 
-const AssignLawyers = MotionHoc(Main);
-export default AssignLawyers;
+const ImportOldData = MotionHoc(Main);
+export default ImportOldData;
