@@ -17,7 +17,6 @@ const TokenCheck = () => {
       localStorage.removeItem("ROLE_ID");
       localStorage.removeItem("ACTIVE_STATUS");
       localStorage.removeItem("TOKEN");
-      localStorage.removeItem("lineStatus");
       localStorage.removeItem("line");
       setHasSignedOut(true);
       message.error("หมดเวลากรุณาเข้าสู่ระบบใหม่");

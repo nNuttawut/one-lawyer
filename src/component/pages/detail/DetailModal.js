@@ -347,7 +347,7 @@ const DetailModal = ({ open, close, dataRec }) => {
               <br />
               <b>ยอดกู้ไม่รวมดอก :</b>{" "}
               {loanData?.LOAN?.NCSHPRC
-                ? currencyFormatNoPoint(loanData?.LOAN?.NCSHPRC)
+                ? currencyFormatComma(loanData?.LOAN?.NCSHPRC)
                 : null}{" "}
               บาท
               <br />
@@ -355,7 +355,7 @@ const DetailModal = ({ open, close, dataRec }) => {
               <br />
               <b>ยอดที่จ่ายมาแล้ว :</b>{" "}
               {loanData?.LOAN?.SMPAY
-                ? currencyFormatNoPoint(loanData?.LOAN?.SMPAY)
+                ? currencyFormatComma(loanData?.LOAN?.SMPAY)
                 : null}{" "}
               บาท
               <br />
@@ -365,19 +365,19 @@ const DetailModal = ({ open, close, dataRec }) => {
               <br />
               <b>ค่างวด : </b>{" "}
               {loanData?.LOAN?.TOT_UPAY
-                ? currencyFormatNoPoint(loanData?.LOAN?.TOT_UPAY)
+                ? currencyFormatComma(loanData?.LOAN?.TOT_UPAY)
                 : null}{" "}
               บาท
               <br />
               <b>ยอดกู้รวมดอก : </b>{" "}
               {loanData?.LOAN?.TOTPRC
-                ? currencyFormatNoPoint(loanData?.LOAN?.TOTPRC)
+                ? currencyFormatComma(loanData?.LOAN?.TOTPRC)
                 : null}{" "}
               บาท
               <br />
               <b>จำนวนที่จ่ายล่าสุด :</b>{" "}
               {loanData?.LOAN?.LPAYA
-                ? currencyFormatNoPoint(loanData?.LOAN?.LPAYA)
+                ? currencyFormatComma(loanData?.LOAN?.LPAYA)
                 : null}{" "}
               บาท
               <br />

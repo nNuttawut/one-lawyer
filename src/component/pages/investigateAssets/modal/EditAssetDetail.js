@@ -12,6 +12,7 @@ import {
   Checkbox,
   Tooltip,
   DatePicker,
+  Image,
 } from "antd";
 import { HEADERS_EXPORT, POST_CALCULATE_LAND } from "../../../API/apiUrls";
 import axios from "axios";
@@ -21,6 +22,13 @@ import TextArea from "antd/es/input/TextArea";
 import LoadLawyers from "../../../../hook/LoadLawyers";
 import dayjs from "dayjs";
 import LoadLandDetail from "../../../../hook/LoadLandDetail";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
+import Dragger from "antd/es/upload/Dragger";
 
 const EditAssetsDetail = ({
   open,
@@ -60,6 +68,8 @@ const EditAssetsDetail = ({
   const [ralationSelect, setRalationSelect] = useState();
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
   const [radioTimeType, setRadioTimeType] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const [capturedImages, setCapturedImages] = useState([]);
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
@@ -102,8 +112,6 @@ const EditAssetsDetail = ({
     { label: "หลังฟ้อง", value: 2 },
   ];
 
-  console.log("dataIndex--->", dataIndex);
-
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
@@ -143,7 +151,7 @@ const EditAssetsDetail = ({
       sequestrateStatus: dataIndex.sequestrate_status,
       investigatorAsset: dataIndex.investigator_user_id,
       memo: dataIndex.mark,
-      urlFile: dataIndex.investigate_filepath,
+      // urlFile: dataIndex.investigate_filepath,
       mortgagee: dataIndex.mortgagee,
       mortgageBalance: currencyFormatComma(dataIndex.mortgage_balance),
       investigateAssetsTime: dataIndex.investigation_type_id,
@@ -152,6 +160,8 @@ const EditAssetsDetail = ({
       wa: dataWa,
       preferenceCreditor: dataIndex.preference_creditor,
     });
+    setFileList(dataIndex?.fileList);
+    setCapturedImages(dataIndex?.capturedImages);
   }, [isModal]);
 
   useEffect(() => {
@@ -436,14 +446,6 @@ const EditAssetsDetail = ({
     console.log(value);
   };
 
-  const onChangeInputUtm = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputLatLon = (value) => {
-    console.log(value);
-  };
-
   const onChangeInvestiGateTimeType = ({ target: { value } }) => {
     console.log("radio onChangeInvestiGateTimeType", value);
     setRadioTimeType(value);
@@ -522,7 +524,7 @@ const EditAssetsDetail = ({
       investigation_fees: null,
       investigation_fees_payment_status: null,
       mark: values.memo,
-      investigate_filepath: values.urlFile,
+      // investigate_filepath: values.urlFile,
       districtName: districtName[0].label,
       provinceName: provinceName[0].label,
       investigation_type_id: values.investigateAssetsTime,
@@ -534,6 +536,8 @@ const EditAssetsDetail = ({
       utm: values.utm ? values.utm : null,
       lat: values.latlon ? parseFloat(valueLat) : null,
       lon: values.latlon ? parseFloat(valueLon) : null,
+      fileList: fileList,
+      capturedImages: capturedImages,
     };
 
     console.log("postDataInvestigate---->", postDataInvestigate);
@@ -545,6 +549,66 @@ const EditAssetsDetail = ({
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+
+  const props = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+      const newFileListImg = newFileList.map((file) =>
+        URL.createObjectURL(file)
+      );
+      setCapturedImages(newFileListImg);
+    },
+    beforeUpload: (file) => {
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
+
+      // // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      // const newFile = new File(
+      //   [file],
+      //   `สืบทรัพย์_${dataDefualt?.CONTNO}.${
+      //     fileType.includes("pdf") ? "pdf" : file.name.split(".").pop()
+      //   }`,
+      //   { type: fileType }
+      // );
+
+      // console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "xlsx" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "docx" }]);
+      }
+
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
   };
 
   const formDataSet = () => {
@@ -914,21 +978,125 @@ const EditAssetsDetail = ({
             style={{ width: "100%" }}
           />
         </Form.Item>
-        <Form.Item
-          label="ลิ้งเก็บรูป"
-          name="urlFile"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-            },
-          ]}
-        >
-          <Input
-            name="urlFile"
-            onChange={(e) => onChangeUrlFile(e.target.value)}
-          />
+        <Form.Item label="อัปโหลดใบเสร็จ" name="imageUrlFile">
+          <Dragger
+            {...props}
+            style={{
+              width: "300px", // กำหนดความกว้าง
+              height: "200px", // กำหนดความสูง
+              margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{ color: "blue" }} />
+            </p>
+            <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+            <p className="ant-upload-hint">
+              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+            </p>
+          </Dragger>
         </Form.Item>
+        {capturedImages?.length > 0 ? (
+          <Form.Item label="ไฟล์ที่ต้องการบันทึก" name={"imageFile"}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px",
+                justifyContent: "center",
+                padding: "10px", // เพิ่ม padding เพื่อไม่ให้ชิดขอบเกินไป
+              }}
+            >
+              <Image.PreviewGroup>
+                {capturedImages?.map((image, index) => {
+                  if (!image || !image.type) return null;
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        position: "relative", // ให้ปุ่มลบอยู่บนสุด
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textAlign: "center",
+                        background: "#f8f8f8",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      {/* แสดงไอคอนตามประเภทไฟล์ */}
+                      {image.type.includes("pdf") ? (
+                        <FilePdfOutlined
+                          style={{ fontSize: "40px", color: "red" }}
+                        />
+                      ) : image.type.includes("xlsx") ? (
+                        <FileExcelOutlined
+                          style={{ fontSize: "40px", color: "green" }}
+                        />
+                      ) : image.type.includes("docx") ? (
+                        <FileWordOutlined
+                          style={{ fontSize: "40px", color: "blue" }}
+                        />
+                      ) : (
+                        <Image
+                          src={image.url}
+                          alt={`Captured ${index}`}
+                          width="150px"
+                        />
+                      )}
+
+                      {/* ลิงก์ดาวน์โหลด */}
+                      {image.url && (
+                        <a
+                          style={{
+                            display: "block",
+                            marginTop: "8px",
+                            color: "#007bff",
+                            textDecoration: "none",
+                            fontWeight: "bold",
+                          }}
+                          href={image.url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          คลิกเพื่อดาวน์โหลด
+                        </a>
+                      )}
+
+                      {/* ปุ่มลบ */}
+                      <button
+                        type="button"
+                        onClick={() => deleteImg(index)}
+                        style={{
+                          position: "absolute",
+                          top: "-5px",
+                          right: "-5px",
+                          background: "red",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </Image.PreviewGroup>
+            </div>
+          </Form.Item>
+        ) : null}
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

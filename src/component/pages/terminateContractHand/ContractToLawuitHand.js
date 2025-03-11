@@ -12,6 +12,7 @@ import {
   Popconfirm,
   Space,
   DatePicker,
+  Tag,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
@@ -691,6 +692,41 @@ const Main = () => {
     console.log("newData", newData);
   };
 
+  const renderResponseDate = (record) => {
+    const allSuccessful = record?.parcel_list?.every(
+      (res) => res.date_response
+    );
+
+    console.log(allSuccessful);
+
+    if (!allSuccessful) {
+      return "-";
+    } else {
+      let latestDate = record.parcel_list
+        .map((item) => item.date_response) // ดึงค่า date_response
+        .filter((date) => date !== null) // กรองค่า null ออก
+        .sort((a, b) => new Date(b) - new Date(a)); // เรียงลำดับวันที่จากใหม่ -> เก่า
+
+      const today = dayjs().startOf("day");
+      const recordDate = dayjs(latestDate[0]).startOf("day");
+      const remainingDays = today.diff(dayjs(recordDate), "day");
+      let color;
+      if (remainingDays > 30) {
+        color = "green";
+      } else {
+        color = "red";
+      }
+
+      return (
+        <Tag color={color}>
+          {latestDate.length > 0 ? convertDateThai(latestDate[0]) : "-"}
+          <br />
+          เกินมา {remainingDays} วัน
+        </Tag>
+      ); // แสดงวันที่ล่าสุด
+    }
+  };
+
   // random ทนาย
   // const getJobsLawyers = () => {
   //   if (loadLawyerJobs !== "No records") {
@@ -730,6 +766,18 @@ const Main = () => {
           {record.parcel_list[0]?.datetime
             ? convertDateThaiShort(record.parcel_list[0]?.datetime)
             : null}
+        </>
+      ),
+    },
+    {
+      title: "วันที่ตอบกลับ",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {renderResponseDate(record)}
+          {/* {record.parcel_list[0]?.date_response
+            ? convertDateThaiShort(record.parcel_list[0]?.date_response)
+            : null} */}
         </>
       ),
     },

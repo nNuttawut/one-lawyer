@@ -8,7 +8,7 @@ import {
   Card,
   message,
   Tooltip,
-  InputNumber,
+  List,
 } from "antd";
 import {
   baseUrl,
@@ -17,11 +17,13 @@ import {
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
+import { FilePdfOutlined } from "@ant-design/icons";
 import axios from "axios";
-import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import { Link } from "react-router-dom";
 
 const EditUpdateStatusBlackNumber = ({
   open,
@@ -41,6 +43,7 @@ const EditUpdateStatusBlackNumber = ({
   const [dataStore, setDataStore] = useState();
   const [dataForm, setDataForm] = useState({});
   const [dateDefault, setDateDefault] = useState();
+  const [fileList, setFileList] = useState();
   dayjs.extend(utc);
   dayjs.extend(timezone);
 
@@ -48,6 +51,7 @@ const EditUpdateStatusBlackNumber = ({
     setIsModal(open);
     if (isModal) {
       loadData();
+      loadImagesProduct();
       console.log("loadData", dataDefault);
     }
   }, [isModal]);
@@ -57,7 +61,7 @@ const EditUpdateStatusBlackNumber = ({
     if (dataLoadLawSuit) {
       form.setFieldsValue({
         blackNumber: dataLoadLawSuit?.black_case_number,
-        imageReplyFile: dataLoadLawSuit?.file_path,
+        // imageReplyFile: dataLoadLawSuit?.file_path,
       });
       setDateDefault(
         dayjs(dataLoadLawSuit?.consideration_date).format("YYYY-MM-DD HH:mm")
@@ -83,6 +87,7 @@ const EditUpdateStatusBlackNumber = ({
       pointAtCenter: true,
     };
   }, [arrow]);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -105,6 +110,26 @@ const EditUpdateStatusBlackNumber = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadImagesProduct = async () => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/คำฟ้อง${dataDefault.CONTNO}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        if (response.data.length > 0) {
+          setFileList(response.data);
+          setLoading(true);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
   };
 
   const sendStatus = async (data, status) => {
@@ -170,14 +195,6 @@ const EditUpdateStatusBlackNumber = ({
     console.log(value);
   };
 
-  const docShipingCost = (value) => {
-    console.log(value);
-  };
-
-  const onChangeReplyFile = (value) => {
-    console.log(value);
-  };
-
   const onFinish = (values) => {
     console.log(values);
 
@@ -187,7 +204,7 @@ const EditUpdateStatusBlackNumber = ({
       consideration_date: values.considerationDate
         ? dayjs(values.considerationDate).format("YYYY-MM-DD HH:mm")
         : dateDefault,
-      file_path: values.imageReplyFile,
+      // file_path: values.imageReplyFile,
     };
     const putStatus = {
       id: dataDefault.WORK_LOG_ID,
@@ -208,10 +225,6 @@ const EditUpdateStatusBlackNumber = ({
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
-  };
-
-  const documentCost = (value) => {
-    console.log(value);
   };
 
   const onChangeInputMemo = (value) => {
@@ -278,20 +291,31 @@ const EditUpdateStatusBlackNumber = ({
             </Form.Item>
           </Tooltip>
 
-          <Form.Item
-            label="ลิ้งเก็บรูปส่วนฟ้อง"
-            name="imageReplyFile"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง !",
-              },
-            ]}
-          >
-            <Input
-              placeholder="กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง"
-              name="imageReplyFile"
-              onChange={(e) => onChangeReplyFile(e.target.value)}
+          <Form.Item label="ลิ้งเก็บไฟล์ส่วนฟ้อง" name="imageReplyFile">
+            <List
+              itemLayout="horizontal"
+              dataSource={fileList}
+              renderItem={(item, index) => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={
+                      <FilePdfOutlined
+                        style={{ color: "red", fontSize: "30px" }}
+                      />
+                    }
+                    description={
+                      <a
+                        style={{ display: "block", marginTop: "8px" }}
+                        href={item.url || "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        ไฟล์คำฟ้องที่ {index + 1}
+                      </a>
+                    }
+                  />
+                </List.Item>
+              )}
             />
           </Form.Item>
           <Form.Item label="หมายเหตุ" name="memo">

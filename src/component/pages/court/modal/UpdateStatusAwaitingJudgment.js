@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -17,6 +17,7 @@ import {
   Col,
   Row,
   InputNumber,
+  Upload,
 } from "antd";
 import {
   baseUrl,
@@ -42,12 +43,15 @@ import {
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
-import TokenCheck from "../../../../hook/TokenCheck";
+import LoadLawyers from "../../../../hook/LoadLawyers";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
   const [form] = Form.useForm();
+  const [lawyersList, setLoadingData] = LoadLawyers();
+  const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
+  const [assistantOption, setAssistantOption] = useState();
   const [loading, setLoading] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
@@ -65,15 +69,22 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [tabsKey, setTabsKey] = useState("1");
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
-
+      setLoadingData(true);
       console.log("loadData", dataDefualt);
     }
   }, [isModal]);
+
+  useEffect(() => {
+    if (lawyersList) {
+      setOptionAssistant();
+    }
+  }, [lawyersList]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -133,6 +144,29 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const setOptionAssistant = () => {
+    console.log("lawyersList", lawyersList);
+    let companySelectAssistant = null;
+    if (COMPANY === 1 || COMPANY === 2) {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    } else {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    }
+    const optionsAssistant = companySelectAssistant.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+    }));
+    setAssistantOption(optionsAssistant);
   };
 
   const sendStatus = async (
@@ -470,7 +504,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         already_paid: null,
         payment_status: null,
         payment_status_date: null,
-        negotiator_id: dataDefualt.LAWYER_ID,
+        negotiator_id: values.negotiator,
         NEW_CONTNO: values.newContno ? values.newContno : null,
       };
     }
@@ -550,13 +584,6 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const onChangeNewContno = (value) => {
     console.log(value);
   };
-
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
 
   const onChange = (e) => {
     setDefaultRadio(e.target.value);
@@ -1145,6 +1172,10 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     );
   };
 
+  const onChangeSelectnegotiator = (value) => {
+    console.log(`selected ${value}`);
+  };
+
   const formDataPayment = () => {
     return (
       <Card>
@@ -1185,9 +1216,16 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <Input
-              name="paymentAmount"
-              onChange={(e) => onChangPaymentAmount(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentAmount(value)}
             />
           </Form.Item>
           <Form.Item
@@ -1200,9 +1238,16 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <Input
-              name="paymentMonthAmount"
-              onChange={(e) => onChangPaymentPerMonthAmount(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentPerMonthAmount(value)}
             />
           </Form.Item>
           <Form.Item
@@ -1249,6 +1294,24 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             <TextArea
               rows={5}
               onChange={(e) => onChangeInputMemo(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="เลือกผู้เจรจา"
+            name="negotiator"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาเลือกผู้เจรจา !",
+              },
+            ]}
+          >
+            <Select
+              placeholder="เลือกผู้เจรจา"
+              optionFilterProp="value"
+              onChange={(value) => onChangeSelectnegotiator(value)}
+              options={assistantOption}
+              style={{ width: "100%" }}
             />
           </Form.Item>
           {buttonCustom()}

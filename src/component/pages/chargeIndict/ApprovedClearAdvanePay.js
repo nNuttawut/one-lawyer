@@ -1588,7 +1588,7 @@ const Main = () => {
                     "noopener,noreferrer"
                   );
                 } else {
-                  alert("ไม่มีไฟล์ให้ดาวน์โหลด");
+                  message.error("ยังไม่มีมีการอัพโหลดไฟล์รูปภาพ");
                 }
               }}
             >

@@ -1,16 +1,33 @@
-import { Button, Form, Input, Modal, Card, Spin, message, Radio } from "antd";
 import {
-  NOTICE,
-  STATUS_PROCESS_SUCCESSFUL,
-  STATUS_PROCESS_UNSUCCESSFUL,
-} from "../../../../utils/constant/StatusConstant";
+  Button,
+  Form,
+  Input,
+  Modal,
+  Card,
+  Spin,
+  message,
+  Radio,
+  Tooltip,
+  Image,
+  Switch,
+} from "antd";
 import axios from "axios";
+import {
+  CameraOutlined,
+  FilePdfOutlined,
+  InboxOutlined,
+} from "@ant-design/icons";
 import { baseUrl, HEADERS_EXPORT, PUT_CANCEL } from "../../../API/apiUrls";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import dayjs from "dayjs";
+import Dragger from "antd/es/upload/Dragger";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
 const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
+  const videoRef = useRef(null);
+  const name = localStorage.getItem("FNAME");
   const [convertDateThai] = DateCustom();
   const [
     currencyFormat,
@@ -22,6 +39,62 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [preData, setPreData] = useState(null);
   const { TextArea } = Input;
   const [defaultRadio, setDefaultRadio] = useState(null);
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [imageCap, setImageCap] = useState(null);
+  const [arrow, setArrow] = useState("Show");
+  const [fileList, setFileList] = useState([]);
+  const [imageList, setImageList] = useState([]);
+  const [switchCamera, setSwitchCamera] = useState();
+  const [stream, setStream] = useState(null); // เก็บ stream ไว้ป้องกันซ้ำ
+
+  useEffect(() => {
+    if (switchCamera) {
+      startWebcam();
+    }
+  }, [switchCamera]);
+
+  useEffect(() => {
+    console.log("loadImagesProduct");
+    setLoading(true);
+    loadImagesProduct();
+  }, []);
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
+
+  const loadImagesProduct = async () => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
+            dataDefault.contract_no + dataDefault.parcel_no_response
+          }`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+
+        setImageList(response.data);
+        if (response.data.length < 1) {
+          console.log("switchCamera1");
+          setLoading(true);
+          setSwitchCamera(true);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
 
   const sendStatus = async (data) => {
     setLoading(true);
@@ -33,6 +106,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
         .then(async (res) => {
           if (res.status === 200) {
             message.success("อัพเดทข้อมูลสำเร็จ");
+
             funcUpdateStatus({
               ...data,
             });
@@ -61,8 +135,48 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
+  const handleUploadAllImage = (values) => {
+    const formData = new FormData();
+
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
+            dataDefault.contract_no + dataDefault.parcel_no_response
+          }`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   const handleCancel = () => {
     console.log("Clicked cancel button");
+    stopWebcam();
     close(false);
   };
 
@@ -70,26 +184,29 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log(value);
   };
 
-  const onChange = (date, dateString) => {
-    console.log(date, dateString);
-    setPreData({ ...preData, dateNotice: dateString });
-  };
-
-  const onChangeReplyFile = (value) => {
+  const onChangeRadio = (value) => {
     console.log(value);
+    setDefaultRadio(value);
+    if (value === 2 && imageList.length < 1) {
+      stopWebcam();
+      if (switchCamera) {
+        setSwitchCamera(!switchCamera);
+      }
+    }
   };
 
   const onFinish = (values) => {
     console.log("Success:", values);
+    if (fileList?.length > 1) {
+      handleUploadAllImage(values);
+    }
     const putData = {
       ...dataDefault,
-      url_path: values.imageReplyFile,
       status: values.radioCus,
       parcel_no: values.ems,
       parcel_no_response: values.emsResponse,
+      date_response: dayjs().format("YYYY-MM-DD"),
     };
-
-    console.log("putData", putData);
 
     sendStatus(putData);
   };
@@ -115,6 +232,189 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
     const matchedOption = options.find((opt) => opt.value === record);
     return matchedOption ? matchedOption.label : "-"; // ถ้าไม่เจอ ให้แสดง "-"
+  };
+
+  const startWebcam = async () => {
+    setLoading(true);
+    try {
+      if (stream) {
+        console.log("Webcam is already running");
+        return; // ถ้ามี stream อยู่แล้ว ไม่ต้องเปิดใหม่
+      }
+      console.log("startWebcam");
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = newStream;
+      }
+
+      const track = newStream.getVideoTracks()[0];
+      const imageCapture = new ImageCapture(track);
+      setImageCap(imageCapture); // ตั้งค่า imageCap
+      setLoading(false);
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดในการเปิดกล้อง: ", err);
+      setLoading(false);
+    }
+  };
+
+  const takeScreenShot = async () => {
+    if (!imageCap) {
+      console.error("imageCap ยังไม่ได้ถูกตั้งค่า");
+      return;
+    }
+    setLoading(true);
+    if (capturedImages.length > 3) {
+      message.error("ภาพที่ต้องการบันทึกห้ามเกิน 4 รูป ");
+      setLoading(false);
+    } else {
+      try {
+        const blob = await imageCap.takePhoto();
+        const fileType = blob.type; // ตรวจสอบ MIME type
+        const imgUrl = URL.createObjectURL(blob);
+
+        // แปลง Blob เป็น File
+        const file = new File(
+          [blob],
+          `ไฟล์แนบ_${Date.now()}.${fileType.includes("pdf") ? "pdf" : "jpg"}`,
+          {
+            type: fileType,
+          }
+        );
+
+        console.log("ไฟล์ที่ได้:", file, "ประเภท:", fileType);
+
+        // ตรวจสอบว่าเป็นรูปภาพหรือ PDF
+        if (fileType.startsWith("image/")) {
+          setCapturedImages((prev) => [
+            ...prev,
+            { url: imgUrl, type: "image" },
+          ]);
+        } else if (fileType === "application/pdf") {
+          setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+        }
+
+        // อัปเดตรายการไฟล์
+        setFileList((prev) => [...prev, file]);
+
+        setLoading(false);
+      } catch (error) {
+        console.error("เกิดข้อผิดพลาดในการถ่ายภาพ:", error);
+      }
+    }
+  };
+
+  const stopWebcam = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject;
+      const tracks = stream.getTracks();
+
+      console.log("Stopping webcam...");
+
+      // หยุดทุก track ของ stream
+      tracks.forEach((track) => {
+        track.stop();
+      });
+
+      // เคลียร์ค่าของ videoRef
+      videoRef.current.srcObject = null;
+
+      // ล้างค่าของ state ที่เก็บ stream ไว้
+      setStream(null);
+    }
+  };
+
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+  };
+
+  const props = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+      const newFileListImg = newFileList.map((file) =>
+        URL.createObjectURL(file)
+      );
+      setCapturedImages(newFileListImg);
+    },
+    beforeUpload: (file) => {
+      if (fileList.length >= 4) {
+        message.error("เลือกไฟล์อัพโหลดได้ไม่เกิน 4 ไฟล์");
+        return false;
+      }
+
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
+
+      // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      const newFile = new File(
+        [file],
+        `ไฟล์แนบ_${Date.now()}.${fileType.includes("pdf") ? "pdf" : "jpg"}`,
+        { type: fileType }
+      );
+
+      console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      }
+
+      setFileList((prev) => [...prev, newFile]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const renderUpflie = () => {
+    stopWebcam();
+    return (
+      <Dragger {...props}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined style={{ color: "blue" }} />
+        </p>
+        <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+        <p className="ant-upload-hint">รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม</p>
+      </Dragger>
+    );
+  };
+
+  const renderCamera = () => {
+    return (
+      <>
+        <div>
+          <video ref={videoRef} autoPlay playsInline width="300px" />
+        </div>
+
+        <Tooltip
+          placement="bottom"
+          title="คลิกเพื่อถ่ายภาพ !"
+          arrow={mergedArrow}
+        >
+          <CameraOutlined
+            onClick={takeScreenShot}
+            style={{
+              color: "lightgreen",
+              fontSize: "40px",
+              marginLeft: "30%",
+            }}
+          />
+        </Tooltip>
+      </>
+    );
   };
 
   return (
@@ -229,34 +529,144 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   },
                 ]}
               >
-                <Radio.Group onChange={onChange} defaultValue={defaultRadio}>
+                <Radio.Group
+                  onChange={(e) => onChangeRadio(e.target.value)}
+                  defaultValue={defaultRadio}
+                  disabled={imageList.length > 0}
+                >
                   <Radio value={1}>จากใบตอบกลับ</Radio>
                   <Radio value={2}>จากเว็บไปษณีย์</Radio>
                 </Radio.Group>
               </Form.Item>
-              <Form.Item
-                label="ลิ้งค์เก็บรูปตอบกลับ"
-                name="imageReplyFile"
-                rules={[
-                  ({ getFieldValue }) => ({
-                    required: getFieldValue("radioCus") !== 3,
-                    message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-                  }),
-                ]}
-              >
-                <Input
-                  placeholder="กรุณาใส่ลิ้งค์แชร์จาก NAS"
-                  name="imageReplyFile"
-                  onChange={(e) => onChangeReplyFile(e.target.value)}
-                />
-              </Form.Item>
-              {/* <Form.Item label="หมายเหตุ" name="memo">
-                <TextArea
-                  rows={5}
-                  onChange={(e) => onChangeInput(e.target.value)}
-                 
-                />
-              </Form.Item> */}
+
+              {imageList?.length < 1 ? (
+                <Form.Item
+                  label={
+                    <Tooltip
+                      placement="bottom"
+                      title={
+                        switchCamera && defaultRadio === 1
+                          ? "คลิกเพื่อเปลี่ยนเป็นเลือกไฟล์ !"
+                          : !switchCamera && defaultRadio === 1
+                          ? "คลิกเพื่อเปลี่ยนเป็นถ่ายภาพ !"
+                          : "กรุณาเลือก *จากใบตอบกลับเท่านั้น !"
+                      }
+                      arrow={mergedArrow}
+                    >
+                      <Switch
+                        checkedChildren="เลือกไฟล์"
+                        unCheckedChildren="ถ่ายรูป "
+                        checked={switchCamera}
+                        onChange={() => setSwitchCamera(!switchCamera)}
+                        disabled={defaultRadio === 2}
+                        style={{
+                          backgroundColor: switchCamera ? "blue" : "lightgreen",
+                          color: "white",
+                        }}
+                      />
+                    </Tooltip>
+                  }
+                  name={"capture"}
+                >
+                  {switchCamera ? renderCamera() : renderUpflie()}
+                </Form.Item>
+              ) : null}
+
+              {capturedImages.length > 0 ? (
+                <Form.Item label="ภาพที่ต้องการบันทึก" name={"imageFile"}>
+                  <div
+                    style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
+                  >
+                    <Image.PreviewGroup>
+                      {capturedImages?.map((image, index) => {
+                        if (!image || !image.url) return null; // ป้องกัน error
+
+                        return (
+                          <div key={index} style={{ position: "relative" }}>
+                            {image?.type?.includes("pdf") ? (
+                              <FilePdfOutlined
+                                style={{
+                                  fontSize: "100px",
+                                  color: "red",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => window.open(image.url, "_blank")}
+                              />
+                            ) : (
+                              <Image
+                                src={image.url}
+                                alt={`Captured ${index}`}
+                                width="150px"
+                              />
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => deleteImg(index)}
+                              style={{
+                                position: "absolute",
+                                top: 5,
+                                right: 2,
+                                background: "red",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "20px",
+                                height: "20px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
+
+              {imageList.length > 0 ? (
+                <Form.Item label="ภาพที่บันทึก" name={"imageFile"}>
+                  <div
+                    style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
+                  >
+                    <Image.PreviewGroup>
+                      {imageList?.map((image, index) => (
+                        <div
+                          key={index}
+                          style={{ position: "relative", textAlign: "center" }}
+                        >
+                          {image.url.includes("pdf") ? (
+                            <>
+                              <FilePdfOutlined
+                                style={{ fontSize: "40px", color: "red" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{ display: "block", marginTop: "8px" }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
+
               <div style={{ textAlign: "center" }}>
                 <Button
                   onClick={handleCancel}
@@ -264,10 +674,11 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 >
                   ปิด
                 </Button>
-
-                <Button style={{ color: "green" }} htmlType="submit">
-                  บันทึก
-                </Button>
+                {capturedImages.length > 1 || imageList.length > 1 ? (
+                  <Button style={{ color: "green" }} htmlType="submit">
+                    บันทึก
+                  </Button>
+                ) : null}
               </div>
             </Form>
           </Card>

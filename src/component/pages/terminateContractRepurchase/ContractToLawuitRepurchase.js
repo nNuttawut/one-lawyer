@@ -950,5 +950,5 @@ const Main = () => {
   );
 };
 
-const ContractToLawuit = MotionHoc(Main);
-export default ContractToLawuit;
+const ContractToLawuitRepurchase = MotionHoc(Main);
+export default ContractToLawuitRepurchase;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Card } from "antd";
+import { Button, Modal } from "antd";
 import jsPDF from "jspdf";
 import "../../../../assets/font/THSarabunNew-normal";
 import CreateDocument from "./CreateDocument";

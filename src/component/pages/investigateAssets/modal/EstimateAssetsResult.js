@@ -10,12 +10,14 @@ import {
   Spin,
   Radio,
   Tooltip,
+  InputNumber,
 } from "antd";
 import {
   HEADERS_EXPORT,
   POST_CALCULATE_LAND,
   baseUrl,
   PUT_INVESTIGATE_ITEM_BY_ID,
+  GET_LOAN_BY_CONTNO,
 } from "../../../API/apiUrls";
 import axios from "axios";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
@@ -47,7 +49,7 @@ const EstimateAssetsResult = ({
   const [ralationSelect, setRalationSelect] = useState();
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
   const [radioTimeType, setRadioTimeType] = useState(null);
-
+  const [dataLoan, setDataLoan] = useState();
   const optionsAssetsType = [
     { label: "น.ส.4 จ", value: 1 },
     { label: "น.ส.3 ก.", value: 2 },
@@ -66,6 +68,7 @@ const EstimateAssetsResult = ({
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
+      loadData();
       setLoadingData(true);
       setLoadingLandDetailData(true);
       console.log("dataDefualt", dataDefualt);
@@ -106,9 +109,7 @@ const EstimateAssetsResult = ({
         wa: dataWa,
         investigateAssetsTime: dataDefualt.investigation_type_id,
         utm: dataDefualt.utm,
-        estimatedPrice: dataDefualt.estimated_price
-          ? currencyFormatPoint(dataDefualt.estimated_price)
-          : null,
+        estimatedPrice: dataDefualt.estimated_price,
       });
     }
   }, [isModal]);
@@ -133,6 +134,32 @@ const EstimateAssetsResult = ({
       pointAtCenter: true,
     };
   }, [arrow]);
+
+  const loadData = async () => {
+    setLoading(true);
+
+    try {
+      await axios
+        .get(baseUrl + GET_LOAN_BY_CONTNO + dataDefualt.CONTNO, {
+          headers: HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("res loan", res.data);
+            setDataLoan(res.data);
+          } else {
+            message.error("ไม่มีข้อมูล");
+            console.log("res Role", res.data);
+          }
+        })
+        .catch((err) => console.log("ไม่มีข้อมูล", err));
+    } catch (error) {
+      console.error("Error loading data:", error);
+      message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const setOptionLandDetail = () => {
     console.log("setOptionLandDetail", loadLandDetailList);
@@ -174,33 +201,8 @@ const EstimateAssetsResult = ({
     setIsModal(false);
   };
 
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
-
   const onChangeEstimatedPrice = (value) => {
     console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        estimatedPrice: formattedValue,
-      });
-      console.log("formattedValue", formattedValue);
-    } else {
-      form.setFieldsValue({
-        estimatedPrice: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangeSelectAssetPropotyType = (value) => {
@@ -539,7 +541,7 @@ const EstimateAssetsResult = ({
             onChange={(e) => onChangeInputRai(e.target.value)}
           />
         </Form.Item>
-        v{" "}
+
         <Tooltip
           placement="bottom"
           title="กรุณากรอกเลข`งาน`เป็นจำนวนเต็มไม่เกิน 3 "
@@ -626,8 +628,7 @@ const EstimateAssetsResult = ({
           <>
             <Form.Item label="ตำแหน่ง" name="latlon">
               <Input
-                placeholder="
-8.17240819, 99.03230145"
+                placeholder="8.17240819, 99.03230145"
                 onChange={(e) => onChangeInputLatLon(e.target.value)}
               />
             </Form.Item>
@@ -641,12 +642,34 @@ const EstimateAssetsResult = ({
           </div>
         ) : null}
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
-          <Input
-            name="estimatedPrice"
-            onChange={(e) => onChangeEstimatedPrice(e.target.value)}
+          <InputNumber
+            suffix="บาท"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+            size="large"
             placeholder="รอประเมินราคา"
+            style={{ width: "100%", color: "black" }}
+            onChange={(value) => onChangeEstimatedPrice(value)}
           />
         </Form.Item>
+        <Form.Item label="ยอดจัด" name="NCSHPRC">
+          {currencyFormatComma(dataLoan?.LOAN?.NCSHPRC)} {"บาท"}
+        </Form.Item>
+        <Form.Item label="ยอดจัดรวมดอกเบี้ย" name="TOTPRC">
+          {currencyFormatComma(dataLoan?.LOAN?.TOTPRC)} {"บาท"}
+        </Form.Item>
+        {dataDefualt.mortgage_balance ? (
+          <>
+            <Form.Item label="เจ้าหนี้จำนอง" name="mortgage">
+              {dataDefualt.mortgagee}
+            </Form.Item>
+            <Form.Item label="ยอดหนี้จำนอง" name="mortgageBalance">
+              {currencyFormatComma(dataDefualt.mortgage_balance)} {"บาท"}
+            </Form.Item>
+          </>
+        ) : null}
         <Form.Item label="เลือกผู้สืบทรัพย์" name="investigatorAsset">
           <Select
             placeholder="เลือกผู้สืบทรัพย์"

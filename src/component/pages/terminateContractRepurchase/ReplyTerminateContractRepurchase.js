@@ -62,32 +62,6 @@ const Main = () => {
     { value: 2, label: "ตอบกลับ" },
   ];
 
-  // const optionSelectCode = [
-  //   { value: "all", label: "ทั้งหมด" },
-  //   {
-  //     label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
-  //     title: "บอกเลิกสัญญาคนค้ำ(116)",
-  //     options: [
-  //       { value: "P21", label: "P21" },
-  //       { value: "P22", label: "P22" },
-  //       { value: "P23", label: "P23" },
-  //       { value: "P31", label: "P31" },
-  //       { value: "P32", label: "P32" },
-  //       { value: "P33", label: "P33" },
-  //       { value: "P41", label: "P41" },
-  //     ],
-  //   },
-  //   {
-  //     label: <span>บอกเลิกสัญญาผู้เช่าซื้อ(119)</span>,
-  //     title: "บอกเลิกสัญญาผู้เช่าซื้อ(119)",
-  //     options: [
-  //       { value: "P11", label: "P11" },
-  //       { value: "P12", label: "P12" },
-  //       { value: "P13", label: "P13" },
-  //     ],
-  //   },
-  // ];
-
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
       return false;
@@ -164,7 +138,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.contract_schema
+          item.account_type === "repurchase"
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -173,6 +147,7 @@ const Main = () => {
       function isEnglishOnly(str) {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
+      console.log("data", data);
 
       let filteredData;
 
@@ -286,7 +261,6 @@ const Main = () => {
       );
       console.log(dayjs(startDate).format("YYYY-MM-DD"));
 
-      console.log(selectSearch);
       setArrayTable(selectSearch);
       setTableLength(selectSearch.length);
     } else {
@@ -364,13 +338,17 @@ const Main = () => {
     if (!record.created_date) {
       return null;
     }
-    const recordDate = dayjs(record.created_date).startOf("day");
+
+    const recordDate = dayjs(record.created_date)
+      .subtract(7, "hour")
+      .startOf("day");
+
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color;
     color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.created_date
-      ? convertDateThaiShort(record.created_date)
+      ? convertDateThaiShort(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
@@ -1017,7 +995,12 @@ const Main = () => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(blob, `นำส่งไปษณีย์ ${dayjs().format("DD-MM-YYYY")}.xlsx`);
+      saveAs(
+        blob,
+        `นำส่งไปษณีย์(หนังสือแจ้งสิทธ์ซื้อรถคืน) ${dayjs().format(
+          "DD-MM-YYYY"
+        )}.xlsx`
+      );
     });
   };
 
@@ -1057,20 +1040,7 @@ const Main = () => {
         </>
       ),
     },
-    {
-      title: "รายละเอียด",
-      dataIndex: "contract_no",
-      key: "contract_no",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {convertDateThaiShort(record.datetime)} <br />
-          {renderType(record.pay_type)}
-          <br />
-          {record.account_type}
-        </>
-      ),
-    },
+
     {
       title: "ชื่อ-นามสกุล",
       dataIndex: "customer_fullname",
@@ -1091,51 +1061,7 @@ const Main = () => {
         </>
       ),
     },
-    // {
-    //   title: "ยี่ห้อ",
-    //   dataIndex: "brand",
-    //   key: "brand", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-    //   align: "center",
-    // },
-    // {
-    //   title: "ทะเบียน",
-    //   dataIndex: "register_no",
-    //   key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-    //   align: "center",
-    // },
-    // {
-    //   title: "ค้างงวด",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.overdue_installment_count
-    //         ? record.overdue_installment_count
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "เงินค้าง",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.overdue_installment_amount
-    //         ? currencyFormatPoint(record.overdue_installment_amount)
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "ค่าทวงถาม",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.dept_collection_fees
-    //         ? currencyFormatComma(record.dept_collection_fees)
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
+
     {
       title: "วันที่นำข้อมูลเข้า",
       align: "center",
@@ -1330,5 +1256,5 @@ const Main = () => {
   );
 };
 
-const ReplyTerminateContract = MotionHoc(Main);
-export default ReplyTerminateContract;
+const ReplyTerminateContractRepurchase = MotionHoc(Main);
+export default ReplyTerminateContractRepurchase;

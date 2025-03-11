@@ -42,7 +42,6 @@ function Header({ title, onPress, onClick }) {
     localStorage.removeItem("ROLE_ID");
     localStorage.removeItem("ACTIVE_STATUS");
     localStorage.removeItem("TOKEN");
-    localStorage.removeItem("lineStatus");
     localStorage.removeItem("line");
     navigate("/");
     window.location.reload();

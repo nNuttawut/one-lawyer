@@ -8,7 +8,6 @@ import LogIn from "./component/pages/LogIn";
 import Loginline from "./component/pages/lineLogIn/LoginLine";
 import Liff from "./component/pages/lineLogIn/Liff";
 const TOKEN = localStorage.getItem("TOKEN");
-const lineStatus = localStorage.getItem("lineStatus");
 const line = localStorage.getItem("line");
 
 function App() {

@@ -45,10 +45,21 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [searchEdit, setSearchEdit] = useState(null);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
 
   const loadData = async (data) => {
     setLoading(true);
@@ -328,12 +339,15 @@ const Main = () => {
                       </Button>
                     </p>
                   ),
-                  rowExpandable: (record) => {
-                    const recordDate = dayjs(record.DATE).startOf("day");
-                    const today = dayjs().startOf("day");
-                    const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference > 30 && userId === record.LAWYER_ID;
-                  },
+                  // rowExpandable: (record) => {
+                  //   const recordDate = dayjs(record.DATE).startOf("day");
+                  //   const today = dayjs().startOf("day");
+                  //   const daysDifference = today.diff(recordDate, "days");
+                  //   return daysDifference > 0 && userId === record.LAWYER_ID;
+                  // },
+                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
               />
             </Col>

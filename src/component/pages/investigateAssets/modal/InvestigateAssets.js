@@ -30,6 +30,7 @@ import dayjs from "dayjs";
 import EditAssetsDetail from "./EditAssetDetail";
 import { Link } from "react-router-dom";
 import DateCustom from "../../../../hook/DateCustom";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
 const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [form] = Form.useForm();
@@ -136,7 +137,6 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("governmentOfficerData---->", governmentOfficerData);
 
     setLoading(true);
-
     try {
       console.log("investigateStatus ", postDataInvestigate);
       await axios
@@ -163,7 +163,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-
+      handleUploadAllImage();
       if (governmentOfficerData.length > 0) {
         console.log("governmentOfficerData", governmentOfficerData);
         const promises = governmentOfficerData.map(async (item) => {
@@ -200,6 +200,42 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setLoading(false);
       handleCancel();
     }
+  };
+  console.log(dataPropertyList);
+
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+
+    dataPropertyList?.fileList?.forEach((file) => {
+      formData.append("files", file);
+    });
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/สืบทรัพย์_$${dataPropertyList?.CUSTOMER_ID}${dataPropertyList?.possessor}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleUpdateData = (data) => {
@@ -406,7 +442,6 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       },
     }));
   };
-  console.log("governmentOfficers---->>>>", governmentOfficers);
 
   const handleCheckBoxGroupGoverment = () => {
     return (
@@ -513,7 +548,6 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const onChangeInvestiGateResult = ({ target: { value } }) => {
-    console.log("radio2 checked", value);
     setRadioStatus(value);
   };
 

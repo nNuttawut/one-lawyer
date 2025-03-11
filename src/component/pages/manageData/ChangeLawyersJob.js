@@ -324,7 +324,6 @@ const Main = () => {
     const dataLoan = optionsLone.filter((item) => {
       return recordData.LOAN_TYPE_ID === item.value;
     });
-    console.log("dataLoan", dataLoan);
 
     return dataLoan[0]?.label;
   };

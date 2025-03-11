@@ -354,7 +354,7 @@ const Main = () => {
     console.log("mergeDataWithGuarantors");
 
     const mergedData = data.reduce((acc, record) => {
-      const mainData = (record.address || []).map((addr) => ({
+      const mainData = (record.ADDRESS || []).map((addr) => ({
         ...record,
         cusType: 0,
         GCODE: record.GCODE,
@@ -367,11 +367,11 @@ const Main = () => {
       }));
 
       const guarantorData = (record.guarantors || []).flatMap((guarantor) =>
-        (guarantor.address || []).map((addr) => ({
+        (guarantor.ADDRESS || []).map((addr) => ({
           ...record,
           cusType: parseInt(guarantor.GARNO),
           NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`.trim(),
-          address: addr,
+          ADDRESS: addr,
         }))
       );
 
@@ -591,7 +591,7 @@ const Main = () => {
           data.CONTNO,
           data.NAME,
           data.cusType,
-          data.address.ZIP,
+          data.ADDRESS.ZIP,
           data.TYPE,
           data.REGNO,
           data.EXP_PRD,
@@ -781,7 +781,6 @@ const Main = () => {
               </Space>
               <Search
                 placeholder="ค้นหาสัญญา"
-                // onSearch={onQuery}
                 enterButton
                 onChange={search}
                 style={{

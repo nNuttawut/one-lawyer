@@ -20,7 +20,6 @@ export default function Loginline() {
   const activeStatus = localStorage.getItem("ACTIVE_STATUS");
   const lineId = localStorage.getItem("line");
   const lineName = localStorage.getItem("userNameLine");
-  const lineStatus = localStorage.getItem("lineStatus");
 
   const sendData = async () => {
     console.log("ssssss");
@@ -69,11 +68,9 @@ export default function Loginline() {
   const handleStatus = (value) => {
     if (value) {
       console.log("value true", value);
-      localStorage.setItem("lineStatus", value);
       navigate("/liff");
     } else {
       console.log("value false", value);
-      localStorage.setItem("lineStatus", value);
       console.log("lineId", lineId);
 
       if (lineId === "null" && userId) {

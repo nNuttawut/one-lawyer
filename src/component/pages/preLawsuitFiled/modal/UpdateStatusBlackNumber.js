@@ -7,7 +7,7 @@ import {
   Modal,
   Card,
   message,
-  InputNumber,
+  Spin,
 } from "antd";
 import {
   baseUrl,
@@ -19,9 +19,12 @@ import {
 import axios from "axios";
 import {
   AWAITING_JUDMENT,
+  PARAM_PUBLIC,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import Dragger from "antd/es/upload/Dragger";
+import { InboxOutlined } from "@ant-design/icons";
 
 const UpdateStatusBlackNumber = ({
   open,
@@ -29,21 +32,18 @@ const UpdateStatusBlackNumber = ({
   dataDefault,
   funcUpdateStatus,
 }) => {
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [memoText, setMemoText] = useState("");
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
-  const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [dataStore, setDataStore] = useState();
   const [dataForm, setDataForm] = useState({});
-  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
-    CurrencyFormat();
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     setIsModal(open);
+
     if (isModal) {
       loadData();
       console.log("loadData", dataDefault);
@@ -54,6 +54,44 @@ const UpdateStatusBlackNumber = ({
     console.log("Clicked cancel button");
     close(false);
     setIsModal(false);
+  };
+  console.log(fileList);
+
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/คำฟ้อง${dataDefault.CONTNO}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const loadData = async () => {
@@ -144,39 +182,39 @@ const UpdateStatusBlackNumber = ({
     console.log(value);
   };
 
-  const onChangeReplyFile = (value) => {
-    console.log(value);
-  };
-
   const onFinish = (values) => {
     console.log(values);
+    if (fileList.length < 1) {
+      message.error("กรุณาเลือกไฟล์เพื่ออัปโหลด ***ข้อมูลที่ต้องการอัปโหลด");
+    } else {
+      const putData = {
+        ...dataLoadLawSuit,
+        black_case_number: values.blackNumber,
+        consideration_date: dataForm.considerationDate,
+        attorney_fees:
+          dataLoadLawSuit?.LOAN_TYPE_ID === 1
+            ? 3500
+            : dataLoadLawSuit?.LOAN_TYPE_ID === 2
+            ? 2500
+            : 0,
+        // file_path: values.imageReplyFile,
+      };
+      const postStatus = {
+        MAIN_STATUS_ID: AWAITING_JUDMENT,
+        LOAN_ID: dataDefault.id,
+        USER_ID: dataDefault.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: dataForm.considerationDate,
+        PROCESS_ID: STATUS_PROCESS_PROGRESS,
+      };
 
-    const putData = {
-      ...dataLoadLawSuit,
-      black_case_number: values.blackNumber,
-      consideration_date: dataForm.considerationDate,
-      attorney_fees:
-        dataLoadLawSuit?.LOAN_TYPE_ID === 1
-          ? 3500
-          : dataLoadLawSuit?.LOAN_TYPE_ID === 2
-          ? 2500
-          : 0,
-      file_path: values.imageReplyFile,
-    };
-    const postStatus = {
-      MAIN_STATUS_ID: AWAITING_JUDMENT,
-      LOAN_ID: dataDefault.id,
-      USER_ID: dataDefault.LAWYER_ID,
-      LOAN_TYPE_ID: dataDefault.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefault.LAW_TYPE_ID,
-      MEMO: values.memo,
-      DATE: dataForm.considerationDate,
-      PROCESS_ID: STATUS_PROCESS_PROGRESS,
-    };
-
-    console.log("postStatus", postStatus);
-    console.log("putData", putData);
-    sendStatus(putData, postStatus);
+      console.log("postStatus", postStatus);
+      console.log("putData", putData);
+      handleUploadAllImage();
+      sendStatus(putData, postStatus);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -186,6 +224,22 @@ const UpdateStatusBlackNumber = ({
 
   const onChangeInputMemo = (value) => {
     console.log(value);
+  };
+
+  const props = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
   };
 
   const FormDisabledDemo = () => {
@@ -243,22 +297,16 @@ const UpdateStatusBlackNumber = ({
             />
           </Form.Item>
 
-          <Form.Item
-            label="ลิ้งเก็บรูปส่วนฟ้อง"
-            name="imageUrlFile"
-            rules={[
-              {
-                required: true,
-                message: "กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง !",
-              },
-            ]}
-          >
-            <Input
-              placeholder="กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง"
-              name="imageReplyFile"
-              style={{ width: "100%" }}
-              onChange={(e) => onChangeReplyFile(e.target.value)}
-            />
+          <Form.Item label="ข้อมูลที่ต้องการอัปโหลด" name="imageUrlFile">
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              </p>
+            </Dragger>
           </Form.Item>
           <Form.Item label="หมายเหตุ" name="memo">
             <TextArea
@@ -292,9 +340,11 @@ const UpdateStatusBlackNumber = ({
         width={850}
         footer={null}
       >
-        <Card>
-          <FormDisabledDemo />
-        </Card>
+        <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Card>
+            <FormDisabledDemo />
+          </Card>
+        </Spin>
       </Modal>
     </>
   );

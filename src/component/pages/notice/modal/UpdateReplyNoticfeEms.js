@@ -11,7 +11,6 @@ import {
   Radio,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { CameraOutlined } from "@ant-design/icons";
 import axios from "axios";
 import {
   baseUrl,
@@ -33,8 +32,6 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
-import TokenCheck from "../../../../hook/TokenCheck";
-import { stream } from "xlsx";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 

@@ -303,6 +303,8 @@ const Main = () => {
       defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
   ];
+  console.log("ROLE_ID", ROLE_ID);
+
   if (ROLE_ID === "1" || ROLE_ID === "7") {
     return (
       <>
@@ -357,10 +359,7 @@ const Main = () => {
                       </p>
                     ),
                     rowExpandable: (record) =>
-                      ROLE_ID === "2" ||
-                      ROLE_ID === "3" ||
-                      ROLE_ID === "4" ||
-                      ROLE_ID === "1",
+                      ROLE_ID === "7" || ROLE_ID === "1",
                     expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                     onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                   }}

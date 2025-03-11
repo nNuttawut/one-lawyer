@@ -49,7 +49,7 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
   return (
     <>
       <Modal
-        title="ตอบกลับบอกเลิกสัญญา"
+        title="รายละเอียดบอกเลิกสัญญา"
         open={open}
         onCancel={handleCancel}
         width={650}

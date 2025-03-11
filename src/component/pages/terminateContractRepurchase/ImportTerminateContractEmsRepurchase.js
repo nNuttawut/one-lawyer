@@ -16,7 +16,6 @@ import MotionHoc from "../../../utils/MotionHoc";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
-  CloseCircleOutlined,
   ImportOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
@@ -25,7 +24,6 @@ import FailedImport from "./modal/FailedImport";
 import { HEADERS_EXPORT, POST_CANCEL, baseUrl } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import { color } from "framer-motion";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -38,7 +36,7 @@ const Main = () => {
   const [importLoad, setImportLoad] = useState(true);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -87,19 +85,14 @@ const Main = () => {
         const sheetData = XLSX.utils.sheet_to_json(sheet);
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
-          contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
-          pay_type: row["ประเภทจ่าย"] || "", // เลขที่สัญญา
-          account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
-          datetime: row["รอบวันออกจดหมายในระบบ"] || "", // เลขที่สัญญา
+          datetime: row["วันออกจดหมาย"] || "",
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
+          account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
           customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
           customer_type_id: row["ประเภทลูกค้า"],
           zipcode: row["zipcode"],
           brand: row["ยี่ห้อ"] || "", // ยี่ห้อ
           register_no: row["ทะเบียน"] || "", // ทะเบียน
-          overdue_installment_count: row["ค้างงวด"] || "", // ค้างงวด
-          overdue_installment_amount: row["เงินค้าง"] || "", // เงินค้าง
-          dept_collection_fees: row["ค่าทวงถาม"] || "", // ค่าทวงถาม
           parcel_no: row["ems จดหมาย"] || "", // ค่าทวงถาม
           parcel_no_response: row["ems ใบตอบกลับ"] || "", // ค่าทวงถาม
         }));
@@ -157,76 +150,6 @@ const Main = () => {
     console.log(e);
     message.error("ยกเลิกการลบสัญญา");
   };
-
-  // ไม่ได้หน่วงเวลา
-  // const insertData = async () => {
-  //   setLoading(true);
-  //   let duplicate = 0;
-  //   let success = 0;
-  //   console.log("post data");
-  //   try {
-  //     if (!arrayTable || arrayTable.length === 0) {
-  //       message.error("ไม่มีข้อมูล !!");
-  //       return;
-  //     }
-
-  //     const promises = arrayTable.map(async (item) => {
-  //       const arrayData = item;
-  //       console.log("arrayData", arrayData);
-
-  //       if (!arrayData) {
-  //         message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
-  //         return null;
-  //       }
-  //       await axios
-  //         .post(baseUrl + POST_CANCEL, arrayData, {
-  //           headers: HEADERS_EXPORT,
-  //         })
-  //         .then((resQuery) => {
-  //           if (resQuery.status === 201) {
-  //             success += 1;
-  //             console.log(resQuery.data);
-  //             setImportLoad(false);
-  //             setArrayTable([]);
-  //             setTableLength([]);
-  //             return resQuery.data;
-  //           } else {
-  //             if (resQuery.data === "Duplicate Contract No.") {
-  //               console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
-  //               duplicate += 1;
-  //               return null;
-  //             }
-  //             console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
-  //             return null;
-  //           }
-  //         })
-  //         .catch((err) => {
-  //           console.error(err);
-  //           message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
-  //           setFailedData({ ...failedData, setFailedData: arrayData });
-  //           setImportLoad(false);
-  //           return null;
-  //         });
-  //     });
-
-  //     const response = await Promise.all(promises);
-  //     console.log("results", response);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //     message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
-  //   } finally {
-  //     setLoading(false);
-
-  //     if (success > 0) {
-  //       message.success(`นำเข้าข้อมูลสำเร็จ`);
-  //       setArrayTable([]);
-  //     }
-  //     if (duplicate > 0) {
-  //       message.error(`มีเลขสัญญาอยู่ในระบบแล้ว`);
-  //       setArrayTable([]);
-  //     }
-  //   }
-  // };
 
   const insertData = async () => {
     setLoading(true);
@@ -301,7 +224,7 @@ const Main = () => {
       if (failedRecords.length > 0) {
         setFailedData(failedRecords);
         message.error(
-          `มีข้อผิดพลาดในบางรายการ (${failedRecords.length} รายการ)`
+          ` มีข้อผิดพลาดในบางรายการ (${failedRecords.length} รายการ)`
         );
       }
 
@@ -322,27 +245,9 @@ const Main = () => {
       message.error("ข้อมูล ems ไม่ครบทั้งหมด");
     }
   };
+
   const cancelInsert = () => {
     message.error("ยกเลิกการนำเข้าข้อมูล");
-  };
-
-  const renderType = (record) => {
-    const options = [
-      { value: 115, label: "จดหมายส่งผู้คนค้ำ(115)" },
-      { value: 116, label: "จดหมายส่งผู้คนค้ำ(116)" },
-      { value: 119, label: "บอกเลิกสัญญา(119)" },
-      { value: 129, label: "ค่าบอกเลิกสัญญา(No ems)(129)" },
-      { value: "vsfhp", label: "สัญญา 2" },
-      { value: "psfhp", label: "สัญญา 3" },
-      { value: "rpsl", label: "สัญญา 3(ใหม่)" },
-      { value: "sfhp", label: "สัญญา 8" },
-    ];
-
-    if (!record) {
-      return null;
-    }
-    const matchedOption = options.find((opt) => opt.value === record);
-    return matchedOption ? matchedOption.label : "-"; // ถ้าไม่เจอ ให้แสดง "-"
   };
 
   const columns = [
@@ -354,31 +259,21 @@ const Main = () => {
         <>{index + 1}</> // ใช้ index ที่ถูกส่งมาจาก Table เพื่อเพิ่มลำดับแถว
       ),
     },
-    {
-      title: "สัญญา",
-      dataIndex: "contract_schema",
-      key: "contract_schema", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-      render: (text, record) => <>{renderType(record.contract_schema)}</>,
-    },
-    {
-      title: "ประเภทจ่าย",
-      dataIndex: "pay_type",
-      key: "pay_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-      render: (text, record) => <>{renderType(record.pay_type)}</>,
-    },
-    {
-      title: "ประเภทบัญชี",
-      dataIndex: "account_type",
-      key: "account_type", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-      align: "center",
-    },
+
     {
       title: "วันที่ออกจดหมาย",
       align: "center",
       render: (text, record) => (
         <>{record.datetime ? convertDateThaiShort(record.datetime) : null}</>
+      ),
+    },
+    {
+      title: "ประเภทบัญชี",
+      dataIndex: "account_type",
+      key: "account_type",
+      align: "center",
+      render: (text, record) => (
+        <>{record.account_type ? record.account_type : null}</>
       ),
     },
     {
@@ -421,39 +316,6 @@ const Main = () => {
       dataIndex: "register_no",
       key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
       align: "center",
-    },
-    {
-      title: "ค้างงวด",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.overdue_installment_count
-            ? record.overdue_installment_count
-            : null}{" "}
-        </>
-      ),
-    },
-    {
-      title: "เงินค้าง",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.overdue_installment_amount
-            ? currencyFormatPoint(record.overdue_installment_amount)
-            : null}{" "}
-        </>
-      ),
-    },
-    {
-      title: "ค่าทวงถาม",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {record.dept_collection_fees
-            ? currencyFormatComma(record.dept_collection_fees)
-            : null}{" "}
-        </>
-      ),
     },
     {
       title: "ems จดหมาย",
@@ -535,7 +397,7 @@ const Main = () => {
                     style={{ color: "green", marginRight: "5px" }}
                     icon={<ImportOutlined />}
                   >
-                    นำเข้า Excel
+                    นำเข้า Excel EMS
                   </Button>
                 </Upload>
               </Space>
@@ -573,5 +435,5 @@ const Main = () => {
   );
 };
 
-const ImportTerminateContractEms = MotionHoc(Main);
-export default ImportTerminateContractEms;
+const ImportTerminateContractEmsRepurchase = MotionHoc(Main);
+export default ImportTerminateContractEmsRepurchase;

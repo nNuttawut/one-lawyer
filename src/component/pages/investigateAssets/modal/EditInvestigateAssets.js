@@ -222,7 +222,7 @@ const EditInvestigateAssets = ({
             })
             .catch((err) => {
               console.error(err);
-              message.error(`แก้ไขข้อมูลไม่สำเร็จ7`);
+              message.error(`แก้ไขข้อมูลไม่สำเร็จ`);
             });
         });
       }
@@ -375,8 +375,6 @@ const EditInvestigateAssets = ({
       sendStatus(putDataInvestigate);
     }
   };
-
-  console.log("dataPropertyList--->", dataPropertyList);
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
@@ -692,7 +690,7 @@ const EditInvestigateAssets = ({
                       }
                       description={
                         <>
-                          <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.districtName} จังหวัด${item.provinceName}`}</p>
+                          <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
                           <p>{`หมายเหตุ ${item.mark}`}</p>
                         </>
                       }

@@ -285,7 +285,7 @@ const Main = () => {
         (item) =>
           item.withdraw_process_id === statusId &&
           lawyerId === item.USER_ID &&
-          item.COMPANY_ID === companieSelect
+          item.COMPANY_ID === 2
       );
 
       setArrayTable(useData);
@@ -925,64 +925,374 @@ const Main = () => {
     setTableLength(newData.length);
   };
 
-  const setDataExportPrint = () => {
-    let preData = [];
-    let totalResult = 0;
-    let groupedData = {}; // ใช้เก็บข้อมูลที่รวมแล้ว
+  // const setDataExportPrint = () => {
+  //   let preData = [];
+  //   let totalResult = 0;
+  //   let groupedData = {}; // ใช้เก็บข้อมูลที่รวมแล้ว
 
-    if (selectedRows) {
-      console.log("selectedRows------>", selectedRows);
+  //   if (selectedRows) {
+  //     console.log("selectedRows------>", selectedRows);
+  //     selectedRows.forEach((expense) => {
+  //       expense.expenseList.forEach((element) => {
+  //         const key = `${element.CONTNO}-${convertDateThai(
+  //           element.created_date
+  //         )}`;
+
+  //         if (!groupedData[key]) {
+  //           groupedData[key] = {
+  //             CONTNO: element.CONTNO,
+  //             created_date: convertDateThai(element.created_date),
+  //             expenses: [],
+  //           };
+  //         }
+
+  //         // เพิ่มข้อมูลรายการค่าใช้จ่ายแต่ละรายการ
+  //         if (element.withdraw) {
+  //           groupedData[key].expenses.push({
+  //             description: element.expense_description,
+  //             amount: currencyFormatPoint(element.withdraw),
+  //             expense_type_id: element.expense_type_id, // เพิ่มเพื่อการจัดเรียง
+  //           });
+  //         }
+
+  //         totalResult += element.withdraw;
+  //       });
+  //     });
+
+  //     // จัดเรียง expenses ตาม expense_type_id (น้อยไปหามาก) ภายในแต่ละกลุ่ม
+  //     Object.values(groupedData).forEach((item) => {
+  //       item.expenses.sort((a, b) => a.expense_type_id - b.expense_type_id);
+  //     });
+
+  //     // แปลงข้อมูลจาก Object เป็น Array และจัดรูปแบบ rowspan
+  //     Object.values(groupedData).forEach((item, index) => {
+  //       item.expenses.forEach((expense, expenseIndex) => {
+  //         preData.push([
+  //           expenseIndex === 0 ? index + 1 : "", // ลำดับ (rowspan)
+  //           expenseIndex === 0 ? item.CONTNO : "", // เลขที่สัญญา (rowspan)
+  //           expenseIndex === 0 ? item.created_date : "", // วันที่ทำรายการ (rowspan)
+  //           expense.description, // รายการ
+  //           expense.amount, // จำนวนเงิน
+  //         ]);
+  //       });
+  //     });
+
+  //     // เพิ่มแถวรวมยอด
+  //     preData.push(["", "", "", "รวม", currencyFormatPoint(totalResult)]);
+  //   }
+
+  //   setDataExport(preData);
+  //   console.log("preData----->", preData);
+  // };
+
+  // const createPdf = () => {
+  //   const pdf = new jsPDF();
+
+  //   let pdfPositionX = 0;
+  //   let pdfPositionY = 0;
+  //   let pdfPositionXCenter = 0;
+  //   const marginL = 0;
+  //   const marginC = 0;
+  //   let imageWidth = 45; // Adjust width to fit your needs
+  //   let imageHeight = 25; // Adjust height to fit your needs
+  //   let imageWidthImg = 25; // Adjust width to fit your needs
+  //   let imageHeightImg = 15; // Adjust height to fit your needs
+
+  //   const imageUrl =
+  //     companieSelect.value === 1
+  //       ? logoLeasing
+  //       : companieSelect.value === 2
+  //       ? logoMoney
+  //       : companieSelect.value === 3
+  //       ? logoKSM
+  //       : logoLeasing;
+  //   // PDF configuration
+  //   if (companieSelect.value === 2) {
+  //     pdfPositionY += 5;
+  //   } else if (companieSelect.value === 3) {
+  //     imageHeight = 30;
+  //   }
+  //   pdfPositionXCenter += 150;
+  //   pdf.addImage(
+  //     imageUrl,
+  //     "PNG",
+  //     pdfPositionXCenter,
+  //     pdfPositionY,
+  //     imageWidth,
+  //     imageHeight
+  //   );
+  //   // pdf.setFont("THSarabunNew", "normal");
+  //   pdf.setFont("THSarabunNew", "bold");
+  //   pdf.setFontSize(14);
+
+  //   pdf.text(`วันที่พิมพ์ ${convertDateThai()}`, pdfPositionX + 10, 10);
+
+  //   pdf.setFontSize(16);
+  //   if (companieSelect.value === 1) {
+  //     pdfPositionY += 30;
+  //     pdf.text(
+  //       `${companieSelect.label}`,
+  //       pdfPositionXCenter - 11,
+  //       pdfPositionY
+  //     );
+  //     pdf.text(`${companieSelect.address}`, 95, (pdfPositionY += 8));
+  //   } else if (companieSelect.value === 2) {
+  //     pdfPositionY += 33;
+  //     pdf.text(
+  //       `${companieSelect.label}`,
+  //       pdfPositionXCenter - 10,
+  //       pdfPositionY
+  //     );
+  //     pdf.text(
+  //       `${companieSelect.address}`,
+  //       pdfPositionXCenter - 54,
+  //       (pdfPositionY += 8)
+  //     );
+  //   } else if (companieSelect.value === 3) {
+  //     pdfPositionY += 25;
+  //     pdf.text(
+  //       `${companieSelect.label}`,
+  //       pdfPositionXCenter - 40,
+  //       (pdfPositionY += 3)
+  //     );
+  //     pdf.text(
+  //       `${companieSelect.address}`,
+  //       pdfPositionXCenter - 60,
+  //       (pdfPositionY += 8)
+  //     );
+  //   }
+
+  //   pdfPositionY += 10;
+  //   // เพิ่มข้อความ
+  //   pdf.text(
+  //     "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
+  //     pdfPositionX + 90,
+  //     pdfPositionY
+  //   );
+  //   if (statusId === 3) {
+  //     pdf.setTextColor(144, 238, 144);
+  //     pdf.text(" (อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
+  //   } else if (statusId === 2) {
+  //     pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
+  //     pdf.text(" (ไม่อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
+  //   } else {
+  //     pdf.setTextColor(0, 0, 255);
+  //     pdf.text(" (รอดำเนินการ)", pdfPositionXCenter + 25, pdfPositionY);
+  //   }
+
+  //   pdfPositionY += 5;
+  //   // เพิ่มตาราง
+  //   pdf.autoTable({
+  //     head: [["ลำดับ", "เลขที่สัญญา", "วันที่ขอเบิก", "รายการ", "จำนวน(บาท)"]],
+  //     body: dataExport,
+  //     startY: pdfPositionY,
+  //     styles: {
+  //       font: "THSarabunNew", // ฟอนต์ภาษาไทย
+  //       fontSize: 14,
+  //     },
+  //     headStyles: {
+  //       fillColor: [0, 102, 204], // สีพื้นหลัง (RGB) ของ header
+  //       textColor: [255, 255, 255], // สีข้อความ (สีขาว)
+  //       fontSize: 12, // ขนาดตัวอักษรใน header
+  //       halign: "center", // จัดข้อความให้อยู่ตรงกลางใน header
+  //     },
+  //     columnStyles: {
+  //       0: { halign: "center" }, // ลำดับอยู่ตรงกลาง
+  //       1: { halign: "center" }, // ค่าธรรมเนียมศาลอยู่ตรงกลาง
+  //       2: { halign: "center" }, // ค่าอากรสแตมป์อยู่ตรงกลาง
+  //       3: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
+  //       4: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
+  //       5: { halign: "center" }, // ค่าอากรสแตมป์อยู่ตรงกลาง
+  //       6: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
+  //       7: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
+  //     },
+  //     margin: { top: 10, left: 10, right: 10 },
+  //   });
+  //   const finalY = pdf.lastAutoTable.finalY;
+  //   pdf.setTextColor(0, 0, 0);
+
+  //   // เพิ่มข้อความด้านล่างตาราง
+  //   if (lawyerName.id === 2) {
+  //     //ลายเซ็นต์ ทนาย
+  //     const imageUrl = lawyerYut; // Replace with your image URL or base64
+  //     pdf.addImage(
+  //       imageUrl,
+  //       "PNG",
+  //       55,
+  //       finalY + 7,
+  //       imageWidthImg,
+  //       imageHeightImg
+  //     );
+  //   } else if (lawyerName.id === 3) {
+  //     //ลายเซ็นต์ ทนาย
+  //     const imageUrl = lawyerJumbo; // Replace with your image URL or base64
+  //     pdfPositionY += 40;
+  //     pdf.addImage(
+  //       imageUrl,
+  //       "PNG",
+  //       55,
+  //       finalY + 7,
+  //       imageWidthImg,
+  //       imageHeightImg
+  //     );
+  //   } else if (lawyerName.id === 11) {
+  //     //ลายเซ็นต์ ทนาย
+  //     const imageUrl = lawyerTon; // Replace with your image URL or base64
+  //     pdfPositionY += 40;
+  //     pdf.addImage(
+  //       imageUrl,
+  //       "PNG",
+  //       55,
+  //       finalY + 7,
+  //       imageWidthImg,
+  //       imageHeightImg
+  //     );
+  //   }
+
+  //   pdf.text(
+  //     `ลงชื่อผู้เบิก...................................`,
+  //     40,
+  //     finalY + 20
+  //   ); // (x, y)
+  //   pdf.text(
+  //     `(${lawyerName ? lawyerName?.NNAME : "                         "})`,
+  //     50,
+  //     finalY + 27
+  //   ); // (x, y)
+  //   pdf.text(
+  //     `${lawyerName ? lawyerName?.FNAME : "                        "}  ${
+  //       lawyerName ? lawyerName?.LNAME : "                         "
+  //     }`,
+  //     45,
+  //     finalY + 32
+  //   ); // (x, y)
+  //   pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
+
+  //   pdfPositionY += 40;
+  //   pdf.addImage(
+  //     oneTome,
+  //     "PNG",
+  //     143,
+  //     finalY + 7,
+  //     imageWidthImg,
+  //     imageHeightImg
+  //   );
+  //   pdf.text(
+  //     `ลงชื่อผู้อนุมัติ..................................`,
+  //     120,
+  //     finalY + 20
+  //   ); // (x, y)
+  //   if (dateApproved) {
+  //     pdf.text(
+  //       `(วันที่อนุมัติ ${convertDateThai(dateApproved)})`,
+  //       125,
+  //       finalY + 28
+  //     ); // (x, y)
+  //   } else {
+  //     pdf.text(`(                                     )`, 125, finalY + 28); // (x, y)
+  //   }
+  //   pdf.text(
+  //     `ลงชื่อผู้ตรวจ..................................`,
+  //     120,
+  //     finalY + 50
+  //   ); // (x, y)
+
+  //   // สร้าง Blob ของ PDF
+  //   const pdfBlob = pdf.output("blob");
+
+  //   // เปิดในหน้าต่างใหม่
+  //   const pdfUrl = URL.createObjectURL(pdfBlob);
+  //   const newWindow = window.open(pdfUrl);
+
+  //   // สั่งพิมพ์
+  //   if (newWindow) {
+  //     newWindow.onload = () => {
+  //       newWindow.print();
+  //     };
+  //   } else {
+  //     alert("กรุณาปิดการบล็อกป๊อปอัปเพื่อใช้งานฟังก์ชันนี้");
+  //   }
+  // };
+
+  const setDataExportPrint = () => {
+    let groupedData = {}; // เก็บข้อมูลแยกตาม reference_no
+    let totalResultByRef = {}; // เก็บยอดรวมของแต่ละ reference_no
+    let totalResultPayByRef = {}; // เก็บยอดจ่ายของแต่ละ reference_no
+
+    if (arrayTable) {
       selectedRows.forEach((expense) => {
         expense.expenseList.forEach((element) => {
-          const key = `${element.CONTNO}-${convertDateThai(
-            element.created_date
-          )}`;
+          const refKey = element.reference_no; // ใช้ reference_no เป็น key
 
-          if (!groupedData[key]) {
-            groupedData[key] = {
+          if (!groupedData[refKey]) {
+            groupedData[refKey] = {};
+            totalResultByRef[refKey] = 0; // กำหนดยอดรวมของ reference_no
+            totalResultPayByRef[refKey] = 0; // กำหนดยอดจ่ายของ reference_no
+          }
+
+          const key = `${element.CONTNO}-${element.reference_no}`;
+
+          if (!groupedData[refKey][key]) {
+            groupedData[refKey][key] = {
               CONTNO: element.CONTNO,
-              created_date: convertDateThai(element.created_date),
+              pay_datetime: element?.pay_datetime
+                ? convertDateThai(element?.pay_datetime)
+                : "-",
               expenses: [],
             };
           }
 
           // เพิ่มข้อมูลรายการค่าใช้จ่ายแต่ละรายการ
           if (element.withdraw) {
-            groupedData[key].expenses.push({
+            groupedData[refKey][key].expenses.push({
               description: element.expense_description,
-              amount: currencyFormatPoint(element.withdraw),
-              expense_type_id: element.expense_type_id, // เพิ่มเพื่อการจัดเรียง
+              amount: element.withdraw,
+              amountPay: element.pay,
+              expense_type_id: element.expense_type_id, // ใช้จัดเรียง
             });
+
+            // คำนวณยอดรวมของ reference_no นี้
+            totalResultByRef[refKey] += element.withdraw;
+            totalResultPayByRef[refKey] += element.pay;
           }
-
-          totalResult += element.withdraw;
         });
       });
 
-      // จัดเรียง expenses ตาม expense_type_id (น้อยไปหามาก) ภายในแต่ละกลุ่ม
-      Object.values(groupedData).forEach((item) => {
-        item.expenses.sort((a, b) => a.expense_type_id - b.expense_type_id);
-      });
+      let allPreData = {}; // เก็บข้อมูลทั้งหมดตาม reference_no
 
-      // แปลงข้อมูลจาก Object เป็น Array และจัดรูปแบบ rowspan
-      Object.values(groupedData).forEach((item, index) => {
-        item.expenses.forEach((expense, expenseIndex) => {
-          preData.push([
-            expenseIndex === 0 ? index + 1 : "", // ลำดับ (rowspan)
-            expenseIndex === 0 ? item.CONTNO : "", // เลขที่สัญญา (rowspan)
-            expenseIndex === 0 ? item.created_date : "", // วันที่ทำรายการ (rowspan)
-            expense.description, // รายการ
-            expense.amount, // จำนวนเงิน
-          ]);
+      // จัดเรียง expenses ตาม expense_type_id และจัดรูปแบบ rowspan
+      Object.keys(groupedData).forEach((refKey) => {
+        let preData = [];
+
+        Object.values(groupedData[refKey]).forEach((item, index) => {
+          item.expenses.sort((a, b) => a.expense_type_id - b.expense_type_id);
+          item.expenses.forEach((expense, expenseIndex) => {
+            preData.push([
+              expenseIndex === 0 ? index + 1 : "", // ลำดับ (rowspan)
+              expenseIndex === 0 ? item.CONTNO : "", // เลขที่สัญญา (rowspan)
+              expenseIndex === 0 ? item.created_date : "", // วันที่ทำรายการ (rowspan)
+              expense.description, // รายการ
+              expense.amount, // จำนวนเงิน
+              currencyFormatPoint(expense.amount), // จำนวนเงินเบิก
+            ]);
+          });
         });
+
+        // เพิ่มแถว "รวม" และ "ยอดสุทธิ" สำหรับแต่ละ reference_no
+        preData.push([
+          "",
+          "",
+          "",
+          "รวม",
+          currencyFormatPoint(totalResultByRef[refKey]),
+          currencyFormatPoint(totalResultPayByRef[refKey]),
+        ]);
+
+        allPreData[refKey] = preData;
       });
 
-      // เพิ่มแถวรวมยอด
-      preData.push(["", "", "", "รวม", currencyFormatPoint(totalResult)]);
+      setDataExport(allPreData);
     }
-
-    setDataExport(preData);
-    console.log("preData----->", preData);
   };
 
   const createPdf = () => {
@@ -998,213 +1308,288 @@ const Main = () => {
     let imageWidthImg = 25; // Adjust width to fit your needs
     let imageHeightImg = 15; // Adjust height to fit your needs
 
-    const imageUrl =
-      companieSelect.value === 1
-        ? logoLeasing
-        : companieSelect.value === 2
-        ? logoMoney
-        : companieSelect.value === 3
-        ? logoKSM
-        : logoLeasing;
-    // PDF configuration
-    if (companieSelect.value === 2) {
-      pdfPositionY += 5;
-    } else if (companieSelect.value === 3) {
-      imageHeight = 30;
-    }
-    pdfPositionXCenter += 150;
-    pdf.addImage(
-      imageUrl,
-      "PNG",
-      pdfPositionXCenter,
-      pdfPositionY,
-      imageWidth,
-      imageHeight
-    );
-    // pdf.setFont("THSarabunNew", "normal");
-    pdf.setFont("THSarabunNew", "bold");
-    pdf.setFontSize(14);
+    Object.keys(dataExport).forEach((refNo, index) => {
+      if (index !== 0) {
+        pdf.addPage();
+        pdfPositionY = 0; // รีเซ็ตตำแหน่งที่เริ่มต้น
+        pdfPositionX = 0;
+        pdfPositionXCenter = 0;
+        imageWidth = 45; // Adjust width to fit your needs
+        imageHeight = 25; // Adjust height to fit your needs
+        imageWidthImg = 25; // Adjust width to fit your needs
+        imageHeightImg = 15; // Adjust height to fit your needs
 
-    pdf.text(`วันที่พิมพ์ ${convertDateThai()}`, pdfPositionX + 10, 10);
+        const imageUrl =
+          companieSelect.value === 1
+            ? logoLeasing
+            : companieSelect.value === 2
+            ? logoMoney
+            : companieSelect.value === 3
+            ? logoKSM
+            : logoLeasing;
+        // PDF configuration
+        if (companieSelect.value === 2) {
+          pdfPositionY += 5;
+        } else if (companieSelect.value === 3) {
+          imageHeight = 30;
+        }
+        pdfPositionXCenter += 150;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          pdfPositionXCenter,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+        // pdf.setFont("THSarabunNew", "normal");
+        pdf.setFont("THSarabunNew", "bold");
+        pdf.setFontSize(14);
 
-    pdf.setFontSize(16);
-    if (companieSelect.value === 1) {
-      pdfPositionY += 30;
+        pdf.text(`วันที่พิมพ์ ${convertDateThai()}`, pdfPositionX + 10, 10);
+        pdf.text(`เลขที่อ้างอิง ${refNo}`, pdfPositionX + 10, 15);
+
+        pdf.setFontSize(16);
+        if (companieSelect.value === 1) {
+          pdfPositionY += 30;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 11,
+            pdfPositionY
+          );
+          pdf.text(`${companieSelect.address}`, 95, (pdfPositionY += 8));
+        } else if (companieSelect.value === 2) {
+          pdfPositionY += 33;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 10,
+            pdfPositionY
+          );
+          pdf.text(
+            `${companieSelect.address}`,
+            pdfPositionXCenter - 54,
+            (pdfPositionY += 8)
+          );
+        } else if (companieSelect.value === 3) {
+          pdfPositionY += 25;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 40,
+            (pdfPositionY += 3)
+          );
+          pdf.text(
+            `${companieSelect.address}`,
+            pdfPositionXCenter - 60,
+            (pdfPositionY += 8)
+          );
+        }
+
+        pdfPositionY += 10;
+        // เพิ่มข้อความ
+        pdf.text(
+          "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
+          pdfPositionX + 80,
+          pdfPositionY
+        );
+
+        pdf.setTextColor(0, 0, 0);
+        pdfPositionY += 5;
+      }
+      if (index === 0) {
+        const imageUrl =
+          companieSelect.value === 1
+            ? logoLeasing
+            : companieSelect.value === 2
+            ? logoMoney
+            : companieSelect.value === 3
+            ? logoKSM
+            : logoLeasing;
+        // PDF configuration
+        if (companieSelect.value === 2) {
+          pdfPositionY += 5;
+        } else if (companieSelect.value === 3) {
+          imageHeight = 30;
+        }
+        pdfPositionXCenter += 150;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          pdfPositionXCenter,
+          pdfPositionY,
+          imageWidth,
+          imageHeight
+        );
+        // pdf.setFont("THSarabunNew", "normal");
+        pdf.setFont("THSarabunNew", "bold");
+        pdf.setFontSize(14);
+
+        pdf.text(`วันที่พิมพ์ ${convertDateThai()}`, pdfPositionX + 10, 10);
+        pdf.text(`เลขที่อ้างอิง ${refNo}`, pdfPositionX + 10, 15);
+
+        pdf.setFontSize(16);
+        if (companieSelect.value === 1) {
+          pdfPositionY += 30;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 11,
+            pdfPositionY
+          );
+          pdf.text(`${companieSelect.address}`, 95, (pdfPositionY += 8));
+        } else if (companieSelect.value === 2) {
+          pdfPositionY += 33;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 10,
+            pdfPositionY
+          );
+          pdf.text(
+            `${companieSelect.address}`,
+            pdfPositionXCenter - 54,
+            (pdfPositionY += 8)
+          );
+        } else if (companieSelect.value === 3) {
+          pdfPositionY += 25;
+          pdf.text(
+            `${companieSelect.label}`,
+            pdfPositionXCenter - 40,
+            (pdfPositionY += 3)
+          );
+          pdf.text(
+            `${companieSelect.address}`,
+            pdfPositionXCenter - 60,
+            (pdfPositionY += 8)
+          );
+        }
+
+        pdfPositionY += 10;
+        // เพิ่มข้อความ
+        pdf.text(
+          "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
+          pdfPositionX + 80,
+          pdfPositionY
+        );
+
+        pdf.setTextColor(0, 0, 0);
+        pdfPositionY += 5;
+      }
+      // เพิ่มตาราง
+      pdf.autoTable({
+        head: [
+          ["ลำดับ", "เลขที่สัญญา", "วันที่ตรวจสอบ", "รายการ", "จำนวนเบิก"],
+        ],
+        body: dataExport[refNo],
+        startY: pdfPositionY,
+        styles: { font: "THSarabunNew", fontSize: 14 },
+        headStyles: {
+          fillColor: [0, 102, 204],
+          textColor: [255, 255, 255],
+          fontSize: 12,
+          halign: "center",
+        },
+        columnStyles: {
+          0: { halign: "center" },
+          1: { halign: "center" },
+          2: { halign: "center" },
+          3: { halign: "center" },
+          4: { halign: "center" },
+          5: { halign: "center" },
+        },
+        margin: { top: 10, left: 10, right: 10 },
+      });
+
+      const finalY = pdf.lastAutoTable.finalY;
+      pdf.setTextColor(0, 0, 0);
+      // เพิ่มข้อความด้านล่างตาราง
+      // เพิ่มข้อความด้านล่างตาราง
+      if (lawyerName.id === 2) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerYut; // Replace with your image URL or base64
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          60,
+          finalY + 7,
+          imageWidthImg,
+          imageHeightImg
+        );
+      } else if (lawyerName.id === 3) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerJumbo; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          60,
+          finalY + 7,
+          imageWidthImg,
+          imageHeightImg
+        );
+      } else if (lawyerName.id === 11) {
+        //ลายเซ็นต์ ทนาย
+        const imageUrl = lawyerTon; // Replace with your image URL or base64
+        pdfPositionY += 40;
+        pdf.addImage(
+          imageUrl,
+          "PNG",
+          60,
+          finalY + 7,
+          imageWidthImg,
+          imageHeightImg
+        );
+      }
       pdf.text(
-        `${companieSelect.label}`,
-        pdfPositionXCenter - 11,
-        pdfPositionY
-      );
-      pdf.text(`${companieSelect.address}`, 95, (pdfPositionY += 8));
-    } else if (companieSelect.value === 2) {
-      pdfPositionY += 33;
-      pdf.text(
-        `${companieSelect.label}`,
-        pdfPositionXCenter - 10,
-        pdfPositionY
-      );
-      pdf.text(
-        `${companieSelect.address}`,
-        pdfPositionXCenter - 54,
-        (pdfPositionY += 8)
-      );
-    } else if (companieSelect.value === 3) {
-      pdfPositionY += 25;
-      pdf.text(
-        `${companieSelect.label}`,
-        pdfPositionXCenter - 40,
-        (pdfPositionY += 3)
-      );
-      pdf.text(
-        `${companieSelect.address}`,
-        pdfPositionXCenter - 60,
-        (pdfPositionY += 8)
-      );
-    }
-
-    pdfPositionY += 10;
-    // เพิ่มข้อความ
-    pdf.text(
-      "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
-      pdfPositionX + 90,
-      pdfPositionY
-    );
-    if (statusId === 3) {
-      pdf.setTextColor(144, 238, 144);
-      pdf.text(" (อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
-    } else if (statusId === 2) {
-      pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-      pdf.text(" (ไม่อนุมัติ)", pdfPositionXCenter + 35, pdfPositionY);
-    } else {
-      pdf.setTextColor(0, 0, 255);
-      pdf.text(" (รอดำเนินการ)", pdfPositionXCenter + 25, pdfPositionY);
-    }
-
-    pdfPositionY += 5;
-    // เพิ่มตาราง
-    pdf.autoTable({
-      head: [["ลำดับ", "เลขที่สัญญา", "วันที่ขอเบิก", "รายการ", "จำนวน(บาท)"]],
-      body: dataExport,
-      startY: pdfPositionY,
-      styles: {
-        font: "THSarabunNew", // ฟอนต์ภาษาไทย
-        fontSize: 14,
-      },
-      headStyles: {
-        fillColor: [0, 102, 204], // สีพื้นหลัง (RGB) ของ header
-        textColor: [255, 255, 255], // สีข้อความ (สีขาว)
-        fontSize: 12, // ขนาดตัวอักษรใน header
-        halign: "center", // จัดข้อความให้อยู่ตรงกลางใน header
-      },
-      columnStyles: {
-        0: { halign: "center" }, // ลำดับอยู่ตรงกลาง
-        1: { halign: "center" }, // ค่าธรรมเนียมศาลอยู่ตรงกลาง
-        2: { halign: "center" }, // ค่าอากรสแตมป์อยู่ตรงกลาง
-        3: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
-        4: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
-        5: { halign: "center" }, // ค่าอากรสแตมป์อยู่ตรงกลาง
-        6: { halign: "center" }, // ค่าส่งเอกสารอยู่ตรงกลาง
-        7: { halign: "center" }, // จำนวนรวมอยู่ตรงกลาง
-      },
-      margin: { top: 10, left: 10, right: 10 },
-    });
-    const finalY = pdf.lastAutoTable.finalY;
-    pdf.setTextColor(0, 0, 0);
-
-    // เพิ่มข้อความด้านล่างตาราง
-    if (lawyerName.id === 2) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerYut; // Replace with your image URL or base64
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    } else if (lawyerName.id === 3) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerJumbo; // Replace with your image URL or base64
-      pdfPositionY += 40;
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    } else if (lawyerName.id === 11) {
-      //ลายเซ็นต์ ทนาย
-      const imageUrl = lawyerTon; // Replace with your image URL or base64
-      pdfPositionY += 40;
-      pdf.addImage(
-        imageUrl,
-        "PNG",
-        55,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
-    }
-
-    pdf.text(
-      `ลงชื่อผู้เบิก...................................`,
-      40,
-      finalY + 20
-    ); // (x, y)
-    pdf.text(
-      `(${lawyerName ? lawyerName?.NNAME : "                         "})`,
-      50,
-      finalY + 27
-    ); // (x, y)
-    pdf.text(
-      `${lawyerName ? lawyerName?.FNAME : "                        "}  ${
-        lawyerName ? lawyerName?.LNAME : "                         "
-      }`,
-      45,
-      finalY + 32
-    ); // (x, y)
-    pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
-
-    pdfPositionY += 40;
-    pdf.addImage(
-      oneTome,
-      "PNG",
-      143,
-      finalY + 7,
-      imageWidthImg,
-      imageHeightImg
-    );
-    pdf.text(
-      `ลงชื่อผู้อนุมัติ..................................`,
-      120,
-      finalY + 20
-    ); // (x, y)
-    if (dateApproved) {
-      pdf.text(
-        `(วันที่อนุมัติ ${convertDateThai(dateApproved)})`,
-        125,
-        finalY + 28
+        `ลงชื่อผู้เคลียร์...................................`,
+        40,
+        finalY + 20
       ); // (x, y)
-    } else {
-      pdf.text(`(                                     )`, 125, finalY + 28); // (x, y)
-    }
-    pdf.text(
-      `ลงชื่อผู้ตรวจ..................................`,
-      120,
-      finalY + 50
-    ); // (x, y)
+      pdf.text(
+        `(${lawyerName ? lawyerName?.NNAME : "                         "})`,
+        50,
+        finalY + 27
+      ); // (x, y)
+      pdf.text(
+        `${lawyerName ? lawyerName?.FNAME : "                        "}  ${
+          lawyerName ? lawyerName?.LNAME : "                         "
+        }`,
+        45,
+        finalY + 32
+      ); // (x, y)
+      pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
 
-    // สร้าง Blob ของ PDF
+      pdfPositionY += 40;
+      pdf.addImage(
+        oneTome,
+        "PNG",
+        143,
+        finalY + 7,
+        imageWidthImg,
+        imageHeightImg
+      );
+      pdf.text(
+        `ลงชื่อผู้อนุมัติ..................................`,
+        120,
+        finalY + 20
+      ); // (x, y)
+      if (dateApproved) {
+        pdf.text(
+          `(วันที่อนุมัติ ${convertDateThai(dateApproved)})`,
+          125,
+          finalY + 28
+        ); // (x, y)
+      } else {
+        pdf.text(`(                                     )`, 125, finalY + 28); // (x, y)
+      }
+      pdf.text(
+        `ลงชื่อผู้ตรวจ..................................`,
+        120,
+        finalY + 50
+      ); // (x, y)
+    });
+
     const pdfBlob = pdf.output("blob");
-
-    // เปิดในหน้าต่างใหม่
     const pdfUrl = URL.createObjectURL(pdfBlob);
     const newWindow = window.open(pdfUrl);
 
-    // สั่งพิมพ์
     if (newWindow) {
       newWindow.onload = () => {
         newWindow.print();

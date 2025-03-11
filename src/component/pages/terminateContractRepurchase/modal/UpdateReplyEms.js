@@ -397,7 +397,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
   return (
     <>
       <Modal
-        title="ตอบกลับบอกเลิกสัญญา(มือ)"
+        title="ตอบกลับบอกแจ้งสิทธ์ซื้อรถคืน"
         open={open}
         onCancel={handleCancel}
         width={650}

@@ -164,7 +164,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          !item.contract_schema
+          (!item.account_type || item.account_type === "cancelHand")
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -286,11 +286,11 @@ const Main = () => {
       );
       console.log(dayjs(startDate).format("YYYY-MM-DD"));
 
-      console.log(selectSearch);
-
       setArrayTable(selectSearch);
+      setTableLength(selectSearch.length);
     } else {
       setArrayTable(selectData);
+      setTableLength(selectData.length);
     }
   };
 
@@ -363,13 +363,17 @@ const Main = () => {
     if (!record.created_date) {
       return null;
     }
-    const recordDate = dayjs(record.created_date).startOf("day");
+
+    const recordDate = dayjs(record.created_date)
+      .subtract(7, "hour")
+      .startOf("day");
+
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color;
     color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.created_date
-      ? convertDateThaiShort(record.created_date)
+      ? convertDateThaiShort(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
@@ -1056,20 +1060,17 @@ const Main = () => {
         </>
       ),
     },
-    {
-      title: "รายละเอียด",
-      dataIndex: "contract_no",
-      key: "contract_no",
-      align: "center",
-      render: (text, record) => (
-        <>
-          {convertDateThaiShort(record.datetime)} <br />
-          {renderType(record.pay_type)}
-          <br />
-          {record.account_type}
-        </>
-      ),
-    },
+    // {
+    //   title: "รายละเอียด",
+    //   dataIndex: "contract_no",
+    //   key: "contract_no",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       {convertDateThaiShort(record.datetime)} <br />
+    //     </>
+    //   ),
+    // },
     {
       title: "ชื่อ-นามสกุล",
       dataIndex: "customer_fullname",

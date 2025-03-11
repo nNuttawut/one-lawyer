@@ -55,6 +55,15 @@ import ContractToLawuitHand from "../pages/terminateContractHand/ContractToLawui
 import ReplyTerminateContractHand from "../pages/terminateContractHand/ReplyTerminateContractHand";
 import ImportTerminateContractEmsHand from "../pages/terminateContractHand/ImportTerminateContractEmsHand";
 import CreateTerminateContractHand from "../pages/terminateContractHand/CreateTerminateContractHand";
+import DetailPayment from "../pages/detail/DetailPayment";
+import InvestigateAssetsAdvanePayment from "../pages/investigateAssets/InvestigateAssetsAdvanePayment";
+import InvestigateAssetsClearAdvanePayment from "../pages/investigateAssets/InvestigateAssetsClearAdvanePayment";
+import ReportTerminateHand from "../pages/report/ReportTerminateHand";
+import ChartTerminate from "../pages/report/ChartTerminate";
+import CreateTerminateContractRepurchase from "../pages/terminateContractRepurchase/CreateTerminateContractRepurchase";
+import ImportTerminateContractEmsRepurchase from "../pages/terminateContractRepurchase/ImportTerminateContractEmsRepurchase";
+import ReplyTerminateContractRepurchase from "../pages/terminateContractRepurchase/ReplyTerminateContractRepurchase";
+import ContractToLawuitRepurchase from "../pages/terminateContractRepurchase/ContractToLawuitRepurchase";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -115,6 +124,23 @@ export default function Router() {
           />
 
           <Route
+            path="/terminate-contract-repurchase/create-terminate-contract"
+            element={<CreateTerminateContractRepurchase />}
+          />
+          <Route
+            path="/terminate-contract-repurchase/import-terminate-contract-ems"
+            element={<ImportTerminateContractEmsRepurchase />}
+          />
+          <Route
+            path="/terminate-contract-repurchase/reply-terminate-contract"
+            element={<ReplyTerminateContractRepurchase />}
+          />
+          <Route
+            path="/terminate-contract-repurchase/terminate-contract-to-lawsuit"
+            element={<ContractToLawuitRepurchase />}
+          />
+
+          <Route
             path="/investigate-assets"
             element={<InvestigateAssetsRoute />}
           />
@@ -129,6 +155,14 @@ export default function Router() {
           <Route
             path="/investigate-assets/create-invitigate-assets"
             element={<CreateInvestigateAssets />}
+          />
+          <Route
+            path="/investigate-assets/advane-payment-assets-found"
+            element={<InvestigateAssetsAdvanePayment />}
+          />
+          <Route
+            path="/investigate-assets/clear-advane-payment-assets-found"
+            element={<InvestigateAssetsClearAdvanePayment />}
           />
 
           <Route
@@ -145,8 +179,13 @@ export default function Router() {
           />
           <Route path="/lawsuit/import-old-data" element={<ImportOldData />} />
 
+          <Route path="/report/chart-terminate" element={<ChartTerminate />} />
           <Route path="/report/notice" element={<ReportNotice />} />
           <Route path="/report/terminate" element={<ReportTerminate />} />
+          <Route
+            path="/report/terminate-hand"
+            element={<ReportTerminateHand />}
+          />
           <Route
             path="/sale-announcement/*"
             element={<SaleAnnouncementRoute />}
@@ -202,7 +241,10 @@ export default function Router() {
             path="/charge-indict/approved-clear-advane-pay"
             element={<ApprovedClearAdvanePay />}
           />
-
+          <Route
+            path="/contract-detail/detail-payment"
+            element={<DetailPayment />}
+          />
           <Route path="/guidbook/read-text" element={<ReadText />} />
           <Route path="/guidbook/test" element={<Test />} />
           <Route path="/liff" element={<Liff />} />

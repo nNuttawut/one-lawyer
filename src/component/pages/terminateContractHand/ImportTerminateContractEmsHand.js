@@ -36,7 +36,7 @@ const Main = () => {
   const [importLoad, setImportLoad] = useState(true);
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -85,7 +85,8 @@ const Main = () => {
         const sheetData = XLSX.utils.sheet_to_json(sheet);
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
-          datetime: row["รอบวันออกจดหมายในระบบ"] || "", // เลขที่สัญญา
+          datetime: row["วันออกจดหมาย"] || "",
+          account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
           customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
           customer_type_id: row["ประเภทลูกค้า"],
@@ -150,72 +151,157 @@ const Main = () => {
     message.error("ยกเลิกการลบสัญญา");
   };
 
+  //ไม่หน่วงเวลา
+  // const insertData = async () => {
+  //   setLoading(true);
+  //   let duplicate = 0;
+  //   let success = 0;
+  //   console.log("post data");
+  //   try {
+  //     if (!arrayTable || arrayTable.length === 0) {
+  //       message.error("ไม่มีข้อมูล !!");
+  //       return;
+  //     }
+
+  //     const promises = arrayTable.map(async (item) => {
+  //       const arrayData = item;
+  //       console.log("arrayData", arrayData);
+
+  //       if (!arrayData) {
+  //         message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
+  //         return null;
+  //       }
+  //       await axios
+  //         .post(baseUrl + POST_CANCEL, arrayData, {
+  //           headers: HEADERS_EXPORT,
+  //         })
+  //         .then((resQuery) => {
+  //           if (resQuery.status === 201) {
+  //             success += 1;
+  //             console.log(resQuery.data);
+  //             setImportLoad(false);
+  //             setArrayTable([]);
+  //             setTableLength([]);
+  //             return resQuery.data;
+  //           } else {
+  //             if (resQuery.data === "Duplicate Contract No.") {
+  //               console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+  //               duplicate += 1;
+  //               return null;
+  //             }
+  //             console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
+  //             return null;
+  //           }
+  //         })
+  //         .catch((err) => {
+  //           console.error(err);
+  //           message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
+  //           setFailedData({ ...failedData, setFailedData: arrayData });
+  //           setImportLoad(false);
+  //           return null;
+  //         });
+  //     });
+
+  //     const response = await Promise.all(promises);
+  //     console.log("results", response);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //     message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+  //   } finally {
+  //     setLoading(false);
+
+  //     if (success > 0) {
+  //       message.success(`นำเข้าข้อมูลสำเร็จ`);
+  //       setArrayTable([]);
+  //     }
+  //     if (duplicate > 0) {
+  //       message.error(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+  //       setArrayTable([]);
+  //     }
+  //   }
+  // };
+
   const insertData = async () => {
     setLoading(true);
     let duplicate = 0;
     let success = 0;
-    console.log("post data");
+    const batchSize = 10; // จำนวนคำขอในแต่ละชุด
+    let failedRecords = [];
+
+    console.log("🚀 Start posting data...");
+
+    if (!arrayTable || arrayTable.length === 0) {
+      message.error("ไม่มีข้อมูล !!");
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (!arrayTable || arrayTable.length === 0) {
-        message.error("ไม่มีข้อมูล !!");
-        return;
-      }
+      for (let i = 0; i < arrayTable.length; i += batchSize) {
+        const batch = arrayTable.slice(i, i + batchSize); // แบ่งเป็นชุดละ batchSize
 
-      const promises = arrayTable.map(async (item) => {
-        const arrayData = item;
-        console.log("arrayData", arrayData);
+        console.log(`🔄 Processing batch ${i / batchSize + 1}`);
 
-        if (!arrayData) {
-          message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
-          return null;
-        }
-        await axios
-          .post(baseUrl + POST_CANCEL, arrayData, {
-            headers: HEADERS_EXPORT,
-          })
-          .then((resQuery) => {
+        const batchPromises = batch.map(async (item) => {
+          if (!item) {
+            message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
+            return null;
+          }
+
+          try {
+            const resQuery = await axios.post(baseUrl + POST_CANCEL, item, {
+              headers: HEADERS_EXPORT,
+            });
+
             if (resQuery.status === 201) {
               success += 1;
-              console.log(resQuery.data);
-              setImportLoad(false);
-              setArrayTable([]);
-              setTableLength([]);
+              console.log("✅ Inserted:", resQuery.data);
               return resQuery.data;
             } else {
               if (resQuery.data === "Duplicate Contract No.") {
-                console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+                console.log(`⚠️ Duplicate Contract: ${item.CONTNO}`);
                 duplicate += 1;
                 return null;
               }
-              console.log(`นำเข้าข้อมูลสำเร็จไม่สำเร็จ `);
+              console.log("❌ Insert failed");
               return null;
             }
-          })
-          .catch((err) => {
-            console.error(err);
-            message.error(`นำเข้าข้อมูลไม่สำเร็จ`);
-            setFailedData({ ...failedData, setFailedData: arrayData });
-            setImportLoad(false);
+          } catch (err) {
+            console.error("⚠️ Error:", err);
+            message.error("นำเข้าข้อมูลไม่สำเร็จ");
+            failedRecords.push(item);
             return null;
-          });
-      });
+          }
+        });
 
-      const response = await Promise.all(promises);
-      console.log("results", response);
+        const batchResults = await Promise.all(batchPromises);
+
+        // หน่วงเวลา 1 วินาทีเพื่อลดโหลดของเซิร์ฟเวอร์
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("🚨 Error in batch processing:", error);
       message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
 
       if (success > 0) {
-        message.success(`นำเข้าข้อมูลสำเร็จ`);
-        setArrayTable([]);
+        message.success(`นำเข้าข้อมูลสำเร็จ: ${success} รายการ`);
       }
       if (duplicate > 0) {
-        message.error(`มีเลขสัญญาอยู่ในระบบแล้ว`);
-        setArrayTable([]);
+        message.error(`⚠️ มีเลขสัญญาซ้ำ: ${duplicate} รายการ`);
       }
+      if (failedRecords.length > 0) {
+        setFailedData(failedRecords);
+        message.error(
+          ` มีข้อผิดพลาดในบางรายการ (${failedRecords.length} รายการ)`
+        );
+      }
+
+      // ล้างข้อมูลหลังจากอัปโหลดเสร็จ
+      setArrayTable([]);
+      setTableLength([]);
+      setImportLoad(false);
     }
   };
 
@@ -229,6 +315,7 @@ const Main = () => {
       message.error("ข้อมูล ems ไม่ครบทั้งหมด");
     }
   };
+
   const cancelInsert = () => {
     message.error("ยกเลิกการนำเข้าข้อมูล");
   };
@@ -275,6 +362,15 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <>{record.datetime ? convertDateThaiShort(record.datetime) : null}</>
+      ),
+    },
+    {
+      title: "ประเภทบัญชี",
+      dataIndex: "account_type",
+      key: "account_type",
+      align: "center",
+      render: (text, record) => (
+        <>{record.account_type ? record.account_type : null}</>
       ),
     },
     {
@@ -398,7 +494,7 @@ const Main = () => {
                     style={{ color: "green", marginRight: "5px" }}
                     icon={<ImportOutlined />}
                   >
-                    นำเข้า Excel
+                    นำเข้า Excel EMS
                   </Button>
                 </Upload>
               </Space>

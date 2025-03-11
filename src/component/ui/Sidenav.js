@@ -4,14 +4,12 @@ import {
   HomeOutlined,
   FormOutlined,
   SearchOutlined,
-  BarcodeOutlined,
-  AuditOutlined,
+  FileSearchOutlined,
   NotificationOutlined,
   BookOutlined,
   ScheduleOutlined,
   ImportOutlined,
   CaretRightOutlined,
-  SnippetsOutlined,
   DollarOutlined,
   CheckOutlined,
   FileTextOutlined,
@@ -132,6 +130,47 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
+            },
+          ],
+        }
+      : null,
+
+    ROLE_ID === "1" || ROLE_ID === "2"
+      ? {
+          key: "18",
+          pageName: "terminate",
+          label: "terminate-contract-repurchase",
+          path: "/terminate-contract-repurchase",
+          icon: <FileExcelOutlined />,
+          title: "หนังสือแจ้งสิทธ์ซื้อรถคืน",
+          children: [
+            {
+              key: "181",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-repurchase/create-terminate-Contract",
+              label: "1. ออกหนังสือแจ้งสิทธ์",
+            },
+            {
+              key: "182",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-repurchase/import-terminate-Contract-ems",
+              label: "2. นำเข้าข้อมูล EMS",
+            },
+            {
+              key: "183",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-terminate-Contract",
+              path: "terminate-contract-repurchase/reply-terminate-Contract",
+              label: "3. ตอบกลับหนังสือแจ้งสิทธ์",
+            },
+            {
+              key: "184",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract-repurchase/terminate-Contract-to-lawsuit",
               label: "4. สัญญาเตรียมส่งฟ้อง",
             },
           ],
@@ -259,6 +298,20 @@ function Sidenav({ color, onClick }) {
               path: "investigate-assets/assets-found",
               label: "3. ทรัพย์สินที่พบ",
             },
+            {
+              key: "54",
+              icon: <CaretRightOutlined />,
+              pageName: "assets-found",
+              path: "investigate-assets/advane-payment-assets-found",
+              label: "4. เบิกทดรองสืบทรัพย์",
+            },
+            {
+              key: "55",
+              icon: <CaretRightOutlined />,
+              pageName: "assets-found",
+              path: "investigate-assets/clear-advane-payment-assets-found",
+              label: "5. เคลียร์ทดรองสืบทรัพย์",
+            },
           ],
         }
       : null,
@@ -371,7 +424,7 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "6" || ROLE_ID === "5"
+    ROLE_ID === "1" || ROLE_ID === "6"
       ? {
           key: "12",
           pageName: "commission",
@@ -397,7 +450,7 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
-    ROLE_ID === "1" || ROLE_ID === "6" || ROLE_ID === "5"
+    ROLE_ID === "1" || ROLE_ID === "6"
       ? {
           key: "16",
           pageName: "charge-indict",
@@ -482,6 +535,23 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
+    {
+      key: "19",
+      pageName: "contract-detail",
+      label: "contract-detail",
+      path: "/contract-detail",
+      icon: <FileSearchOutlined />,
+      title: "ข้อมูลสัญญา",
+      children: [
+        {
+          key: "191",
+          icon: <CaretRightOutlined />,
+          pageName: "import-data",
+          path: "contract-detail/detail-payment",
+          label: "ตรวจสอบข้อมูลสัญญา",
+        },
+      ],
+    },
     ROLE_ID === "1" || ROLE_ID === "5"
       ? {
           key: "14",
@@ -495,16 +565,30 @@ function Sidenav({ color, onClick }) {
               key: "141",
               icon: <CaretRightOutlined />,
               pageName: "notice",
-              path: "report/terminate",
-              label: "รายงาน บอกเลิกสัญญา",
+              path: "report/chart-terminate",
+              label: "สรุปบอกเลิกสัญญา",
             },
-            {
-              key: "142",
-              icon: <CaretRightOutlined />,
-              pageName: "notice",
-              path: "report/notice",
-              label: "รายงาน โนติส",
-            },
+            // {
+            //   key: "142",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "notice",
+            //   path: "report/terminate",
+            //   label: "รายงาน บอกเลิกสัญญา",
+            // },
+            // {
+            //   key: "143",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "notice",
+            //   path: "report/terminate-hand",
+            //   label: "รายงาน บอกเลิกสัญญา(มือ)",
+            // },
+            // {
+            //   key: "142",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "notice",
+            //   path: "report/notice",
+            //   label: "รายงาน โนติส",
+            // },
           ],
         }
       : null,

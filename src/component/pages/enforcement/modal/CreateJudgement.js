@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -17,6 +17,7 @@ import {
   InputNumber,
   Row,
   Col,
+  Upload,
 } from "antd";
 import {
   baseUrl,
@@ -27,29 +28,33 @@ import {
   POST_JUDGE,
   POST_JUDGE_DEFENDANTS,
   POST_STATUS,
-  PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
+import { UploadOutlined, InboxOutlined } from "@ant-design/icons";
 
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import { optionsInterest } from "../../../../utils/constant/ Interest";
 import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import { optionsMonth } from "../../../../utils/constant/MonthSelect";
+import dayjs from "dayjs";
+import LoadLawyers from "../../../../hook/LoadLawyers";
 import {
-  JUDGEMENT,
   PAYMENT,
   STATUS_PROCESS_PROGRESS,
 } from "../../../../utils/constant/StatusConstant";
-import dayjs from "dayjs";
-import TokenCheck from "../../../../hook/TokenCheck";
+import Dragger from "antd/es/upload/Dragger";
 
 const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
+  const name = localStorage.getItem("FNAME");
+  const [lawyersList, setLoadingData] = LoadLawyers();
   const [form] = Form.useForm();
+  const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
   const [loading, setLoading] = useState(false);
   const [isModal, setIsModal] = useState(false);
+  const [assistantOption, setAssistantOption] = useState();
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const { TextArea } = Input;
@@ -65,12 +70,13 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [tabsKey, setTabsKey] = useState("1");
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
-
+      setLoadingData(true);
       console.log("loadData", dataDefualt);
       console.log("lawsuit", responseData.WORK_LOG_ID);
     }
@@ -91,9 +97,47 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const handleOk = () => {};
 
   const handleCancel = () => {
-    console.log("Clicked cancel button");
-    close(false);
-    setIsModal(false);
+    Modal.confirm({
+      title: "โปรดอ่านก่อนดำเนินการ",
+      content:
+        "กรุณาทำรายการให้เสร็จเนื่องจากการปิดจะทำให้ข้อมูลไม่ถูกต้อง หากดำเนินการผิดพลาดโปรดแจ้งผู้ดูแลระบบทันที !",
+      okText: "ยืนยัน",
+      cancelText: "ปิด",
+      onOk: () => {
+        // close(false);
+        // setIsModal(false);
+        message.error("กรุณากรอกข้อมูลให้ครบและกดบันทึก");
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (lawyersList) {
+      setOptionAssistant();
+    }
+  }, [lawyersList]);
+
+  const setOptionAssistant = () => {
+    console.log("lawyersList", lawyersList);
+    let companySelectAssistant = null;
+    if (COMPANY === 1 || COMPANY === 2) {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    } else {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    }
+    const optionsAssistant = companySelectAssistant.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+    }));
+    setAssistantOption(optionsAssistant);
   };
 
   const loadData = async () => {
@@ -136,33 +180,58 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     }
   };
 
-  const sendStatus = async (defendants, judgement, status) => {
+  const sendStatus = async (defendants, judgement, status, agreement) => {
     setLoading(true);
 
     try {
-      console.log("normal---> defendants", defendants);
-      console.log("data", judgement);
-      await axios
-        .post(baseUrl + POST_JUDGE, judgement, { headers: HEADERS_EXPORT })
-        .then(async (res) => {
-          if (res.status === 201) {
-            console.log("resQuery", res.data);
-          } else {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-            console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.status > 400) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
-        });
-      const promises = defendants.map(async (item) => {
-        let arrayData = item;
+      if (defaultRadio === "normal") {
+        console.log("normal---> defendants", defendants);
+        console.log("data", judgement);
         await axios
-          .post(baseUrl + POST_JUDGE_DEFENDANTS, arrayData, {
+          .post(baseUrl + POST_JUDGE, judgement, { headers: HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 201) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+        const promises = defendants.map(async (item) => {
+          let arrayData = item;
+          await axios
+            .post(baseUrl + POST_JUDGE_DEFENDANTS, arrayData, {
+              headers: HEADERS_EXPORT,
+            })
+            .then(async (res) => {
+              if (res.status === 201) {
+                console.log("resQuery", res.data);
+              } else {
+                message.error("ไม่สามารถส่งข้อมูลได้");
+                console.log("ไม่สามารถส่งข้อมูลได้");
+                setLoading(false);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              if (err.status > 400) {
+                message.error("ไม่สามารถส่งข้อมูลได้");
+              }
+            });
+          const results = await Promise.all(promises);
+          console.log("results promise", results);
+        });
+      } else {
+        console.log("agreement", agreement);
+        await axios
+          .post(baseUrl + POST_AGREEMENTS, agreement, {
             headers: HEADERS_EXPORT,
           })
           .then(async (res) => {
@@ -180,27 +249,25 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
               message.error("ไม่สามารถส่งข้อมูลได้");
             }
           });
-        const results = await Promise.all(promises);
-        console.log("results promise", results);
-      });
 
-      await axios
-        .put(baseUrl + PUT_STATUS, status, { headers: HEADERS_EXPORT })
-        .then(async (res) => {
-          if (res.status === 200) {
-            console.log("resQuery", res.data);
-          } else {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-            console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.status > 400) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
-        });
+        await axios
+          .post(baseUrl + POST_STATUS, status, { headers: HEADERS_EXPORT })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
@@ -214,124 +281,182 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const onFinish = (values) => {
     console.log("Success:", values);
     let defendants = [];
+    let statusData;
     let judgementData;
+    let agreement;
 
-    console.log("defendants", defendants);
-    const govermentResult1 = values.governmentOfficer1.filter((item) => item);
-    const govermentfinal1 = govermentResult1.map((item) => ({
-      LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-      CUSTOMER_ID: item.id,
-      defendant_number: item.GARNO + 1,
-      cost_of_uselessness:
-        values?.costUnless1 &&
-        typeof values.costUnless1 === "string" &&
-        values.costUnless1.includes(",")
-          ? parseInt(values.costUnless1.replace(/,/g, ""))
-          : parseInt(values.costUnless1)
-          ? parseInt(values.costUnless1)
-          : 0,
-      cost_of_useleseness_per_month:
-        values?.costPermonth1 &&
-        typeof values.costPermonth1 === "string" &&
-        values.costPermonth1.includes(",")
-          ? parseInt(values.costPermonth1.replace(/,/g, ""))
-          : parseInt(values.costPermonth1)
-          ? parseInt(values.costPermonth1)
-          : 0,
-      cost_of_useleseness_month: values.costMonth1,
-      judge_number: 1,
-    }));
-    defendants.push(...govermentfinal1);
+    if (values?.file?.fileList?.length < 1 || fileList.length < 1) {
+      message.error("กรุณาใส่ไฟล์เพื่อบันทึก");
+    } else {
+      console.log("defendants", defendants);
+      if (defaultRadio === "normal") {
+        const govermentResult1 = values.governmentOfficer1.filter(
+          (item) => item
+        );
+        const govermentfinal1 = govermentResult1.map((item) => ({
+          LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+          CUSTOMER_ID: item.id,
+          defendant_number: item.GARNO + 1,
+          cost_of_uselessness:
+            values?.costUnless1 &&
+            typeof values.costUnless1 === "string" &&
+            values.costUnless1.includes(",")
+              ? parseInt(values.costUnless1.replace(/,/g, ""))
+              : parseInt(values.costUnless1)
+              ? parseInt(values.costUnless1)
+              : 0,
+          cost_of_useleseness_per_month:
+            values?.costPermonth1 &&
+            typeof values.costPermonth1 === "string" &&
+            values.costPermonth1.includes(",")
+              ? parseInt(values.costPermonth1.replace(/,/g, ""))
+              : parseInt(values.costPermonth1)
+              ? parseInt(values.costPermonth1)
+              : 0,
+          cost_of_useleseness_month: values.costMonth1,
+          judge_number: 1,
+        }));
+        defendants.push(...govermentfinal1);
 
-    if (dataDefualt.LOAN_TYPE_ID !== 2) {
-      const govermentResult2 = values.governmentOfficer2.filter((item) => item);
-      const govermentfinal2 = govermentResult2.map((item) => ({
-        LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-        CUSTOMER_ID: item.id,
-        defendant_number: item.GARNO + 1,
-        cost_of_uselessness:
-          values?.costUnless2 &&
-          typeof values.costUnless2 === "string" &&
-          values.costUnless2.includes(",")
-            ? parseInt(values.costUnless2.replace(/,/g, ""))
-            : parseInt(values.costUnless2)
-            ? parseInt(values.costUnless2)
+        if (dataDefualt.LOAN_TYPE_ID !== 2) {
+          const govermentResult2 = values.governmentOfficer2.filter(
+            (item) => item
+          );
+          const govermentfinal2 = govermentResult2.map((item) => ({
+            LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+            CUSTOMER_ID: item.id,
+            defendant_number: item.GARNO + 1,
+            cost_of_uselessness:
+              values?.costUnless2 &&
+              typeof values.costUnless2 === "string" &&
+              values.costUnless2.includes(",")
+                ? parseInt(values.costUnless2.replace(/,/g, ""))
+                : parseInt(values.costUnless2)
+                ? parseInt(values.costUnless2)
+                : 0,
+            cost_of_useleseness_per_month:
+              values?.costPermonth2 &&
+              typeof values.costPermonth2 === "string" &&
+              values.costPermonth2.includes(",")
+                ? parseInt(values.costPermonth2.replace(/,/g, ""))
+                : parseInt(values.costPermonth2)
+                ? parseInt(values.costPermonth2)
+                : 0,
+            cost_of_useleseness_month: values.costMonth2,
+            judge_number: 2,
+          }));
+          defendants.push(...govermentfinal2);
+        }
+
+        judgementData = {
+          LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+          red_case_number: values.redNumber,
+          judgement:
+            values?.judgement1 &&
+            typeof values.judgement1 === "string" &&
+            values.judgement1.includes(",")
+              ? parseInt(values.judgement1.replace(/,/g, ""))
+              : parseInt(values.judgement1)
+              ? parseInt(values.judgement1)
+              : 0,
+          judgement_filepath: null,
+          interest_rate: values.interestRate,
+          final_case_date: null,
+          final_case_filepath: null,
+          tracking_fee:
+            values?.trackingFeeEnforce &&
+            typeof values.trackingFeeEnforce === "string" &&
+            values.trackingFeeEnforce.includes(",")
+              ? parseInt(values.trackingFeeEnforce.replace(/,/g, ""))
+              : parseInt(values.trackingFeeEnforce)
+              ? parseInt(values.trackingFeeEnforce)
+              : 0,
+          fee: dataLoadLawSuit?.lawsuit?.fee,
+          enforce_case_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+          enforce_case_filepath: null,
+          attorney_fees:
+            values?.lawyerFeeEnforce &&
+            typeof values.lawyerFeeEnforce === "string" &&
+            values.lawyerFeeEnforce.includes(",")
+              ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
+              : parseInt(values.lawyerFeeEnforce)
+              ? parseInt(values.lawyerFeeEnforce)
+              : 0,
+          suspension_amount: values.suspensionAmount
+            ? values.suspensionAmount
             : 0,
-        cost_of_useleseness_per_month:
-          values?.costPermonth2 &&
-          typeof values.costPermonth2 === "string" &&
-          values.costPermonth2.includes(",")
-            ? parseInt(values.costPermonth2.replace(/,/g, ""))
-            : parseInt(values.costPermonth2)
-            ? parseInt(values.costPermonth2)
+          judgement_lack: values.judgement_lack ? values.judgement_lack : 0,
+          interest_rate_of_lack: values.interestRateLack
+            ? values.interestRateLack
             : 0,
-        cost_of_useleseness_month: values.costMonth2,
-        judge_number: 2,
-      }));
-      defendants.push(...govermentfinal2);
+        };
+
+        // statusData = {
+        //   id: responseData.WORK_LOG_ID,
+        //   USER_ID: dataDefualt.USER_ID,
+        //   LOAN_ID: dataDefualt.LOAN_ID,
+        //   MEMO: values.memo,
+        //   DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+        //   MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
+        //   PROCESS_ID: dataDefualt.PROCESS_ID,
+        // };
+      } else {
+        statusData = {
+          USER_ID: dataDefualt.LAWYER_ID,
+          LOAN_ID: dataDefualt.id,
+          LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+          LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+          MEMO: values.memo,
+          DATE: preData.dateAgreement,
+          MAIN_STATUS_ID: PAYMENT,
+          PROCESS_ID: STATUS_PROCESS_PROGRESS,
+        };
+        agreement = {
+          LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+          total_amount:
+            values?.paymentAmount &&
+            typeof values.paymentAmount === "string" &&
+            values.paymentAmount.includes(",")
+              ? parseInt(values.paymentAmount.replace(/,/g, ""))
+              : parseInt(values.paymentAmount)
+              ? parseInt(values.paymentAmount)
+              : 0,
+          installment_amount:
+            values?.paymentPerMonthAmount &&
+            typeof values.paymentPerMonthAmount === "string" &&
+            values.paymentPerMonthAmount.includes(",")
+              ? parseInt(values.paymentPerMonthAmount.replace(/,/g, ""))
+              : parseInt(values.paymentPerMonthAmount)
+              ? parseInt(values.paymentPerMonthAmount)
+              : 0,
+          installment_count: values.costMonth3,
+          document_filepath: null,
+          mark: values.memo,
+          due_date: preData.dateAgreement,
+          already_paid: null,
+          payment_status: null,
+          payment_status_date: null,
+          negotiator_id: values.negotiator,
+          NEW_CONTNO: values.newContno ? values.newContno : null,
+        };
+      }
+      console.log("defendants", defendants);
+      console.log("judgementData", judgementData);
+      console.log("statusData", statusData);
+      console.log("agreement", agreement);
+
+      sendStatus(defendants, judgementData, statusData, agreement);
     }
-
-    judgementData = {
-      LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-      red_case_number: values.redNumber,
-      judgement:
-        values?.judgement1 &&
-        typeof values.judgement1 === "string" &&
-        values.judgement1.includes(",")
-          ? parseInt(values.judgement1.replace(/,/g, ""))
-          : parseInt(values.judgement1)
-          ? parseInt(values.judgement1)
-          : 0,
-      judgement_filepath: values.judgementFile,
-      interest_rate: values.interestRate,
-      final_case_date: null,
-      final_case_filepath: null,
-      tracking_fee:
-        values?.trackingFeeEnforce &&
-        typeof values.trackingFeeEnforce === "string" &&
-        values.trackingFeeEnforce.includes(",")
-          ? parseInt(values.trackingFeeEnforce.replace(/,/g, ""))
-          : parseInt(values.trackingFeeEnforce)
-          ? parseInt(values.trackingFeeEnforce)
-          : 0,
-      fee: dataLoadLawSuit?.lawsuit?.fee,
-      enforce_case_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
-      enforce_case_filepath: null,
-      attorney_fees:
-        values?.lawyerFeeEnforce &&
-        typeof values.lawyerFeeEnforce === "string" &&
-        values.lawyerFeeEnforce.includes(",")
-          ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
-          : parseInt(values.lawyerFeeEnforce)
-          ? parseInt(values.lawyerFeeEnforce)
-          : 0,
-      suspension_amount: values.suspensionAmount ? values.suspensionAmount : 0,
-      judgement_lack: values.judgement_lack ? values.judgement_lack : 0,
-      interest_rate_of_lack: values.interestRateLack
-        ? values.interestRateLack
-        : 0,
-    };
-
-    let statusData = {
-      id: responseData.WORK_LOG_ID,
-      USER_ID: dataDefualt.USER_ID,
-      LOAN_ID: dataDefualt.LOAN_ID,
-      MEMO: values.memo,
-      DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
-      MAIN_STATUS_ID: dataDefualt.MAIN_STATUS_ID,
-      PROCESS_ID: dataDefualt.PROCESS_ID,
-    };
-
-    console.log("defendants", defendants);
-    console.log("judgementData", judgementData);
-    console.log("statusData", statusData);
-
-    sendStatus(defendants, judgementData, statusData);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+
+  const onChange = (e) => {
+    setDefaultRadio(e.target.value);
+    console.log(e.target.value);
   };
 
   const onChangeInputRedNumber = (value) => {
@@ -378,10 +503,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     console.log(value);
   };
 
-  const onChangeJudgementFile = (value) => {
-    console.log(value);
-  };
-
   const buttonCustom = () => {
     return (
       <div style={{ textAlign: "center" }}>
@@ -395,12 +516,12 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             ย้อนกลับ
           </Button>
         ) : null}
-        <Button
+        {/* <Button
           onClick={handleCancel}
           style={{ color: "red", marginRight: "20px" }}
         >
           ปิด
-        </Button>
+        </Button> */}
 
         <Button style={{ color: "green" }} htmlType="submit">
           บันทึก
@@ -412,12 +533,12 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const buttonCustomNext = () => {
     return (
       <div style={{ textAlign: "center" }}>
-        <Button
+        {/* <Button
           onClick={handleCancel}
           style={{ color: "red", marginRight: "20px" }}
         >
           ปิด
-        </Button>
+        </Button> */}
 
         {dataDefualt.LOAN_TYPE_ID !== 2 ? (
           <Button
@@ -569,6 +690,62 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         </Space>
       </Checkbox.Group>
     );
+  };
+
+  const props = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList([...fileList, file]);
+      return false;
+    },
+    fileList,
+  };
+
+  const handleUploadAllImage = () => {
+    let maintType;
+    if (defaultRadio === "normal") {
+      maintType = "enforcement";
+    } else {
+      maintType = "settlement_agreement";
+    }
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/${maintType}/${name}/${dataDefualt.contract_no}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const formJudge1 = () => {
@@ -810,7 +987,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
               onChange={(value) => onChangSuspensionAmount(value)}
             />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             label="ไฟล์คำพิพากษา"
             name="judgementFile"
             rules={[
@@ -824,6 +1001,26 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
               name="judgementFile"
               onChange={(e) => onChangeJudgementFile(e.target.value)}
             />
+          </Form.Item> */}
+          <Form.Item
+            label="ไฟล์คำพิพากษา"
+            name="file"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
+              },
+            ]}
+          >
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              </p>
+            </Dragger>
           </Form.Item>
 
           <Tooltip
@@ -961,6 +1158,191 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     setTabsKey(key);
   };
 
+  const onChangeNewContno = (value) => {
+    console.log(value);
+  };
+
+  const onChangPaymentAmount = (value) => {
+    console.log(value);
+  };
+
+  const onChangPaymentPerMonthAmount = (value) => {
+    console.log(value);
+  };
+
+  const onChangeDateAgreement = (date, dateString) => {
+    console.log(date, dateString);
+    setPreData({ ...preData, dateAgreement: dateString });
+  };
+
+  const onChangeSelectInvestigatorAsset = (value) => {
+    console.log(`selected ${value}`);
+  };
+
+  const formDataPayment = () => {
+    return (
+      <Card>
+        <Form
+          labelCol={{
+            span: 6,
+          }}
+          wrapperCol={{
+            span: 14,
+          }}
+          form={form}
+          layout="horizontal"
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+        >
+          <Form.Item
+            label="เลขสัญญาใหม่"
+            name="newContno"
+            // rules={[
+            //   {
+            //     required: true,
+            //     message: "กรุณาใส่สัญญาใหม่ !",
+            //   },
+            // ]}
+          >
+            <Input
+              name="newContno"
+              onChange={(e) => onChangeNewContno(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="ยินยอมชำระเงินจำนวน"
+            name="paymentAmount"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่เงินต้นที่ทำยอม",
+              },
+            ]}
+          >
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentAmount(value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="งวดละไม่น้อยกว่า"
+            name="paymentPerMonthAmount"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่เงินที่ต้องชำระรายเดือน",
+              },
+            ]}
+          >
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentPerMonthAmount(value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="จำนวนกี่เดือน"
+            name="costMonth3"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่จำนวนงวด",
+              },
+            ]}
+          >
+            <Select type="number" name="costMonth3" options={optionsMonth} />
+          </Form.Item>
+
+          {/* <Form.Item
+            label="ไฟล์ทำยอม"
+            name="paymentFile"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
+              },
+            ]}
+          >
+            <Input
+              name="paymentFile"
+              onChange={(e) => onChangePaymentFile(e.target.value)}
+            />
+          </Form.Item> */}
+          <Form.Item
+            label="ไฟล์ทำยอม"
+            name="file"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
+              },
+            ]}
+          >
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              </p>
+            </Dragger>
+          </Form.Item>
+          <Form.Item
+            label="วันนัดชำระครั้งแรก"
+            name="dateAgreement"
+            rules={[
+              {
+                required: true,
+                message: "โปรดเลือกวันที่นัดชำระ",
+              },
+            ]}
+          >
+            <DatePicker onChange={onChangeDateAgreement} />
+          </Form.Item>
+          <Form.Item label="หมายเหตุ" name="memo">
+            <TextArea
+              rows={5}
+              onChange={(e) => onChangeInputMemo(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item
+            label="เลือกผู้เจรจา"
+            name="negotiator"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาเลือกผู้เจรจา !",
+              },
+            ]}
+          >
+            <Select
+              placeholder="เลือกผู้เจรจา"
+              optionFilterProp="value"
+              onChange={(value) => onChangeSelectInvestigatorAsset(value)}
+              options={assistantOption}
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+          {buttonCustom()}
+        </Form>
+      </Card>
+    );
+  };
+
   const items = [
     {
       key: "1",
@@ -989,13 +1371,26 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         footer={null}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
-          <Tabs activeKey={tabsKey} onChange={onChangeTabs} centered>
-            {items.map((item) => (
-              <Tabs.TabPane tab={item.label} key={item.key}>
-                {item.children}
-              </Tabs.TabPane>
-            ))}
-          </Tabs>
+          <Radio.Group
+            onChange={onChange}
+            defaultValue="normal"
+            value={defaultRadio}
+            style={{ margin: "10px" }}
+          >
+            <Radio value="normal">ปกติ</Radio>
+            <Radio value="payment">ทำยอม</Radio>
+          </Radio.Group>
+          {defaultRadio === "payment" ? (
+            formDataPayment()
+          ) : (
+            <Tabs activeKey={tabsKey} onChange={onChangeTabs} centered>
+              {items.map((item) => (
+                <Tabs.TabPane tab={item.label} key={item.key}>
+                  {item.children}
+                </Tabs.TabPane>
+              ))}
+            </Tabs>
+          )}
         </Spin>
       </Modal>
     </>

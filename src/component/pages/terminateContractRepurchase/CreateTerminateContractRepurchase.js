@@ -161,10 +161,6 @@ const Main = () => {
       return [...acc, ...mainData, ...guarantorData];
     }, []);
 
-    // const sortedData = mergedData.sort((a, b) => {
-    //   return (a.cusType || 0) - (b.cusType || 0); // เรียงเฉพาะ cusType
-    // });
-
     // เพิ่ม key ให้แต่ละ record เริ่มจาก 1
     return mergedData.map((item, index) => ({
       ...item,
@@ -375,7 +371,7 @@ const Main = () => {
         worksheet.addRow([
           index + 1,
           dayjs().format("YYYY-MM-DD"), // วันที่ส่ง
-          "cancelHand",
+          "repurchase",
           data.CONTNO,
           data.NAME,
           data.cusType,
@@ -403,7 +399,7 @@ const Main = () => {
     // ดาวน์โหลดไฟล์
     saveAs(
       blob,
-      `รายงานบอกเลิกสัญญา(มือ) ${dayjs().format("YYYY_MM_DD")}.xlsx`
+      `รายงานหนังสือแจ้งสิทธ์ซื้อรถคืน ${dayjs().format("YYYY_MM_DD")}.xlsx`
     );
   };
 
@@ -476,30 +472,6 @@ const Main = () => {
         </>
       ),
     },
-    // {
-    //   title: "ค้างงวด",
-    //   dataIndex: "EXP_PRD",
-    //   key: "EXP_PRD",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>{record.LOAN.CONTNO ? record.LOAN.CONTNO : null}</>
-    //   ),
-    // },
-    // {
-    //   title: "เงินค้าง",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.TOTPRC - record.SMPAY} <br />
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "ค่าทวงถาม",
-    //   align: "center",
-    //   render: (text, record) => <>{record.LETTER}</>,
-    // },
-
     {
       title: "การจัดการ",
       align: "center",
@@ -622,5 +594,5 @@ const Main = () => {
   );
 };
 
-const CreateTerminateContractHand = MotionHoc(Main);
-export default CreateTerminateContractHand;
+const CreateTerminateContractRepurchase = MotionHoc(Main);
+export default CreateTerminateContractRepurchase;
