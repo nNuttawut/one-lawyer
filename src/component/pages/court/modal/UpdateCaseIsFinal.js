@@ -6,10 +6,15 @@ import {
   Steps,
   message,
   Spin,
-  Input,
   DatePicker,
+  Row,
+  Col,
 } from "antd";
-import { AuditOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  AuditOutlined,
+  LoadingOutlined,
+  InboxOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import {
   baseUrl,
@@ -17,24 +22,27 @@ import {
   HEADERS_EXPORT,
   GET_JUDGE_BY_ID,
   PUT_JUDGE,
+  PUT_STATUS,
 } from "../../../API/apiUrls";
 import {
+  ENFORCEMENT,
   INVESTIGATE,
+  NEGOTIATE,
+  PARAM_PUBLIC,
   STATUS_PROCESS_PROGRESS,
+  STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
+import Dragger from "antd/es/upload/Dragger";
 
 const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
-  const [status, setStatus] = useState({
-    process: "process",
-    caseIsFinal: "wait",
-  });
   const [loading, setLoading] = useState(false);
   const [memoText, setMemoText] = useState("");
   const [countDate, setCountDate] = useState();
-  const [urlFileSave, setUrlFileSave] = useState();
+  const [fileList, setFileList] = useState([]);
+
   const [dataLoadJudgement, setDataJudgement] = useState();
   const [dateEnforceCase, setDateEnforceCase] = useState();
 
@@ -48,6 +56,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       // const daySub = daysDifference + 15;
       console.log("toDate", toDate);
       setCountDate(daysDifference);
+      console.log(dataDefualt);
     }
   }, []);
 
@@ -62,7 +71,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       const response = await axios.get(
         baseUrl + GET_JUDGE_BY_ID + dataDefualt.LAWSUIT_ID,
         {
-          HEADERS_EXPORT,
+          headers: HEADERS_EXPORT,
         }
       );
       if ((response.status = 200)) {
@@ -78,73 +87,95 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (statusData, dataJudgement) => {
-    if (status.caseIsFinal === "finish") {
-      setLoading(true);
-      try {
-        await axios
-          .post(baseUrl + POST_STATUS, statusData, { HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-              setLoading(false);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+  const sendStatus = async (dataJudgement, putStatus) => {
+    setLoading(true);
+    try {
+      await axios
+        .put(baseUrl + PUT_JUDGE, dataJudgement, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
 
-        await axios
-          .put(baseUrl + PUT_JUDGE, dataJudgement, { HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-              funcUpdateStatus({
-                ...dataDefualt,
-                MAIN_STATUS_ID: statusData.MAIN_STATUS_ID,
-                DATE: dayjs().format("YYYY-MM-DD"),
-              });
-              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
-              setLoading(false);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
-      } finally {
+            handleUploadAllImage();
+            message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
+            setLoading(false);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      await axios
+        .put(baseUrl + PUT_STATUS, putStatus, {
+          headers: HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            funcUpdateStatus({
+              ...dataDefualt,
+              PROCESS_ID: putStatus.PROCESS_ID,
+            });
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+    } finally {
+      setLoading(false);
+      handleCancel();
+    }
+  };
+
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คดีถึงที่สุด${dataDefualt.contno}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
         setLoading(false);
-        handleCancel();
-      }
-    } else {
-      message.error("โปรดเปลี่ยนสถานะข้อมูลและกดบันทึกอีกครั้ง");
-    }
-  };
-  const handleStatusChange = (current) => {
-    console.log(current);
-    if (current === 2) {
-      setStatus({
-        process: "finish",
-        caseIsFinal: "finish",
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
       });
-    } else {
-      setStatus({
-        process: "process",
-        caseIsFinal: "wait",
-      });
-    }
   };
-
   const onChangeInput = (e) => {
     const value = e.target.value;
     console.log(value);
@@ -152,49 +183,58 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   };
 
   const handleOk = () => {
-    if (status.caseIsFinal === "finish") {
-      if (urlFileSave) {
-        const postData = {
-          MAIN_STATUS_ID: INVESTIGATE,
-          LOAN_ID: dataDefualt.id,
-          USER_ID: dataDefualt.LAWYER_ID,
-          LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-          LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-          MEMO: memoText,
-          DATE: dateEnforceCase,
-          PROCESS_ID: STATUS_PROCESS_PROGRESS,
-        };
-        const putJudgement = {
-          ...dataLoadJudgement,
-          final_case_date: dateEnforceCase,
-          final_case_filepath: urlFileSave,
-        };
-        console.log("postData", postData);
-        console.log("putJudgement", putJudgement);
-        sendStatus(postData, putJudgement);
-      } else {
-        message.error("กรุณาใส่ URL FILE");
-      }
+    if (fileList.length > 0) {
+      const putJudgement = {
+        ...dataLoadJudgement,
+        final_case_date: dateEnforceCase,
+        final_case_filepath: null,
+      };
+
+      const putStatus = {
+        id: dataDefualt.WORK_LOG_ID,
+        MEMO: dataDefualt.memo,
+        DATE: dataDefualt.DATE,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_ID: dataDefualt.id,
+        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      };
+
+      console.log("putStatus", putStatus);
+      console.log("putJudgement", putJudgement);
+      sendStatus(putJudgement, putStatus);
     } else {
-      message.error("กรุณาเปลี่ยนสถานะ");
+      message.error("กรุณาอัพโหลดไฟล์");
     }
   };
 
-  const onChangeJudgementFile = (value) => {
-    console.log(value);
-    setUrlFileSave(value);
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
   };
+
   const onChange = (date, dateString) => {
     console.log(date, dateString);
     setDateEnforceCase(dateString);
   };
+
   const FormDisabled = () => {
     return (
       <>
         <Card style={{ marginTop: "10px" }}>
           <Steps
             responsive={true}
-            onChange={handleStatusChange}
             items={[
               {
                 title: "ออกหมายตั้ง",
@@ -202,13 +242,13 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
               {
                 title: "เวลาดำเนินการเหลือ",
-                status: status.process,
+                status: "process",
                 description: `เกินกำหนด: ${countDate} วัน`,
                 icon: <LoadingOutlined />,
               },
               {
                 title: "คดีถึงที่สุด",
-                status: status.caseIsFinal,
+                status: "finish",
                 icon: <AuditOutlined />,
               },
             ]}
@@ -236,19 +276,24 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         ]}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
+          <Card>{FormDisabled()}</Card>
           <Card>
-            <FormDisabled />
-            <Input
-              style={{ marginTop: "10px" }}
-              placeholder="ใส่ url file ในนี้"
-              onChange={(e) => onChangeJudgementFile(e.target.value)}
-            />
             <DatePicker
-              style={{ marginTop: "10px" }}
-              placeholder="เลือกวันที่ออกหมายตั้ง"
+              style={{ marginBottom: "10px", width: "auto" }}
+              placeholder="เลือกวันที่"
               size="large"
               onChange={onChange}
             />
+
+            <Dragger {...props} label="ไฟลหมายตั้ง">
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              </p>
+            </Dragger>
           </Card>
           <div style={{ marginTop: "10px" }}>
             <TextArea

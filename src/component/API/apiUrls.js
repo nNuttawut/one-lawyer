@@ -1,6 +1,6 @@
 //------dev-------
-// ดีงข้อมูลจาก server ibm
-const GET_LOAN_FROM_SERVER_IBM = "/lawyer/dev/server/loans";
+// // ดีงข้อมูลจาก server ibm
+const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
 const GET_ALL_LOAN = "/lawyer/dev/api/loans";
@@ -54,6 +54,7 @@ const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/dev/api/worklogs/`;
 const POST_JUDGE = `/lawyer/dev/api/judgements`;
 const PUT_JUDGE = `/lawyer/dev/api/judgements`;
 const GET_JUDGE_BY_ID = `/lawyer/dev/api/judgements/`;
+const GET_JUDGE_LIST = `/lawyer/dev/api/judgements`;
 
 //ข้อมูลจำเลย
 const POST_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
@@ -172,6 +173,7 @@ export {
   POST_JUDGE,
   PUT_JUDGE,
   GET_JUDGE_BY_ID,
+  GET_JUDGE_LIST,
   POST_JUDGE_DEFENDANTS,
   PUT_JUDGE_DEFENDANTS,
   GET_JUDGE_DEFENDANTS_BY_ID,
@@ -217,7 +219,7 @@ export {
 
 // // ----production-----
 // //ดีงข้อมูลจาก server ibm
-// const GET_LOAN_FROM_SERVER_IBM = "/lawyer/dev/server/loans";
+// const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 // //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
 // const GET_ALL_LOAN = "/lawyer/api/loans";
@@ -226,7 +228,7 @@ export {
 // const GET_LOAN_BY_CONTNO = "/lawyer/api/loans/";
 
 // //ดึงจำนวนงานที่ users รับงาน
-// const GET_JOB_COUNT = "/Zlawyer/api/loans/notics/count";
+// const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
 
 // //ดึงจำนานงานที่กำลังดำเนินการ
 // const GET_JOB_IN_PROGRESS = "/lawyer/api/jobs";
@@ -271,6 +273,7 @@ export {
 // const POST_JUDGE = `/lawyer/api/judgements`;
 // const PUT_JUDGE = `/lawyer/api/judgements`;
 // const GET_JUDGE_BY_ID = `/lawyer/api/judgements/`;
+// const GET_JUDGE_LIST = `/lawyer/dev/api/judgements`;
 
 // //ข้อมูลจำเลย
 // const POST_JUDGE_DEFENDANTS = `/lawyer/api/judgement-defendants`;
@@ -387,6 +390,7 @@ export {
 //   POST_JUDGE,
 //   PUT_JUDGE,
 //   GET_JUDGE_BY_ID,
+// GET_JUDGE_LIST,
 //   POST_JUDGE_DEFENDANTS,
 //   PUT_JUDGE_DEFENDANTS,
 //   GET_JUDGE_DEFENDANTS_BY_ID,

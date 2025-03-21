@@ -9,11 +9,16 @@ import {
   Spin,
   Switch,
 } from "antd";
-import MotionHoc from "../../utils/MotionHoc";
-import { baseUrl, GET_BY_ID, HEADERS_EXPORT, POST_USER } from "../API/apiUrls";
+import MotionHoc from "../../../utils/MotionHoc";
+import {
+  baseUrl,
+  GET_BY_ID,
+  HEADERS_EXPORT,
+  POST_USER,
+} from "../../API/apiUrls";
 import axios from "axios";
-import RoleSelect from "../../hook/RoleSelect";
-import LoadCompanies from "../../hook/LoadCompanies";
+import RoleSelect from "../../../hook/RoleSelect";
+import LoadCompanies from "../../../hook/LoadCompanies";
 
 const Main = () => {
   const [form] = Form.useForm();

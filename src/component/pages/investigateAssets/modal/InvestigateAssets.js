@@ -14,6 +14,7 @@ import {
   List,
   Row,
   Col,
+  Popconfirm,
 } from "antd";
 import {
   baseUrl,
@@ -163,8 +164,20 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-      handleUploadAllImage();
-      if (governmentOfficerData.length > 0) {
+      if (radioStatus === 1) {
+        dataPropertyList.forEach((item) => {
+          console.log("📌 อัปโหลดไฟล์ของ:", item.CUSTOMER_ID);
+
+          if (item.fileList.length > 0) {
+            console.log(item.fileList);
+            handleUploadAllImage(item.fileList, item); // ส่งไฟล์ไปอัปโหลดทีละตัว
+          } else {
+            console.warn("⚠️ ไม่มีไฟล์ใน fileList สำหรับ", item.CUSTOMER_ID);
+          }
+        });
+      }
+
+      if (governmentOfficerData?.length > 0) {
         console.log("governmentOfficerData", governmentOfficerData);
         const promises = governmentOfficerData.map(async (item) => {
           const arrayData = item;
@@ -201,20 +214,19 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       handleCancel();
     }
   };
-  console.log(dataPropertyList);
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = (fileList, item) => {
     const formData = new FormData();
 
-    dataPropertyList?.fileList?.forEach((file) => {
+    fileList.forEach((file) => {
       formData.append("files", file);
     });
+
     setLoading(true);
 
     axios
       .post(
-        baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/สืบทรัพย์_$${dataPropertyList?.CUSTOMER_ID}${dataPropertyList?.possessor}`,
+        `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${item?.CUSTOMER_ID}_${item?.deed_number}_${item?.province}_${item?.district}`,
         formData,
         {
           headers: {
@@ -309,18 +321,12 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    let putDataLawsuit;
+
     let postDataInvestigate;
 
     console.log("dataPropertyList---->", dataPropertyList);
     console.log("radioStatus--->", radioStatus);
     const result = Object.values(checkedGuarantors);
-
-    // putDataLawsuit = {
-    //   ...dataLoadLawSuit,
-    //   government_officer_number: parseInt(result.length),
-    //   investigate_mark: values.memo,
-    // };
 
     postDataInvestigate = {
       LAWSUIT_ID: dataDefualt.LAWSUIT_ID,
@@ -329,17 +335,17 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         "YYYY-MM-DD"
       ),
       mark: values.memo,
+      commission: 500,
       property_list: dataPropertyList,
     };
 
-    if (result) {
+    if (result?.length > 0) {
       const hasNullValues = result.some(
         (item) => item.OCCUP === "" || item.OFFIC === ""
       );
       console.log("Has null values:", hasNullValues); // true หรือ false
       console.log("result--->", result);
       console.log("postDataInvestigate--->", postDataInvestigate);
-      console.log("putDataLawsuit--->", putDataLawsuit);
 
       if (!hasNullValues) {
         console.log("checkValue---->xxx", hasNullValues);
@@ -453,7 +459,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         >
           {governmentOfficers
             ? `${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${
-                governmentOfficers?.NAME2
+                governmentOfficers?.NAME2 ? governmentOfficers?.NAME2 : ""
               } ${
                 governmentOfficers?.GOVMNT === 1
                   ? ` เป็น ข้าราชการ ${governmentOfficers?.OCCUP}  อยู่ที่ ${governmentOfficers?.OFFIC}`
@@ -549,6 +555,11 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChangeInvestiGateResult = ({ target: { value } }) => {
     setRadioStatus(value);
+    console.log(value);
+  };
+
+  const confirm = () => {
+    form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
   };
 
   const formDataSet = () => {
@@ -697,9 +708,17 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             ปิด
           </Button>
 
-          <Button style={{ color: "green" }} htmlType="submit">
-            บันทึก
-          </Button>
+          <Popconfirm
+            placement="topLeft"
+            title="อัพเดทข้อมูล"
+            description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
+            onConfirm={confirm}
+            // onCancel={() => cancel(record)}
+            okText="ยืนยัน"
+            cancelText="ปิด"
+          >
+            <Button style={{ color: "green" }}>บันทึก</Button>
+          </Popconfirm>
         </div>
       </Form>
     );

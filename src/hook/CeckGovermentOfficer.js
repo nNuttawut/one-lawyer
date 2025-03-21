@@ -7,9 +7,8 @@ const CheckGovermentOfficer = () => {
     console.log("data", data);
 
     if (data?.CUSTOMER) {
-      setGovernmentOfficers({ ...data.CUSTOMER });
+      setGovernmentOfficers({ ...data?.CUSTOMER });
     }
-    console.log("data?.CUSTOMER", governmentOfficers);
 
     if (data?.GUARANTORS) {
       const governmentOfficersGuarantors = data.GUARANTORS.filter(
@@ -24,6 +23,7 @@ const CheckGovermentOfficer = () => {
       console.log("governmentOfficers", governmentOfficers);
     }
   };
+
   return [setupGovernmentOfficerList, governmentOfficers];
 };
 

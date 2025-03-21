@@ -3,9 +3,9 @@ import { Button, Row, Col, Form, Input, Card, Checkbox, message } from "antd";
 import { Container } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 
-import logo from "../../assets/images/logoLogin.png";
+import logo from "../../../assets/images/logoLogin.png";
 import axios from "axios";
-import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../API/apiUrls";
+import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../../API/apiUrls";
 
 export default function LogIn() {
   const navigate = useNavigate();

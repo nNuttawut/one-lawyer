@@ -9,8 +9,9 @@ import {
   Spin,
   message,
   Radio,
+  Image,
 } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   baseUrl,
@@ -23,16 +24,23 @@ import {
   PUT_PARCELS,
   PUT_STATUS,
 } from "../../../API/apiUrls";
-
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
 import {
   INDICT,
+  PARAM_PUBLIC,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
+import Dragger from "antd/es/upload/Dragger";
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const UpdateReplyNoticeEms = ({
@@ -51,14 +59,14 @@ const UpdateReplyNoticeEms = ({
   const [lawsuitData, setLawsuitData] = useState(null);
   const [loanData, setLoanData] = useState(null);
   const [parcelsData, setParcelsData] = useState(null);
-  const [defaultRadio, setDefaultRadio] = useState(null);
-  const videoRef = useRef(null);
-  const [imageCap, setImageCap] = useState(null);
-  const [capturedImage, setCapturedImage] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [imageList, setImageList] = useState([]);
 
   useEffect(() => {
     loadData();
     setLoadingDataCompany(true);
+    loadImagesProduct();
     console.log("dataDefault", dataDefault);
   }, [setLoadingDataCompany]);
 
@@ -335,6 +343,9 @@ const UpdateReplyNoticeEms = ({
 
       const response = await Promise.all(promises);
       console.log("results", response);
+      if (fileList) {
+        handleUploadAllImage();
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
@@ -342,6 +353,59 @@ const UpdateReplyNoticeEms = ({
       setLoading(false);
       handleCancel();
     }
+  };
+
+  const loadImagesProduct = async () => {
+    await axios
+      .get(
+        baseUrl + `/files/lawyer/notice/${PARAM_PUBLIC}/${dataDefault.CONTNO}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl + `/files/lawyer/notice/${PARAM_PUBLIC}/${dataDefault.CONTNO}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleCancel = () => {
@@ -367,10 +431,6 @@ const UpdateReplyNoticeEms = ({
   };
 
   const onChangeInput = (value) => {
-    console.log(value);
-  };
-
-  const onChangeReplyFile = (value) => {
     console.log(value);
   };
 
@@ -514,36 +574,65 @@ const UpdateReplyNoticeEms = ({
     // ตั้งค่าให้กับ Form
     form.setFieldsValue(fieldsToSet);
   };
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
 
-  const startWebcam = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+      );
+    },
+    beforeUpload: (file) => {
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      // // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      // const newFile = new File(
+      //   [file],
+      //   `สืบทรัพย์_${dataDefualt?.CONTNO}.${
+      //     fileType.includes("pdf") ? "pdf" : file.name.split(".").pop()
+      //   }`,
+      //   { type: fileType }
+      // );
+
+      // console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "xlsx" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "docx" }]);
       }
 
-      const track = stream.getVideoTracks()[0];
-      const imageCapture = new ImageCapture(track);
-      setImageCap(imageCapture); // ตั้งค่า imageCap
-    } catch (err) {
-      console.error("เกิดข้อผิดพลาดในการเปิดกล้อง: ", err);
-    }
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
   };
 
-  const takeScreenShot = async () => {
-    if (!imageCap) {
-      console.error("imageCap ยังไม่ได้ถูกตั้งค่า");
-      return;
-    }
-
-    try {
-      const blob = await imageCap.takePhoto();
-      const imgUrl = URL.createObjectURL(blob);
-      setCapturedImage(imgUrl);
-    } catch (err) {
-      console.error("เกิดข้อผิดพลาดในการถ่ายภาพ: ", err);
-    }
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
   };
 
   return (
@@ -669,33 +758,6 @@ const UpdateReplyNoticeEms = ({
                       defaultValue={parcel?.parcel_no_response}
                     />
                   </Form.Item>
-                  {/* <Form.Item
-                    label="ถ่ายรูปใบตอบกลับ"
-                    name={`parcelNoGuarantor${index}`}
-                    rules={[{ required: true, message: "โปรดกรอกข้อมูล" }]}
-                  >
-                    <Button onClick={startWebcam} style={{ color: "blue" }}>
-                      เปิดกล้อง
-                    </Button>
-
-                    <div>
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        width="300px"
-                      ></video>
-                    </div>
-
-                    <button onClick={takeScreenShot} style={{ color: "blue" }}>
-                      ถ่ายภาพ
-                    </button>
-                  </Form.Item> */}
-                  <div>
-                    {capturedImage && (
-                      <img src={capturedImage} alt="Captured" width="300px" />
-                    )}
-                  </div>
 
                   <Form.Item
                     label="การตอบกลับ"
@@ -706,26 +768,172 @@ const UpdateReplyNoticeEms = ({
                       <Radio value={1}>จากใบตอบกลับ</Radio>
                       <Radio value={2}>จากเว็บไปรษณีย์</Radio>
                       <Radio value={3}>ยังไม่ตอบกลับ</Radio>
+                      <Radio value={4}>ตีกลับ</Radio>
                     </Radio.Group>
                   </Form.Item>
                 </div>
               ))}
-              <Form.Item
-                label="ลิ้งค์เก็บรูปตอบกลับ"
-                name="imageReplyFile"
-                rules={[
-                  {
-                    required: true,
-                    message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-                  },
-                ]}
-              >
-                <Input
-                  name="imageReplyFile"
-                  onChange={(e) => onChangeReplyFile(e.target.value)}
-                />
+              <Form.Item label="อัปโหลดไฟล์/รูปภาพ" name="imageUrlFile">
+                <Dragger
+                  {...props}
+                  style={{
+                    width: "400px", // กำหนดความกว้าง
+                    height: "200px", // กำหนดความสูง
+                    margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+                  }}
+                >
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined style={{ color: "blue" }} />
+                  </p>
+                  <p className="ant-upload-text">
+                    กรุณาคลิกหรือลากเพื่อเลือกไฟล์
+                  </p>
+                  <p className="ant-upload-hint">
+                    รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                  </p>
+                </Dragger>
               </Form.Item>
+              {capturedImages.length > 0 ? (
+                <Form.Item label="ไฟล์ที่ต้องการบันทึก" name={"imageFile"}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "16px",
+                      justifyContent: "center",
+                      padding: "10px", // เพิ่ม padding เพื่อไม่ให้ชิดขอบเกินไป
+                    }}
+                  >
+                    <Image.PreviewGroup>
+                      {capturedImages?.map((image, index) => {
+                        if (!image || !image.type) return null;
 
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              position: "relative", // ให้ปุ่มลบอยู่บนสุด
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              textAlign: "center",
+                              background: "#f8f8f8",
+                              borderRadius: "8px",
+                              padding: "10px",
+                              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                            }}
+                          >
+                            {/* แสดงไอคอนตามประเภทไฟล์ */}
+                            {image.type.includes("pdf") ? (
+                              <FilePdfOutlined
+                                style={{ fontSize: "40px", color: "red" }}
+                              />
+                            ) : image.type.includes("xlsx") ? (
+                              <FileExcelOutlined
+                                style={{ fontSize: "40px", color: "green" }}
+                              />
+                            ) : image.type.includes("docx") ? (
+                              <FileWordOutlined
+                                style={{ fontSize: "40px", color: "blue" }}
+                              />
+                            ) : (
+                              <Image
+                                src={image.url}
+                                alt={`Captured ${index}`}
+                                width="150px"
+                              />
+                            )}
+
+                            {/* ลิงก์ดาวน์โหลด */}
+                            {image.url && (
+                              <a
+                                style={{
+                                  display: "block",
+                                  marginTop: "8px",
+                                  color: "#007bff",
+                                  textDecoration: "none",
+                                  fontWeight: "bold",
+                                }}
+                                href={image.url || "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                คลิกเพื่อดาวน์โหลด
+                              </a>
+                            )}
+
+                            {/* ปุ่มลบ */}
+                            <button
+                              type="button"
+                              onClick={() => deleteImg(index)}
+                              style={{
+                                position: "absolute",
+                                top: "-5px",
+                                right: "-5px",
+                                background: "red",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "24px",
+                                height: "24px",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
+              {imageList.length > 0 ? (
+                <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+                  <div
+                    style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
+                  >
+                    <Image.PreviewGroup>
+                      {imageList?.map((image, index) => (
+                        <div
+                          key={index}
+                          style={{ position: "relative", textAlign: "center" }}
+                        >
+                          {image.url.includes("pdf") ? (
+                            <>
+                              <FilePdfOutlined
+                                style={{ fontSize: "40px", color: "red" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{ display: "block", marginTop: "8px" }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
               <Form.Item label="หมายเหตุ" name="memo">
                 <TextArea
                   rows={5}

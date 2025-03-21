@@ -12,6 +12,7 @@ import {
   Checkbox,
   Tooltip,
   DatePicker,
+  Image,
 } from "antd";
 import {
   baseUrl,
@@ -26,6 +27,13 @@ import LoadLawyers from "../../../../hook/LoadLawyers";
 import dayjs from "dayjs";
 import LoadLandDetail from "../../../../hook/LoadLandDetail";
 import DateCustom from "../../../../hook/DateCustom";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
 const EditAssetsSuccess = ({
   open,
@@ -53,6 +61,7 @@ const EditAssetsSuccess = ({
   const [refAssetOption, setRefAssetOption] = useState([]);
   const [radioRefAsset, setRadioRefAsset] = useState();
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
+  const [imageList, setImageList] = useState([]);
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
@@ -76,6 +85,7 @@ const EditAssetsSuccess = ({
     if (isModal) {
       setLoadingData(true);
       setLoadingLandDetailData(true);
+      loadImagesProduct();
     }
     handleCustomerOption();
     let dataWa;
@@ -142,6 +152,26 @@ const EditAssetsSuccess = ({
       pointAtCenter: true,
     };
   }, [arrow]);
+
+  const loadImagesProduct = async () => {
+    console.log(dataDefualt);
+
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataIndex?.CUSTOMER_ID}_${dataIndex?.deed_number}_${dataIndex?.province}_${dataIndex?.district}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
 
   const handleCustomerOption = () => {
     console.log("governmentOfficers", governmentOfficers);
@@ -215,10 +245,6 @@ const EditAssetsSuccess = ({
     console.log("Clicked cancel button");
     close(false);
     setIsModal(false);
-  };
-
-  const onChangeUrlFile = (value) => {
-    console.log(value);
   };
 
   function isNotNumber(value) {
@@ -486,10 +512,10 @@ const EditAssetsSuccess = ({
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
           {currencyFormatComma(dataIndex.estimated_price)}
         </Form.Item>
-
+        {/* 
         <Form.Item label="ผู้ถือกรรมสิทธิ์" name="ownerAsset">
           <Input onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)} />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
           label="ติดภาระจำนอง"
           name="mortgageStatus"
@@ -578,20 +604,36 @@ const EditAssetsSuccess = ({
           />
         </Form.Item>
         {dataIndex.sequestrate_status === 1 || sequestrateStatus === 1 ? (
-          <Form.Item
-            label="เจ้าหนี้คำพิพากษา"
-            name="preferenceCreditor"
-            rules={[
-              {
-                required: true,
-                message: "กรณากรอกข้อมูล !",
-              },
-            ]}
-          >
-            <Input
-              onChange={(e) => onChangeInputPreferenceCreditor(e.target.value)}
-            />
-          </Form.Item>
+          <>
+            <Form.Item
+              label="เจ้าหนี้คำพิพากษา"
+              name="preferenceCreditor"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input
+                onChange={(e) =>
+                  onChangeInputPreferenceCreditor(e.target.value)
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              label="เลขคดีแดง"
+              name="ownerAsset"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input name="ownerAsset" />
+            </Form.Item>{" "}
+          </>
         ) : null}
         <Form.Item
           label="เลือกผู้สืบทรัพย์"
@@ -611,21 +653,98 @@ const EditAssetsSuccess = ({
             style={{ width: "100%" }}
           />
         </Form.Item>
-        <Form.Item
-          label="ลิ้งเก็บรูป"
-          name="urlFile"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-            },
-          ]}
-        >
-          <Input
-            name="urlFile"
-            onChange={(e) => onChangeUrlFile(e.target.value)}
-          />
-        </Form.Item>
+        {imageList.length > 0 ? (
+          <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                justifyContent: "center", // จัดให้อยู่ตรงกลาง
+              }}
+            >
+              <Image.PreviewGroup>
+                {imageList?.map((image, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                      textAlign: "center",
+                    }}
+                  >
+                    {image.url.includes("pdf") ? (
+                      <>
+                        <FilePdfOutlined
+                          style={{ fontSize: "40px", color: "red" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : image.url.includes(".xlsx") ? (
+                      <>
+                        <FileExcelOutlined
+                          style={{ fontSize: "40px", color: "green" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : image.url.includes(".docx") ? (
+                      <>
+                        <FileWordOutlined
+                          style={{ fontSize: "40px", color: "blue" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : (
+                      <Image
+                        src={image.url}
+                        alt={`Captured ${index}`}
+                        width="150px"
+                      />
+                    )}
+                  </div>
+                ))}
+              </Image.PreviewGroup>
+            </div>
+          </Form.Item>
+        ) : null}
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

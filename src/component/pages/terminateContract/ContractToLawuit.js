@@ -154,7 +154,8 @@ const Main = () => {
     const preData = value.filter((item) =>
       item.parcel_list.every(
         (parcel) =>
-          (parcel.status === 1 || parcel.status === 2) && !parcel.status_process
+          (parcel.status === 1 || parcel.status === 2 || parcel.status === 3) &&
+          !parcel.remark
       )
     );
     console.log("preData--->", preData);
@@ -466,7 +467,7 @@ const Main = () => {
         let arrayData = item;
         arrayData = {
           ...arrayData,
-          status_process: 1,
+          remark: "มอบงานให้ทนายแล้ว",
         };
         console.log("arrayData", arrayData);
         if (!arrayData) {

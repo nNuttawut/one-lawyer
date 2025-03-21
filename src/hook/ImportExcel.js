@@ -22,14 +22,6 @@ function ImportExcel() {
     return false; // Prevent automatic upload
   };
 
-  const props = {
-    onChange({ file, fileList }) {
-      if (file.status !== "uploading") {
-        console.log(file, fileList);
-      }
-    },
-  };
-
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       handleFileUpload(file);

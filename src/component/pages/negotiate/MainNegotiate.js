@@ -13,15 +13,12 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { EditOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
+  GET_JOB_IN_PROGRESS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -32,8 +29,9 @@ import DateCustom from "../../../hook/DateCustom";
 import {
   ENFORCEMENT,
   NEGOTIATE,
-  NOTICE,
-  SELL_ASSETS,
+  optionsSatus,
+  STATUS_PROCESS_PROCESS,
+  STATUS_PROCESS_PROGRESS,
 } from "../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
 
@@ -43,8 +41,6 @@ const Main = () => {
   const [convertDateThai] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
@@ -62,12 +58,9 @@ const Main = () => {
     setLoading(true);
     console.log(data);
     try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NEGOTIATE,
-        {
-          headers: HEADERS_EXPORT,
-        }
-      );
+      const response = await axios.get(baseUrl + GET_JOB_IN_PROGRESS, {
+        headers: HEADERS_EXPORT,
+      });
       if (response.data) {
         let i = 1;
         if (response.data) {
@@ -75,17 +68,10 @@ const Main = () => {
             ...item,
             key: i++,
           }));
-
-          // setArrayTable(newData);
-          // setDataArr(newData);
-          // setTableLength(newData.length);
           filterDataLawyer(newData);
-          console.log(newData);
-
+          console.log("newData", newData);
           setLoading(false);
         }
-      } else {
-        setArrayTable([]);
       }
     } catch (error) {
       console.error(
@@ -93,17 +79,12 @@ const Main = () => {
         error.response ? error.response.data : error.message
       );
       setLoading(false);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
-      );
+      const newData = data.filter((item) => item.MAIN_STATUS_ID);
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -209,19 +190,20 @@ const Main = () => {
     }
   };
 
-  //ทำ render record ของตาราถ้าใช้ logic เยอะ
-  const renderDate = (record) => {
-    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
-      return null;
-    }
-    const recordDate = dayjs(record.DATE).startOf("day");
-    const today = dayjs().startOf("day");
-    const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+  const renderStatus = (record) => {
+    // ตรวจสอบว่า optionsSatus เป็นอาร์เรย์หรืออ็อบเจกต์
+    let statusObj = Array.isArray(optionsSatus)
+      ? optionsSatus.find((option) => option.value === record.MAIN_STATUS_ID)
+      : optionsSatus?.value === record.MAIN_STATUS_ID
+      ? optionsSatus
+      : null;
+
+    // ถ้าไม่เจอ statusObj ให้แสดงค่า default
+    let status = statusObj ? statusObj.label : "ไม่พบสถานะ";
+
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
-        {formattedDate}
+      <Tag color="blue" style={{ textAlign: "center" }}>
+        {status}
       </Tag>
     );
   };
@@ -269,9 +251,9 @@ const Main = () => {
       ),
     },
     {
-      title: "วันเจราจา",
+      title: "สถานะล่าสุด",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      render: (record) => <>{renderStatus(record)}</>,
     },
   ];
 

@@ -4,7 +4,7 @@ import "./assets/styles/responsive.css";
 import Main from "./component/ui/Main";
 import { BrowserRouter as Router } from "react-router-dom";
 
-import LogIn from "./component/pages/LogIn";
+import LogIn from "./component/pages/userManage/LogIn";
 import Loginline from "./component/pages/lineLogIn/LoginLine";
 import Liff from "./component/pages/lineLogIn/Liff";
 const TOKEN = localStorage.getItem("TOKEN");

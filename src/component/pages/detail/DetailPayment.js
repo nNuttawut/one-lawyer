@@ -179,11 +179,19 @@ const Main = () => {
       (sum, item) => sum + (item.DUETONEFF || 0),
       0
     );
+
+    const totalKongdok = data.reduce(
+      (sum, item) => sum + ((item.DUEINTEFF || 0) - (item.KangDok || 0)),
+      0
+    );
+    console.log("totalKongdok");
+
     let dataTotal = {
       totalDays,
       totalPayment,
       totalDUEINTEFF,
       totalDUETONEFF,
+      totalKongdok,
     };
     setResult(dataTotal);
   };
@@ -192,23 +200,23 @@ const Main = () => {
     const doc = new jsPDF();
 
     // ตั้งค่าฟอนต์ภาษาไทย (ถ้าจำเป็น)
-    doc.setFont("THSarabunNew");
-    doc.setFontSize(16);
 
+    doc.setFontSize(16);
+    doc.setFont("THSarabunNew", "bold");
     // ส่วนหัวของเอกสาร
     doc.text("รายละเอียดสัญญา", 105, 15, null, null, "center");
-    let yLine = 25;
+    let yLine = 20;
     // ข้อมูลเลขที่สัญญา
-    doc.setFontSize(12);
+    doc.setFontSize(14);
     doc.text(
-      `ผู้เช่าซื้อ : ${arrData?.customer[0]?.NAME}`,
+      `ผู้ทำสัญญา : ${arrData?.customer[0]?.NAME}`,
       105,
       yLine,
       null,
       null,
       "center"
     );
-
+    doc.setFont("THSarabunNew", "normal");
     if (arrData?.guarantor?.length > 0 && queryContno.substring(0, 1) !== "1") {
       arrData.guarantor.map((data, index) =>
         doc.text(
@@ -222,50 +230,73 @@ const Main = () => {
       );
     }
     yLine += 5;
-    doc.text(`เลขที่สัญญา: ${arrData?.chqtran[0]?.contno}`, 14, yLine + 10);
-    doc.text(`ประเภท: ${arrData?.invtran?.baabdes}`, 14, yLine + 20);
-    doc.text(`อำเภอ: ${arrData?.invtran?.modeldes}`, 14, yLine + 30);
-    doc.text(`โฉนด: ${arrData?.invtran?.color}`, 14, yLine + 40);
-    doc.text(`เลขโฉนด: ${arrData?.invtran?.strno}`, 14, yLine + 50);
+    doc.text(`เลขที่สัญญา: ${arrData?.chqtran[0]?.contno}`, 50, yLine + 5);
+    doc.text(`ประเภท: ${arrData?.invtran?.baabdes}`, 50, yLine + 10);
+    doc.text(`อำเภอ: ${arrData?.invtran?.modeldes}`, 50, yLine + 15);
+    doc.text(`โฉนด: ${arrData?.invtran?.color}`, 50, yLine + 20);
+    doc.text(`เลขโฉนด: ${arrData?.invtran?.strno}`, 50, yLine + 25);
 
     doc.text(
       `วันเริ่มทำสัญญา: ${
-        arrData?.loan?.startdate
-          ? convertDateThai(arrData?.loan?.startdate)
+        arrData?.loan?.sdate ? convertDateThaiShort(arrData?.loan?.sdate) : "-"
+      }`,
+      120,
+      yLine + 5
+    );
+    doc.text(
+      `ชำระงวดแรกเมื่อ: ${
+        arrData?.chqtran[0]?.inpdt
+          ? convertDateThaiShort(arrData?.chqtran[0]?.inpdt)
           : "-"
       }`,
       120,
       yLine + 10
     );
+    doc.setTextColor(255, 0, 0);
     doc.text(
-      `ชำระงวดแรกเมื่อ: ${
-        arrData?.loan?.Sdate ? convertDateThai(arrData?.loan?.Sdate) : "-"
-      }`,
-      120,
-      yLine + 20
-    );
-    doc.text(
-      `คงเหลือ: ${
+      `ต้นคงเหลือ: ${
         arrData?.loan?.tonkong
           ? currencyFormatPoint(arrData?.loan?.tonkong)
           : "-"
       } บาท`,
       120,
-      yLine + 30
+      yLine + 15
+    );
+    doc.text(
+      `ดอกเบี้ยคงเหลือ: ${
+        arrData?.loan?.kangdok
+          ? currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.dok)
+          : "-"
+      } บาท`,
+      120,
+      yLine + 20
+    );
+
+    doc.setTextColor(0, 0, 0);
+    doc.text(
+      `วันที่คิดดอกเบี้ย: ${
+        arrData?.loan?.startdate
+          ? `${convertDateThaiShort(
+              arrData?.loan?.startdate
+            )} - ${convertDateThaiShort(arrData?.loan?.enddate)}`
+          : "-"
+      }`,
+      120,
+      yLine + 25
     );
     doc.text(
       `ผ่อน: ${
         arrData?.loan?.tnopay ? currencyFormatPoint(arrData?.loan?.tnopay) : 0
       } งวด`,
       120,
-      yLine + 40
+      yLine + 30
     );
     doc.text(
       `งวดละ: ${
-        arrayTable[0]?.NETPAY ? currencyFormatPoint(arrayTable[0]?.NETPAY) : 0
+        arrData?.loan?.totUpay ? currencyFormatPoint(arrData?.loan?.totUpay) : 0
       } บาท`,
-      120,
-      yLine + 50
+      145,
+      yLine + 30
     );
 
     // สร้างตาราง
@@ -304,7 +335,7 @@ const Main = () => {
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: yLine + 60,
+      startY: yLine + 35,
       theme: "striped",
       styles: {
         font: "THSarabunNew",
@@ -320,30 +351,30 @@ const Main = () => {
     // ผลรวมด้านล่าง
     let finalY = doc.lastAutoTable.finalY + 10; // ตำแหน่งสุดท้ายของตาราง
 
-    doc.setFontSize(12);
-    doc.setTextColor(255, 165, 0);
-    doc.text(`จำนวนวันที่ค้าง : ${result?.totalDays} วัน`, 14, finalY);
+    // doc.setFontSize(12);
+    // doc.setTextColor(255, 165, 0);
+    // doc.text(`จำนวนวันที่ค้าง : ${result?.totalDays} วัน`, 14, finalY);
 
-    doc.setTextColor(0, 0, 255);
-    doc.text(
-      `ยอดเงินที่ชำระ : ${currencyFormatPoint(result?.totalPayment)} บาท`,
-      14,
-      finalY + 10
-    );
+    // doc.setTextColor(0, 0, 255);
+    // doc.text(
+    //   `ยอดเงินที่ชำระ : ${currencyFormatPoint(result?.totalPayment)} บาท`,
+    //   14,
+    //   finalY + 10
+    // );
 
-    doc.setTextColor(255, 0, 0);
-    doc.text(
-      `ดอกเบี้ย : ${currencyFormatPoint(result?.totalDUEINTEFF)} บาท`,
-      14,
-      finalY + 20
-    );
+    // doc.setTextColor(255, 0, 0);
+    // doc.text(
+    //   `ดอกเบี้ยที่ชำระ : ${currencyFormatPoint(result?.totalDUEINTEFF)} บาท`,
+    //   14,
+    //   finalY + 20
+    // );
 
-    doc.setTextColor(0, 128, 0);
-    doc.text(
-      `เงินต้น : ${currencyFormatPoint(result?.totalDUETONEFF)} บาท`,
-      14,
-      finalY + 30
-    );
+    // doc.setTextColor(0, 128, 0);
+    // doc.text(
+    //   `เงินต้นที่ชำระ : ${currencyFormatPoint(result?.totalDUETONEFF)} บาท`,
+    //   14,
+    //   finalY + 30
+    // );
 
     // ดาวน์โหลด PDF
     doc.save(`ข้อมูลสัญญา ${queryContno}.pdf`);
@@ -418,15 +449,21 @@ const Main = () => {
           <Row>
             <Col span={"24"} style={{ textAlign: "end" }}>
               <Space direction="vertical" size={12}>
-                <DatePicker
-                  size="large"
-                  style={{
-                    marginRight: "10px",
-                    marginBottom: "10px",
-                  }}
-                  defaultValue={dayjs()}
-                  onChange={handleChange}
-                />
+                <Tooltip
+                  placement="bottom"
+                  title="วันที่คิดดอกเบี้ยถึง"
+                  arrow={mergedArrow}
+                >
+                  <DatePicker
+                    size="large"
+                    style={{
+                      marginRight: "10px",
+                      marginBottom: "10px",
+                    }}
+                    defaultValue={dayjs()}
+                    onChange={handleChange}
+                  />
+                </Tooltip>
               </Space>
               <Search
                 placeholder="ค้นหาสัญญา"
@@ -455,7 +492,7 @@ const Main = () => {
                   textAlign: "start",
                 }}
               >
-                <b>ผู้เช่าซื้อ : {arrData?.customer[0]?.NAME}</b>
+                <b>ผู้ทำสัญญา : {arrData?.customer[0]?.NAME}</b>
                 <br />
                 {arrData?.guarantor?.length > 0 &&
                 queryContno.substring(0, 1) !== "1"
@@ -545,36 +582,47 @@ const Main = () => {
               <Col span={12} style={{ textAlign: "center" }}>
                 <p>
                   <b>วันเริ่มทำสัญญา : </b>
-                  {arrData?.loan?.startdate
-                    ? convertDateThai(arrData?.loan?.startdate)
+                  {arrData?.loan?.sdate
+                    ? convertDateThaiShort(arrData?.loan?.sdate)
                     : "-"}
                 </p>
                 <p>
                   <b>ชำระงวดแรกเมื่อ : </b>{" "}
-                  {arrayTable[0]?.Sdate
-                    ? convertDateThai(arrData[0]?.Sdate)
+                  {arrData?.chqtran[0]?.inpdt
+                    ? convertDateThaiShort(arrData?.chqtran[0]?.inpdt)
                     : "-"}
                 </p>
-                <p>
-                  <b>คงเหลือ : </b>{" "}
+                <p style={{ color: "red" }}>
+                  <b>ต้นคงเหลือ : </b>{" "}
                   {arrData?.loan?.tonkong
                     ? currencyFormatPoint(arrData?.loan?.tonkong)
                     : 0}{" "}
                   บาท
                 </p>
-                <p>
-                  <b>
-                    ผ่อน :{" "}
-                    {arrData?.loan?.tnopay
-                      ? currencyFormatPoint(arrData?.loan?.tnopay)
-                      : 0}
-                  </b>{" "}
-                  งวด
+                <p style={{ color: "red" }}>
+                  <b>ค้างดอกเบี้ย : </b>{" "}
+                  {arrData?.loan?.flag === 1
+                    ? currencyFormatPoint(
+                        arrData?.loan?.kangdok + arrData?.loan?.dok
+                      )
+                    : arrData?.loan?.kangdok}{" "}
+                  บาท
                 </p>
                 <p>
-                  <b>งวดละ : </b>{" "}
-                  {arrayTable[0]?.NETPAY
-                    ? currencyFormatPoint(arrayTable[0]?.NETPAY)
+                  <b>วันที่คิดดอกเบี้ย : </b>
+                  {arrData?.loan?.startdate
+                    ? `${convertDateThaiShort(arrData?.loan?.startdate)} -
+                        ${convertDateThaiShort(arrData?.loan?.enddate)}`
+                    : "-"}
+                </p>
+                <p>
+                  <b>ผ่อน : </b>
+                  {arrData?.loan?.tnopay
+                    ? currencyFormatPoint(arrData?.loan?.tnopay)
+                    : 0}{" "}
+                  งวด <b>งวดละ : </b>{" "}
+                  {arrData?.loan?.totUpay
+                    ? currencyFormatComma(arrData?.loan?.totUpay)
                     : 0}{" "}
                   บาท
                 </p>
@@ -583,43 +631,53 @@ const Main = () => {
             <Divider />
             <Row>
               <Col span={24}>
-                <Table
-                  style={{ marginTop: "10px" }}
-                  size="small"
-                  columns={columns}
-                  dataSource={arrayTable}
-                  rowSelection={rowSelection}
-                  scroll={{ x: 850 }}
-                  footer={() => (
-                    <>
-                      <p style={{ textAlign: "left", color: "orange" }}>
-                        จำนวนวันที่ค้าง : {result.totalDays}
-                        {" วัน"}
+                {arrData?.loan.flag === 1 ? (
+                  <Table
+                    style={{ marginTop: "10px" }}
+                    size="small"
+                    columns={columns}
+                    dataSource={arrayTable}
+                    rowSelection={rowSelection}
+                    scroll={{ x: 850 }}
+                    footer={() => (
+                      <>
+                        <p style={{ textAlign: "left", color: "orange" }}>
+                          จำนวนวันที่ค้าง : {arrData?.loan?.days}
+                          {" วัน"}
+                        </p>
+                        <p style={{ textAlign: "left", color: "blue" }}>
+                          ยอดเงินที่ชำระ :{" "}
+                          {result.totalPayment
+                            ? currencyFormatPoint(result.totalPayment)
+                            : 0}
+                          {" บาท"}
+                        </p>
+                        <p style={{ textAlign: "left", color: "red" }}>
+                          ดอกเบี้ยที่ชำระ :{" "}
+                          {result.totalKongdok
+                            ? currencyFormatPoint(result.totalKongdok)
+                            : 0}
+                          {" บาท"}
+                        </p>
+                        <p style={{ textAlign: "left", color: "green" }}>
+                          เงินต้นที่ชำระ :{" "}
+                          {result.totalDUETONEFF
+                            ? currencyFormatPoint(result.totalDUETONEFF)
+                            : 0}
+                          {" บาท"}
+                        </p>
+                      </>
+                    )}
+                  />
+                ) : (
+                  <>
+                    <Empty>
+                      <p style={{ color: "red" }}>
+                        ***ยังไม่มีการจ่ายค่างวด***
                       </p>
-                      <p style={{ textAlign: "left", color: "blue" }}>
-                        ยอดเงินที่ชำระ :{" "}
-                        {result.totalPayment
-                          ? currencyFormatPoint(result.totalPayment)
-                          : 0}
-                        {" บาท"}
-                      </p>
-                      <p style={{ textAlign: "left", color: "red" }}>
-                        ดอกเบี้ย :{" "}
-                        {result.totalDUEINTEFF
-                          ? currencyFormatPoint(result.totalDUEINTEFF)
-                          : 0}
-                        {" บาท"}
-                      </p>
-                      <p style={{ textAlign: "left", color: "green" }}>
-                        เงินต้น :{" "}
-                        {result.totalDUETONEFF
-                          ? currencyFormatPoint(result.totalDUETONEFF)
-                          : 0}
-                        {" บาท"}
-                      </p>
-                    </>
-                  )}
-                />
+                    </Empty>
+                  </>
+                )}
               </Col>
             </Row>
           </Card>

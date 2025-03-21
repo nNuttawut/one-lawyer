@@ -21,7 +21,7 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
-import EditAdvancePaymentDetail from "./EditAdvancePaymentDetail";
+// import EditAdvancePaymentDetail from "./EditAdvancePaymentDetail";
 import {
   DELIVERY_OF_SUMMONS,
   DOCUMENT_COST,
@@ -36,7 +36,6 @@ const CreateAdvanePayment = ({
   close,
   dataDefault,
   funcUpdateStatus,
-  company,
 }) => {
   const [form] = Form.useForm();
   const [convertDateThai] = DateCustom();
@@ -46,7 +45,6 @@ const CreateAdvanePayment = ({
     currencyFormatPoint,
     currencyFormatNoPoint,
   ] = CurrencyFormat();
-  const USER_ID = localStorage.getItem("USER_ID");
   const { TextArea } = Input;
   const [isModal, setIsModal] = useState(false);
   const [isEditModal, setIsEditModal] = useState(false);
@@ -54,6 +52,7 @@ const CreateAdvanePayment = ({
   const [arrow, setArrow] = useState("Show");
   const [dataPropertyList, setDataPropertyList] = useState([]);
   const [editPayment, setEditPayment] = useState();
+  const [dataExpense, setDataExpense] = useState([]);
 
   useEffect(() => {
     setIsModal(open);
@@ -160,21 +159,12 @@ const CreateAdvanePayment = ({
       },
     });
   };
-  console.log(company);
 
   const onFinish = (values) => {
     console.log("values", values);
     console.log(dataPropertyList);
     let setPutLawsuit = [];
     let setPreExpense = [];
-    let defindNo;
-    if (company.value === 1 || company.value === 4) {
-      defindNo = "LBN";
-    } else if (company.value === 2 || company.value === 5) {
-      defindNo = "MBN";
-    } else {
-      defindNo = "KBN";
-    }
 
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
@@ -184,7 +174,7 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${defindNo}${USER_ID}-${dayjs().format("YYYYMMDDHHmmss")}`,
+      reference_no: "BN" + dayjs().format("YYYYMMDDHHmmss"),
     };
 
     dataPropertyList?.forEach((lawsuit, index) => {
@@ -401,14 +391,14 @@ const CreateAdvanePayment = ({
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Card>{formDataSet()}</Card>
         </Spin>
-        {isEditModal ? (
+        {/* {isEditModal ? (
           <EditAdvancePaymentDetail
             open={isEditModal}
             close={setIsEditModal}
             dataDefault={editPayment}
             handleEdit={handleUpdateDataEdit}
           />
-        ) : null}
+        ) : null} */}
       </Modal>
     </>
   );

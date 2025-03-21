@@ -129,7 +129,7 @@ const EditAssetsDetail = ({
     } else if (!dataIndex.wa && dataIndex.subwa) {
       dataWa = `0.${dataIndex.subwa}`;
     } else {
-      dataWa = 0;
+      dataWa = null;
     }
 
     form.setFieldsValue({
@@ -455,10 +455,10 @@ const EditAssetsDetail = ({
     console.log("Success:", values);
     let postDataInvestigate;
 
-    const provinceName = dataProviceList.filter(
+    const province_desc = dataProviceList.filter(
       (item) => item.value === values.assetProvince
     );
-    const districtName = dataDistrictList.filter(
+    const district_desc = dataDistrictList.filter(
       (item) => item.value === values.assetDistrict
     );
 
@@ -525,8 +525,8 @@ const EditAssetsDetail = ({
       investigation_fees_payment_status: null,
       mark: values.memo,
       // investigate_filepath: values.urlFile,
-      districtName: districtName[0].label,
-      provinceName: provinceName[0].label,
+      district_desc: district_desc[0].label,
+      province_desc: province_desc[0].label,
       investigation_type_id: values.investigateAssetsTime,
       property_detail_id: values.propertyDetail,
       rai: values.rai ? parseInt(values.rai) : null,
@@ -552,15 +552,15 @@ const EditAssetsDetail = ({
   };
 
   const props = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
       newFileList.splice(index, 1);
       setFileList(newFileList);
-      const newFileListImg = newFileList.map((file) =>
-        URL.createObjectURL(file)
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
       );
-      setCapturedImages(newFileListImg);
     },
     beforeUpload: (file) => {
       const fileType = file.type; // ตรวจสอบ MIME type
@@ -626,7 +626,6 @@ const EditAssetsDetail = ({
         onFinishFailed={onFinishFailed}
         initialValues={{
           memo: null,
-          suspensionAmount: 0,
           investigateAssetsDate: dayjs(),
         }}
       >

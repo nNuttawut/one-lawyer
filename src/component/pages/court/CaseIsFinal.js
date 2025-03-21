@@ -13,11 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { SyncOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -29,7 +25,11 @@ import {
 //use redux
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import { CASE_IS_FINAL } from "../../../utils/constant/StatusConstant";
+import {
+  CASE_IS_FINAL,
+  STATUS_PROCESS_PROCESS,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../utils/constant/StatusConstant";
 import UpdateCaseIsFinal from "./modal/UpdateCaseIsFinal";
 import dayjs from "dayjs";
 
@@ -94,7 +94,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -219,7 +219,7 @@ const Main = () => {
     }
     const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
-    const toDate = dayjs(recordDate).add(45, "days");
+    const toDate = dayjs(recordDate).add(15, "days");
     const daysDifference = today.diff(toDate, "days");
     console.log("daysDifference", daysDifference);
 
@@ -332,10 +332,11 @@ const Main = () => {
                     </p>
                   ),
                   rowExpandable: (record) => {
-                    const recordDate = dayjs(record.DATE).startOf("day");
-                    const today = dayjs().startOf("day");
-                    const daysDifference = today.diff(recordDate, "days");
-                    return daysDifference > 15 && userId === record.LAWYER_ID; // กลับมาแก้เป็น > 15
+                    return record.LAWYER_ID === userId;
+                    // const recordDate = dayjs(record.DATE).startOf("day");
+                    // const today = dayjs().startOf("day");
+                    // const daysDifference = today.diff(recordDate, "days");
+                    // return daysDifference > 15 && userId === record.LAWYER_ID; // กลับมาแก้เป็น > 15
                   },
                 }}
               />
@@ -346,17 +347,6 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {/* {isModalCreate ? (
-        <CreateDocument
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
-      {isModalDocument ? (
-        <DocumentEnforce open={isModalDocument} close={setIsModalDocument} />
-      ) : null} */}
       {isModalUpdate ? (
         <UpdateCaseIsFinal
           open={isModalUpdate}

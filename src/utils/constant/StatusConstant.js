@@ -9,8 +9,10 @@ export const listStatus = {
   ENFORCEMENT: [8, "บังคับคดี"],
   NEGOTIATE: [9, "เจรจาทรัพย์"],
   SELL_ASSETS: [10, "ขายทรัพย์"],
-  FINISH: [11, "สิ้นสุด"],
-  BAD_DEBTOR: [12, "ลูกหนี้สูญ"],
+  FINISH: [11, "ปิดบัญชี"],
+  TIMEOUT: [12, "หมดอายุความ"],
+  WITHDRAW_CASE: [13, "ถอนฟ้อง"],
+  BAD_DEBTOR: [14, "ลูกหนี้สูญ"],
 };
 
 export const getSelectOptions = (list) =>
@@ -33,7 +35,10 @@ export const ENFORCEMENT = 8;
 export const NEGOTIATE = 9;
 export const SELL_ASSETS = 10;
 export const FINISH = 11;
-export const BAD_DEBTOR = 12;
+export const TIMEOUT = 12;
+export const WITHDRAW_CASE = 13;
+export const BAD_DEBTOR = 14;
+
 export const STATUS_PROCESS_PROGRESS = 1;
 export const STATUS_PROCESS_UNSUCCESSFUL = 2;
 export const STATUS_PROCESS_SUCCESSFUL = 3;

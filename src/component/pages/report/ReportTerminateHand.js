@@ -15,16 +15,11 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  EditOutlined,
-  PrinterOutlined,
-  DownloadOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { baseUrl, GET_CANCEL, HEADERS_EXPORT } from "../../API/apiUrls";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
-import JSZip from "jszip";
 import logoSendPostOffice from "../../../assets/images/logoSendPostOffice.png";
 import summaryPostOffice from "../../../assets/images/summaryPostOffice.png";
 
@@ -33,8 +28,6 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import UpdateReplyEms from "./modal/UpdateReplyEms";
-import { PARAM_PUBLIC } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -61,16 +54,38 @@ const Main = () => {
   const [printOption, setPrintOption] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 15,
-  });
 
   const optionSelectCallback = [
     { value: "all", label: "ทั้งหมด" },
     { value: 1, label: "รอดำเนินการ" },
     { value: 2, label: "ตอบกลับ" },
   ];
+
+  // const optionSelectCode = [
+  //   { value: "all", label: "ทั้งหมด" },
+  //   {
+  //     label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
+  //     title: "บอกเลิกสัญญาคนค้ำ(116)",
+  //     options: [
+  //       { value: "P21", label: "P21" },
+  //       { value: "P22", label: "P22" },
+  //       { value: "P23", label: "P23" },
+  //       { value: "P31", label: "P31" },
+  //       { value: "P32", label: "P32" },
+  //       { value: "P33", label: "P33" },
+  //       { value: "P41", label: "P41" },
+  //     ],
+  //   },
+  //   {
+  //     label: <span>บอกเลิกสัญญาผู้เช่าซื้อ(119)</span>,
+  //     title: "บอกเลิกสัญญาผู้เช่าซื้อ(119)",
+  //     options: [
+  //       { value: "P11", label: "P11" },
+  //       { value: "P12", label: "P12" },
+  //       { value: "P13", label: "P13" },
+  //     ],
+  //   },
+  // ];
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -148,7 +163,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.account_type === "repurchase"
+          !item.contract_schema
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -157,7 +172,6 @@ const Main = () => {
       function isEnglishOnly(str) {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
-      console.log("data", data);
 
       let filteredData;
 
@@ -253,7 +267,7 @@ const Main = () => {
     let selectData;
     if (selectCallback === 2) {
       selectData = dataArr.filter(
-        (item) => item.status === 1 || item.status === 2 || item.status === 3
+        (item) => item.status === 1 || item.status === 2
       );
     } else if (selectCallback === 3) {
       selectData = dataArr.filter((item) => item.status === selectCallback);
@@ -328,7 +342,7 @@ const Main = () => {
     let selectData;
     if (value === 2) {
       selectData = dataArr.filter(
-        (item) => item.status === 1 || item.status === 2 || item.status === 3
+        (item) => item.status === 1 || item.status === 2
       );
     } else if (value === 3) {
       selectData = dataArr.filter((item) => item.status === value);
@@ -374,15 +388,9 @@ const Main = () => {
   };
 
   const renderProcess = (record) => {
-    let value =
-      record === 1
-        ? "ใบตอบกลับ"
-        : record === 2
-        ? "ไปรษณีย์"
-        : record === 3
-        ? "ตีกลับ"
-        : "รอดำเนินการ";
-    let color = record === 1 || record === 2 || record === 3 ? "green" : "blue";
+    let value = record === 1 || record === 2 ? "ตอบกลับ" : "รอดำเนินการ";
+    let color =
+      record === 3 ? "red" : record === 1 || record === 2 ? "green" : "blue";
 
     return (
       <Tag color={color} key={value} style={{ textAlign: "center" }}>
@@ -509,8 +517,6 @@ const Main = () => {
             ? "ใบตอบกลับ"
             : data.status === 2
             ? "เว็บไปรษณย์"
-            : data.status === 3
-            ? "ตีกลับ"
             : "รอดำเนินการ",
           data.url_path,
         ]);
@@ -1013,12 +1019,7 @@ const Main = () => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(
-        blob,
-        `นำส่งไปษณีย์(หนังสือแจ้งสิทธ์ซื้อรถคืน) ${dayjs().format(
-          "DD-MM-YYYY"
-        )}.xlsx`
-      );
+      saveAs(blob, `นำส่งไปษณีย์(มือ) ${dayjs().format("DD-MM-YYYY")}.xlsx`);
     });
   };
 
@@ -1028,57 +1029,6 @@ const Main = () => {
     console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
     console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-  };
-
-  const donwLoadFile = (record) => {
-    loadImagesProduct(record);
-  };
-
-  const loadImagesProduct = async (record) => {
-    await axios
-      .get(
-        baseUrl +
-          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/repurchase${
-            record.contract_no + record.parcel_no_response
-          }`
-      )
-      .then((response) => {
-        console.log("setFileList", response.data);
-
-        if (response.data.length > 0) {
-          downloadAllFiles(record, response.data);
-        } else {
-          message.error("ไม่พบไฟล์ดาวน์โหลด");
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
-        console.log(err);
-      });
-  };
-
-  const downloadAllFiles = async (record, fileItem) => {
-    const zip = new JSZip();
-    const folder = zip.folder(
-      `${record.contract_no}_${record.parcel_no_response}`
-    );
-    const downloadPromises = fileItem.map(async (file) => {
-      const response = await fetch(file.url);
-      const blob = await response.blob();
-
-      // นำเฉพาะชื่อไฟล์สุดท้าย ตัด path ออก
-      const fileName = file.name.split("/").pop();
-      console.log("Saved file as:", fileName);
-
-      folder.file(fileName, blob);
-    });
-
-    await Promise.all(downloadPromises);
-
-    console.log("Generating ZIP...");
-    const zipBlob = await zip.generateAsync({ type: "blob" });
-    saveAs(zipBlob, `${record.contract_no}_${record.parcel_no_response}.zip`);
   };
 
   const rowSelection = {
@@ -1109,7 +1059,17 @@ const Main = () => {
         </>
       ),
     },
-
+    // {
+    //   title: "รายละเอียด",
+    //   dataIndex: "contract_no",
+    //   key: "contract_no",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       {convertDateThaiShort(record.datetime)} <br />
+    //     </>
+    //   ),
+    // },
     {
       title: "ชื่อ-นามสกุล",
       dataIndex: "customer_fullname",
@@ -1130,7 +1090,51 @@ const Main = () => {
         </>
       ),
     },
-
+    // {
+    //   title: "ยี่ห้อ",
+    //   dataIndex: "brand",
+    //   key: "brand", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+    //   align: "center",
+    // },
+    // {
+    //   title: "ทะเบียน",
+    //   dataIndex: "register_no",
+    //   key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
+    //   align: "center",
+    // },
+    // {
+    //   title: "ค้างงวด",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       {record.overdue_installment_count
+    //         ? record.overdue_installment_count
+    //         : null}{" "}
+    //     </>
+    //   ),
+    // },
+    // {
+    //   title: "เงินค้าง",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       {record.overdue_installment_amount
+    //         ? currencyFormatPoint(record.overdue_installment_amount)
+    //         : null}{" "}
+    //     </>
+    //   ),
+    // },
+    // {
+    //   title: "ค่าทวงถาม",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       {record.dept_collection_fees
+    //         ? currencyFormatComma(record.dept_collection_fees)
+    //         : null}{" "}
+    //     </>
+    //   ),
+    // },
     {
       title: "วันที่นำข้อมูลเข้า",
       align: "center",
@@ -1178,6 +1182,20 @@ const Main = () => {
                 value={selectCallback}
                 size="large"
               />
+              {/* <Select
+                style={{
+                  width: selectedCode.length > 0 ? "auto" : "150px",
+                  marginBottom: "5px",
+                }}
+                mode="multiple"
+                allowClear
+                value={selectedCode} // ใช้ state ในการควบคุมค่า
+                popupMatchSelectWidth={false}
+                onChange={handleChangeGCode}
+                options={optionSelectCode}
+                placeholder="เลือกประเภท"
+                size="large"
+              /> */}
             </Col>
             <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Space direction="vertical" size={12}>
@@ -1264,15 +1282,6 @@ const Main = () => {
                 dataSource={arrayTable}
                 rowSelection={rowSelection}
                 scroll={{ x: 850 }}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  showSizeChanger: true,
-                  pageSizeOptions: ["15", "20", "50", "100"],
-                  onChange: (page, pageSize) => {
-                    setPagination({ current: page, pageSize });
-                  },
-                }}
                 footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
                 expandable={{
                   expandedRowRender: (record) => (
@@ -1292,28 +1301,7 @@ const Main = () => {
                           style={{ color: "green", fontSize: "16px" }}
                         />
                       </Button>
-                      {record.status ? (
-                        <Tooltip
-                          placement="bottom"
-                          title="ดาวน์โหลดไฟล์"
-                          arrow={mergedArrow}
-                        >
-                          <Button
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginLeft: "10px",
-                            }}
-                            onClick={() => {
-                              donwLoadFile(record);
-                              console.log("---->", record);
-                            }}
-                          >
-                            <DownloadOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </Tooltip>
-                      ) : null}
+                      {/* )} */}
                     </p>
                   ),
                   rowExpandable: (record) =>
@@ -1329,17 +1317,9 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModalUpdateEms ? (
-        <UpdateReplyEms
-          open={isModalUpdateEms}
-          close={setIsModalUpdateEms}
-          dataDefault={dataModal}
-          funcUpdateStatus={handleUpdateData}
-        />
-      ) : null}
     </>
   );
 };
 
-const ReplyTerminateContractRepurchase = MotionHoc(Main);
-export default ReplyTerminateContractRepurchase;
+const ReportTerminateHand = MotionHoc(Main);
+export default ReportTerminateHand;

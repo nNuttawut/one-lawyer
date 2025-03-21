@@ -11,6 +11,7 @@ import {
   Radio,
   Tooltip,
   DatePicker,
+  Popconfirm,
 } from "antd";
 import { HEADERS_EXPORT, POST_CALCULATE_LAND } from "../../../API/apiUrls";
 import axios from "axios";
@@ -499,6 +500,10 @@ const AddAssetDetailSuccess = ({
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
 
+  const confirm = () => {
+    form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
+  };
+
   const formDataSet = () => {
     return (
       <Form
@@ -897,9 +902,17 @@ const AddAssetDetailSuccess = ({
             ปิด
           </Button>
 
-          <Button style={{ color: "green" }} htmlType="submit">
-            บันทึก
-          </Button>
+          <Popconfirm
+            placement="topLeft"
+            title="อัพเดทข้อมูล"
+            description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
+            onConfirm={confirm}
+            // onCancel={() => cancel(record)}
+            okText="ยืนยัน"
+            cancelText="ปิด"
+          >
+            <Button style={{ color: "green" }}>บันทึก</Button>
+          </Popconfirm>
         </div>
       </Form>
     );

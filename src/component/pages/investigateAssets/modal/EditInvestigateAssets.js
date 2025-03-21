@@ -175,28 +175,6 @@ const EditInvestigateAssets = ({
           }
         });
 
-      //   console.log("putDataLawsuit", putDataLawsuit);
-      //   await axios
-      //     .put(baseUrl + PUT_LAWSUIT_DETAIL, putDataLawsuit, {
-      //       headers: HEADERS_EXPORT,
-      //     })
-      //     .then(async (res) => {
-      //       if (res.status === 200) {
-      //         console.log("resQuery", res.data);
-      //         message.success("อัพเดทข้อมูลสำเร็จ");
-      //       } else {
-      //         message.error("ไม่สามารถส่งข้อมูลได้");
-      //         console.log("ไม่สามารถส่งข้อมูลได้3");
-      //         setLoading(false);
-      //       }
-      //     })
-      //     .catch((err) => {
-      //       console.log(err);
-      //       if (err.status > 400) {
-      //         message.error("ไม่สามารถส่งข้อมูลได้4");
-      //       }
-      //     });
-
       if (dataPropertyList.length > 0) {
         console.log("dataPropertyList", dataPropertyList);
         const promises = dataPropertyList.map(async (item) => {

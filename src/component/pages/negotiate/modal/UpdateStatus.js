@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -6,14 +6,13 @@ import {
   Input,
   Select,
   Modal,
-  Card,
   message,
   Spin,
   Radio,
-  Tabs,
-  Tooltip,
-  Checkbox,
-  Space,
+  InputNumber,
+  Card,
+  Steps,
+  Divider,
 } from "antd";
 import {
   baseUrl,
@@ -22,50 +21,61 @@ import {
   HEADERS_EXPORT,
   POST_AGREEMENTS,
   POST_STATUS,
+  PUT_STATUS,
+  GET_DETAILS,
 } from "../../../API/apiUrls";
 import axios from "axios";
 
-import CurrencyFormat from "../../../../hook/CurrencyFormat";
-import { optionsInterest } from "../../../../utils/constant/ Interest";
-import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import { optionsMonth } from "../../../../utils/constant/MonthSelect";
 import {
+  ENFORCEMENT,
+  PARAM_PUBLIC,
   PAYMENT,
   STATUS_PROCESS_PROGRESS,
+  STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import TokenCheck from "../../../../hook/TokenCheck";
+import Dragger from "antd/es/upload/Dragger";
+import LoadLawyers from "../../../../hook/LoadLawyers";
+import {
+  LoadingOutlined,
+  AuditOutlined,
+  InboxOutlined,
+} from "@ant-design/icons";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
-  const [setupGovernmentOfficerList, governmentOfficers] =
-    CheckGovermentOfficer();
-
+  const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
+  const [lawyersList, setLoadingData] = LoadLawyers();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
+  const [datadetail, setDatadetail] = useState(null);
+  const [assistantOption, setAssistantOption] = useState();
   const { TextArea } = Input;
-  const [dataStore, setDataStore] = useState();
-  const [checkLenght, setCheckLenght] = useState([]);
-  const [dataForm, setDataForm] = useState({});
+  const [fileList, setFileList] = useState([]);
   const [preData, setPreData] = useState();
-  const [defaultRadio, setDefaultRadio] = useState("normal");
-  const [currencyFormatComma] = CurrencyFormat();
-  const [arrow, setArrow] = useState("Show");
-  const [tabsKey, setTabsKey] = useState("1");
-  const [checkboxTab1, setCheckBoxTab1] = useState({});
-  const [checkboxTab2, setCheckBoxTab2] = useState({});
+  const [defaultRadio, setDefaultRadio] = useState("agreement");
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
-
+      setLoadingData(true);
       console.log("loadData", dataDefualt);
     }
   }, [isModal]);
 
-  const handleOk = () => {};
+  useEffect(() => {
+    if (lawyersList) {
+      setOptionAssistant();
+    }
+  }, [lawyersList]);
+
+  const handleOk = () => {
+    console.log("ดำเนินการบันทึก");
+  };
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -73,10 +83,33 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     setIsModal(false);
   };
 
+  const setOptionAssistant = () => {
+    console.log("lawyersList", lawyersList);
+    let companySelectAssistant = null;
+    if (COMPANY === 1 || COMPANY === 2) {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    } else {
+      companySelectAssistant = lawyersList.filter(
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+      );
+    }
+    const optionsAssistant = companySelectAssistant.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+    }));
+    setAssistantOption(optionsAssistant);
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [worklogs, loanRes] = await Promise.all([
+      const [worklogs, loanRes, detail] = await Promise.all([
         axios.get(
           `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
           {
@@ -86,16 +119,18 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
           headers: HEADERS_EXPORT,
         }),
+        axios.get(`${baseUrl}${GET_DETAILS}${dataDefualt.CONTNO}`, {
+          headers: HEADERS_EXPORT,
+        }),
       ]);
 
       if (worklogs.status === 200) {
         setDataLoadLawSuit(worklogs.data);
-        setDataStore(worklogs.data);
+
         console.log("worklogs.data", worklogs.data);
       } else {
         message.error("ไม่พบข้อมูลคดี");
       }
-
       if (loanRes.status === 200) {
         console.log("loanRes", loanRes.data);
         setDataLoadLoan(loanRes.data);
@@ -103,6 +138,12 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         console.log("loanRes.data", loanRes.data);
       } else {
         message.error("ไม่พบข้อมูลเงิน");
+      }
+      if (detail.status === 200) {
+        console.log("detail", loanRes.data);
+        setDatadetail(loanRes.data);
+
+        console.log("detail-->", detail.data);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -112,9 +153,8 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (status, agreement) => {
+  const sendStatus = async (status, agreement, putStatus) => {
     setLoading(true);
-
     try {
       console.log("status", status);
       await axios
@@ -134,16 +174,39 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-
+      if (agreement) {
+        await axios
+          .post(baseUrl + POST_AGREEMENTS, agreement, {
+            headers: HEADERS_EXPORT,
+          })
+          .then(async (res) => {
+            if (res.status === 201) {
+              console.log("resQuery", res.data);
+              handleUploadAllImage();
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+      }
       await axios
-        .post(baseUrl + POST_AGREEMENTS, agreement, { headers: HEADERS_EXPORT })
+        .put(baseUrl + PUT_STATUS, putStatus, {
+          headers: HEADERS_EXPORT,
+        })
         .then(async (res) => {
-          if (res.status === 201) {
-            console.log("resQuery", res.data);
+          if (res.status === 200) {
             funcUpdateStatus({
               ...dataDefualt,
-              MAIN_STATUS_ID: status.MAIN_STATUS_ID,
+              MAIN_STATUS_ID: putStatus.MAIN_STATUS_ID,
             });
+            console.log("resQuery", res.data);
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
@@ -165,36 +228,109 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const onFinish = (values) => {
-    console.log("Success:", values);
-    const statusData = {
-      USER_ID: dataDefualt.LAWYER_ID,
-      LOAN_ID: dataDefualt.id,
-      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-      MEMO: values.memo,
-      DATE: preData,
-      MAIN_STATUS_ID: PAYMENT,
-      PROCESS_ID: STATUS_PROCESS_PROGRESS,
-    };
-    const agreement = {
-      LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-      total_amount: parseInt(values.paymentAmount.replace(/,/g, "")),
-      installment_amount: parseInt(values.paymentMonthAmount.replace(/,/g, "")),
-      installment_count: values.installmentCount,
-      document_filepath: values.paymentFile,
-      mark: values.memo,
-      due_date: preData,
-      already_paid: null,
-      payment_status: null,
-      payment_status_date: null,
-      negotiator_id: dataDefualt.LAWYER_ID,
-      NEW_CONTNO: values.newContno ? values.newContno : null,
-    };
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
 
-    console.log("putStatus", statusData);
-    console.log("judgementData", agreement);
-    sendStatus(statusData, agreement);
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/settlement_agreement/${PARAM_PUBLIC}/${dataDefualt.CONTNO}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const onFinish = (values) => {
+    console.log(values);
+    if (defaultRadio === "enforce") {
+      const statusData = {
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_ID: dataDefualt.id,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+        MEMO: values.memo,
+        DATE: preData,
+        MAIN_STATUS_ID: ENFORCEMENT,
+        PROCESS_ID: STATUS_PROCESS_PROGRESS,
+      };
+      const putStatus = {
+        id: dataDefualt.WORK_LOG_ID,
+        MEMO: dataDefualt.memo,
+        DATE: dataDefualt.DATE,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_ID: dataDefualt.id,
+        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      };
+      console.log("putStatus", statusData);
+      console.log("putStatus", putStatus);
+      sendStatus(statusData, null, putStatus);
+    } else {
+      if (values?.file?.fileList?.length > 0 && defaultRadio === "agreement") {
+        const statusData = {
+          USER_ID: dataDefualt.LAWYER_ID,
+          LOAN_ID: dataDefualt.id,
+          LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+          LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+          MEMO: values.memo,
+          DATE: preData,
+          MAIN_STATUS_ID: PAYMENT,
+          PROCESS_ID: STATUS_PROCESS_PROGRESS,
+        };
+        const agreement = {
+          LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+          total_amount: values.paymentAmount,
+          installment_amount: values.paymentMonthAmount,
+          installment_count: values.installmentCount,
+          document_filepath: null,
+          mark: values.memo,
+          due_date: preData,
+          already_paid: null,
+          payment_status: null,
+          payment_status_date: null,
+          negotiator_id: dataDefualt.LAWYER_ID,
+          NEW_CONTNO: dataDefualt.CONTNO,
+        };
+        const putStatus = {
+          id: dataDefualt.WORK_LOG_ID,
+          MEMO: dataDefualt.memo,
+          DATE: dataDefualt.DATE,
+          USER_ID: dataDefualt.LAWYER_ID,
+          LOAN_ID: dataDefualt.id,
+          PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+        };
+        console.log("putStatus", statusData);
+        console.log("judgementData", agreement);
+        console.log("putStatus", putStatus);
+
+        sendStatus(statusData, agreement, putStatus);
+      } else {
+        message.error("กรุณาอัปโหลดไฟล์");
+      }
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -206,66 +342,19 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(value);
   };
 
+  const onChangeSelectnegotiator = (value) => {
+    console.log(`selected ${value}`);
+  };
+
   const onChangPaymentAmount = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        judgement1: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        judgement2: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangPaymentMonthAmount = (value) => {
     console.log(value);
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        costUnless1: formattedValue,
-      });
-    } else {
-      form.setFieldsValue({
-        costUnless1: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
-  const onChangePaymentFile = (value) => {
-    console.log(value);
-  };
-
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
-
-  const onChangeNewContno = (value) => {
-    console.log(value);
-  };
-
-  const onChangeDate = (date, dateString) => {
+  const onChangeDateAgreement = (date, dateString) => {
     console.log(date, dateString);
     setPreData(dateString);
   };
@@ -287,6 +376,28 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     );
   };
 
+  const onChange = (e) => {
+    setDefaultRadio(e.target.value);
+    console.log(e.target.value);
+  };
+
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
   const formDataPayment = () => {
     return (
       <Card>
@@ -301,23 +412,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           layout="horizontal"
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
-          initialValues={{ memo: null }}
         >
-          <Form.Item
-            label="เลขสัญญาใหม่"
-            name="newContno"
-            // rules={[
-            //   {
-            //     required: true,
-            //     message: "กรุณาใส่สัญญาใหม่ !",
-            //   },
-            // ]}
-          >
-            <Input
-              name="newContno"
-              onChange={(e) => onChangeNewContno(e.target.value)}
-            />
-          </Form.Item>
           <Form.Item
             label="ยินยอมชำระเงินจำนวน"
             name="paymentAmount"
@@ -328,11 +423,19 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <Input
-              name="paymentAmount"
-              onChange={(e) => onChangPaymentAmount(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentAmount(value)}
             />
           </Form.Item>
+
           <Form.Item
             label="งวดละไม่น้อยกว่า"
             name="paymentMonthAmount"
@@ -343,41 +446,16 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <Input
-              name="paymentMonthAmount"
-              onChange={(e) => onChangPaymentMonthAmount(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item
-            label="จำนวนกี่เดือน"
-            name="installmentCount"
-            rules={[
-              {
-                required: true,
-                message: "กรุณาใส่จำนวนงวด",
-              },
-            ]}
-          >
-            <Select
-              type="number"
-              name="installmentCount"
-              options={optionsMonth}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="ไฟล์ทำยอม"
-            name="paymentFile"
-            rules={[
-              {
-                required: true,
-                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
-              },
-            ]}
-          >
-            <Input
-              name="paymentFile"
-              onChange={(e) => onChangePaymentFile(e.target.value)}
+            <InputNumber
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="กรุณาใส่ค่าติดตาม !"
+              style={{ width: "100%", color: "black" }}
+              onChange={(value) => onChangPaymentMonthAmount(value)}
             />
           </Form.Item>
           <Form.Item
@@ -390,8 +468,76 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
             ]}
           >
-            <DatePicker onChange={onChangeDate} />
+            <DatePicker
+              onChange={onChangeDateAgreement}
+              placeholder="กรุณาเลือกวันที่"
+              size="large"
+              style={{ width: "auto" }}
+            />
           </Form.Item>
+
+          <Form.Item
+            label="จำนวนกี่เดือน"
+            name="installmentCount"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่จำนวนงวด",
+              },
+            ]}
+          >
+            <Select
+              size="large"
+              style={{ width: "auto" }}
+              type="number"
+              name="costMonth3"
+              popupMatchSelectWidth={false}
+              options={optionsMonth}
+              placeholder="เลือกจำนวนเดือน"
+            />
+          </Form.Item>
+          <Form.Item
+            label="เลือกผู้เจรจา"
+            name="negotiator"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาเลือกผู้เจรจา !",
+              },
+            ]}
+          >
+            <Select
+              popupMatchSelectWidth={false}
+              placeholder="เลือกผู้เจรจา"
+              optionFilterProp="value"
+              onChange={(value) => onChangeSelectnegotiator(value)}
+              options={assistantOption}
+              size="large"
+              style={{ width: "auto" }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="ไฟล์คำพิพากษา"
+            name="file"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
+              },
+            ]}
+          >
+            <Dragger {...props}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              </p>
+            </Dragger>
+          </Form.Item>
+
           <Form.Item label="หมายเหตุ" name="memo">
             <TextArea
               rows={5}
@@ -401,6 +547,50 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           {buttonCustom()}
         </Form>
       </Card>
+    );
+  };
+
+  const FormDisabled = () => {
+    return (
+      <>
+        <Form
+          labelCol={{
+            span: 6,
+          }}
+          wrapperCol={{
+            span: 14,
+          }}
+          form={form}
+          layout="horizontal"
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+        >
+          <Card style={{ marginBottom: "30px" }}>
+            <Divider style={{ marginBottom: "30px" }}>ส่งบังคับคดี</Divider>
+            <Steps
+              responsive={true}
+              items={[
+                {
+                  title: "เจรจา",
+                  status: "finish",
+                },
+                {
+                  title: "ดำเนินการ",
+                  status: "process",
+                  // description: `เกินกำหนด: ${countDate} วัน`,
+                  icon: <LoadingOutlined />,
+                },
+                {
+                  title: "บังคับคดี",
+                  status: "finish",
+                  icon: <AuditOutlined />,
+                },
+              ]}
+            />
+          </Card>
+          {buttonCustom()}
+        </Form>
+      </>
     );
   };
 
@@ -415,7 +605,20 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         footer={null}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">
-          <>{formDataPayment()}</>
+          <Radio.Group
+            onChange={onChange}
+            defaultValue="agreement"
+            value={defaultRadio}
+            style={{ margin: "10px" }}
+          >
+            <Radio value="agreement">ทำยอม</Radio>
+            <Radio value="enforce">ส่งบังคับคดี</Radio>
+          </Radio.Group>
+          {defaultRadio === "enforce" ? (
+            <Card>{FormDisabled()}</Card>
+          ) : (
+            <>{formDataPayment()}</>
+          )}
         </Spin>
       </Modal>
     </>

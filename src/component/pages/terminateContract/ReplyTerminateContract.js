@@ -15,11 +15,16 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
-import { EditOutlined, PrinterOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  PrinterOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { baseUrl, GET_CANCEL, HEADERS_EXPORT } from "../../API/apiUrls";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import JSZip from "jszip";
 import logoSendPostOffice from "../../../assets/images/logoSendPostOffice.png";
 import summaryPostOffice from "../../../assets/images/summaryPostOffice.png";
 
@@ -29,6 +34,7 @@ import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import UpdateReplyEms from "./modal/UpdateReplyEms";
+import { PARAM_PUBLIC } from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -50,11 +56,15 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [selectCallback, setSelectCallback] = useState("all");
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-  const [searchEdit, setSearchEdit] = useState(null);
+  const suggestionStatus = localStorage.getItem("SUGGESTTION");
   const [arrow, setArrow] = useState("Show");
   const [printOption, setPrintOption] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 15,
+  });
 
   const optionSelectCallback = [
     { value: "all", label: "ทั้งหมด" },
@@ -268,7 +278,7 @@ const Main = () => {
     let selectData;
     if (selectCallback === 2) {
       selectData = dataArr.filter(
-        (item) => item.status === 1 || item.status === 2
+        (item) => item.status === 1 || item.status === 2 || item.status === 3
       );
     } else if (selectCallback === 3) {
       selectData = dataArr.filter((item) => item.status === selectCallback);
@@ -344,7 +354,7 @@ const Main = () => {
     let selectData;
     if (value === 2) {
       selectData = dataArr.filter(
-        (item) => item.status === 1 || item.status === 2
+        (item) => item.status === 1 || item.status === 2 || item.status === 3
       );
     } else if (value === 3) {
       selectData = dataArr.filter((item) => item.status === value);
@@ -386,9 +396,15 @@ const Main = () => {
   };
 
   const renderProcess = (record) => {
-    let value = record === 1 || record === 2 ? "ตอบกลับ" : "รอดำเนินการ";
-    let color =
-      record === 3 ? "red" : record === 1 || record === 2 ? "green" : "blue";
+    let value =
+      record === 1
+        ? "ใบตอบกลับ"
+        : record === 2
+        ? "เว็บไปษณีย์"
+        : record === 3
+        ? "ตีกลับ"
+        : "รอดำเนินการ";
+    let color = record === 1 || record === 2 || record === 3 ? "green" : "blue";
 
     return (
       <Tag color={color} key={value} style={{ textAlign: "center" }}>
@@ -515,6 +531,8 @@ const Main = () => {
             ? "ใบตอบกลับ"
             : data.status === 2
             ? "เว็บไปรษณย์"
+            : data.status === 3
+            ? "ตีกลับ"
             : "รอดำเนินการ",
           data.url_path,
         ]);
@@ -1029,6 +1047,57 @@ const Main = () => {
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
   };
 
+  const donwLoadFile = (record) => {
+    loadImagesProduct(record);
+  };
+
+  const loadImagesProduct = async (record) => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
+            record.contract_no + record.parcel_no_response
+          }`
+      )
+      .then((response) => {
+        console.log("setFileList", response.data);
+
+        if (response.data.length > 0) {
+          downloadAllFiles(record, response.data);
+        } else {
+          message.error("ไม่พบไฟล์ดาวน์โหลด");
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const downloadAllFiles = async (record, fileItem) => {
+    const zip = new JSZip();
+    const folder = zip.folder(
+      `${record.contract_no}_${record.parcel_no_response}`
+    );
+    const downloadPromises = fileItem.map(async (file) => {
+      const response = await fetch(file.url);
+      const blob = await response.blob();
+
+      // นำเฉพาะชื่อไฟล์สุดท้าย ตัด path ออก
+      const fileName = file.name.split("/").pop();
+      console.log("Saved file as:", fileName);
+
+      folder.file(fileName, blob);
+    });
+
+    await Promise.all(downloadPromises);
+
+    console.log("Generating ZIP...");
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    saveAs(zipBlob, `${record.contract_no}_${record.parcel_no_response}.zip`);
+  };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (rowKeys, selectedRows) => {
@@ -1183,20 +1252,6 @@ const Main = () => {
                 value={selectCallback}
                 size="large"
               />
-              {/* <Select
-                style={{
-                  width: selectedCode.length > 0 ? "auto" : "150px",
-                  marginBottom: "5px",
-                }}
-                mode="multiple"
-                allowClear
-                value={selectedCode} // ใช้ state ในการควบคุมค่า
-                popupMatchSelectWidth={false}
-                onChange={handleChangeGCode}
-                options={optionSelectCode}
-                placeholder="เลือกประเภท"
-                size="large"
-              /> */}
             </Col>
             <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Space direction="vertical" size={12}>
@@ -1226,16 +1281,26 @@ const Main = () => {
                 marginBottom: "10px",
               }}
             >
-              <Switch
-                checkedChildren="รายงาน"
-                unCheckedChildren="ส่งไปรษณีย์"
-                checked={printOption}
-                onChange={() => setPrintOption(!printOption)}
-                style={{
-                  backgroundColor: printOption ? "green" : "blue", // สีพื้นหลังตามสถานะ
-                  color: printOption ? "green" : "blue", // สีตัวอักษร
-                }}
-              />
+              <Tooltip
+                placement="bottom"
+                title={
+                  printOption
+                    ? "เปลี่ยนการบันทึกส่งไปรษณีย์"
+                    : "เปลี่ยนการบันทึกสรุปรายงาน"
+                }
+                arrow={false}
+              >
+                <Switch
+                  checkedChildren="สรุปรายงาน"
+                  unCheckedChildren="ส่งไปรษณีย์"
+                  checked={printOption}
+                  onChange={() => setPrintOption(!printOption)}
+                  style={{
+                    backgroundColor: printOption ? "green" : "blue", // สีพื้นหลังตามสถานะ
+                    color: printOption ? "green" : "blue", // สีตัวอักษร
+                  }}
+                />
+              </Tooltip>
               <Space direction="vertical" size={12}>
                 {printOption ? (
                   <Tooltip
@@ -1283,26 +1348,62 @@ const Main = () => {
                 dataSource={arrayTable}
                 rowSelection={rowSelection}
                 scroll={{ x: 850 }}
+                pagination={{
+                  current: pagination.current,
+                  pageSize: pagination.pageSize,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["15", "20", "50", "100"],
+                  onChange: (page, pageSize) => {
+                    setPagination({ current: page, pageSize });
+                  },
+                }}
                 footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      <Button
-                        style={{
-                          boxShadow: "0 4px 3px",
-                          marginLeft: "10px",
-                        }}
-                        onClick={() => {
-                          setIsModalUpdateEms(true);
-                          setDataModal(record);
-                          console.log("---->", record);
-                        }}
+                      <Tooltip
+                        placement="bottom"
+                        title="อัพเดทสถานะ"
+                        arrow={mergedArrow}
                       >
-                        <EditOutlined
-                          style={{ color: "green", fontSize: "16px" }}
-                        />
-                      </Button>
-                      {/* )} */}
+                        <Button
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginLeft: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalUpdateEms(true);
+                            setDataModal(record);
+                            console.log("---->", record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "blue", fontSize: "16px" }}
+                          />
+                        </Button>
+                      </Tooltip>
+                      {record.status ? (
+                        <Tooltip
+                          placement="bottom"
+                          title="ดาวน์โหลดไฟล์"
+                          arrow={mergedArrow}
+                        >
+                          <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginLeft: "10px",
+                            }}
+                            onClick={() => {
+                              donwLoadFile(record);
+                              console.log("---->", record);
+                            }}
+                          >
+                            <DownloadOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </Tooltip>
+                      ) : null}
                     </p>
                   ),
                   rowExpandable: (record) =>

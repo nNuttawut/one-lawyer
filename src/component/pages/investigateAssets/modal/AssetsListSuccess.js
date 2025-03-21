@@ -562,11 +562,17 @@ const InvestigateAssets = ({
           }
           description={
             <>
-              {item.estimated_price
-                ? `ยอดประเมินที่ดิน ${currencyFormatComma(
-                    item.estimated_price
-                  )}  บาท `
-                : null}
+              <p
+                style={{
+                  color: item.estimated_price ? "blue" : "red",
+                }}
+              >
+                {item.estimated_price
+                  ? `ยอดประเมินที่ดิน ${currencyFormatComma(
+                      item.estimated_price
+                    )}  บาท `
+                  : "ยังไม่ประเมินจากคุณหนุ่ม"}
+              </p>
               <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
               <p>{`หมายเหตุ ${item.mark}`}</p>
             </>
@@ -591,11 +597,12 @@ const InvestigateAssets = ({
     const allFalse = checkData.every((value) => value === false);
     console.log("allFalse--->", allFalse);
 
-    return allFalse ? (
-      <Button style={{ color: "green" }} htmlType="submit">
-        ส่งบังคับคดี
-      </Button>
-    ) : null;
+    return allFalse
+      ? // <Button style={{ color: "green" }} htmlType="submit">
+        //   ส่งบังคับคดี
+        // </Button>
+        null
+      : null;
   };
 
   const formDataSet = () => {

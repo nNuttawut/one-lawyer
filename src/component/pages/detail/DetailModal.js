@@ -28,12 +28,8 @@ import axios from "axios";
 import {
   baseUrl,
   GET_DETAILS,
-  GET_DISTRICT,
   GET_LOAN_BY_CONTNO,
-  GET_PROVICE,
-  GET_SUB_DISTRICT,
   HEADERS_EXPORT,
-  HEADERS_LOGIN,
 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
@@ -98,12 +94,6 @@ const DetailModal = ({ open, close, dataRec }) => {
   }, []);
 
   useEffect(() => {
-    if (dataDetail?.investigateProperty?.length > 0) {
-      loadGeo();
-    }
-  }, [dataDetail]);
-
-  useEffect(() => {
     if (dataDetail && loanData) {
       let dateCurrent = dayjs(dataDetail?.lawsuit?.date_of_plaint);
       let lastPayDate = dayjs(loanData?.LOAN?.LPAYD);
@@ -164,76 +154,6 @@ const DetailModal = ({ open, close, dataRec }) => {
           } else {
             message.error("ไม่มีข้อมูล");
             console.log("res Role", res.data);
-          }
-        })
-        .catch((err) => console.log("ไม่มีข้อมูล", err));
-    } catch (error) {
-      console.error("Error loading data:", error);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadGeo = async () => {
-    setLoading(true);
-    try {
-      await axios
-        .get(GET_PROVICE, {
-          HEADERS_LOGIN,
-        })
-        .then(async (resp) => {
-          if (resp.status === 200) {
-            let provinceName = resp.data.filter(
-              (item) =>
-                item.provinceId === dataDetail?.investigateProperty[0]?.province
-            );
-            console.log("provinceName--->", provinceName);
-
-            setDataProvice(provinceName);
-          } else {
-            message.error("ไม่มีข้อมูล");
-            console.log("res Role", resp.data);
-          }
-        })
-        .catch((err) => console.log("ไม่มีข้อมูล", err));
-
-      await axios
-        .get(GET_DISTRICT + dataDetail?.investigateProperty[0]?.province, {
-          HEADERS_LOGIN,
-        })
-        .then(async (resd) => {
-          if (resd.status === 200) {
-            let districtName = resd.data.filter(
-              (item) =>
-                item.districtId === dataDetail?.investigateProperty[0]?.district
-            );
-            console.log("districtName--->", districtName);
-            setDataDistrict(districtName);
-          } else {
-            message.error("ไม่มีข้อมูล");
-            console.log("res Role", resd.data);
-          }
-        })
-        .catch((err) => console.log("ไม่มีข้อมูล", err));
-
-      await axios
-        .get(GET_SUB_DISTRICT + dataDetail?.investigateProperty[0]?.district, {
-          HEADERS_LOGIN,
-        })
-        .then(async (ress) => {
-          if (ress.status === 200) {
-            console.log("res sub_distric---->", ress.data);
-            let subDistrictName = ress.data.filter(
-              (item) =>
-                item.subdistrictId ===
-                dataDetail?.investigateProperty[0]?.sub_district
-            );
-            console.log("subDistrictName--->", subDistrictName);
-            setDataSubDistrict(subDistrictName);
-          } else {
-            message.error("ไม่มีข้อมูล");
-            console.log("res Role", ress.data);
           }
         })
         .catch((err) => console.log("ไม่มีข้อมูล", err));
@@ -770,160 +690,6 @@ const DetailModal = ({ open, close, dataRec }) => {
                       ? "เว็บไปรษณีย์"
                       : "ยังไม่มีข้อมูล"}
                   </Form.Item>
-                  {/* {dataDetail?.parcel.length > 1 ? (
-                <>
-                  <Form.Item
-                    label={
-                      dataDetail?.parcel[1]?.GARNO === 0
-                        ? "ผู้ทำสัญญา"
-                        : "คนค้ำ"
-                    }
-                    name="customer"
-                  >
-                    {dataDetail?.parcel
-                      ? `${dataDetail?.parcel[1]?.SNAM}${dataDetail?.parcel[1]?.NAME1} ${dataDetail?.parcel[1]?.NAME2}`
-                      : "null"}
-                  </Form.Item>
-
-                  <Form.Item label="หมายเลข EMS" name="parcelNo">
-                    {dataDetail?.parcel
-                      ? dataDetail?.parcel[1]?.parcel_no
-                      : null}
-                  </Form.Item>
-
-                  <Form.Item label="การตอบกลับ" name="replyType">
-                    {dataDetail?.parcel[1]?.parcel_typ_id === 1
-                      ? "ใบตอบกลับ"
-                      : dataDetail?.parcel[1]?.parcel_typ_id === 2
-                      ? "เว็บไปรษณีย์"
-                      : "ยังไม่มีข้อมูล"}
-                  </Form.Item>
-                </>
-              ) : null}
-
-              {dataDetail?.parcel.length > 2 ? (
-                <>
-                  <Form.Item
-                    label={
-                      dataDetail?.parcel[2]?.GARNO === 0
-                        ? "ผู้ทำสัญญา"
-                        : "คนค้ำ"
-                    }
-                    name="customer"
-                  >
-                    {dataDetail?.parcel
-                      ? `${dataDetail?.parcel[2]?.SNAM}${dataDetail?.parcel[2]?.NAME2} ${dataDetail?.parcel[2]?.NAME2}`
-                      : "null"}
-                  </Form.Item>
-
-                  <Form.Item label="หมายเลข EMS" name="parcelNo">
-                    {dataDetail?.parcel
-                      ? dataDetail?.parcel[2]?.parcel_no
-                      : null}
-                  </Form.Item>
-
-                  <Form.Item label="การตอบกลับ" name="replyType">
-                    {dataDetail?.parcel[2]?.parcel_typ_id === 1
-                      ? "ใบตอบกลับ"
-                      : dataDetail?.parcel[2]?.parcel_typ_id === 2
-                      ? "เว็บไปรษณีย์"
-                      : "ยังไม่มีข้อมูล"}
-                  </Form.Item>
-                </>
-              ) : null}
-
-              {dataDetail?.parcel.length > 3 ? (
-                <>
-                  <Form.Item
-                    label={
-                      dataDetail?.parcel[3]?.GARNO === 0
-                        ? "ผู้ทำสัญญา"
-                        : "คนค้ำ"
-                    }
-                    name="customer"
-                  >
-                    {dataDetail?.parcel
-                      ? `${dataDetail?.parcel[3]?.SNAM}${dataDetail?.parcel[3]?.NAME2} ${dataDetail?.parcel[3]?.NAME2}`
-                      : "null"}
-                  </Form.Item>
-
-                  <Form.Item label="หมายเลข EMS" name="parcelNo">
-                    {dataDetail?.parcel
-                      ? dataDetail?.parcel[3]?.parcel_no
-                      : null}
-                  </Form.Item>
-
-                  <Form.Item label="การตอบกลับ" name="replyType">
-                    {dataDetail?.parcel[3]?.parcel_typ_id === 1
-                      ? "ใบตอบกลับ"
-                      : dataDetail?.parcel[3]?.parcel_typ_id === 2
-                      ? "เว็บไปรษณีย์"
-                      : "ยังไม่มีข้อมูล"}
-                  </Form.Item>
-                </>
-              ) : null}
-
-              {dataDetail?.parcel.length > 4 ? (
-                <>
-                  <Form.Item
-                    label={
-                      dataDetail?.parcel[4]?.GARNO === 0
-                        ? "ผู้ทำสัญญา"
-                        : "คนค้ำ"
-                    }
-                    name="customer"
-                  >
-                    {dataDetail?.parcel
-                      ? `${dataDetail?.parcel[4]?.SNAM}${dataDetail?.parcel[4]?.NAME2} ${dataDetail?.parcel[4]?.NAME2}`
-                      : "null"}
-                  </Form.Item>
-
-                  <Form.Item label="หมายเลข EMS" name="parcelNo">
-                    {dataDetail?.parcel
-                      ? dataDetail?.parcel[4]?.parcel_no
-                      : null}
-                  </Form.Item>
-
-                  <Form.Item label="การตอบกลับ" name="replyType">
-                    {dataDetail?.parcel[4]?.parcel_typ_id === 1
-                      ? "ใบตอบกลับ"
-                      : dataDetail?.parcel[4]?.parcel_typ_id === 2
-                      ? "เว็บไปรษณีย์"
-                      : "ยังไม่มีข้อมูล"}
-                  </Form.Item>
-                </>
-              ) : null}
-
-              {dataDetail?.parcel.length > 5 ? (
-                <>
-                  <Form.Item
-                    label={
-                      dataDetail?.parcel[5]?.GARNO === 0
-                        ? "ผู้ทำสัญญา"
-                        : "คนค้ำ"
-                    }
-                    name="customer"
-                  >
-                    {dataDetail?.parcel
-                      ? `${dataDetail?.parcel[5]?.SNAM}${dataDetail?.parcel[5]?.NAME2} ${dataDetail?.parcel[5]?.NAME2}`
-                      : "null"}
-                  </Form.Item>
-
-                  <Form.Item label="หมายเลข EMS" name="parcelNo">
-                    {dataDetail?.parcel
-                      ? dataDetail?.parcel[5]?.parcel_no
-                      : null}
-                  </Form.Item>
-
-                  <Form.Item label="การตอบกลับ" name="replyType">
-                    {dataDetail?.parcel[5]?.parcel_typ_id === 1
-                      ? "ใบตอบกลับ"
-                      : dataDetail?.parcel[5]?.parcel_typ_id === 2
-                      ? "เว็บไปรษณีย์"
-                      : "ยังไม่มีข้อมูล"}
-                  </Form.Item>
-                </>
-              ) : null} */}
                 </div>
               ))}
               <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
@@ -1379,43 +1145,42 @@ const DetailModal = ({ open, close, dataRec }) => {
   };
 
   const items = [
-    {
-      key: "1",
-      label: "สถานะการทำงาน",
-      children: formStatusProgress(),
-    },
-    {
-      key: "2",
-      label: "ข้อมูลสัญญา",
-      children: formDetail(),
-    },
-    {
-      key: "3",
-      label: "ข้อูมล Notice",
-      children: formNotice(),
-    },
-
-    {
-      key: "4",
-      label: "ส่วนฟ้อง",
-      children: formLawsuit(),
-    },
-
-    {
-      key: "5",
-      label: "คำพิพากษา",
-      children: formJudgement(),
-    },
-    {
-      key: "6",
-      label: "สืบทรัพย์",
-      children: formDataAssets(),
-    },
-    {
-      key: "7",
-      label: "ทำยอม",
-      children: formDataPayment(),
-    },
+    ...(dataDetail?.STATUS1 === "1"
+      ? [{ key: "1", label: "สถานะการทำงาน", children: formStatusProgress() }]
+      : []),
+    ...(dataDetail?.STATUS2 === "1"
+      ? [{ key: "2", label: "ข้อมูลสัญญา", children: formDetail() }]
+      : []),
+    ...(dataDetail?.STATUS3 === "1"
+      ? [{ key: "3", label: "ข้อมูล Notice/บอกเลิก", children: formNotice() }]
+      : []),
+    ...(dataDetail?.STATUS4 === "1"
+      ? [{ key: "4", label: "ส่วนฟ้อง", children: formLawsuit() }]
+      : []),
+    ...(dataDetail?.STATUS5 === "1"
+      ? [{ key: "5", label: "คำพิพากษา", children: formJudgement() }]
+      : []),
+    ...(dataDetail?.STATUS6 === "1"
+      ? [{ key: "6", label: "คดีถึงที่สุด", children: formDataAssets() }]
+      : []),
+    ...(dataDetail?.STATUS7 === "1"
+      ? [{ key: "7", label: "สืบทรัพย์หลังฟ้อง", children: formDataPayment() }]
+      : []),
+    // ...(dataDetail?.STATUS3 === "1"
+    //   ? [{ key: "8", label: "บังคับคดี", children: null }]
+    //   : []),
+    // ...(dataDetail?.STATUS4 === "1"
+    //   ? [{ key: "9", label: "เจรจาทำยอม", children: null }]
+    //   : []),
+    // ...(dataDetail?.STATUS5 === "1"
+    //   ? [{ key: "10", label: "ขายทรัพย์", children: null() }]
+    //   : []),
+    // ...(dataDetail?.STATUS11 === "1"
+    //   ? [{ key: "11", label: "สิ้นสุด", children: null }]
+    //   : []),
+    // ...(dataDetail?.STATUS12 === "1"
+    //   ? [{ key: "12", label: "ลูกหนี้สูญ", children: null }]
+    //   : []),
   ];
 
   return (

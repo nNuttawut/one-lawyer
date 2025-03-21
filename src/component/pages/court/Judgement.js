@@ -25,7 +25,11 @@ import {
 
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
-import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
+import {
+  JUDGEMENT,
+  STATUS_PROCESS_PROCESS,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../utils/constant/StatusConstant";
 import UpdateJudgement from "./modal/UpdateJudgement";
 import dayjs from "dayjs";
 
@@ -101,7 +105,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
       );
 
       function containsNumber(str) {

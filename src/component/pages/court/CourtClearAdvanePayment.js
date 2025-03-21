@@ -12,10 +12,15 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
-import { FormOutlined } from "@ant-design/icons";
+import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import { baseUrl, GET_EXPENSES_LIST, HEADERS_EXPORT } from "../../API/apiUrls";
+import {
+  baseUrl,
+  GET_EXPENSES_LIST,
+  GET_LAWSUIT_LIST,
+  HEADERS_EXPORT,
+} from "../../API/apiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 
@@ -23,8 +28,8 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import DetailWithdraw from "./modal/DetailWithdraw";
-import ClearAdvanePayment from "./modal/ClearAdvanePayment";
+// import DetailWithdraw from "./modal/DetailWithdraw";
+import ClearAdvanePayment from "./modal/ClearAdvanePaymentCourt";
 import {
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
@@ -105,7 +110,6 @@ const Main = () => {
           ROLE_ID === "1"
       );
       console.log("newData", newData);
-
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -127,12 +131,9 @@ const Main = () => {
           }
         });
       } else {
-        filteredData = newData.filter((item, index) => {
+        filteredData = newData.filter((item) => {
           const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
           const containsEng = item.CONTNO.substring(0, 1) === "4";
-          console.log("containsEng", containsEng + index);
-          console.log("containsNo", containsNo);
-
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
           if (containsNo && !containsEng) {
             return item; // เก็บ item นี้ไว้
@@ -234,8 +235,7 @@ const Main = () => {
     let result = dataArr.filter(
       (item) =>
         (item.contnoList && item.contnoList.includes(value)) ||
-        item.LAWYER_ID === userId ||
-        item.reference_no.includes(value)
+        item.LAWYER_ID === userId
     );
 
     if (value) {
@@ -419,7 +419,7 @@ const Main = () => {
           : record.pay_type_id === 2 || record.pay_type_id === 3
           ? "รอการเงินตรวจสอบ"
           : record.pay_type_id === 4
-          ? "รอการเงินตรวจสอบ"
+          ? "รอบัญชีตรวจสอบ"
           : null;
       color =
         record.pay_type_id === 1
@@ -697,13 +697,13 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModal ? (
+      {/* {isModal ? (
         <DetailWithdraw
           open={isModal}
           close={setIsModal}
           dataDefault={dataRecord}
         />
-      ) : null}
+      ) : null} */}
       {isModalCreate ? (
         <ClearAdvanePayment
           open={isModalCreate}
@@ -716,5 +716,5 @@ const Main = () => {
   );
 };
 
-const LawsuitClearAdvanePayment = MotionHoc(Main);
-export default LawsuitClearAdvanePayment;
+const CourtClearAdvanePayment = MotionHoc(Main);
+export default CourtClearAdvanePayment;

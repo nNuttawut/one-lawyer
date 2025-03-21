@@ -10,11 +10,12 @@ import {
   message,
   Tooltip,
   Modal,
+  Button,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect, useMemo } from "react";
 import MotionHoc from "../../../utils/MotionHoc";
-import { PrinterOutlined } from "@ant-design/icons";
+import { PrinterOutlined, SearchOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -75,12 +76,6 @@ const Main = () => {
     { value: "P12", label: "P12" },
     { value: "P13", label: "P13" },
   ];
-
-  useEffect(() => {
-    if (datePicker1 && datePicker2) {
-      loadData();
-    }
-  }, [datePicker1, datePicker2]);
 
   useEffect(() => {
     let optionsGCodeData = [];
@@ -286,6 +281,15 @@ const Main = () => {
     }
   };
 
+  const handleLoad = () => {
+    console.log("load");
+    if (selectedContract && datePicker1 && datePicker2) {
+      loadData();
+    } else {
+      message.error("กรุณาเลือกสัญญาและวันที่ !! ");
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -293,6 +297,7 @@ const Main = () => {
         .post(POST_TERMINATE_CONTRACT_RECORD, {
           date1: dayjs(datePicker1).format("YYYY-MM-DD"),
           date2: dayjs(datePicker2).format("YYYY-MM-DD"),
+          DATA_TYPE: selectedContract,
         })
         .then(async (res) => {
           if (res.status === 200) {
@@ -322,39 +327,11 @@ const Main = () => {
     }
   };
 
-  // const mergeDataWithGuarantors = (data) => {
-  //   console.log("mergeDataWithGuarantors");
-
-  //   return data.reduce((acc, record) => {
-  //     const mainData = (record.address || []).map((addr) => ({
-  //       ...record,
-  //       cusType: 0,
-  //       GCODE: record.GCODE,
-  //       REGNO: record.REGNO,
-  //       NAME: `${record.SNAM} ${record.NAME1 || ""} ${
-  //         record.NAME2 || ""
-  //       }`.trim(),
-  //       address: addr,
-  //     }));
-
-  //     const guarantorData = (record.guarantors || []).flatMap((guarantor) =>
-  //       (guarantor.address || []).map((addr) => ({
-  //         ...record,
-  //         cusType: parseInt(guarantor.GARNO),
-  //         NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`.trim(),
-  //         address: addr,
-  //       }))
-  //     );
-
-  //     return [...acc, ...mainData, ...guarantorData];
-  //   }, []);
-  // };
-
   const mergeDataWithGuarantors = (data) => {
     console.log("mergeDataWithGuarantors");
 
     const mergedData = data.reduce((acc, record) => {
-      const mainData = (record.ADDRESS || []).map((addr) => ({
+      const mainData = (record.address || []).map((addr) => ({
         ...record,
         cusType: 0,
         GCODE: record.GCODE,
@@ -367,11 +344,11 @@ const Main = () => {
       }));
 
       const guarantorData = (record.guarantors || []).flatMap((guarantor) =>
-        (guarantor.ADDRESS || []).map((addr) => ({
+        (guarantor.address || []).map((addr) => ({
           ...record,
           cusType: parseInt(guarantor.GARNO),
           NAME: `${guarantor.SNAM} ${guarantor.NAME1} ${guarantor.NAME2}`.trim(),
-          ADDRESS: addr,
+          address: addr,
         }))
       );
 
@@ -438,7 +415,9 @@ const Main = () => {
         );
       }
       console.log("dataFilter--->", dataFilter);
-
+      if (dataFilter?.length === 0) {
+        message.error("ไม่พบข้อมูล");
+      }
       setArrayTable(dataFilter);
       setTableLength(dataFilter.length);
       setLoading(false);
@@ -591,7 +570,7 @@ const Main = () => {
           data.CONTNO,
           data.NAME,
           data.cusType,
-          data.ADDRESS.ZIP,
+          data.address.ZIP,
           data.TYPE,
           data.REGNO,
           data.EXP_PRD,
@@ -768,50 +747,71 @@ const Main = () => {
               />
             </Col>
             <Col span={"12"} style={{ textAlign: "end" }}>
-              <Space direction="vertical" size={12}>
+              <Space size={16} style={{ marginTop: "10px" }}>
+                <Search
+                  placeholder="ค้นหาสัญญา"
+                  enterButton
+                  onChange={search}
+                  style={{
+                    width: 250,
+                    borderRadius: "8px",
+                  }}
+                  size="large"
+                />
+                <Tooltip placement="bottom" title="บันทึกข้อมูล Excel">
+                  <Button
+                    type="text"
+                    icon={
+                      <PrinterOutlined
+                        style={{ fontSize: "24px", color: "green" }}
+                      />
+                    }
+                    onClick={onClickDownload}
+                    style={{
+                      boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                      borderRadius: "8px",
+                      padding: "10px",
+                      backgroundColor: "#f0fdf4",
+                    }}
+                  />
+                </Tooltip>
+              </Space>
+            </Col>
+            <Col
+              span={24}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Range Picker & Search Button */}
+              <Space size={16}>
                 <RangePicker
                   size="large"
                   style={{
-                    marginRight: "10px",
-                    marginBottom: "10px",
                     width: 310,
+                    borderRadius: "8px",
+                    border: "1px solid #ccc",
                   }}
                   onChange={handleChange}
                 />
-              </Space>
-              <Search
-                placeholder="ค้นหาสัญญา"
-                enterButton
-                onChange={search}
-                style={{
-                  width: 200,
-                }}
-                size="large"
-              />
-            </Col>
-            <Col
-              span={"24"}
-              style={{
-                textAlign: "end",
-                marginTop: "10px",
-              }}
-            >
-              <Space direction="vertical" size={12}>
-                <Tooltip
-                  placement="bottom"
-                  title="บันทึกข้อมูล excel"
-                  arrow={mergedArrow}
+                <Button
+                  type="primary"
+                  icon={<SearchOutlined />}
+                  size="large"
+                  style={{
+                    borderRadius: "8px",
+                    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                    fontWeight: "bold",
+                    background: "linear-gradient(135deg, #667eea, blue)",
+                    border: "none",
+                  }}
+                  onClick={handleLoad}
                 >
-                  <PrinterOutlined
-                    style={{
-                      fontSize: "40px",
-                      color: "green",
-                      cursor: "pointer",
-                    }}
-                    key="print"
-                    onClick={onClickDownload}
-                  />
-                </Tooltip>
+                  ค้นหา
+                </Button>
               </Space>
             </Col>
           </Row>

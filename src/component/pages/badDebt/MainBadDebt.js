@@ -13,7 +13,12 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined } from "@ant-design/icons";
+import {
+  FileDoneOutlined,
+  EditOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
+
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -21,38 +26,31 @@ import {
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
-
 import axios from "axios";
-import DateCustom from "../../../hook/DateCustom";
 import {
-  ENFORCEMENT,
-  STATUS_PROCESS_PROGRESS,
+  BAD_DEBTOR,
+  FINISH,
+  NOTICE,
 } from "../../../utils/constant/StatusConstant";
+import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
-import ReportSeize from "./modal/ReportSeize";
 
 const Main = () => {
-  const [
-    convertDateThai,
-    convertDateThaiShort,
-    convertDateThaiYear,
-    convertDateThaiMonth,
-    convertDateThaiDate,
-    dateNow,
-  ] = DateCustom();
+  const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
+  const [isModalDocument, setIsModalDocument] = useState(false);
+  const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
-  const userCompany = localStorage.getItem("COMPANY_ID");
+  const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
     loadData();
@@ -63,7 +61,7 @@ const Main = () => {
     console.log(data);
     try {
       const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + ENFORCEMENT,
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + BAD_DEBTOR,
         {
           headers: HEADERS_EXPORT,
         }
@@ -76,8 +74,6 @@ const Main = () => {
             key: i++,
           }));
           filterDataLawyer(newData);
-          console.log(newData);
-
           setLoading(false);
         }
       } else {
@@ -98,46 +94,13 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
+          item.MAIN_STATUS_ID === item.STATUS_ID
       );
-      function containsNumber(str) {
-        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-      }
-
-      function isEnglishOnly(str) {
-        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-      }
-
-      let filteredData;
-
-      if (userCompany === "3") {
-        filteredData = newData.filter((item) => {
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
-            return item;
-          } else {
-            return false;
-          }
-        });
-      } else {
-        filteredData = newData.filter((item) => {
-          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (containsNo && !containsEng) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
-        });
-      }
-
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log(newData);
+      console.log("Length of filtered data:", newData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -182,7 +145,8 @@ const Main = () => {
 
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
-    if (data !== 0) {
+    console.log("dataArr", dataArr);
+    if (data) {
       const result = dataArr.map((item) => {
         if (item.id === data.id) {
           return { ...data };
@@ -190,7 +154,7 @@ const Main = () => {
           return { ...item };
         }
       });
-      console.log(result);
+      console.log("result", result);
       setDataArr(result);
       const arr = result.filter(
         (item) =>
@@ -214,10 +178,14 @@ const Main = () => {
     const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
+    let color = daysDifference > 30 ? "green" : "red";
     const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+
     return (
-      <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
+        <br />
+        {daysDifference > 30 ? <span>เกินมา {daysDifference} วัน</span> : null}
       </Tag>
     );
   };
@@ -265,11 +233,22 @@ const Main = () => {
       ),
     },
     {
-      title: "วันที่พิพากษา",
+      title: "วันที่ปิด",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    //ทำ logic record
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "ทนายที่รับผิดชอบ",
+            align: "center",
+            render: (record) => <>{record.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
+
   return (
     <>
       <Card>
@@ -303,22 +282,49 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {record ? (
+                      {!record.DATE && userId === record.LAWYER_ID ? (
                         <Button
-                          name="create"
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
                           }}
                           onClick={() => {
                             setIsModalCreate(true);
-                            setDataRecord(record);
+                            setDataModal(record);
                           }}
                         >
                           <EditOutlined
                             style={{ color: "orange", fontSize: "16px" }}
                           />
                         </Button>
+                      ) : null}
+                      {record.DATE && userId === record.LAWYER_ID ? (
+                        <>
+                          {/* <Button
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalDocument(true);
+                            }}
+                          >
+                            <FileDoneOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button> */}
+                          <Button
+                            style={{ boxShadow: "0 4px 3px" }}
+                            onClick={() => {
+                              setIsModalUpdate(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </>
                       ) : null}
                     </p>
                   ),
@@ -332,16 +338,9 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {isModalCreate ? (
-        <ReportSeize
-          open={isModalCreate}
-          close={setIsModalCreate}
-          dataDefualt={dataRecord}
-        />
-      ) : null}
     </>
   );
 };
 
-const MainEnforcement = MotionHoc(Main);
-export default MainEnforcement;
+const MainBadDebt = MotionHoc(Main);
+export default MainBadDebt;

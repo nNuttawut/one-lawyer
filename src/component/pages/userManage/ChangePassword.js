@@ -1,8 +1,8 @@
 import { Button, Form, Input, message, Spin } from "antd";
-import MotionHoc from "../../utils/MotionHoc";
+import MotionHoc from "../../../utils/MotionHoc";
 import { useState } from "react";
 import axios from "axios";
-import { baseUrl, REGISTER, HEADERS_EXPORT } from "../API/apiUrls";
+import { baseUrl, REGISTER, HEADERS_EXPORT } from "../../API/apiUrls";
 
 const Main = () => {
   const [loading, setLoading] = useState(false);

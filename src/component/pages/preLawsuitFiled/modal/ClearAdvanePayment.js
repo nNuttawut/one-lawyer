@@ -365,6 +365,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const props = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
@@ -381,6 +382,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const propsMoney = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();

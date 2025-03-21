@@ -12,6 +12,7 @@ import {
   Tooltip,
   DatePicker,
   Image,
+  InputNumber,
 } from "antd";
 import {
   baseUrl,
@@ -62,7 +63,6 @@ const AssetsDetail = ({
     amcode: null,
     landNo: null,
   });
-  const [landPrice, setLandPrice] = useState(null);
   const [arrow, setArrow] = useState("Show");
   const [refAssetOption, setRefAssetOption] = useState([]);
   const [radioRefAsset, setRadioRefAsset] = useState();
@@ -90,6 +90,7 @@ const AssetsDetail = ({
   const optionsRalation = [
     { label: "เป็นสามีภรรยา", value: "เป็นสามีภรรยา****" },
     { label: "ไม่เป็นสามีภรรยา", value: "ไม่เป็นสามีภรรยา****" },
+    { label: "เป็นลูก", value: "เป็นลูก****" },
   ];
 
   const optionsInvestigateTime = [
@@ -168,10 +169,15 @@ const AssetsDetail = ({
         NAME2: guarantor.NAME2,
       });
     });
-    console.log("dataGovernmentOfficers", dataGovernmentOfficers);
-    const optionsGovernmentOfficers = dataGovernmentOfficers.map((item) => ({
+    const governmentSort = dataGovernmentOfficers.sort(
+      (a, b) => a.GARNO - b.GARNO
+    );
+
+    console.log("dataGovernmentOfficers", governmentSort);
+    const optionsGovernmentOfficers = governmentSort.map((item) => ({
       value: item.id,
-      label: `${item.SNAME}${item.NAME1} ${item.NAME2}`,
+      label: `${item.SNAME}${item.NAME1} ${item.NAME2 ? item.NAME2 : ""} `,
+      // cusType: `${item.GARNO ? `คนค้ำ ${item.GARNO}` : "ผู้เช่าซื้อ"}`,
     }));
     setRefAssetOption(optionsGovernmentOfficers);
   };
@@ -235,63 +241,9 @@ const AssetsDetail = ({
     setIsModal(false);
   };
 
-  const onChangeInputInvestigateDate = (date, dateSting) => {
-    console.log(date);
-    console.log(dateSting);
-  };
-
   const onChangeInputDeed = (value) => {
     console.log(value);
     setResultData({ ...resultData, landNo: value });
-  };
-
-  const onChangeInputRai = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputNgan = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputWa = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputpossessorAsset = (value) => {
-    console.log(value);
-  };
-
-  // const onChangeUrlFile = (value) => {
-  //   console.log(value);
-  // };
-
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
-
-  const onChangeEstimatedPrice = (value) => {
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        estimatedPrice: formattedValue,
-      });
-      console.log("formattedValue", formattedValue);
-    } else {
-      form.setFieldsValue({
-        estimatedPrice: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-    }
   };
 
   const onChangeSelectAssetPropotyType = (value) => {
@@ -300,48 +252,6 @@ const AssetsDetail = ({
       setAssetTypeSelect(true);
     } else {
       setAssetTypeSelect(false);
-    }
-  };
-
-  const onChangeInputOwnerAssetLaw = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputOwner = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputPreferenceCreditor = (value) => {
-    console.log(value);
-  };
-
-  const onChangeMortgageBalance = (value) => {
-    console.log(value);
-    let inputValue = value;
-
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      let setAverage = landPrice
-        ? parseInt(landPrice.replace(/,/g, "")) - intValue
-        : 0;
-      console.log("serAverage", setAverage);
-      form.setFieldsValue({
-        mortgageBalance: formattedValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
-      console.log("formattedValue", formattedValue);
-    } else {
-      let setAverage = landPrice
-        ? parseInt(landPrice.replace(/,/g, "")) - value
-        : 0;
-      form.setFieldsValue({
-        mortgageBalance: inputValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
     }
   };
 
@@ -391,21 +301,9 @@ const AssetsDetail = ({
     });
   };
 
-  const onChangeSelectLandDetail = (value) => {
-    console.log(`selected provice ${value}`);
-  };
-
   const onChangeSelectDistrictAsset = (value) => {
     console.log(`selected District ${value}`);
     setResultData({ ...resultData, amcode: value });
-  };
-
-  const onChangeSelectInvestigatorAsset = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const onChangeInputMemo = (value) => {
-    console.log(value);
   };
 
   const onChangeInvestiGateTimeType = ({ target: { value } }) => {
@@ -431,8 +329,8 @@ const AssetsDetail = ({
     let valueLon = values.latlon ? values.latlon.split(",")[1] : null;
 
     postDataInvestigate = {
-      INVESTIGATION_LOG_ID: dataDefualt.investigation_log_id
-        ? dataDefualt.investigation_log_id
+      INVESTIGATION_LOG_ID: dataDefualt?.investigation_log_id
+        ? dataDefualt?.investigation_log_id
         : null,
       CUSTOMER_ID: values.refAsset,
       investigation_date: dayjs(values.investigateAssetsDate).format(
@@ -503,13 +401,13 @@ const AssetsDetail = ({
       fileList: fileList,
       capturedImages: capturedImages,
     };
-
-    console.log("postDataInvestigate---->", postDataInvestigate);
+    console.log("postDataInvestigate", postDataInvestigate);
 
     if (flag === "add") {
       console.log("add----->");
       sendStatus(postDataInvestigate);
     } else {
+      console.log("postDataInvestigate", postDataInvestigate);
       handleData(postDataInvestigate);
       handleCancel();
     }
@@ -557,15 +455,15 @@ const AssetsDetail = ({
   };
 
   const props = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
       newFileList.splice(index, 1);
       setFileList(newFileList);
-      const newFileListImg = newFileList.map((file) =>
-        URL.createObjectURL(file)
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
       );
-      setCapturedImages(newFileListImg);
     },
     beforeUpload: (file) => {
       const fileType = file.type; // ตรวจสอบ MIME type
@@ -631,7 +529,6 @@ const AssetsDetail = ({
         onFinishFailed={onFinishFailed}
         initialValues={{
           memo: null,
-          suspensionAmount: 0,
           investigateAssetsDate: dayjs(),
         }}
       >
@@ -645,7 +542,7 @@ const AssetsDetail = ({
             },
           ]}
         >
-          <DatePicker onChange={onChangeInputInvestigateDate} />
+          <DatePicker name="investigateAssetsDate" />
         </Form.Item>
         <Form.Item
           label="ห้วงเวลาการฟ้อง"
@@ -666,7 +563,7 @@ const AssetsDetail = ({
           />
         </Form.Item>
         <Tooltip
-          placement="bottom"
+          placement="top"
           title="ถ้าเกิดไม่มีในรายชื่อให้เลือกคนที่มีความเกี่ยวข้องกับเจ้าของทรัพย์"
           arrow={mergedArrow}
         >
@@ -699,13 +596,10 @@ const AssetsDetail = ({
             },
           ]}
         >
-          <Input
-            name="possessorAsset"
-            onChange={(e) => onChangeInputpossessorAsset(e.target.value)}
-          />
+          <Input name="possessorAsset" />
         </Form.Item>
         <Tooltip
-          placement="bottom"
+          placement="top"
           title="ความเกี่ยวข้องของผู้ทำสัญญาหรือผู้ค้ำกับเจ้าของทรัพย์"
           arrow={mergedArrow}
         >
@@ -759,7 +653,6 @@ const AssetsDetail = ({
           <Select
             placeholder="เลือกลักษณะที่ดิน"
             optionFilterProp="value"
-            onChange={(value) => onChangeSelectLandDetail(value)}
             options={dataLandDetailList}
             style={{ width: "100%" }}
           />
@@ -822,11 +715,10 @@ const AssetsDetail = ({
             step={1} // จำกัดให้กรอกเฉพาะจำนวนเต็ม
             placeholder="กรุณากรอกเลขจำนวนเต็ม"
             type="number"
-            onChange={(e) => onChangeInputRai(e.target.value)}
           />
         </Form.Item>
         <Tooltip
-          placement="bottom"
+          placement="top"
           title="กรุณากรอกเลข`งาน`เป็นจำนวนเต็มไม่เกิน 3 "
           arrow={mergedArrow}
         >
@@ -837,12 +729,11 @@ const AssetsDetail = ({
               min={1} // กำหนดค่าต่ำสุด
               max={3}
               step={1} // จำกัดให้กรอกเฉพาะจำนวนเต็ม
-              onChange={(e) => onChangeInputNgan(e.target.value)}
             />
           </Form.Item>
         </Tooltip>
         <Tooltip
-          placement="bottom"
+          placement="top"
           title="กรุณากรอกเลข `ตารางวา` ไม่เกิน 99.99"
           arrow={mergedArrow}
         >
@@ -853,28 +744,12 @@ const AssetsDetail = ({
               min={0.01} // ป้องกันการกรอกค่าต่ำกว่า 0
               max={99.99} // ขีดจำกัดไม่เกิน 99.99
               step="0.01" // กำหนดให้สามารถกรอกค่าทศนิยม 2 ตำแหน่ง
-              onChange={(e) => onChangeInputWa(e.target.value)}
             />
           </Form.Item>
         </Tooltip>
-        {/* {assetTypeSelect ? (
-          <>
-            <Form.Item label="เลขระหว่าง" name="utm">
-              <Input onChange={(e) => onChangeInputUtm(e.target.value)} />
-            </Form.Item>
-            <Form.Item label="ตำแหน่ง" name="latlon">
-              <Input onChange={(e) => onChangeInputLatLon(e.target.value)} />
-            </Form.Item>
-          </>
-        ) : null} */}
 
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
-          <Input
-            name="estimatedPrice"
-            onChange={(e) => onChangeEstimatedPrice(e.target.value)}
-            placeholder="รอประเมินราคา"
-            disabled
-          />
+          <Input name="estimatedPrice" placeholder="รอประเมินราคา" disabled />
         </Form.Item>
         <Form.Item
           label="ติดภาระจำนอง"
@@ -906,7 +781,7 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <Input onChange={(e) => onChangeInputOwner(e.target.value)} />
+              <Input name="mortgagee" />
             </Form.Item>
 
             <Form.Item
@@ -919,9 +794,16 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <Input
+              <InputNumber
                 name="estimatedPrice"
-                onChange={(e) => onChangeMortgageBalance(e.target.value)}
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                style={{ width: "100%", color: "black" }}
               />
             </Form.Item>
           </>
@@ -957,11 +839,7 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <Input
-                onChange={(e) =>
-                  onChangeInputPreferenceCreditor(e.target.value)
-                }
-              />
+              <Input name="preferenceCreditor" />
             </Form.Item>
             <Form.Item
               label="เลขคดีแดง"
@@ -973,9 +851,7 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <Input
-                onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)}
-              />
+              <Input name="ownerAsset" />
             </Form.Item>{" "}
           </>
         ) : null}
@@ -993,27 +869,21 @@ const AssetsDetail = ({
           <Select
             placeholder="เลือกผู้สืบทรัพย์"
             optionFilterProp="value"
-            onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}
             style={{ width: "100%" }}
           />
         </Form.Item>
-        {/* <Form.Item
-          label="ลิ้งเก็บรูป"
-          name="urlFile"
+
+        <Form.Item
+          label="อัปโหลดไฟล์/รูปภาพ"
+          name="imageUrlFile"
           rules={[
-            ({ getFieldValue }) => ({
-              required: getFieldValue("radioCus") !== 3,
-              message: "กรุณาใส่ url ของรูปจากไฟล์กลาง !",
-            }),
+            {
+              required: true,
+              message: "กรุณาเลือกผู้สืบทรัพย์ !",
+            },
           ]}
         >
-          <Input
-            name="urlFile"
-            onChange={(e) => onChangeUrlFile(e.target.value)}
-          />
-        </Form.Item> */}
-        <Form.Item label="อัปโหลดใบเสร็จ" name="imageUrlFile">
           <Dragger
             {...props}
             style={{
@@ -1134,10 +1004,7 @@ const AssetsDetail = ({
         ) : null}
 
         <Form.Item label="หมายเหตุ" name="memo">
-          <TextArea
-            rows={5}
-            onChange={(e) => onChangeInputMemo(e.target.value)}
-          />
+          <TextArea rows={5} name="memo" />
         </Form.Item>
 
         <div style={{ textAlign: "center" }}>

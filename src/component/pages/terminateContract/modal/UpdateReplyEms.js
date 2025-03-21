@@ -135,7 +135,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = (values) => {
+  const handleUploadAllImage = () => {
     const formData = new FormData();
 
     fileList.forEach((file) => {
@@ -197,7 +197,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    if (fileList?.length > 1) {
+    if (fileList?.length > 0) {
       handleUploadAllImage(values);
     }
     const putData = {
@@ -253,6 +253,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
       const track = newStream.getVideoTracks()[0];
       const imageCapture = new ImageCapture(track);
       setImageCap(imageCapture); // ตั้งค่า imageCap
+
       setLoading(false);
     } catch (err) {
       console.error("เกิดข้อผิดพลาดในการเปิดกล้อง: ", err);
@@ -266,43 +267,36 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
       return;
     }
     setLoading(true);
-    if (capturedImages.length > 3) {
-      message.error("ภาพที่ต้องการบันทึกห้ามเกิน 4 รูป ");
-      setLoading(false);
-    } else {
-      try {
-        const blob = await imageCap.takePhoto();
-        const fileType = blob.type; // ตรวจสอบ MIME type
-        const imgUrl = URL.createObjectURL(blob);
 
-        // แปลง Blob เป็น File
-        const file = new File(
-          [blob],
-          `ไฟล์แนบ_${Date.now()}.${fileType.includes("pdf") ? "pdf" : "jpg"}`,
-          {
-            type: fileType,
-          }
-        );
+    try {
+      const blob = await imageCap.takePhoto();
+      const fileType = blob.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(blob);
 
-        console.log("ไฟล์ที่ได้:", file, "ประเภท:", fileType);
-
-        // ตรวจสอบว่าเป็นรูปภาพหรือ PDF
-        if (fileType.startsWith("image/")) {
-          setCapturedImages((prev) => [
-            ...prev,
-            { url: imgUrl, type: "image" },
-          ]);
-        } else if (fileType === "application/pdf") {
-          setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      // แปลง Blob เป็น File
+      const file = new File(
+        [blob],
+        `ไฟล์แนบ_${Date.now()}.${fileType.includes("pdf") ? "pdf" : "jpg"}`,
+        {
+          type: fileType,
         }
+      );
 
-        // อัปเดตรายการไฟล์
-        setFileList((prev) => [...prev, file]);
+      console.log("ไฟล์ที่ได้:", file, "ประเภท:", fileType);
 
-        setLoading(false);
-      } catch (error) {
-        console.error("เกิดข้อผิดพลาดในการถ่ายภาพ:", error);
+      // ตรวจสอบว่าเป็นรูปภาพหรือ PDF
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
       }
+
+      // อัปเดตรายการไฟล์
+      setFileList((prev) => [...prev, file]);
+
+      setLoading(false);
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการถ่ายภาพ:", error);
     }
   };
 
@@ -336,33 +330,18 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const props = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();
       newFileList.splice(index, 1);
-      setFileList(newFileList);
-      const newFileListImg = newFileList.map((file) =>
-        URL.createObjectURL(file)
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
       );
-      setCapturedImages(newFileListImg);
     },
     beforeUpload: (file) => {
-      if (fileList.length >= 4) {
-        message.error("เลือกไฟล์อัพโหลดได้ไม่เกิน 4 ไฟล์");
-        return false;
-      }
-
       const fileType = file.type; // ตรวจสอบ MIME type
       const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
-
-      // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
-      const newFile = new File(
-        [file],
-        `ไฟล์แนบ_${Date.now()}.${fileType.includes("pdf") ? "pdf" : "jpg"}`,
-        { type: fileType }
-      );
-
-      console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
 
       // ตรวจสอบประเภทและแยกเก็บใน state
       if (fileType.startsWith("image/")) {
@@ -371,7 +350,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
         setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
       }
 
-      setFileList((prev) => [...prev, newFile]); // อัปเดตรายการไฟล์
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
 
       return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
     },
@@ -536,41 +515,45 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 >
                   <Radio value={1}>จากใบตอบกลับ</Radio>
                   <Radio value={2}>จากเว็บไปษณีย์</Radio>
+                  <Radio value={3}>ตีกลับ</Radio>
                 </Radio.Group>
               </Form.Item>
 
-              {imageList?.length < 1 ? (
-                <Form.Item
-                  label={
-                    <Tooltip
-                      placement="bottom"
-                      title={
-                        switchCamera && defaultRadio === 1
-                          ? "คลิกเพื่อเปลี่ยนเป็นเลือกไฟล์ !"
-                          : !switchCamera && defaultRadio === 1
-                          ? "คลิกเพื่อเปลี่ยนเป็นถ่ายภาพ !"
-                          : "กรุณาเลือก *จากใบตอบกลับเท่านั้น !"
-                      }
-                      arrow={mergedArrow}
-                    >
-                      <Switch
-                        checkedChildren="เลือกไฟล์"
-                        unCheckedChildren="ถ่ายรูป "
-                        checked={switchCamera}
-                        onChange={() => setSwitchCamera(!switchCamera)}
-                        disabled={defaultRadio === 2}
-                        style={{
-                          backgroundColor: switchCamera ? "blue" : "lightgreen",
-                          color: "white",
-                        }}
-                      />
-                    </Tooltip>
-                  }
-                  name={"capture"}
-                >
-                  {switchCamera ? renderCamera() : renderUpflie()}
-                </Form.Item>
-              ) : null}
+              {/* {imageList?.length < 1 ? ( */}
+              <Form.Item
+                label={
+                  <Tooltip
+                    placement="bottom"
+                    title={
+                      switchCamera
+                        ? "คลิกเพื่อเปลี่ยนเป็นเลือกไฟล์ !"
+                        : "คลิกเพื่อเปลี่ยนเป็นถ่ายภาพ !"
+                    }
+                    arrow={mergedArrow}
+                    rules={[
+                      {
+                        required: true,
+                        message: "กรุณานำเข้าข้อมูลข้อมูล",
+                      },
+                    ]}
+                  >
+                    <Switch
+                      checkedChildren="เลือกไฟล์"
+                      unCheckedChildren="ถ่ายรูป "
+                      checked={switchCamera}
+                      onChange={() => setSwitchCamera(!switchCamera)}
+                      style={{
+                        backgroundColor: switchCamera ? "blue" : "lightgreen",
+                        color: "white",
+                      }}
+                    />
+                  </Tooltip>
+                }
+                name={"capture"}
+              >
+                {switchCamera ? renderCamera() : renderUpflie()}
+              </Form.Item>
+              {/* ) : null} */}
 
               {capturedImages.length > 0 ? (
                 <Form.Item label="ภาพที่ต้องการบันทึก" name={"imageFile"}>
@@ -627,7 +610,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
               ) : null}
 
               {imageList.length > 0 ? (
-                <Form.Item label="ภาพที่บันทึก" name={"imageFile"}>
+                <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
                   <div
                     style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}
                   >
@@ -674,7 +657,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 >
                   ปิด
                 </Button>
-                {capturedImages.length > 1 || imageList.length > 1 ? (
+                {capturedImages.length > 0 || imageList.length > 0 ? (
                   <Button style={{ color: "green" }} htmlType="submit">
                     บันทึก
                   </Button>

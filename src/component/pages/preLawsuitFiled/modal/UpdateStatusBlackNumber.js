@@ -227,6 +227,7 @@ const UpdateStatusBlackNumber = ({
   };
 
   const props = {
+    multiple: true,
     onRemove: (file) => {
       const index = fileList.indexOf(file);
       const newFileList = fileList.slice();

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Modal,
@@ -6,11 +6,16 @@ import {
   Steps,
   message,
   Spin,
-  Input,
   DatePicker,
   Form,
+  InputNumber,
 } from "antd";
-import { AuditOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  AuditOutlined,
+  LoadingOutlined,
+  InboxOutlined,
+} from "@ant-design/icons";
+
 import axios from "axios";
 import {
   baseUrl,
@@ -18,32 +23,28 @@ import {
   HEADERS_EXPORT,
   GET_JUDGE_BY_ID,
   PUT_JUDGE,
+  PUT_STATUS,
 } from "../../../API/apiUrls";
 import {
   CASE_IS_FINAL,
+  ENFORCEMENT,
+  PARAM_PUBLIC,
+  STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
-import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import Dragger from "antd/es/upload/Dragger";
 
 const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
-  const [status, setStatus] = useState({
-    process: "process",
-    enforce: "wait",
-    prePay: "wait",
-  });
-
   const [loading, setLoading] = useState(false);
   const [memoText, setMemoText] = useState("");
   const [countDate, setCountDate] = useState();
-  const [urlFileSave, setUrlFileSave] = useState();
   const [dataLoadJudgement, setDataJudgement] = useState();
   const [dateEnforceCase, setDateEnforceCase] = useState();
   const [form] = Form.useForm();
-  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
-    CurrencyFormat();
-  const [totalFeeCal, setTotalFeeCal] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  console.log(dataDefualt);
 
   useEffect(() => {
     if (dataDefualt.DATE) {
@@ -85,79 +86,97 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (statusData, dataJudgement) => {
-    if (status.enforce === "finish") {
-      setLoading(true);
-      try {
-        await axios
-          .post(baseUrl + POST_STATUS, statusData, { headers: HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-              setLoading(false);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
-          });
+  const sendStatus = async (
+    statusData,
+    dataJudgement,
+    putStatus,
+    postEnforce
+  ) => {
+    setLoading(true);
+    try {
+      await axios
+        .put(baseUrl + PUT_STATUS, putStatus, {
+          headers: HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
 
-        await axios
-          .put(baseUrl + PUT_JUDGE, dataJudgement, { headers: HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-              funcUpdateStatus({
-                ...dataDefualt,
-                MAIN_STATUS_ID: statusData.MAIN_STATUS_ID,
-                DATE: dayjs().format("YYYY-MM-DD"),
-              });
-              message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
-              setLoading(false);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
+      await axios
+        .post(baseUrl + POST_STATUS, postEnforce, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+            setLoading(false);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
+        });
 
-            console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
-          });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
-      } finally {
-        setLoading(false);
-        handleCancel();
-      }
-    } else {
-      message.error("โปรดเปลี่ยนสถานะข้อมูลและกดบันทึกอีกครั้ง");
+      await axios
+        .post(baseUrl + POST_STATUS, statusData, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+            setLoading(false);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
+        });
+
+      await axios
+        .put(baseUrl + PUT_JUDGE, dataJudgement, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+            funcUpdateStatus({
+              ...dataDefualt,
+              MAIN_STATUS_ID: statusData.MAIN_STATUS_ID,
+              DATE: dayjs().format("YYYY-MM-DD"),
+            });
+            handleUploadAllImage();
+            message.success(`อัพเดทข้อมูลสำเร็จ ${dataDefualt.CONTNO}`);
+            setLoading(false);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+
+          console.log("ไม่มีข้อมูล", err); // ถ้ามีข้อผิดพลาดอื่น ๆ ให้แสดงข้อความนี้
+        });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+    } finally {
+      setLoading(false);
+      handleCancel();
     }
-  };
-
-  const handleStatusChange = (current) => {
-    console.log(current);
-    if (current === 2) {
-      setStatus({
-        process: "finish",
-        enforce: "finish",
-      });
-    } else {
-      setStatus({
-        process: "process",
-        enforce: "wait",
-      });
-    }
-  };
-
-  const onChangeJudgementFile = (value) => {
-    console.log(value);
-    setUrlFileSave(value);
   };
 
   const onChange = (date, dateString) => {
@@ -172,7 +191,16 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    if (status.enforce === "finish") {
+
+    if (values.file.fileList.length > 0) {
+      const putStatus = {
+        id: dataDefualt.WORK_LOG_ID,
+        MEMO: values.memo,
+        DATE: dataDefualt.DATE,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_ID: dataDefualt.id,
+        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      };
       const postData = {
         MAIN_STATUS_ID: CASE_IS_FINAL,
         LOAN_ID: dataDefualt.id,
@@ -181,63 +209,82 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
         MEMO: memoText,
         DATE: dateEnforceCase,
-        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+        PROCESS_ID: STATUS_PROCESS_PROCESS,
+      };
+      const postEnforce = {
+        MAIN_STATUS_ID: ENFORCEMENT,
+        LOAN_ID: dataDefualt.id,
+        USER_ID: dataDefualt.LAWYER_ID,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+        MEMO: memoText,
+        DATE: dateEnforceCase,
+        PROCESS_ID: STATUS_PROCESS_PROCESS,
       };
       const putJudgement = {
         ...dataLoadJudgement,
         enforce_case_date: dateEnforceCase,
-        enforce_case_filepath: urlFileSave,
-        fee: totalFeeCal,
+        copying_fee: values.docFee,
+        fee: values.otherFee,
       };
       console.log("postData", postData);
       console.log("putJudgement", putJudgement);
-      sendStatus(postData, putJudgement);
+      console.log("postEnforce", postEnforce);
+      console.log("putStatus", putStatus);
+
+      sendStatus(postData, putJudgement, putStatus, postEnforce);
     } else {
-      message.error("กรุณาเปลี่ยนสถานะ");
+      message.error("กรุณาอัพโหลดไฟล์ !");
     }
+  };
+
+  const handleUploadAllImage = () => {
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        baseUrl +
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/หมายตั้ง${dataDefualt.contno}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
 
   const onChangeTotalFee = (value) => {
-    let total;
     console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      form.setFieldsValue({
-        otherFee: formattedValue,
-      });
-      total =
-        dataLoadJudgement?.fee +
-        dataLoadJudgement?.attorney_fees +
-        parseInt(formattedValue.replace(/,/g, ""));
-      setTotalFeeCal(total);
-    } else {
-      form.setFieldsValue({
-        otherFee: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-      total =
-        dataLoadJudgement?.fee +
-        dataLoadJudgement?.attorney_fees +
-        parseInt(inputValue);
-      setTotalFeeCal(total);
-    }
+  };
+
+  const onChangeDocFee = (value) => {
+    console.log(value);
   };
 
   const formData = () => {
@@ -246,7 +293,6 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         <Card style={{ marginTop: "10px", marginBottom: "20px" }}>
           <Steps
             responsive={true}
-            onChange={handleStatusChange}
             items={[
               {
                 title: "พิพากษา",
@@ -254,13 +300,13 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               },
               {
                 title: "เวลาดำเนินการเหลือ",
-                status: status.process,
+                status: "process",
                 description: `เกินกำหนด: ${countDate} วัน`,
                 icon: <LoadingOutlined />,
               },
               {
                 title: "ออกหมายตั้ง",
-                status: status.enforce,
+                status: "finish",
                 icon: <AuditOutlined />,
               },
             ]}
@@ -268,6 +314,23 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         </Card>
       </>
     );
+  };
+
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
   };
 
   return (
@@ -327,24 +390,8 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   onChange={onChange}
                 />
               </Form.Item>
-              <Form.Item label="ค่าธรรมเนียมศาล" name="courtFee">
-                <p>
-                  {dataLoadJudgement?.fee
-                    ? currencyFormatPoint(dataLoadJudgement?.fee)
-                    : "-"}{" "}
-                  บาท
-                </p>
-              </Form.Item>
-              <Form.Item label="ค่าทนายความ" name="lawyerFeeEnforce">
-                <p>
-                  {dataLoadJudgement?.attorney_fees
-                    ? currencyFormatNoPoint(dataLoadJudgement?.attorney_fees)
-                    : "-"}{" "}
-                  บาท
-                </p>
-              </Form.Item>
               <Form.Item
-                label="ค่าฤชาอื่น ๆ"
+                label="ค่าออกหมายตั้ง"
                 name="otherFee"
                 rules={[
                   {
@@ -353,32 +400,53 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   },
                 ]}
               >
-                <Input
-                  autoComplete="off"
-                  name="otherFee"
-                  onChange={(e) => onChangeTotalFee(e.target.value)}
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="ไม่มีไม่ต้องกรอก"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangeTotalFee(value)}
+                />
+              </Form.Item>
+              <Form.Item label="ค่าคัดเอกสาร" name="docFee">
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="ไม่มีไม่ต้องกรอก"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangeDocFee(value)}
                 />
               </Form.Item>
 
-              <Form.Item label="ค่าฤชาทั้งหมด" name="totalFee">
-                <p>
-                  {totalFeeCal ? currencyFormatNoPoint(totalFeeCal) : "-"} บาท
-                </p>
-              </Form.Item>
               <Form.Item
-                label="ลิ้งที่แชร์ไฟ"
-                name="urlPath"
+                label="ไฟลหมายตั้ง"
+                name="file"
                 rules={[
                   {
                     required: true,
-                    message: "กรุณาใส่คำพิพากษา !",
+                    message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
                   },
                 ]}
               >
-                <Input
-                  placeholder="ใส่ url file ในนี้"
-                  onChange={(e) => onChangeJudgementFile(e.target.value)}
-                />
+                <Dragger {...props}>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined style={{ color: "blue" }} />
+                  </p>
+                  <p className="ant-upload-text">
+                    กรุณาคลิกหรือลากเพื่อเลือกไฟล์
+                  </p>
+                  <p className="ant-upload-hint">
+                    รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                  </p>
+                </Dragger>
               </Form.Item>
               <Form.Item label="หมายเหตุ" name="memo">
                 <TextArea

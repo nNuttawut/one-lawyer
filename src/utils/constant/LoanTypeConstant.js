@@ -1,9 +1,8 @@
 export const listLoneType = {
   HIRE_PURCASE: [1, "ฟ้องเช่าซื้อ"],
-  MORTGAGE: [2, "ฟ้องจำนอง"],
+  MORTGAGE: [2, "ฟ้องเงินกู้(จดจำนอง)"],
   GENERAL_LOAN: [3, "ฟ้องเงินกู้(กู้ทั่วไป)"],
   CAR_LOAN: [4, "ฟ้องเงินกู้(คู่มือรถ)"],
-  LAND_LOAN: [5, "ฟ้องเงินกู้(จดจำนอง)"],
   DEFFERENCE: [6, "ฟ้องส่วนต่าง"],
 };
 

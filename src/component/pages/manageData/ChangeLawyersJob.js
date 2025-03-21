@@ -94,7 +94,7 @@ const Main = () => {
     console.log("loadData AssignLawyers");
     try {
       await axios
-        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + NOTICE, {
+        .get(baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS, {
           headers: HEADERS_EXPORT,
         })
         .then(async (resQuery) => {

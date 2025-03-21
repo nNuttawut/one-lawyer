@@ -37,10 +37,11 @@ import {
 import MotionHoc from "../../../utils/MotionHoc";
 import dayjs from "dayjs";
 import CreateJudgement from "./modal/CreateJudgement";
+import LoadCompanies from "../../../hook/LoadCompanies";
 
 const Main = () => {
   //set hook
-
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,12 +58,15 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState(null);
   const [responseData, setResponseData] = useState(null);
   const defaultValue = [1];
+  const [companiesOption, setCompaniesOption] = useState(null);
+  const [lawyersOption, setLawyersOption] = useState();
 
   //call redux action
   // const dispatch = useDispatch();
 
   useEffect(() => {
     loadData();
+    setLoadingDataCompany(true);
     setLoadingData(true);
   }, [setLoadingData]);
 
@@ -72,6 +76,54 @@ const Main = () => {
       setIsModalJudgement(true);
     }
   }, [dataRecord]);
+
+  useEffect(() => {
+    if (companiesListCompany) {
+      setOptionCompany();
+    }
+  }, [companiesListCompany]);
+
+  const setOptionCompany = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+    }));
+
+    console.log("options", options);
+    setCompaniesOption(options);
+  };
+
+  useEffect(() => {
+    if (lawyersList) {
+      setOption();
+    }
+  }, [lawyersList]);
+
+  const setOption = () => {
+    let companySelect = null;
+
+    if (COMPANY_ID === "1" || COMPANY_ID === "2") {
+      companySelect = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
+      );
+    } else {
+      companySelect = lawyersList.filter(
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
+      );
+    }
+    const options = companySelect.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+    }));
+    setLawyersOption(options);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -247,12 +299,12 @@ const Main = () => {
   };
 
   const insertDataOne = async (id) => {
-    setLoading(true);
+    // setLoading(true);
     const data = dataSend.find((item) => item.LOAN_ID === id);
     let filteredData;
     let setSucess = 0;
     let dataApprove = data;
-    if (data) {
+    if (data.COMPANY_ID && data.LOAN_TYPE_ID && data.USER_ID) {
       if (data) {
         console.log(data);
         if (!data.LAW_TYPE_ID) {
@@ -273,12 +325,12 @@ const Main = () => {
           .post(baseUrl + POST_STATUS, dataApprove, { headers: HEADERS_EXPORT })
           .then((resQuery) => {
             if (resQuery.status === 200) {
-              //   const dataToUpdate = {
-              //     ...filteredData,
-              //     MAIN_STATUS_ID: 1,
-              //   };
-              //   setSucess += 1;
-              //   handleChangeStatus(dataToUpdate);
+              // const dataToUpdate = {
+              //   ...filteredData,
+              //   MAIN_STATUS_ID: 8,
+              // };
+              // setSucess += 1;
+              // handleChangeStatus(dataToUpdate);
               console.log("setDataRecord(dataApprove);");
               setResponseData(resQuery.data);
               setDataRecord(dataApprove);
@@ -298,49 +350,54 @@ const Main = () => {
         setLoading(false);
       }
     } else {
-      message.error(`กรุณาเลือกประเภทสัญญา`);
+      message.error(`กรุณาตรวจสอบข้อมูล`);
       setLoading(false);
     }
   };
 
-  const onApporvedData = (contno, id, lawType, loanType) => {
+  const onApporvedData = (contno, loanType, companies, lawyer, id, lawType) => {
     console.log(
-      `contno ${contno} id ${id} lawType ${lawType} loanType ${loanType}`
+      `contno ${contno} loanType ${loanType} companies ${companies} lawyer ${lawyer} lawType ${lawType}`
     );
 
-    if (!lawType) {
-      let setLawType = dataSend
-        .filter((item) => item.LOAN_ID === id)
-        .map((item) => Number(item.LAW_TYPE_ID));
-      lawType = setLawType[0];
-    }
+    const loanItem = dataSend.find((item) => item.LOAN_ID === id);
 
     if (!loanType) {
-      let setLaonType = dataSend
-        .filter((item) => item.LOAN_ID === id)
-        .map((item) => Number(item.LOAN_TYPE_ID));
-      loanType = setLaonType[0];
-      console.log("setLaonType", setLaonType[0]);
+      loanType = loanItem ? Number(loanItem.LOAN_TYPE_ID) : null;
       console.log("loanType", loanType);
     }
 
+    if (!lawType) {
+      lawType = loanItem ? Number(loanItem.LAW_TYPE_ID) : null;
+      console.log("lawType", lawType);
+    }
+
+    if (!lawyer) {
+      lawyer = loanItem ? Number(loanItem.LAWYER_ID) : null;
+      console.log("lawyer", lawyer);
+    }
+
+    if (!companies) {
+      companies = loanItem ? Number(loanItem.COMPANY_ID) : null;
+      console.log("companies", companies);
+    }
+
     setDataSend((prevFailedData) => {
-      // สร้างอาร์เรย์ใหม่โดยไม่รวม item LOAN_ID เหมือนกัน
       const updatedData = prevFailedData.filter((item) => item.LOAN_ID !== id);
-      // เพิ่มข้อมูลใหม่เข้า array
+
       const newItem = {
         MAIN_STATUS_ID: ENFORCEMENT,
-        USER_ID: parseInt(USER_ID_LOCAL),
+        USER_ID: lawyer,
         LOAN_ID: id,
         LOAN_TYPE_ID: loanType,
         LAW_TYPE_ID: lawType,
-        MEMO: null,
+        MEMO: "อัพเดทผ่านงานส่วนบังคับคดี",
         DATE: dayjs().format("YYYY-MM-DD"),
         PROCESS_ID: STATUS_PROCESS_PROGRESS,
+        COMPANY_ID: companies,
         contno: contno,
       };
 
-      // Return อัพเดท array
       return [...updatedData, newItem];
     });
   };
@@ -355,11 +412,34 @@ const Main = () => {
     setArrayTable(result);
   };
 
-  const onChange = (value, contno, loanId) => {
-    console.log("Loan ID:", loanId, contno);
+  const onChangeLoan = (value, contno, id) => {
+    console.log(`selected ${value} contno ${contno} id ${id}`);
     console.log("Selected Value:", value);
 
-    onApporvedData(contno, loanId, null, value);
+    onApporvedData(contno, value, null, null, id);
+  };
+
+  const onChangeCompany = (value, contno, id) => {
+    console.log(`selected ${value} contno ${contno} id ${id}`);
+    console.log("Selected Value:", value);
+
+    onApporvedData(contno, null, value, null, id);
+  };
+
+  const onChangeSelect = (value, contno, id) => {
+    console.log(`selected ${value} contno ${contno} id ${id}`);
+    onApporvedData(contno, null, null, value, id);
+  };
+
+  const handleCheckboxChange = (value, contno, id) => {
+    console.log("Selected values:", id, value);
+    let setValue = 0;
+    if (value.length > 1) {
+      setValue = 3;
+    } else {
+      setValue = value[0];
+    }
+    onApporvedData(contno, null, null, null, id, setValue);
   };
 
   const confirmInsert = () => {
@@ -379,17 +459,6 @@ const Main = () => {
   const cancel = (e) => {
     console.log(e);
     message.error("ยกเลิกการมอบงาน");
-  };
-
-  const handleCheckboxChange = (loanId, value) => {
-    console.log("Selected values:", loanId, value);
-    let setValue = 0;
-    if (value.length > 1) {
-      setValue = 3;
-    } else {
-      setValue = value[0];
-    }
-    onApporvedData(null, null, loanId, setValue, null);
   };
 
   //ไว้เปลี่ยน สถานะและ set table แบบ ค่าเดียว
@@ -477,7 +546,7 @@ const Main = () => {
           options={optionsLaw}
           defaultValue={defaultValue}
           onChange={(value) => {
-            handleCheckboxChange(record.id, value);
+            handleCheckboxChange(value, record.CONTNO, record.id);
           }}
         />
       ),
@@ -487,18 +556,50 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <Select
-          // defaultValue={
-          //   record.CONTNO.substring(0, 1) === "2" ? HIRE_PURCASE : MORTGAGE
-          // }
           popupMatchSelectWidth={false}
           style={{
             width: "auto",
           }}
           placeholder="เลือกประเภทสัญญา"
           optionFilterProp="value"
-          onChange={(value) => onChange(value, record.CONTNO, record.id)}
+          onChange={(value) => onChangeLoan(value, record.CONTNO, record.id)}
           options={optionsLone}
-        ></Select>
+        />
+      ),
+    },
+    {
+      title: "บริษัทที่ทำฟ้อง",
+      align: "center",
+      render: (text, record) => (
+        <Select
+          placeholder="เลือกบริษัท"
+          optionFilterProp="value"
+          options={companiesOption}
+          onChange={(value) => onChangeCompany(value, record.CONTNO, record.id)}
+          popupMatchSelectWidth={false}
+          style={{
+            width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+            // maxWidth: 200, // จำกัดความกว้างสูงสุด
+          }}
+          size="large"
+        />
+      ),
+    },
+    {
+      title: "เลือกทนายรับงาน",
+      align: "center",
+      render: (text, record) => (
+        <>
+          <Select
+            placeholder="เลือกทนายรับงาน"
+            optionFilterProp="value"
+            onChange={(value) =>
+              onChangeSelect(value, record.CONTNO, record.id)
+            }
+            options={lawyersOption}
+            style={{ width: "100%" }}
+          />
+        </>
       ),
     },
     {
@@ -509,7 +610,10 @@ const Main = () => {
           <Popconfirm
             title="นำข้อมูลเข้า"
             description="คุณต้องการนำข้อมูลพิพากษาเข้าใช่หรือไม่ ?"
-            onConfirm={() => confirmInsertOne(record.id)}
+            onConfirm={() => {
+              confirmInsertOne(record.id);
+              console.log("record--->", record);
+            }}
             onCancel={cancel}
             okText="ยืนยัน"
             cancelText="ยกเลิก"
@@ -528,22 +632,6 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            {/* <Col span={"12"} style={{ textAlign: "start" }}>
-              <Popconfirm
-                title="มอบงานให้ทนาย"
-                description="คุณต้องการนมอบหมายงานให้ทนายตามข้อมูลในตารางหรือไม่ ?"
-                onConfirm={confirmInsert}
-                onCancel={cancelInsert}
-                okText="ยืนยัน"
-                cancelText="ยกเลิก"
-              >
-                <Button>
-                  <PlusCircleOutlined
-                    style={{ color: "green", fontSize: "20px" }}
-                  />
-                </Button>
-              </Popconfirm>
-            </Col> */}
             <Col span={"24"} style={{ textAlign: "end" }}>
               <Search
                 placeholder="ค้นหาสัญญา"
@@ -581,5 +669,5 @@ const Main = () => {
   );
 };
 
-const ImportLawsuitData = MotionHoc(Main);
-export default ImportLawsuitData;
+const ImportDecideData = MotionHoc(Main);
+export default ImportDecideData;

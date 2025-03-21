@@ -11,6 +11,8 @@ import {
   Radio,
   Tooltip,
   InputNumber,
+  Image,
+  Empty,
 } from "antd";
 import {
   HEADERS_EXPORT,
@@ -26,6 +28,13 @@ import LoadLawyers from "../../../../hook/LoadLawyers";
 import dayjs from "dayjs";
 import DateCustom from "../../../../hook/DateCustom";
 import LoadLandDetail from "../../../../hook/LoadLandDetail";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
 
 const EstimateAssetsResult = ({
   open,
@@ -50,6 +59,7 @@ const EstimateAssetsResult = ({
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
   const [radioTimeType, setRadioTimeType] = useState(null);
   const [dataLoan, setDataLoan] = useState();
+  const [imageList, setImageList] = useState([]);
   const optionsAssetsType = [
     { label: "น.ส.4 จ", value: 1 },
     { label: "น.ส.3 ก.", value: 2 },
@@ -69,6 +79,7 @@ const EstimateAssetsResult = ({
     setIsModal(open);
     if (isModal) {
       loadData();
+      loadImagesProduct();
       setLoadingData(true);
       setLoadingLandDetailData(true);
       console.log("dataDefualt", dataDefualt);
@@ -159,6 +170,26 @@ const EstimateAssetsResult = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadImagesProduct = async () => {
+    console.log(dataDefualt);
+
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataDefualt?.CUSTOMER_ID}_${dataDefualt?.deed_number}_${dataDefualt?.province}_${dataDefualt?.district}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
   };
 
   const setOptionLandDetail = () => {
@@ -680,19 +711,98 @@ const EstimateAssetsResult = ({
             disabled
           />
         </Form.Item>
-        <Form.Item label="ลิ้งเก็บรูป" name="urlFile">
-          {dataDefualt?.investigate_filepath ? (
-            <a
-              href={dataDefualt?.investigate_filepath || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
+        {imageList.length > 0 ? (
+          <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                justifyContent: "center", // จัดให้อยู่ตรงกลาง
+              }}
             >
-              คลิกเพื่อดูรูปภาพ
-            </a>
-          ) : (
-            <span>ไม่มีลิงก์รูปภาพ</span>
-          )}
-        </Form.Item>
+              <Image.PreviewGroup>
+                {imageList?.map((image, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                      textAlign: "center",
+                    }}
+                  >
+                    {image.url.includes("pdf") ? (
+                      <>
+                        <FilePdfOutlined
+                          style={{ fontSize: "40px", color: "red" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : image.url.includes(".xlsx") ? (
+                      <>
+                        <FileExcelOutlined
+                          style={{ fontSize: "40px", color: "green" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : image.url.includes(".docx") ? (
+                      <>
+                        <FileWordOutlined
+                          style={{ fontSize: "40px", color: "blue" }}
+                        />
+                        {image.url ? (
+                          <a
+                            style={{
+                              display: "block",
+                              marginTop: "8px",
+                            }}
+                            href={image.url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            คลิกเพื่อดาวน์โหลด
+                          </a>
+                        ) : null}
+                      </>
+                    ) : (
+                      <Image
+                        src={image.url}
+                        alt={`Captured ${index}`}
+                        width="150px"
+                      />
+                    )}
+                  </div>
+                ))}
+              </Image.PreviewGroup>
+            </div>
+          </Form.Item>
+        ) : null}
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

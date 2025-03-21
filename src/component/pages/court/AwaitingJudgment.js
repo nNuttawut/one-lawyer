@@ -326,20 +326,6 @@ const Main = () => {
                     <p style={{ margin: 0 }}>
                       {record.MAIN_STATUS_ID === AWAITING_JUDMENT ? (
                         <>
-                          {/* <Button
-                            name="formPrint"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button> */}
                           <Tooltip
                             placement="bottom"
                             title="บันทึกคำพิพากษา!"

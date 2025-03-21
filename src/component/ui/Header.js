@@ -6,10 +6,10 @@ import {
   SettingOutlined,
   LogoutOutlined,
   BellOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import "../../assets/styles/Sidenav.css";
-
 import { useNavigate } from "react-router-dom";
 
 function Header({ title, onPress, onClick }) {
@@ -58,6 +58,9 @@ function Header({ title, onPress, onClick }) {
         navigate("/chang-password");
         break;
       case 3:
+        navigate("/setting-system");
+        break;
+      case 4:
         Modal.confirm({
           title: "ออกจากระบบ",
           content: "คุณต้องการออกจากระบบหรือไม่?",
@@ -167,10 +170,14 @@ function Header({ title, onPress, onClick }) {
                 {userName}
               </MenuItem>
               <MenuItem value={2} onClick={handleCloseMenuItem}>
-                <SettingOutlined style={{ marginRight: "5px" }} />
+                <KeyOutlined style={{ marginRight: "5px" }} />
                 เปลี่ยนรหัสผ่าน
               </MenuItem>
               <MenuItem value={3} onClick={handleCloseMenuItem}>
+                <SettingOutlined style={{ marginRight: "5px" }} />
+                การตั้งค่า
+              </MenuItem>
+              <MenuItem value={4} onClick={handleCloseMenuItem}>
                 <LogoutOutlined style={{ marginRight: "5px" }} /> ออกจากระบบ
               </MenuItem>
             </Menu>

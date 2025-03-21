@@ -19,16 +19,21 @@ import DetailModal from "../detail/DetailModal";
 import { PlusOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import { baseUrl, GET_LAWSUIT_LIST, HEADERS_EXPORT } from "../../API/apiUrls";
-import axios from "axios";
 import {
-  INDICT,
-  STATUS_PROCESS_SUCCESSFUL,
-} from "../../../utils/constant/StatusConstant";
+  baseUrl,
+  GET_INVESTIGATE_LOANS_LIST,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
+  GET_LAWSUIT_LIST,
+  HEADERS_EXPORT,
+} from "../../API/apiUrls";
+import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
-import CreateAdvanePayment from "./modal/CreateAdvanePayment";
+import {
+  AWAITING_JUDMENT,
+  JUDGEMENT,
+} from "../../../utils/constant/StatusConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -37,8 +42,10 @@ const Main = () => {
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [isModal, setIsModal] = useState(false);
-  const [isModalCreateAdvanePayment, setIsModalCreateAdvanePayment] =
-    useState(false);
+  const [
+    isModalCreateAdvanePaymentAssets,
+    setIsModalCreateAdvanePaymentAssets,
+  ] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -77,23 +84,16 @@ const Main = () => {
     };
   }, []);
 
-  // const onExpand = (expanded, record) => {
-  //   if (expanded) {
-  //     // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
-  //     setExpandedRowKeys([record.key]);
-  //   } else {
-  //     // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
-  //     setExpandedRowKeys([]);
-  //   }
-  // };
-
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
     try {
-      const response = await axios.get(baseUrl + GET_LAWSUIT_LIST, {
-        headers: HEADERS_EXPORT,
-      });
+      const response = await axios.get(
+        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JUDGEMENT,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
       if (response.data) {
         let i = 1;
         if (response.data) {
@@ -121,15 +121,6 @@ const Main = () => {
 
   const filterData = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.USER_ID === userId || ROLE_ID === "1") &&
-          !item.fee_payment_status &&
-          item.provincial_court
-      );
-
-      console.log("newData-->", newData);
-
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -141,7 +132,7 @@ const Main = () => {
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = newData.filter((item) => {
+        filteredData = data.filter((item) => {
           const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
           if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
@@ -151,7 +142,7 @@ const Main = () => {
           }
         });
       } else {
-        filteredData = newData.filter((item) => {
+        filteredData = data.filter((item) => {
           const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
           const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
@@ -347,22 +338,6 @@ const Main = () => {
     // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
     const remainingDays = today.diff(recordDate, "day");
 
-    // if (record.LOAN_TYPE_ID === 1) {
-    //   color =
-    //     remainingDays > 30 && record.PROCESS_ID === 1
-    //       ? "green"
-    //       : record.PROCESS_ID === 3
-    //       ? "blue"
-    //       : "red";
-    // } else {
-    //   color =
-    //     remainingDays > 60 && record.PROCESS_ID === 1
-    //       ? "green"
-    //       : record.PROCESS_ID === 3
-    //       ? "blue"
-    //       : "red";
-    // }
-
     color = remainingDays > 30 ? "red" : "green";
 
     const formattedDate = record.date_of_plaint
@@ -375,10 +350,10 @@ const Main = () => {
         {
           <span>
             {/* {record.LOAN_TYPE_ID === 1 && remainingDays > 30
-              ? "เกิน"
-              : record.LOAN_TYPE_ID === 2 && remainingDays > 60
-              ? "เกิน"
-              : null}{" "} */}
+                ? "เกิน"
+                : record.LOAN_TYPE_ID === 2 && remainingDays > 60
+                ? "เกิน"
+                : null}{" "} */}
             {remainingDays > 30 ? "เกิน" : null}
             {remainingDays} วัน
           </span>
@@ -395,10 +370,10 @@ const Main = () => {
       align: "center",
       width: "10%",
       render: (text, object, key) => key + 1,
-      sorter: {
-        compare: (a, b) => a.key - b.key,
-        multiple: 5,
-      },
+      // sorter: {
+      //   compare: (a, b) => a.key - b.key,
+      //   multiple: 5,
+      // },
     },
     {
       title: "เลขที่สัญญา",
@@ -417,10 +392,14 @@ const Main = () => {
       ),
     },
     {
-      title: "ศาล",
+      title: "ชื่อ-นามสกุล",
       align: "center",
       render: (text, record) => (
-        <>{record.provincial_court ? record.provincial_court : null}</>
+        <>
+          {record.CUSTOMER_TNAME}
+          {record.CUSTOMER_FNAME}{" "}
+          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : ""}
+        </>
       ),
     },
     {
@@ -471,9 +450,9 @@ const Main = () => {
                     type="primary"
                     icon={<PlusOutlined />} // ไอคอน
                     size="small" // ขนาดเล็ก
-                    onClick={() => setIsModalCreateAdvanePayment(true)}
+                    // onClick={() => setIsModalCreateAdvanePayment(true)}
                     disabled={
-                      selectedRowKeys.length <= 0 || selectedRowKeys.length > 4
+                      selectedRowKeys.length === 0 || selectedRowKeys.length > 4
                     }
                     loading={loading}
                   >
@@ -522,93 +501,6 @@ const Main = () => {
                   </div>
                 )}
                 rowSelection={rowSelection}
-                // expandable={{
-                //   expandedRowRender: (record) => (
-                //     <p style={{ margin: 0 }}>
-                //       {record.PROCESS_ID !== 3 &&
-                //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <Button
-                //           name="create"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalCreate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <FormOutlined
-                //             style={{ color: "blue", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : record.PROCESS_ID === 3 &&
-                //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <>
-                //           {/* <Button
-                //           name="formPrint"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalDocument(true);
-                //           }}
-                //         >
-                //           <FileDoneOutlined
-                //             style={{ color: "green", fontSize: "16px" }}
-                //           />
-                //         </Button> */}
-                //           <Button
-                //             name="edit"
-                //             style={{
-                //               boxShadow: "0 4px 3px",
-                //               marginRight: "10px",
-                //             }}
-                //             onClick={() => {
-                //               setIsModalEdit(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <EditOutlined
-                //               style={{ color: "orange", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //           <Button
-                //             name="updateStatus"
-                //             style={{ boxShadow: "0 4px 3px" }}
-                //             onClick={() => {
-                //               setIsModalUpdate(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <SyncOutlined
-                //               style={{ color: "green", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //         </>
-                //       ) : null}
-                //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
-                //         <Button
-                //           name="EditupdateStatus"
-                //           style={{ boxShadow: "0 4px 3px" }}
-                //           onClick={() => {
-                //             setIsModalEditUpdate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <SyncOutlined
-                //             style={{ color: "orange", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : null}
-                //     </p>
-                //   ),
-                //   rowExpandable: (record) => userId === record.LAWYER_ID,
-                //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                // }}
-                // rowKey="key"
               />
             </Col>
           </Row>
@@ -617,18 +509,17 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {isModalCreateAdvanePayment ? (
-        <CreateAdvanePayment
-          open={isModalCreateAdvanePayment}
-          close={setIsModalCreateAdvanePayment}
+      {/* {isModalCreateAdvanePaymentAssets ? (
+        <CreateAdvanePaymentAssets
+          open={isModalCreateAdvanePaymentAssets}
+          close={setIsModalCreateAdvanePaymentAssets}
           dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
-          company={companieSelect}
         />
-      ) : null}
+      ) : null} */}
     </>
   );
 };
 
-const LawsuitAdvanePayment = MotionHoc(Main);
-export default LawsuitAdvanePayment;
+const CourtAdvanePayment = MotionHoc(Main);
+export default CourtAdvanePayment;

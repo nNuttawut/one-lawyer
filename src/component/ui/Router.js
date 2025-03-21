@@ -4,7 +4,6 @@ import DashboardRoute from "../pages/dashboard/Router";
 import DebtPaymentRoute from "../pages/debtPayment/Router";
 import DisbursementRoute from "../pages/disbursement/Router";
 import InvestigateAssetsRoute from "../pages/investigateAssets/Router";
-import PreLawsuitFiledRoute from "../pages/preLawsuitFiled/Router";
 import ReportNotice from "../pages/report/Router";
 import SaleAnnouncementRoute from "../pages/saleAnnouncement/Router";
 import EnforcementRoute from "../pages/enforcement/Router";
@@ -21,8 +20,8 @@ import AssignLawyers from "../pages/manageData/AssignLawyers";
 import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
 import EstimateAssets from "../pages/investigateAssets/EstimateAssets";
 import Judgement from "../pages/court/Judgement";
-import Profile from "../pages/Profile";
-import ChangePassword from "../pages/ChangePassword";
+import Profile from "../pages/userManage/LogIn";
+import ChangePassword from "../pages/userManage/ChangePassword";
 import FinalCase from "../pages/finalCase/MainFinal";
 import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
@@ -50,7 +49,7 @@ import ReportTerminate from "../pages/report/ReportTerminate";
 import ContractToLawuit from "../pages/terminateContract/ContractToLawuit";
 import ApprovedClearAdvanePay from "../pages/chargeIndict/ApprovedClearAdvanePay";
 import ImportOldData from "../pages/preLawsuitFiled/ImportOldData";
-import ImportLawsuitData from "../pages/enforcement/ImportLawsuitData";
+
 import ContractToLawuitHand from "../pages/terminateContractHand/ContractToLawuitHand";
 import ReplyTerminateContractHand from "../pages/terminateContractHand/ReplyTerminateContractHand";
 import ImportTerminateContractEmsHand from "../pages/terminateContractHand/ImportTerminateContractEmsHand";
@@ -64,6 +63,15 @@ import CreateTerminateContractRepurchase from "../pages/terminateContractRepurch
 import ImportTerminateContractEmsRepurchase from "../pages/terminateContractRepurchase/ImportTerminateContractEmsRepurchase";
 import ReplyTerminateContractRepurchase from "../pages/terminateContractRepurchase/ReplyTerminateContractRepurchase";
 import ContractToLawuitRepurchase from "../pages/terminateContractRepurchase/ContractToLawuitRepurchase";
+import ChartCancel from "../pages/terminateContract/ChartCancel";
+import ChartCancelHand from "../pages/terminateContractHand/ChartCancelHand";
+import SettingSystem from "../pages/userManage/SettingSystem";
+import MainWithdrawCase from "../pages/withdrawCase/MainWithdrawCase";
+import MainTimeoutCase from "../pages/timeoutCase/MainTimeoutCase";
+import MainBadDebt from "../pages/badDebt/MainBadDebt";
+import CourtAdvanePayment from "../pages/court/CourtAdvanePayment";
+import CourtClearAdvanePayment from "../pages/court/CourtClearAdvanePayment";
+import ImportDecideData from "../pages/enforcement/ImportDecideData";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -107,6 +115,11 @@ export default function Router() {
           />
 
           <Route
+            path="terminate-contract/terminate-Contract-Chart"
+            element={<ChartCancel />}
+          />
+
+          <Route
             path="/terminate-contract-hand/create-terminate-contract"
             element={<CreateTerminateContractHand />}
           />
@@ -121,6 +134,11 @@ export default function Router() {
           <Route
             path="/terminate-contract-hand/terminate-contract-to-lawsuit"
             element={<ContractToLawuitHand />}
+          />
+
+          <Route
+            path="terminate-contract-hand/terminate-Contract-chart"
+            element={<ChartCancelHand />}
           />
 
           <Route
@@ -197,7 +215,7 @@ export default function Router() {
 
           <Route
             path="enforcement/import-lawsuit-data/*"
-            element={<ImportLawsuitData />}
+            element={<ImportDecideData />}
           />
 
           <Route path="/negotiate/*" element={<NegotiateRoute />} />
@@ -210,6 +228,14 @@ export default function Router() {
             path="/court/awaiting-judgment"
             element={<AwaitingJudgment />}
           />
+          <Route
+            path="/court/advane-payment"
+            element={<CourtAdvanePayment />}
+          />
+          <Route
+            path="/court/clear-advane-payment"
+            element={<CourtClearAdvanePayment />}
+          />
           <Route path="/court/report-court" element={<ReportCourt />} />
           <Route
             path="/manage-data/assign-lawyers"
@@ -221,6 +247,7 @@ export default function Router() {
           />
           <Route path="/manage-data/import-data" element={<ImportData />} />
           <Route path="/chang-password" element={<ChangePassword />} />
+          <Route path="/setting-system" element={<SettingSystem />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route
@@ -245,6 +272,11 @@ export default function Router() {
             path="/contract-detail/detail-payment"
             element={<DetailPayment />}
           />
+
+          <Route path="/withdraw-case" element={<MainWithdrawCase />} />
+          <Route path="/timeout-case" element={<MainTimeoutCase />} />
+          <Route path="/bad-debt" element={<MainBadDebt />} />
+
           <Route path="/guidbook/read-text" element={<ReadText />} />
           <Route path="/guidbook/test" element={<Test />} />
           <Route path="/liff" element={<Liff />} />

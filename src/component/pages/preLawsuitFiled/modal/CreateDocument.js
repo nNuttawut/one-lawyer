@@ -546,13 +546,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
-
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
   };
