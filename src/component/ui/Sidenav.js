@@ -612,25 +612,25 @@ function Sidenav({ color, onClick }) {
       : null,
 
     //การเงินเบน
-    ROLE_ID === "1" || ROLE_ID === "6"
-      ? {
-          key: "30",
-          pageName: "closing-balance",
-          label: "closing-balance",
-          path: "/closing-balance",
-          icon: <DollarOutlined />,
-          title: "การเงิน",
-          children: [
-            {
-              key: "301",
-              icon: <CaretRightOutlined />,
-              pageName: "request-closing-balance",
-              path: "closing-balance/request-closing-balance",
-              label: "ขอยอดปิด",
-            },
-          ],
-        }
-      : null,
+    // ROLE_ID === "1" || ROLE_ID === "6"
+    //   ? {
+    //       key: "30",
+    //       pageName: "closing-balance",
+    //       label: "closing-balance",
+    //       path: "/closing-balance",
+    //       icon: <DollarOutlined />,
+    //       title: "การเงิน",
+    //       children: [
+    //         {
+    //           key: "301",
+    //           icon: <CaretRightOutlined />,
+    //           pageName: "request-closing-balance",
+    //           path: "closing-balance/request-closing-balance",
+    //           label: "ขอยอดปิด",
+    //         },
+    //       ],
+    //     }
+    //   : null,
 
     ROLE_ID === "1" || ROLE_ID === "5"
       ? {

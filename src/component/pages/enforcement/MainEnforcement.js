@@ -269,6 +269,15 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "เจ้าของคดี",
+            align: "center",
+            render: (record) => <>{record?.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
   return (
     <>
@@ -322,7 +331,8 @@ const Main = () => {
                       ) : null}
                     </p>
                   ),
-                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  rowExpandable: (record) => record,
+                  // userId === record.LAWYER_ID,
                 }}
               />
             </Col>
@@ -337,6 +347,7 @@ const Main = () => {
           open={isModalCreate}
           close={setIsModalCreate}
           dataDefualt={dataRecord}
+          funcUpdateStatus={handleUpdateData}
         />
       ) : null}
     </>

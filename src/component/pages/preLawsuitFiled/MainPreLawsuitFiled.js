@@ -349,6 +349,15 @@ const Main = () => {
       },
       defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "เจ้าของคดี",
+            align: "center",
+            render: (record) => <>{record?.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (

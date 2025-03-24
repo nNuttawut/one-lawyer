@@ -282,6 +282,15 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "เจ้าของคดี",
+            align: "center",
+            render: (record) => <>{record?.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -331,13 +340,14 @@ const Main = () => {
                       </Button>
                     </p>
                   ),
-                  rowExpandable: (record) => {
-                    return record.LAWYER_ID === userId;
-                    // const recordDate = dayjs(record.DATE).startOf("day");
-                    // const today = dayjs().startOf("day");
-                    // const daysDifference = today.diff(recordDate, "days");
-                    // return daysDifference > 15 && userId === record.LAWYER_ID; // กลับมาแก้เป็น > 15
-                  },
+                  rowExpandable: (record) => record,
+                  // rowExpandable: (record) => {
+                  //   return record.LAWYER_ID === userId;
+                  // const recordDate = dayjs(record.DATE).startOf("day");
+                  // const today = dayjs().startOf("day");
+                  // const daysDifference = today.diff(recordDate, "days");
+                  // return daysDifference > 15 && userId === record.LAWYER_ID; // กลับมาแก้เป็น > 15
+                  // },
                 }}
               />
             </Col>

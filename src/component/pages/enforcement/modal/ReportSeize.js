@@ -4,22 +4,14 @@ import {
   DatePicker,
   Form,
   Input,
-  Select,
   Modal,
-  Card,
   message,
   Spin,
-  Radio,
-  Tabs,
-  Tooltip,
   Checkbox,
-  Space,
-  InputNumber,
-  Row,
-  Col,
   Upload,
   Popconfirm,
   List,
+  Image,
 } from "antd";
 import {
   baseUrl,
@@ -30,20 +22,31 @@ import {
   POST_JUDGE,
   POST_JUDGE_DEFENDANTS,
   POST_STATUS,
+  PUT_INVESTIGATE_ITEM_BY_ID,
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import { InboxOutlined } from "@ant-design/icons";
-import { optionsMonth } from "../../../../utils/constant/MonthSelect";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import LoadLawyers from "../../../../hook/LoadLawyers";
-import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import {
+  PARAM_PUBLIC,
+  SELL_ASSETS,
+  STATUS_PROCESS_SUCCESSFUL,
+} from "../../../../utils/constant/StatusConstant";
 import Dragger from "antd/es/upload/Dragger";
 import { Link } from "react-router-dom";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
+import EditAseestSuccess from "./EditAseestSuccess";
 
-const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
+const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [
     currencyFormat,
@@ -51,6 +54,8 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
     currencyFormatPoint,
     currencyFormatNoPoint,
   ] = CurrencyFormat();
+  const [setupGovernmentOfficerList, governmentOfficers] =
+    CheckGovermentOfficer();
   const USER_ID = localStorage.getItem("USER_ID");
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [form] = Form.useForm();
@@ -62,20 +67,27 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const { TextArea } = Input;
   const [dataStore, setDataStore] = useState();
-  const [radioDecide, setRadioDecide] = useState("enforce");
   const [arrow, setArrow] = useState("Show");
-  const [fileList, setFileList] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
+  const [isModalEditAssetsDetail, setIsModalEditAssetsDetail] = useState(false);
+  const [dataPropertyList, setDataPropertyList] = useState([]);
+  const [dataEdit, setDataEdit] = useState();
+  const [customerPropertyList, setCustomerPropertyList] = useState([]);
+  const [guarantorPropertyList, setGuarantorPropertyList] = useState([]);
+  const [flag, setFlag] = useState();
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
+
+      setCustomerPropertyList(dataDefualt?.customer_property_list);
+      setGuarantorPropertyList(dataDefualt?.guarantor_property_list);
       //   setLoadingData(true);
     }
   }, [isModal]);
-
-  console.log(dataDefualt);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -147,7 +159,7 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
 
       if (loanRes.status === 200) {
         setDataLoadLoan(loanRes.data);
-
+        setupGovernmentOfficerList(loanRes.data);
         console.log("loanRes.data---->", loanRes.data);
       } else {
         message.error("ไม่พบข้อมูลเงิน");
@@ -160,23 +172,34 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
     }
   };
 
-  const sendStatus = async (
-    judgement,
-    defendants,
-    finishStatus,
-    agreement,
-    statusData,
-    putStatus
-  ) => {
+  const sendStatus = async (preData, sellStatus, putStatus) => {
     setLoading(true);
 
     try {
-      console.log("normal---> defendants", defendants);
-      console.log("data", judgement);
+      // ใช้ map() เพื่อสร้าง Promise array
+      const promises = preData.map(async (item) => {
+        console.log("กำลังส่งข้อมูล:", item);
+
+        return axios.put(baseUrl + PUT_INVESTIGATE_ITEM_BY_ID, item, {
+          headers: HEADERS_EXPORT,
+        });
+      });
+
+      // รอให้ทุก API request เสร็จ
+      const responses = await Promise.all(promises);
+
+      // ตรวจสอบว่า API ตอบกลับสำเร็จหรือไม่
+      if (responses.every((res) => res.status === 200)) {
+        message.success("อัพเดทข้อมูลทั้งหมดสำเร็จ");
+      } else {
+        message.warning("บางรายการอัพเดทไม่สำเร็จ");
+      }
       await axios
-        .post(baseUrl + POST_JUDGE, judgement, { headers: HEADERS_EXPORT })
+        .post(baseUrl + POST_STATUS, sellStatus, {
+          headers: HEADERS_EXPORT,
+        })
         .then(async (res) => {
-          if (res.status === 201) {
+          if (res.status === 200) {
             console.log("resQuery", res.data);
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
@@ -191,137 +214,32 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
           }
         });
 
-      if (defendants?.length > 0) {
-        const promises = defendants.map(async (item) => {
-          let arrayData = item;
-          await axios
-            .post(baseUrl + POST_JUDGE_DEFENDANTS, arrayData, {
-              headers: HEADERS_EXPORT,
-            })
-            .then(async (res) => {
-              if (res.status === 201) {
-                console.log("resQuery", res.data);
-              } else {
-                message.error("ไม่สามารถส่งข้อมูลได้");
-                console.log("ไม่สามารถส่งข้อมูลได้");
-                setLoading(false);
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-              if (err.status > 400) {
-                message.error("ไม่สามารถส่งข้อมูลได้");
-              }
-            });
-          const results = await Promise.all(promises);
-          console.log("results promise", results);
+      await axios
+        .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+            funcUpdateStatus(putStatus);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
         });
-      }
-      if (radioDecide === "agreementFinish") {
-        await axios
-          .post(baseUrl + POST_STATUS, finishStatus, {
-            headers: HEADERS_EXPORT,
-          })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
-      }
-      if (radioDecide === "payment" || radioDecide === "agreementFinish") {
-        console.log("agreement", agreement);
-        await axios
-          .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
-
-        await axios
-          .post(baseUrl + POST_STATUS, statusData, { headers: HEADERS_EXPORT })
-          .then(async (res) => {
-            if (res.status === 200) {
-              console.log("resQuery", res.data);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
-
-        await axios
-          .post(baseUrl + POST_AGREEMENTS, agreement, {
-            headers: HEADERS_EXPORT,
-          })
-          .then(async (res) => {
-            if (res.status === 201) {
-              console.log("resQuery", res.data);
-            } else {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-              console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            if (err.status > 400) {
-              message.error("ไม่สามารถส่งข้อมูลได้");
-            }
-          });
-      }
       handleUploadAllImage();
     } catch (error) {
-      console.error("Error fetching data:", error);
-      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+      console.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล:", error);
+      message.error("อัพเดทข้อมูลล้มเหลว");
     } finally {
       setLoading(false);
-
-      window.location.reload();
+      handleCancel();
     }
-  };
-
-  const props = {
-    multiple: true,
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
-    },
-    beforeUpload: (file) => {
-      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
-
-      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
-    },
-
-    fileList,
   };
 
   const handleUploadAllImage = () => {
@@ -335,7 +253,7 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
     axios
       .post(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คำพิพากษา${dataDefualt.contno}`,
+          `/files/lawyer/seize_assets/${PARAM_PUBLIC}/รายงานการยึด${dataDefualt.CONTNO}`,
         formData,
         {
           headers: {
@@ -360,6 +278,60 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
       });
   };
 
+  const onFinish = (values) => {
+    console.log("Success:", values);
+
+    let preData = [];
+    let initData = {
+      legal_execution_office: values.addrEnforce,
+      seize_date: dayjs(values.investigateAssetsDate).format("YYYY-MM-DD"),
+      seize_status: 1,
+    };
+    console.log("dataDefualt", dataDefualt);
+
+    const sellStatus = {
+      USER_ID: parseInt(USER_ID),
+      LOAN_ID: dataDefualt.id,
+      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+      LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+      MEMO: values.memo,
+      DATE: dayjs(values.investigateAssetsDate).format("YYYY-MM-DD"),
+      MAIN_STATUS_ID: SELL_ASSETS,
+    };
+
+    const putStatus = {
+      id: dataDefualt.WORK_LOG_ID,
+      USER_ID: dataDefualt.LAWYER_ID,
+      LOAN_ID: dataDefualt.id,
+      MEMO: values.memo,
+      DATE: dataDefualt.DATE,
+      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+    };
+    console.log("sellStatus", sellStatus);
+    console.log("putStatus", putStatus);
+
+    if (fileList?.length > 0) {
+      if (selectedAssets?.length > 0) {
+        console.log("selectedAssets--->", selectedAssets);
+        preData = selectedAssets.map((asset) => ({
+          ...asset, // คัดลอกข้อมูลเดิมของ asset
+          ...initData, // เพิ่มข้อมูลของ initData เข้าไป
+        }));
+        sendStatus(preData, sellStatus, putStatus);
+      } else {
+        message.error("กรุณาเลือกแปลงที่อยู่ในรายงานบันทึกการยึด");
+      }
+    } else {
+      message.error("กรุณาอัปโหลดรูปภาพ");
+    }
+  };
+
+  const onFinishFailed = (errorInfo) => {
+    console.log("Failed:", errorInfo);
+    message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
+  };
+
   const onChangeSeizeDate = (date, dateString) => {
     console.log(date, dateString);
   };
@@ -372,27 +344,116 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
     }
   };
 
-  const handleSelectAssetGuarantor = (checked, item) => {
-    if (checked) {
-      setSelectedAssets([...selectedAssets, item]);
+  const handleUpdateDataEdit = (data, flag) => {
+    console.log("data---->update", data);
+    if (data && flag === "guarantorAsset") {
+      const result = guarantorPropertyList.map((item) => {
+        if (item.id === data.id) {
+          return { ...data };
+        } else {
+          return { ...item };
+        }
+      });
+      console.log("guarantorPropertyList result--->", result);
+      setGuarantorPropertyList(result);
     } else {
-      setSelectedAssets(selectedAssets.filter((i) => i.id !== item.id));
+      const result = customerPropertyList.map((item) => {
+        if (item.id === data.id) {
+          return { ...data };
+        } else {
+          return { ...item };
+        }
+      });
+
+      console.log("customerPropertyList result--->", result);
+      setCustomerPropertyList(result);
     }
   };
 
-  const handleNoteChange = (e, id) => {
-    // const newValue = e.target.value;
-    console.log(e);
-    console.log(id);
-    // setDataDefualt((prevState) => ({
-    //   ...prevState,
-    //   customer_property_list: prevState.customer_property_list.map((item) =>
-    //     item.id === id ? { ...item, note: newValue } : item
-    //   ),
-    // }));
+  const handleEdit = (item, index, flag) => {
+    setFlag(flag);
+    if (flag === "guarantorAsset") {
+      console.log("flag1---->", flag);
+      setDataEdit(guarantorPropertyList[index]);
+    } else {
+      console.log("customerPropertyList---->", flag);
+      setDataEdit(customerPropertyList[index]);
+    }
+
+    // setIsModalEditAssetsDetail(true);
+    // setDataEdit(dataPropertyList[index]);
+    setIsModalEditAssetsDetail(true);
+
+    // setFormValues(dataPropertyList[index]); // ตั้งค่าข้อมูลที่จะแก้ไขให้กับฟอร์ม
   };
 
-  console.log(selectedAssets);
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+      );
+    },
+    beforeUpload: (file) => {
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
+
+      // // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      // const newFile = new File(
+      //   [file],
+      //   `สืบทรัพย์_${dataDefualt?.CONTNO}.${
+      //     fileType.includes("pdf") ? "pdf" : file.name.split(".").pop()
+      //   }`,
+      //   { type: fileType }
+      // );
+
+      // console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "xlsx" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "docx" }]);
+      }
+
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+  };
+
+  const confirm = () => {
+    form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
+  };
+  const cancel = () => {
+    message.success("ยกเลิกทำรายการ");
+  };
+
   const formDataSet = () => {
     return (
       <Form
@@ -404,13 +465,8 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
         }}
         form={form}
         layout="horizontal"
-        // onFinish={onFinish}
-        // onFinishFailed={onFinishFailed}
-        initialValues={{
-          memo: "",
-          suspensionAmount: 0,
-          investigateAssetsDate: dayjs(),
-        }}
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
           <p>
@@ -447,7 +503,7 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
         </Form.Item>
         <Form.Item
           label="สำนักงานบังคับคดี"
-          name="AddrEnforce"
+          name="addrEnforce"
           rules={[
             {
               required: true,
@@ -455,7 +511,7 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
             },
           ]}
         >
-          <Input name="AddrEnforce" />
+          <Input name="addrEnforce" />
         </Form.Item>
 
         <Form.Item
@@ -466,28 +522,34 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
         >
           <List
             itemLayout="horizontal"
-            dataSource={dataDefualt?.customer_property_list}
-            renderItem={(item) => (
+            dataSource={customerPropertyList}
+            renderItem={(item, index) => (
               <List.Item
-                actions={
-                  !item.seize_status
-                    ? [
-                        <Checkbox
-                          key={item.id}
-                          checked={selectedAssets.some((i) => i.id === item.id)}
-                          onChange={(e) =>
-                            handleSelectAsset(e.target.checked, item)
-                          }
-                        >
-                          เลือกเพื่อยึด
-                        </Checkbox>,
-                      ]
-                    : []
-                }
+                actions={[
+                  !item.seize_status && (
+                    <Checkbox
+                      key={item.id}
+                      checked={selectedAssets.some((i) => i.id === item.id)}
+                      onChange={(e) =>
+                        handleSelectAsset(e.target.checked, item)
+                      }
+                    >
+                      เลือกเพื่อยึด
+                    </Checkbox>
+                  ),
+                  <Link
+                    key="list-loadmore-edit"
+                    onClick={() => handleEdit(item, index, "customerAsset")}
+                  >
+                    แก้ไข
+                  </Link>,
+                ]}
               >
                 <List.Item.Meta
                   title={
-                    <Link>
+                    <Link
+                      onClick={() => handleEdit(item, index, "customerAsset")}
+                    >
                       {item.possessor} <br /> สืบเมื่อ{" "}
                       {convertDateThai(item.investigation_date)}
                       {item.investigation_type_id === 1
@@ -512,22 +574,142 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
                       </p>
                       <p
                         style={{
-                          color: item.estimated_enforce_price ? "blue" : "red",
+                          color: item.estimated_enforce_price ? "green" : "red",
                         }}
                       >
-                        ยอดประเมินจากกรม : 3
-                        <InputNumber
-                          suffix="บาท"
-                          formatter={(value) =>
-                            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                          }
-                          parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-                          size="small"
-                          placeholder="กรอกราคาประเมินจากกรมบังคับคดี"
-                          style={{ width: "50%", color: "black" }}
-                          onChange={(e) => handleNoteChange(e, item.id)}
-                          defaultValue={item.estimated_enforce_price}
-                        />
+                        {item.estimated_enforce_price
+                          ? `ยอดประเมินจากกรมบังคับคดี ${currencyFormatComma(
+                              item.estimated_enforce_price
+                            )}  บาท `
+                          : "กรุณาอัพเดทราคาประเมินจากกรมบังคับคดี"}
+                      </p>
+
+                      <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
+                      <p>หมายเหตุ {item.mark}</p>
+                      <p
+                        style={{
+                          color: item.mortgagee ? "red" : "lightgreen",
+                        }}
+                      >
+                        {item.mortgagee
+                          ? `ผู้รับจำนอง ${
+                              item.mortgagee
+                            } จำนวน ${currencyFormatComma(
+                              item.mortgage_balance
+                            )} บาท`
+                          : null}
+                      </p>
+                      <p
+                        style={{
+                          color: item.sequestrate_status ? "red" : "lightgreen",
+                        }}
+                      >
+                        {item.sequestrate_status
+                          ? `ติดอายัดกับ ${item.preference_creditor}`
+                          : null}
+                      </p>
+                      <p
+                        style={{
+                          color:
+                            item.estimated_enforce_price > item.mortgage_balance
+                              ? "green"
+                              : "red",
+                        }}
+                      >
+                        {item.sequestrate_status && item.mortgage_balance
+                          ? item.estimated_enforce_price
+                            ? item.estimated_enforce_price >
+                              item.mortgage_balance
+                              ? "พอเฉลี่ย"
+                              : "ไม่พอเฉลี่ย"
+                            : null
+                          : null}
+                      </p>
+                    </>
+                  }
+                />
+                <div>
+                  <p
+                    style={{
+                      color: !item.seize_status ? "red" : "green",
+                    }}
+                  >
+                    {!item.seize_status ? null : "ยึดแล้ว"}
+                  </p>
+                </div>
+              </List.Item>
+            )}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="ทรัพย์ที่สืบพบของคนค้ำ"
+          name="assetsFound"
+          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
+          wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+        >
+          <List
+            itemLayout="horizontal"
+            dataSource={guarantorPropertyList}
+            renderItem={(item, index) => (
+              <List.Item
+                actions={[
+                  !item.seize_status && (
+                    <Checkbox
+                      key={item.id}
+                      checked={selectedAssets.some((i) => i.id === item.id)}
+                      onChange={(e) =>
+                        handleSelectAsset(e.target.checked, item)
+                      }
+                    >
+                      เลือกเพื่อยึด
+                    </Checkbox>
+                  ),
+                  <Link
+                    key="list-loadmore-edit"
+                    onClick={() => handleEdit(item, index, "guarantorAsset")}
+                  >
+                    แก้ไข
+                  </Link>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <Link
+                      onClick={() => handleEdit(item, index, "guarantorAsset")}
+                    >
+                      {item.possessor} <br /> สืบเมื่อ{" "}
+                      {convertDateThai(item.investigation_date)}
+                      {item.investigation_type_id === 1
+                        ? "(ก่อนฟ้อง)"
+                        : item.investigation_type_id === 2
+                        ? "(หลังฟ้อง)"
+                        : null}
+                    </Link>
+                  }
+                  description={
+                    <>
+                      <p
+                        style={{
+                          color: item.estimated_price ? "blue" : "red",
+                        }}
+                      >
+                        {item.estimated_price
+                          ? `ยอดประเมินที่ดิน ${currencyFormatComma(
+                              item.estimated_price
+                            )}  บาท `
+                          : "ยังไม่ประเมินจากคุณหนุ่ม"}
+                      </p>
+                      <p
+                        style={{
+                          color: item.estimated_enforce_price ? "green" : "red",
+                        }}
+                      >
+                        {item.estimated_enforce_price
+                          ? `ยอดประเมินจากกรมบังคับคดี ${currencyFormatComma(
+                              item.estimated_enforce_price
+                            )}  บาท `
+                          : "กรุณาอัพเดทราคาประเมินจากกรมบังคับคดี"}
                       </p>
                       <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
                       <p>หมายเหตุ {item.mark}</p>
@@ -550,7 +732,24 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
                         }}
                       >
                         {item.sequestrate_status
-                          ? `ติดอายัด เจ้าหนี้บุริมสิทธิ ${item.sequestrate_status}`
+                          ? `ติดอายัดจาก ${item.preference_creditor}`
+                          : null}
+                      </p>
+                      <p
+                        style={{
+                          color:
+                            item.estimated_enforce_price > item.mortgage_balance
+                              ? "green"
+                              : "red",
+                        }}
+                      >
+                        {item.sequestrate_status && item.mortgage_balance
+                          ? item.estimated_enforce_price
+                            ? item.estimated_enforce_price >
+                              item.mortgage_balance
+                              ? "พอเฉลี่ย"
+                              : "ไม่พอเฉลี่ย"
+                            : null
                           : null}
                       </p>
                     </>
@@ -569,89 +768,134 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
             )}
           />
         </Form.Item>
-
         <Form.Item
-          label="ทรัพย์ที่สืบของคนค้ำ"
-          name="assetsFound"
-          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-          wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+          label="อัปโหลดไฟล์/รูปภาพ"
+          name="imageUrlFile"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาอัปโหลดไฟล์/รูปภาพ !",
+            },
+          ]}
         >
-          <List
-            itemLayout="horizontal"
-            dataSource={dataDefualt?.guarantor_property_list}
-            renderItem={(item) => (
-              <List.Item
-                actions={
-                  !item.seize_status
-                    ? [
-                        <Checkbox
-                          key={item.id}
-                          checked={selectedAssets.some((i) => i.id === item.id)}
-                          onChange={(e) =>
-                            handleSelectAssetGuarantor(e.target.checked, item)
-                          }
-                        >
-                          เลือกเพื่อยึด
-                        </Checkbox>,
-                      ]
-                    : []
-                }
-              >
-                <List.Item.Meta
-                  title={
-                    <Link>
-                      {item.possessor} <br /> สืบเมื่อ{" "}
-                      {convertDateThai(item.investigation_date)}
-                      {item.investigation_type_id === 1
-                        ? "(ก่อนฟ้อง)"
-                        : item.investigation_type_id === 2
-                        ? "(หลังฟ้อง)"
-                        : null}
-                    </Link>
-                  }
-                  description={
-                    <>
-                      {item.estimated_price
-                        ? `ยอดประเมินที่ดิน ${currencyFormatComma(
-                            item.estimated_price
-                          )}  บาท `
-                        : "ยังไม่ประเมิน"}
-                      <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
-                      <p>หมายเหตุ {item.mark}</p>
-                      <p
-                        style={{
-                          color: item.mortgagee ? "red" : "lightgreen",
-                        }}
-                      >
-                        {item.mortgagee
-                          ? `ผู้รับจำนอง ${item.mortgagee} จำนวน ${item.mortgage_balance} บาท`
-                          : null}
-                      </p>
-                      <p
-                        style={{
-                          color: item.sequestrate_status ? "red" : "lightgreen",
-                        }}
-                      >
-                        {item.sequestrate_status
-                          ? `ติดอายัด ${item.preference_creditor} เลขคดีแดง ${item.owner}`
-                          : null}
-                      </p>
-                    </>
-                  }
-                />
-                <div>
-                  <p
-                    style={{
-                      color: !item.seize_status ? "red" : "lightgreen",
-                    }}
-                  >
-                    {!item.seize_status ? null : "ยึดแล้ว"}
-                  </p>
-                </div>
-              </List.Item>
-            )}
-          />
+          <Dragger
+            {...props}
+            style={{
+              width: "300px", // กำหนดความกว้าง
+              height: "200px", // กำหนดความสูง
+              margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{ color: "blue" }} />
+            </p>
+            <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+            <p className="ant-upload-hint">
+              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+            </p>
+          </Dragger>
         </Form.Item>
+        {capturedImages.length > 0 ? (
+          <Form.Item label="ไฟล์ที่ต้องการบันทึก" name={"imageFile"}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px",
+                justifyContent: "center",
+                padding: "10px", // เพิ่ม padding เพื่อไม่ให้ชิดขอบเกินไป
+              }}
+            >
+              <Image.PreviewGroup>
+                {capturedImages?.map((image, index) => {
+                  if (!image || !image.type) return null;
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        position: "relative", // ให้ปุ่มลบอยู่บนสุด
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textAlign: "center",
+                        background: "#f8f8f8",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      {/* แสดงไอคอนตามประเภทไฟล์ */}
+                      {image.type.includes("pdf") ? (
+                        <FilePdfOutlined
+                          style={{ fontSize: "40px", color: "red" }}
+                        />
+                      ) : image.type.includes("xlsx") ? (
+                        <FileExcelOutlined
+                          style={{ fontSize: "40px", color: "green" }}
+                        />
+                      ) : image.type.includes("docx") ? (
+                        <FileWordOutlined
+                          style={{ fontSize: "40px", color: "blue" }}
+                        />
+                      ) : (
+                        <Image
+                          src={image.url}
+                          alt={`Captured ${index}`}
+                          width="150px"
+                        />
+                      )}
+
+                      {/* ลิงก์ดาวน์โหลด */}
+                      {image.url && (
+                        <a
+                          style={{
+                            display: "block",
+                            marginTop: "8px",
+                            color: "#007bff",
+                            textDecoration: "none",
+                            fontWeight: "bold",
+                          }}
+                          href={image.url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          คลิกเพื่อดาวน์โหลด
+                        </a>
+                      )}
+
+                      {/* ปุ่มลบ */}
+                      <button
+                        type="button"
+                        onClick={() => deleteImg(index)}
+                        style={{
+                          position: "absolute",
+                          top: "-5px",
+                          right: "-5px",
+                          background: "red",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </Image.PreviewGroup>
+            </div>
+          </Form.Item>
+        ) : null}
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}
@@ -670,8 +914,8 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
             placement="topLeft"
             title="อัพเดทข้อมูล"
             description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
-            // onConfirm={confirm}
-            // onCancel={() => cancel(record)}
+            onConfirm={confirm}
+            onCancel={() => cancel()}
             okText="ยืนยัน"
             cancelText="ปิด"
           >
@@ -701,6 +945,18 @@ const ReportSeize = ({ open, close, dataDefualt, responseData }) => {
           {formDataSet()}
         </Spin>
       </Modal>
+      {isModalEditAssetsDetail ? (
+        <EditAseestSuccess
+          open={isModalEditAssetsDetail}
+          close={setIsModalEditAssetsDetail}
+          dataLoan={dataLoadLoan}
+          dataDefualt={dataDefualt}
+          governmentOfficers={governmentOfficers}
+          handleEdit={handleUpdateDataEdit}
+          dataIndex={dataEdit}
+          flag={flag}
+        />
+      ) : null}
     </>
   );
 };

@@ -392,20 +392,8 @@ const EstimateAssetsResult = ({
         : landPrice?.utm
         ? landPrice?.utm
         : null,
-      lat: dataDefualt.lat
-        ? dataDefualt.lat
-        : landPrice?.parcellat
-        ? landPrice?.parcellat
-        : valueLat
-        ? valueLat
-        : null,
-      lon: dataDefualt.lon
-        ? dataDefualt.lon
-        : landPrice?.parcellon
-        ? landPrice?.parcellon
-        : valueLon
-        ? valueLon
-        : null,
+      latitude: landPrice?.parcellat ? landPrice?.parcellat : null,
+      longitude: landPrice?.parcellon ? landPrice?.parcellon : null,
     };
 
     console.log("postDataInvestigate---->", putDataInvestigate);

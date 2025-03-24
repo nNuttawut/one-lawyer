@@ -33,6 +33,7 @@ import {
   FileWordOutlined,
 } from "@ant-design/icons";
 import Dragger from "antd/es/upload/Dragger";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
 const AssetsDetail = ({
   open,
@@ -401,10 +402,10 @@ const AssetsDetail = ({
       fileList: fileList,
       capturedImages: capturedImages,
     };
-    console.log("postDataInvestigate", postDataInvestigate);
 
     if (flag === "add") {
       console.log("add----->");
+      console.log("postDataInvestigate", postDataInvestigate);
       sendStatus(postDataInvestigate);
     } else {
       console.log("postDataInvestigate", postDataInvestigate);
@@ -427,6 +428,18 @@ const AssetsDetail = ({
             message.success(
               `เพิ่มข้อมูลโฉนดเลขที่ ${postDataInvestigate.deed_number}`
             );
+            if (postDataInvestigate.fileList.length > 0) {
+              console.log(postDataInvestigate.fileList);
+              handleUploadAllImage(
+                postDataInvestigate.fileList,
+                postDataInvestigate
+              ); // ส่งไฟล์ไปอัปโหลดทีละตัว
+            } else {
+              console.warn(
+                "⚠️ ไม่มีไฟล์ใน fileList สำหรับ",
+                postDataInvestigate.CUSTOMER_ID
+              );
+            }
             handleData(postDataInvestigate);
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
@@ -447,6 +460,42 @@ const AssetsDetail = ({
       setLoading(false);
       handleCancel();
     }
+  };
+
+  const handleUploadAllImage = (fileList, item) => {
+    const formData = new FormData();
+    console.log(item);
+
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${item?.CUSTOMER_ID}_${item?.deed_number}_${item?.province}_${item?.district}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const onFinishFailed = (errorInfo) => {

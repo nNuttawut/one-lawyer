@@ -92,8 +92,7 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -296,60 +295,60 @@ const Main = () => {
                 dataSource={arrayTable}
                 scroll={{ x: 850 }}
                 footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                expandable={{
-                  expandedRowRender: (record) => (
-                    <p style={{ margin: 0 }}>
-                      {!record.DATE ? (
-                        <Button
-                          name="create"
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalCreate(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <EditOutlined
-                            style={{ color: "orange", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
-                      {record.DATE ? (
-                        <>
-                          <Button
-                            name="formPrint"
-                            style={{
-                              boxShadow: "0 4px 3px",
-                              marginRight: "10px",
-                            }}
-                            onClick={() => {
-                              setIsModalDocument(true);
-                            }}
-                          >
-                            <FileDoneOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
-                        </>
-                      ) : null}
-                    </p>
-                  ),
-                  rowExpandable: (record) => record.name !== "Not Expandable",
-                }}
+                // expandable={{
+                //   expandedRowRender: (record) => (
+                //     <p style={{ margin: 0 }}>
+                //       {!record.DATE ? (
+                //         <Button
+                //           name="create"
+                //           style={{
+                //             boxShadow: "0 4px 3px",
+                //             marginRight: "10px",
+                //           }}
+                //           onClick={() => {
+                //             setIsModalCreate(true);
+                //             setDataModal(record);
+                //           }}
+                //         >
+                //           <EditOutlined
+                //             style={{ color: "orange", fontSize: "16px" }}
+                //           />
+                //         </Button>
+                //       ) : null}
+                //       {record.DATE ? (
+                //         <>
+                //           <Button
+                //             name="formPrint"
+                //             style={{
+                //               boxShadow: "0 4px 3px",
+                //               marginRight: "10px",
+                //             }}
+                //             onClick={() => {
+                //               setIsModalDocument(true);
+                //             }}
+                //           >
+                //             <FileDoneOutlined
+                //               style={{ color: "green", fontSize: "16px" }}
+                //             />
+                //           </Button>
+                //           <Button
+                //             name="updateStatus"
+                //             style={{ boxShadow: "0 4px 3px" }}
+                //             onClick={() => {
+                //               setIsModalUpdate(true);
+                //               setDataModal(record);
+                //             }}
+                //           >
+                //             <SyncOutlined
+                //               style={{ color: "green", fontSize: "16px" }}
+                //             />
+                //           </Button>
+                //         </>
+                //       ) : null}
+                //     </p>
+                //   ),
+                //   rowExpandable: (record) => record.name !== "Not Expandable",
+                // }}
               />
             </Col>
           </Row>

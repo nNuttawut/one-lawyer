@@ -13,6 +13,8 @@ import {
   Tooltip,
   DatePicker,
   Image,
+  InputNumber,
+  Popconfirm,
 } from "antd";
 import {
   baseUrl,
@@ -43,6 +45,7 @@ const EditAssetsSuccess = ({
   governmentOfficers,
   handleEdit,
   dataIndex,
+  flag,
 }) => {
   const [form] = Form.useForm();
   const [convertDateThai] = DateCustom();
@@ -54,6 +57,7 @@ const EditAssetsSuccess = ({
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [averageStatus, setAverageStatus] = useState(null);
+  const [seizeStatus, setSeizeStatus] = useState(null);
   const [sequestrateStatus, setSequestrateStatus] = useState(null);
   const [mortgageStatus, setMortgageStatus] = useState(null);
   const [landPrice, setLandPrice] = useState(null);
@@ -78,7 +82,10 @@ const EditAssetsSuccess = ({
     { label: "พอเฉลี่ย", value: 1 },
   ];
 
-  console.log("dataIndex--->", dataIndex);
+  const optionsSeizeStatus = [
+    { label: "ถอนยึด", value: 0 },
+    { label: "ยึด", value: 1 },
+  ];
 
   useEffect(() => {
     setIsModal(open);
@@ -98,7 +105,9 @@ const EditAssetsSuccess = ({
     } else {
       dataWa = 0;
     }
-
+    setMortgageStatus(!dataIndex.mortgagee ? 0 : 1);
+    setSequestrateStatus(dataIndex.sequestrate_status);
+    setSeizeStatus(dataIndex.seize_status);
     form.setFieldsValue({
       customerAsset: dataIndex.CUSTOMER_ID,
       possessorAsset: dataIndex.possessor,
@@ -114,23 +123,26 @@ const EditAssetsSuccess = ({
       propertyDetail: dataIndex.property_detail_id,
       assetPropotyType: dataIndex.property_type_id,
       ownerAsset: dataIndex.owner,
-      mortgageStatus: !dataIndex.mortgagee ? 0 : 1,
-      sequestrateStatus: dataIndex.sequestrate_status,
+      mortgageStatus: mortgageStatus,
+      sequestrateStatus: sequestrateStatus,
       investigatorAsset: dataIndex.investigator_user_id,
       memo: dataIndex.mark,
       urlFile: dataIndex.investigate_filepath,
       mortgagee: dataIndex.mortgagee,
-      mortgageBalance: currencyFormatComma(dataIndex.mortgage_balance),
+      mortgageBalance: dataIndex.mortgage_balance,
       investigateAssetsTime: dataIndex.investigation_type_id,
       rai: dataIndex.rai,
       ngan: dataIndex.ngan,
       wa: dataWa,
       preferenceCreditor: dataIndex.preference_creditor,
-      estimatedPrice: currencyFormatComma(dataIndex.estimated_price),
       averageStatus:
         dataIndex.estimated_price > dataIndex.mortgage_balance ? 1 : 0,
+      seizeStatus: !dataIndex.seize_status ? 0 : 1,
+      estimatedEnforcePrice: dataIndex.estimated_enforce_price,
+      AddrEnforce: dataIndex.legal_execution_office,
     });
   }, [isModal]);
+  console.log(dataIndex);
 
   useEffect(() => {
     if (lawyersList) {
@@ -154,8 +166,6 @@ const EditAssetsSuccess = ({
   }, [arrow]);
 
   const loadImagesProduct = async () => {
-    console.log(dataDefualt);
-
     await axios
       .get(
         baseUrl +
@@ -174,7 +184,6 @@ const EditAssetsSuccess = ({
   };
 
   const handleCustomerOption = () => {
-    console.log("governmentOfficers", governmentOfficers);
     let dataGovernmentOfficers = [];
 
     dataGovernmentOfficers.push({
@@ -186,7 +195,7 @@ const EditAssetsSuccess = ({
       NAME2: governmentOfficers.NAME2,
     });
 
-    governmentOfficers.guarantors.forEach((guarantor, index) => {
+    governmentOfficers?.guarantors?.forEach((guarantor, index) => {
       // ตรวจสอบว่าใน values มีข้อมูลสำหรับแต่ละ guarantor หรือไม่
       dataGovernmentOfficers.push({
         id: guarantor.id,
@@ -197,8 +206,8 @@ const EditAssetsSuccess = ({
         NAME2: guarantor.NAME2,
       });
     });
-    console.log("dataGovernmentOfficers", dataGovernmentOfficers);
-    const optionsGovernmentOfficers = dataGovernmentOfficers.map((item) => ({
+
+    const optionsGovernmentOfficers = dataGovernmentOfficers?.map((item) => ({
       value: item.id,
       label: `${item.SNAME}${item.NAME1} ${item.NAME2}`,
     }));
@@ -206,8 +215,6 @@ const EditAssetsSuccess = ({
   };
 
   const setOptionLandDetail = () => {
-    console.log("setOptionLandDetail", loadLandDetailList);
-
     const optionLandDetail = loadLandDetailList.find(
       (item) => item.id === dataIndex.property_detail_id
     );
@@ -247,17 +254,6 @@ const EditAssetsSuccess = ({
     setIsModal(false);
   };
 
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
-
-  const onChangeInputOwnerAssetLaw = (value) => {
-    console.log(value);
-  };
-
   const onChangeInputOwner = (value) => {
     console.log(value);
   };
@@ -266,45 +262,15 @@ const EditAssetsSuccess = ({
     console.log(value);
   };
 
-  const onChangeMortgageBalance = (value) => {
-    console.log(value);
-    let inputValue = value;
-
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      let setAverage = dataIndex.estimated_price
-        ? dataIndex.estimated_price - intValue
-        : 0;
-      console.log("serAverage", setAverage);
-      form.setFieldsValue({
-        mortgageBalance: formattedValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
-      console.log("formattedValue", formattedValue);
-    } else {
-      let setAverage = landPrice
-        ? parseInt(landPrice.replace(/,/g, "")) - value
-        : 0;
-      form.setFieldsValue({
-        mortgageBalance: inputValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
-    }
-  };
-
   const onChangeMortgageStatus = ({ target: { value } }) => {
     console.log("radio Mortgage checked", value);
     setMortgageStatus(value);
-    if (value === 0) {
-      form.setFieldsValue({
-        mortgageBalance: null,
-        mortgagee: null,
-      });
-    }
+    // if (value === 0) {
+    //   form.setFieldsValue({
+    //     mortgageBalance: null,
+    //     mortgagee: null,
+    //   });
+    // }
   };
 
   const onChangeSequestrateStatus = ({ target: { value } }) => {
@@ -312,9 +278,9 @@ const EditAssetsSuccess = ({
     setSequestrateStatus(value);
   };
 
-  const onChangeAverageStatus = ({ target: { value } }) => {
+  const onChangeSeizeStatus = ({ target: { value } }) => {
     console.log("radio2 checked", value);
-    setAverageStatus(value);
+    setSeizeStatus(value);
   };
 
   const onChangeRefAsset = ({ target: { value } }) => {
@@ -361,14 +327,20 @@ const EditAssetsSuccess = ({
           : parseInt(values.mortgageBalance)
           ? parseInt(values.mortgageBalance)
           : null,
-      average_status:
-        values.averageStatus === 1
-          ? values.averageStatus
-          : values.averageStatus === 0
-          ? values.averageStatus
-          : null,
+      average_status: values.mortgageBalance
+        ? values.estimatedEnforcePrice > values.mortgageBalance
+          ? 1
+          : 0
+        : null,
       mark: values.memo,
       investigate_filepath: values.urlFile,
+      seize_status: values.seizeStatus,
+      seize_date: dayjs().format("YYYY-MM-DD"),
+      legal_execution_office:
+        values.seizeStatus === 1 ? values.AddrEnforce : null,
+      estimated_enforce_price: values.estimatedEnforcePrice
+        ? values.estimatedEnforcePrice
+        : null,
     };
 
     console.log("postDataInvestigate---->", putDataInvestigate);
@@ -389,7 +361,8 @@ const EditAssetsSuccess = ({
           if (resQuery.status === 200) {
             console.log(resQuery.data);
             message.success(`อัพเดทข้อมูลสำเร็จ`);
-            handleEdit(putDataInvestigate, dataIndex);
+            handleEdit(putDataInvestigate, flag);
+
             return resQuery.data;
           } else {
             console.log(`แก้ไขข้อมูลสำเร็จ`);
@@ -414,6 +387,14 @@ const EditAssetsSuccess = ({
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
 
+  const confirm = () => {
+    form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
+  };
+
+  const cancel = () => {
+    message.success("ยกเลิกการบันทึก");
+  };
+
   const formDataSet = () => {
     return (
       <Form
@@ -434,10 +415,10 @@ const EditAssetsSuccess = ({
         }}
       >
         <Form.Item label="วันที่สืบทรัพย์" name="investigateAssetsDate">
-          {convertDateThai(dataIndex.investigation_date)}
+          {convertDateThai(dataIndex?.investigation_date)}
         </Form.Item>
         <Form.Item label="ห้วงเวลาการฟ้อง" name="investigateAssetsTime">
-          {dataIndex.investigation_type_id === 1 ? "ก่อนฟ้อง" : "หลังฟ้อง"}
+          {dataIndex?.investigation_type_id === 1 ? "ก่อนฟ้อง" : "หลังฟ้อง"}
         </Form.Item>
 
         <Form.Item label="บุคคลที่อ้างอิง" name="customerAsset">
@@ -459,13 +440,13 @@ const EditAssetsSuccess = ({
           title="ความเกี่ยวข้องของผู้ทำสัญญาหรือผู้ค้ำกับเจ้าของทรัพย์"
           arrow={mergedArrow}
         >
-          <Form.Item label="เลือกความเกี่ยวข้อง" name="ralation">
-            {dataIndex.mark.split("*")[0] === "เป็นสามีภรรยา"
+          {/* <Form.Item label="เลือกความเกี่ยวข้อง" name="ralation">
+            {dataIndex?.mark.split("*")[0] === "เป็นสามีภรรยา"
               ? "เป็นสามีภรรยา"
               : dataIndex.mark.split("*")[0] === "ไม่เป็นสามีภรรยา"
               ? "ไม่เป็นสามีภรรยา"
               : null}
-          </Form.Item>
+          </Form.Item> */}
         </Tooltip>
         <Form.Item label="ประเภททรัพย์" name="assetPropotyType">
           {dataIndex.property_type_id === 1 ? "น.ส.4 จ" : "น.ส.3 ก"}
@@ -499,6 +480,7 @@ const EditAssetsSuccess = ({
             ? `0.${dataIndex.subwa}`
             : 0}
         </Form.Item>
+
         <Form.Item label="เลขระหว่าง" name="utm">
           {dataIndex?.utm ? dataIndex?.utm : "-"}
         </Form.Item>
@@ -524,16 +506,84 @@ const EditAssetsSuccess = ({
                 {dataIndex?.latitude ? dataIndex?.latitude : null},{" "}
                 {dataIndex.longitude ? dataIndex.longitude : null}
               </a>
-            ) : null}
+            ) : (
+              "-"
+            )}
           </Form.Item>
         </Tooltip>
-        <Form.Item label="ราคาประเมิน" name="estimatedPrice">
-          {currencyFormatComma(dataIndex.estimated_price)}
+
+        <Tooltip
+          placement="lift"
+          title="ราคาประเมินจากบริษัท"
+          arrow={mergedArrow}
+        >
+          <Form.Item label="ราคาประเมิน(บ.)" name="estimatedPrice">
+            {currencyFormatComma(dataIndex.estimated_price)} บาท
+          </Form.Item>
+        </Tooltip>
+        <Tooltip
+          placement="bottom"
+          title="ราคาประเมินจากกรมบังคับคดี"
+          arrow={mergedArrow}
+        >
+          <Form.Item
+            label="ราคาประเมิน(กบค)"
+            name="estimatedEnforcePrice"
+            style={{ color: "red" }}
+            rules={[
+              {
+                required: true,
+                message: "กรุณาใส่ราคาประเมิน(กบค) !",
+              },
+            ]}
+          >
+            <InputNumber
+              name="estimatedPrice"
+              suffix="บาท"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+              size="large"
+              placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+              style={{ width: "100%", color: "black" }}
+            />
+          </Form.Item>
+        </Tooltip>
+        <Form.Item
+          label="สถานะการยึด"
+          name="seizeStatus"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาเลือก !",
+            },
+          ]}
+        >
+          <Radio.Group
+            label="สถานะการยึด"
+            name="seizeStatus"
+            options={optionsSeizeStatus}
+            onChange={onChangeSeizeStatus}
+            defaultValue={seizeStatus}
+          />
         </Form.Item>
-        {/* 
-        <Form.Item label="ผู้ถือกรรมสิทธิ์" name="ownerAsset">
-          <Input onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)} />
-        </Form.Item> */}
+        {seizeStatus ? (
+          <>
+            <Form.Item
+              label="สำนักงานบังคับคดี"
+              name="AddrEnforce"
+              // rules={[
+              //   {
+              //     required: true,
+              //     message: "กรุณากรอกสำนักงานบังคับคดี",
+              //   },
+              // ]}
+            >
+              <Input name="AddrEnforce" />
+            </Form.Item>
+          </>
+        ) : null}
         <Form.Item
           label="ติดภาระจำนอง"
           name="mortgageStatus"
@@ -549,11 +599,11 @@ const EditAssetsSuccess = ({
             name="mortgageStatus"
             options={optionsMortgageStatus}
             onChange={onChangeMortgageStatus}
-            value={mortgageStatus}
+            defaultValuevalue={mortgageStatus}
           />
         </Form.Item>
 
-        {dataIndex.mortgagee || mortgageStatus === 1 ? (
+        {mortgageStatus === 1 ? (
           <>
             <Form.Item
               label="เจ้าหนี้จำนอง"
@@ -578,12 +628,19 @@ const EditAssetsSuccess = ({
                 },
               ]}
             >
-              <Input
-                name="estimatedPrice"
-                onChange={(e) => onChangeMortgageBalance(e.target.value)}
+              <InputNumber
+                name="mortgageBalance"
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                style={{ width: "100%", color: "black" }}
               />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="พอเฉลี่ย"
               name="averageStatus"
               rules={[
@@ -600,7 +657,7 @@ const EditAssetsSuccess = ({
                 onChange={onChangeAverageStatus}
                 value={averageStatus}
               />
-            </Form.Item>
+            </Form.Item> */}
           </>
         ) : null}
         <Form.Item
@@ -621,7 +678,7 @@ const EditAssetsSuccess = ({
             value={sequestrateStatus}
           />
         </Form.Item>
-        {dataIndex.sequestrate_status === 1 || sequestrateStatus === 1 ? (
+        {sequestrateStatus === 1 ? (
           <>
             <Form.Item
               label="เจ้าหนี้คำพิพากษา"
@@ -779,9 +836,17 @@ const EditAssetsSuccess = ({
             ปิด
           </Button>
 
-          <Button style={{ color: "green" }} htmlType="submit">
-            บันทึก
-          </Button>
+          <Popconfirm
+            placement="topLeft"
+            title="อัพเดทสถานะ"
+            description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="ยืนยัน"
+            cancelText="ปิด"
+          >
+            <Button style={{ color: "green" }}>บันทึก</Button>
+          </Popconfirm>
         </div>
       </Form>
     );

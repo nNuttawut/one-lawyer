@@ -294,6 +294,15 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
+    ...(ROLE_ID === "1" || ROLE_ID === "2"
+      ? [
+          {
+            title: "เจ้าของคดี",
+            align: "center",
+            render: (record) => <>{record?.LAWYER_NNAME}</>,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -349,7 +358,8 @@ const Main = () => {
                   //   const daysDifference = today.diff(recordDate, "days");
                   //   return daysDifference > 0 && userId === record.LAWYER_ID;
                   // },
-                  rowExpandable: (record) => userId === record.LAWYER_ID,
+                  rowExpandable: (record) => record,
+                  // userId === record.LAWYER_ID,
                   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
