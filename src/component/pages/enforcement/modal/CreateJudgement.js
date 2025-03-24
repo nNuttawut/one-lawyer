@@ -538,7 +538,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     let textStatus;
     console.log(e.target.value);
     if (e.target.value === "agreement") {
-      textStatus = "ทำยอม(ปรับโครงสร้าง)";
+      textStatus = "ทำยอม(ประนีประนอม)";
     } else if (e.target.value === "agreementFinish") {
       textStatus = "ทำยอม(ปิดบัญชี)";
     }
@@ -1018,9 +1018,9 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
               value={radioDecide}
               style={{ margin: "10px" }}
             >
-              <Radio value="enforce">ปกติ</Radio>
-              <Radio value="agreement">ทำยอม(ปรับโครงสร้าง)</Radio>
-              <Radio value="agreementFinish">ทำยอม(ปิดบัญชี)</Radio>
+              <Radio value="enforce">พิพากษา</Radio>
+              <Radio value="agreement">ทำยอม(ประนีประนอม)</Radio>
+              {/* <Radio value="agreementFinish">ทำยอม(ปิดบัญชี)</Radio> */}
             </Radio.Group>
           </Form.Item>
           {radioDecide === "agreement" || radioDecide === "agreementFinish"
@@ -1092,7 +1092,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
-          <Form.Item label="ค่าขาดประโยชน์เดือนละ" name="costPermonth2">
+          <Form.Item label="ค่าขาดประโยชน์" name="costUnless2">
             <InputNumber
               suffix="บาท"
               formatter={(value) =>
@@ -1111,7 +1111,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             <Col span={12}>
               <Form.Item
                 label="ค่าขาดประโยชน์เดือนละ"
-                name="costUnless2"
+                name="costPermonth2"
                 style={{ marginBottom: 0 }}
                 labelCol={{ span: 12 }}
               >

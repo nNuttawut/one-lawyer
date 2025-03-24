@@ -763,7 +763,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     let textStatus;
     setRadioDecide(e.target.value);
     if (e.target.value === "agreement") {
-      textStatus = "ทำยอม(ปรับโครงสร้าง)";
+      textStatus = "ทำยอม(ประนีประนอม)";
     } else if (e.target.value === "agreementFinish") {
       textStatus = "ทำยอม(ปิดบัญชี)";
     }
@@ -1233,8 +1233,8 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               style={{ margin: "10px" }}
             >
               <Radio value="enforce">ปกติ</Radio>
-              <Radio value="agreement">ทำยอม(ปรับโครงสร้าง)</Radio>
-              <Radio value="agreementFinish">ทำยอม(ปิดบัญชี)</Radio>
+              <Radio value="agreement">ทำยอม(ประนีประนอม)</Radio>
+              {/* <Radio value="agreementFinish">ทำยอม(ปิดบัญชี)</Radio> */}
             </Radio.Group>
           </Form.Item>
 

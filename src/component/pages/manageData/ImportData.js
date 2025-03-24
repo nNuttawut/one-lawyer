@@ -38,6 +38,7 @@ const Main = () => {
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
   const [failedData, setFailedData] = useState([]);
+  const [missedData, setMissedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
@@ -99,122 +100,10 @@ const Main = () => {
       setLoading(false);
     }
   };
-  //ไม่ใช้แล้ว
-  // const queryMultiData = async () => {
-  //   setLoading(true);
-  //   let failed = 0;
-  //   let companyUse = companyId === "1" || companyId === "2" ? "1" : "2";
-
-  //   console.log("queryData ImportData");
-
-  //   if (!data || data.length === 0) {
-  //     message.error("ไม่มีข้อมูลสำหรับการค้นหา");
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   const batchSize = 10; // จำนวนคำขอในแต่ละชุด
-  //   let filteredResults = [];
-
-  //   try {
-  //     for (let i = 0; i < data.length; i += batchSize) {
-  //       const batch = data.slice(i, i + batchSize); // ดึงข้อมูลชุดย่อย
-
-  //       const batchPromises = batch.map(async (item) => {
-  //         const contno = item.CONTNO;
-
-  //         if (!contno) {
-  //           message.warning("พบค่า CONTNO ที่ไม่ถูกต้อง");
-  //           return null;
-  //         }
-
-  //         try {
-  //           const resQuery = await axios.get(
-  //             baseUrl + GET_LOAN_FROM_SERVER_IBM,
-  //             {
-  //               params: { contractNo: contno, company: companyUse },
-  //               headers: HEADERS_EXPORT,
-  //             }
-  //           );
-
-  //           if (resQuery.status === 200) {
-  //             return resQuery.data;
-  //           } else {
-  //             console.log(`ไม่มีเลขที่สัญญาที่ค้นหา`);
-  //             failed++;
-  //             setFailedData((prevFailedData) => [...prevFailedData, contno]);
-  //             return null;
-  //           }
-  //         } catch (err) {
-  //           console.error(err);
-  //           failed++;
-  //           setFailedData((prevFailedData) => [...prevFailedData, contno]);
-  //           return null;
-  //         }
-  //       });
-
-  //       const batchResults = await Promise.all(batchPromises);
-  //       filteredResults.push(
-  //         ...batchResults.filter((result) => result !== null)
-  //       );
-
-  //       // ทำให้ API ไม่เรียกเยอะเกินไป
-  //       await new Promise((resolve) => setTimeout(resolve, 1000));
-  //     }
-
-  //     console.log("Filtered Results:", filteredResults);
-  //     setArrayTable(filteredResults);
-  //     setTableLength(filteredResults.length);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //     message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
-  //   } finally {
-  //     setLoading(false);
-  //     if (failed > 0) {
-  //       message.error(
-  //         `มีเลขที่สัญญาที่ค้นหาไม่เจอทั้งหมด ${failed} รายการ โปรดตรวจสอบ`
-  //       );
-  //     }
-  //   }
-  // };
-
-  // const handleFileUpload = (file) => {
-  //   const reader = new FileReader();
-
-  //   reader.onload = (event) => {
-  //     const arrayBuffer = event.target.result; // อ่านเป็น ArrayBuffer
-  //     const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
-  //       type: "array",
-  //     }); // แปลง ArrayBuffer เป็น Uint8Array
-  //     const sheetName = workbook.SheetNames[0];
-  //     const sheet = workbook.Sheets[sheetName];
-  //     const sheetData = XLSX.utils.sheet_to_json(sheet);
-
-  //     let filteredData = [];
-
-  //     const columnName = "เลขสัญญา";
-  //     sheetData.forEach((row) => {
-  //       if (row[columnName] !== undefined) {
-  //         const trimmedValue =
-  //           typeof row[columnName] === "string"
-  //             ? row[columnName].trim()
-  //             : row[columnName];
-  //         filteredData.push({
-  //           CONTNO: trimmedValue,
-  //         });
-  //       }
-  //     });
-
-  //     setData(filteredData);
-  //   };
-
-  //   reader.readAsArrayBuffer(file); // ใช้ ArrayBuffer แทน BinaryString
-  //   return false; // Prevent automatic upload
-  // };
 
   const queryMultiData = async () => {
     setLoading(true);
-
+    let missed = 0;
     console.log("queryData ImportData--->", data);
 
     if (!data || data.length === 0) {
@@ -232,18 +121,18 @@ const Main = () => {
             setTableLength(resQuery.data.length);
             console.log("resQuery", resQuery.data);
             setLoading(false);
+          } else if (resQuery.data === "Contract No. Not Found") {
+            console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+            missed += 1;
+            return null;
           } else {
-            setArrayTable([]);
-            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
-            console.log("ไม่มีเลขที่สัญญาที่ค้นหา");
-            setLoading(false);
+            console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
+            missed += 1;
+            return null;
           }
         })
         .catch((err) => {
           console.log(err);
-          if (err.status === 404) {
-            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
-          }
         });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -559,6 +448,7 @@ const Main = () => {
           open={isModalFailed}
           close={setIsModalFailed}
           data={failedData}
+          dataMiss={missedData}
         />
       ) : null}
     </>
