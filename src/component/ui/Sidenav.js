@@ -502,7 +502,7 @@ function Sidenav({ color, onClick }) {
     //     },
     //   ],
     // },
-    ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2"
+    ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2" || ROLE_ID === "8"
       ? {
           key: "19",
           pageName: "contract-detail",

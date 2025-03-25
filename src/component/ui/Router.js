@@ -20,7 +20,7 @@ import AssignLawyers from "../pages/manageData/AssignLawyers";
 import ChangeLawyersJob from "../pages/manageData/ChangeLawyersJob";
 import EstimateAssets from "../pages/investigateAssets/EstimateAssets";
 import Judgement from "../pages/court/Judgement";
-import Profile from "../pages/userManage/LogIn";
+import Profile from "../pages/userManage/Profile";
 import ChangePassword from "../pages/userManage/ChangePassword";
 import FinalCase from "../pages/finalCase/MainFinal";
 import CommissionLaw from "../pages/commission/CommissionLaw";

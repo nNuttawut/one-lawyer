@@ -339,7 +339,7 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {record ? (
+                      {ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "4" ? (
                         <Tooltip
                           placement="bottom"
                           title="คลิกเพื่อสร้างบันทึกการยึด !"

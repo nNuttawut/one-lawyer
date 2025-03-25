@@ -50,25 +50,34 @@ const Main = () => {
     if (queryContno) {
       let typeValue;
       let subData = queryContno.substring(0, 1);
-      if (subData === "1") {
-        typeValue = "LSFHP";
+      if (userCompany === "3") {
+        typeValue = "KSM";
         queryData(queryContno, typeValue);
-      } else if (subData === "3") {
-        let checkType = queryContno.substring(5, 9);
-        console.log("checkType", checkType);
-        if (parseInt(checkType) > 1200) {
+        console.log("subData", subData);
+        console.log("typeValue", typeValue);
+        console.log("queryContno--->", queryContno);
+      } else {
+        if (subData === "1") {
+          typeValue = "LSFHP";
+          queryData(queryContno, typeValue);
+        } else if (subData === "3") {
+          let checkType = queryContno.substring(5, 9);
+          console.log("checkType", checkType);
+          if (parseInt(checkType) > 1200) {
+            typeValue = "RPSL";
+            queryData(queryContno, typeValue);
+          } else {
+            message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
+          }
+        } else {
           typeValue = "RPSL";
           queryData(queryContno, typeValue);
-        } else {
-          message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
         }
-      } else {
-        message.error("ไม่พบข้อมูล กรุณาตรวจสอบเลขบัญชี ❌");
-      }
 
-      console.log("subData", subData);
-      console.log("typeValue", typeValue);
-      console.log("queryContno--->", queryContno);
+        console.log("subData", subData);
+        console.log("typeValue", typeValue);
+        console.log("queryContno--->", queryContno);
+      }
     }
   };
 

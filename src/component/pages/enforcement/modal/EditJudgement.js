@@ -783,6 +783,42 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
     );
   };
 
+  // const handleCheckBoxGroupGoverment = () => {
+  //   // ดึง CUSTOMER_ID จาก judgeDefendants.data
+  //   const judgeCustomerIds =
+  //     dataJudgement?.map((item) => item.CUSTOMER_ID) || [];
+  //   console.log("judgeCustomerIds---->", judgeCustomerIds);
+
+  //   return (
+  //     <Checkbox.Group onChange={onChangeGovermentOfficer}>
+  //       <Space direction="vertical" style={{ marginTop: "5px" }}>
+  //         {/* เช็ค governmentOfficers ว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
+  //         {tabsKey === "1" && governmentOfficers ? (
+  //           <Checkbox
+  //             value={governmentOfficers}
+  //             checked={judgeCustomerIds.includes(governmentOfficers.id)}
+  //           >
+  //             {`จำเลยที่ 1 ${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`}
+  //           </Checkbox>
+  //         ) : null}
+
+  //         {/* เช็ค guarantors แต่ละตัวว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
+  //         {governmentOfficers?.guarantors?.map((guarantor, index) => (
+  //           <Checkbox
+  //             key={index}
+  //             value={guarantor}
+  //             checked={judgeCustomerIds.includes(guarantor.id)}
+  //           >
+  //             {`จำเลยที่ ${index + 2} ${guarantor?.SNAM} ${guarantor?.NAME1} ${
+  //               guarantor?.NAME2
+  //             }`}
+  //           </Checkbox>
+  //         ))}
+  //       </Space>
+  //     </Checkbox.Group>
+  //   );
+  // };
+
   const props = {
     multiple: true,
     onRemove: (file) => {
