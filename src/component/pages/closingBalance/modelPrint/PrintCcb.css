@@ -1,0 +1,42 @@
+@media print {
+    @page {
+        size: A4 portrait;
+        /* หรือใช้ landscape ถ้าเป็นแนวนอน */
+        /* margin: 20mm; */
+        /* ปรับ margin ให้อ่านง่ายขึ้น */
+        margin: 0; /* กำหนดให้ไม่มีขอบกระดาษ */
+    }
+
+    body {
+        font-size: 14px;
+    }
+
+    .print-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: auto;
+        padding: 10px;
+    }
+
+    .ant-table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .ant-table th,
+    .ant-table td {
+        border: 1px solid black !important;
+        padding: 5px !important;
+        word-wrap: break-word;
+    }
+
+    .print-only .ant-card {
+        margin: 5px !important;
+        /* ปรับ margin ของ .ant-card ให้ใกล้ขอบกระดาษ */
+    }
+
+    .ant-card {
+        margin: 5px !important;
+        /* ลด margin ของ .ant-card ให้ใกล้ขอบกระดาษ */
+    }
+}

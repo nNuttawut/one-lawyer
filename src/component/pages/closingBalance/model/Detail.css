@@ -1,0 +1,12 @@
+/* CSS to hide element in the screen but show in print */
+@media screen {
+    .print-only {
+        display: none;
+    }
+}
+
+@media print {
+    .print-only {
+        display: block;
+    }
+}
