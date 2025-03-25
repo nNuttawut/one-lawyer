@@ -22,6 +22,8 @@ import {
 } from "antd";
 import {
   baseUrl,
+  GET_JUDGE_BY_ID,
+  GET_JUDGE_DEFENDANTS_BY_ID,
   GET_LOAN_BY_CONTNO,
   GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
@@ -47,10 +49,13 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import Dragger from "antd/es/upload/Dragger";
+import CurrencyFormat from "../../../../hook/CurrencyFormat";
 
-const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
+const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
+  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
+    CurrencyFormat();
   const USER_ID = localStorage.getItem("USER_ID");
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [form] = Form.useForm();
@@ -74,6 +79,8 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
   const [fileList, setFileList] = useState([]);
+  const [dataJudgement, setDataJudgement] = useState(null);
+  const [dataJudgeDefendants, setDataJudgeDefendants] = useState(null);
 
   useEffect(() => {
     setIsModal(open);
@@ -81,9 +88,49 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
       loadData();
       setLoadingData(true);
       console.log("loadData", dataDefualt);
-      console.log("lawsuit", responseData.WORK_LOG_ID);
     }
   }, [isModal]);
+
+  useEffect(() => {
+    if (dataJudgement && dataJudgeDefendants) {
+      let judgeNumber1 = dataJudgeDefendants.filter(
+        (item) => item.judge_number === 1
+      );
+      let judgeNumber2 = dataJudgeDefendants.filter(
+        (item) => item.judge_number === 2
+      );
+
+      console.log("judgeNumber1", judgeNumber1);
+
+      form.setFieldsValue({
+        redNumber: dataJudgement?.red_case_number,
+        judgement1: currencyFormatNoPoint(dataJudgement?.judgement),
+        costUnless1: currencyFormatNoPoint(
+          judgeNumber1[0]?.cost_of_uselessness
+        ),
+        interestRate: dataJudgement?.interest_rate,
+        interestRateLack: dataJudgement?.interest_rate_of_lack,
+        costPermonth1: currencyFormatNoPoint(
+          judgeNumber1[0]?.cost_of_useleseness_per_month
+        ),
+        costMonth1: judgeNumber1[0]?.cost_of_useleseness_month,
+        judgementLack: currencyFormatNoPoint(dataJudgement?.judgement_lack),
+        trackingFeeEnforce: currencyFormatNoPoint(dataJudgement?.tracking_fee),
+        lawyerFeeEnforce: currencyFormatNoPoint(dataJudgement?.attorney_fees),
+        suspensionAmount: currencyFormatNoPoint(
+          dataJudgement?.suspension_amount
+        ),
+        judgementFile: dataJudgement?.judgement_filepath,
+        costUnless2: currencyFormatNoPoint(
+          judgeNumber2[0]?.cost_of_uselessness
+        ),
+        costPermonth2: currencyFormatNoPoint(
+          judgeNumber2[0]?.cost_of_useleseness_per_month
+        ),
+        costMonth2: judgeNumber2[0]?.cost_of_useleseness_month,
+      });
+    }
+  }, [dataJudgement, dataJudgeDefendants]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -144,17 +191,28 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [worklogs, loanRes] = await Promise.all([
-        axios.get(
-          `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${responseData.WORK_LOG_ID}`,
-          {
+      const [worklogs, loanRes, judgement, judgeDefendants] = await Promise.all(
+        [
+          axios.get(
+            `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
+            {
+              headers: HEADERS_EXPORT,
+            }
+          ),
+          axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
             headers: HEADERS_EXPORT,
-          }
-        ),
-        axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.contno}`, {
-          headers: HEADERS_EXPORT,
-        }),
-      ]);
+          }),
+          axios.get(`${baseUrl}${GET_JUDGE_BY_ID}${dataDefualt.LAWSUIT_ID}`, {
+            headers: HEADERS_EXPORT,
+          }),
+          axios.get(
+            `${baseUrl}${GET_JUDGE_DEFENDANTS_BY_ID}${dataDefualt.LAWSUIT_ID}`,
+            {
+              headers: HEADERS_EXPORT,
+            }
+          ),
+        ]
+      );
 
       if (worklogs.status === 200) {
         setDataLoadLawSuit(worklogs.data);
@@ -170,6 +228,19 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         setupGovernmentOfficerList(loanRes.data);
         listGovermentList(loanRes.data);
         console.log("loanRes.data---->", loanRes.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
+      if (judgement.status === 200) {
+        setDataJudgement(judgement.data);
+        console.log("judge.data---->", judgement.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
+
+      if (judgeDefendants.status === 200) {
+        setDataJudgeDefendants(judgeDefendants.data);
+        console.log("judgeDefendants.data---->", judgeDefendants.data);
       } else {
         message.error("ไม่พบข้อมูลเงิน");
       }
@@ -517,14 +588,14 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
       console.log("finishStatus", finishStatus);
       console.log("putStatus", putStatus);
 
-      sendStatus(
-        judgementData,
-        defendants,
-        finishStatus,
-        agreement,
-        statusData,
-        putStatus
-      );
+      //   sendStatus(
+      //     judgementData,
+      //     defendants,
+      //     finishStatus,
+      //     agreement,
+      //     statusData,
+      //     putStatus
+      //   );
     }
   };
 
@@ -1303,6 +1374,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
       </>
     );
   };
+
   const items = [
     {
       key: "1",
@@ -1349,4 +1421,4 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     </>
   );
 };
-export default CreateJudgement;
+export default EditJudgement;

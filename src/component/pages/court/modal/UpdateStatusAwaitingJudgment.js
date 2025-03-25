@@ -1232,7 +1232,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               value={radioDecide}
               style={{ margin: "10px" }}
             >
-              <Radio value="enforce">ปกติ</Radio>
+              <Radio value="enforce">พิพากษา</Radio>
               <Radio value="agreement">ทำยอม(ประนีประนอม)</Radio>
               {/* <Radio value="agreementFinish">ทำยอม(ปิดบัญชี)</Radio> */}
             </Radio.Group>

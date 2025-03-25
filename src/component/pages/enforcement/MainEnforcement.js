@@ -9,11 +9,12 @@ import {
   Button,
   message,
   Spin,
+  Tooltip,
 } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, FormOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -30,6 +31,7 @@ import {
 } from "../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
 import ReportSeize from "./modal/ReportSeize";
+import EditJudgement from "./modal/EditJudgement";
 
 const Main = () => {
   const [
@@ -43,16 +45,18 @@ const Main = () => {
 
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
+  const [isModalEdit, setIsModalEdit] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
-  const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
+  const [arrow, setArrow] = useState("Show");
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -92,6 +96,28 @@ const Main = () => {
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
   };
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
+  };
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
 
   const filterDataLawyer = (data) => {
     if (Array.isArray(data)) {
@@ -133,11 +159,11 @@ const Main = () => {
         });
       }
 
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log("newData", newData);
+      console.log("Length of filtered data:", newData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -279,6 +305,7 @@ const Main = () => {
         ]
       : []),
   ];
+
   return (
     <>
       <Card>
@@ -313,14 +340,41 @@ const Main = () => {
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
                       {record ? (
+                        <Tooltip
+                          placement="bottom"
+                          title="คลิกเพื่อสร้างบันทึกการยึด !"
+                          arrow={mergedArrow}
+                        >
+                          <Button
+                            name="create"
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalCreate(true);
+                              setDataRecord(record);
+                            }}
+                          >
+                            <FormOutlined
+                              style={{ color: "blue", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </Tooltip>
+                      ) : null}
+                      <Tooltip
+                        placement="bottom"
+                        title="คลิกเพื่อแก้ไขคำพิพากษา !"
+                        arrow={mergedArrow}
+                      >
                         <Button
-                          name="create"
+                          name="edit"
                           style={{
                             boxShadow: "0 4px 3px",
                             marginRight: "10px",
                           }}
                           onClick={() => {
-                            setIsModalCreate(true);
+                            setIsModalEdit(true);
                             setDataRecord(record);
                           }}
                         >
@@ -328,12 +382,15 @@ const Main = () => {
                             style={{ color: "orange", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : null}
+                      </Tooltip>
                     </p>
                   ),
                   rowExpandable: (record) => record,
                   // userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}
+                rowKey="key"
               />
             </Col>
           </Row>
@@ -346,6 +403,14 @@ const Main = () => {
         <ReportSeize
           open={isModalCreate}
           close={setIsModalCreate}
+          dataDefualt={dataRecord}
+          funcUpdateStatus={handleUpdateData}
+        />
+      ) : null}
+      {isModalEdit ? (
+        <EditJudgement
+          open={isModalEdit}
+          close={setIsModalEdit}
           dataDefualt={dataRecord}
           funcUpdateStatus={handleUpdateData}
         />
