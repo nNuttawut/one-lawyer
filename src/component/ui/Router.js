@@ -72,6 +72,7 @@ import MainBadDebt from "../pages/badDebt/MainBadDebt";
 import CourtAdvanePayment from "../pages/court/CourtAdvanePayment";
 import CourtClearAdvanePayment from "../pages/court/CourtClearAdvanePayment";
 import ImportDecideData from "../pages/enforcement/ImportDecideData";
+import MainClosingBalance from "../pages/closingBalance/MainClosingBalance";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -88,7 +89,6 @@ export default function Router() {
           <Route path="/final-case" element={<FinalCase />} />
           <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
           <Route path="/disbursement/" element={<DisbursementRoute />} />
-
           <Route path="/notice/create-notice" element={<Notice />} />
           <Route path="/notice/reply-notice" element={<ReplyNotice />} />
           <Route
@@ -96,7 +96,6 @@ export default function Router() {
             element={<CreateScanNoticeMain />}
           />
           <Route path="/notice/reply-notice-ems" element={<ReplyNoticeEms />} />
-
           <Route
             path="/terminate-contract/create-terminate-contract"
             element={<CreateTerminateContract />}
@@ -113,12 +112,10 @@ export default function Router() {
             path="/terminate-contract/terminate-contract-to-lawsuit"
             element={<ContractToLawuit />}
           />
-
           <Route
             path="terminate-contract/terminate-Contract-Chart"
             element={<ChartCancel />}
           />
-
           <Route
             path="/terminate-contract-hand/create-terminate-contract"
             element={<CreateTerminateContractHand />}
@@ -135,12 +132,10 @@ export default function Router() {
             path="/terminate-contract-hand/terminate-contract-to-lawsuit"
             element={<ContractToLawuitHand />}
           />
-
           <Route
             path="terminate-contract-hand/terminate-Contract-chart"
             element={<ChartCancelHand />}
           />
-
           <Route
             path="/terminate-contract-repurchase/create-terminate-contract"
             element={<CreateTerminateContractRepurchase />}
@@ -157,7 +152,6 @@ export default function Router() {
             path="/terminate-contract-repurchase/terminate-contract-to-lawsuit"
             element={<ContractToLawuitRepurchase />}
           />
-
           <Route
             path="/investigate-assets"
             element={<InvestigateAssetsRoute />}
@@ -182,7 +176,6 @@ export default function Router() {
             path="/investigate-assets/clear-advane-payment-assets-found"
             element={<InvestigateAssetsClearAdvanePayment />}
           />
-
           <Route
             path="/lawsuit/pre-lawsuit-filed"
             element={<MainPreLawsuitFiled />}
@@ -196,7 +189,6 @@ export default function Router() {
             element={<LawsuitClearAdvanePayment />}
           />
           <Route path="/lawsuit/import-old-data" element={<ImportOldData />} />
-
           <Route path="/report/chart-terminate" element={<ChartTerminate />} />
           <Route path="/report/notice" element={<ReportNotice />} />
           <Route path="/report/terminate" element={<ReportTerminate />} />
@@ -212,16 +204,13 @@ export default function Router() {
             path="enforcement/send-to-enforcement/*"
             element={<EnforcementRoute />}
           />
-
           <Route
             path="enforcement/import-lawsuit-data/*"
             element={<ImportDecideData />}
           />
-
           <Route path="/negotiate/*" element={<NegotiateRoute />} />
           <Route path="/notifications/*" element={<NotificationRouter />} />
           <Route path="/detail-status" element={<DetailStatusRouter />} />
-
           <Route path="/court/case-is-final" element={<CaseIsFinal />} />
           <Route path="/court/judgement" element={<Judgement />} />
           <Route
@@ -263,7 +252,6 @@ export default function Router() {
             path="/charge-indict/clear-advane-pay"
             element={<ClearAdvanePay />}
           />
-
           <Route
             path="/charge-indict/approved-clear-advane-pay"
             element={<ApprovedClearAdvanePay />}
@@ -272,15 +260,18 @@ export default function Router() {
             path="/contract-detail/detail-payment"
             element={<DetailPayment />}
           />
-
           <Route path="/withdraw-case" element={<MainWithdrawCase />} />
           <Route path="/timeout-case" element={<MainTimeoutCase />} />
           <Route path="/bad-debt" element={<MainBadDebt />} />
-
           <Route path="/guidbook/read-text" element={<ReadText />} />
           <Route path="/guidbook/test" element={<Test />} />
           <Route path="/liff" element={<Liff />} />
           <Route path="/login-line" element={<Loginline />} />
+          //ขอปิดยอดเบน
+          <Route
+            path="/closing-balance/request-closing-balance"
+            element={<MainClosingBalance />}
+          />
         </Routes>
       </AnimatePresence>
       {/* </SessionContextProvider> */}
