@@ -675,14 +675,14 @@ const UpdateReplyNoticeEms = ({
                 ]}
               >
                 <Select
-                  showSearch
                   popupMatchSelectWidth={false}
                   style={{
                     width: "auto", // ทำให้ Select ขยายตามเนื้อหา
                     // maxWidth: 200, // จำกัดความกว้างสูงสุด
                   }}
                   placeholder="เลือกประเภทสัญญา"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={loanOption}
                   onChange={(value) => onChangeSelectLoanType(value)}
                 />
@@ -698,12 +698,12 @@ const UpdateReplyNoticeEms = ({
                 ]}
               >
                 <Select
-                  showSearch
                   style={{
                     width: 250,
                   }}
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                 />

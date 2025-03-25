@@ -556,12 +556,13 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <Select
+          showSearch
+          optionFilterProp="label"
           popupMatchSelectWidth={false}
           style={{
             width: "auto",
           }}
           placeholder="เลือกประเภทสัญญา"
-          optionFilterProp="value"
           onChange={(value) => onChangeLoan(value, record.CONTNO, record.id)}
           options={optionsLone}
         />
@@ -573,7 +574,8 @@ const Main = () => {
       render: (text, record) => (
         <Select
           placeholder="เลือกบริษัท"
-          optionFilterProp="value"
+          showSearch
+          optionFilterProp="label"
           options={companiesOption}
           onChange={(value) => onChangeCompany(value, record.CONTNO, record.id)}
           popupMatchSelectWidth={false}
@@ -592,7 +594,8 @@ const Main = () => {
         <>
           <Select
             placeholder="เลือกทนายรับงาน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) =>
               onChangeSelect(value, record.CONTNO, record.id)
             }

@@ -420,13 +420,13 @@ const UpdateReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               </Form.Item>
               <Form.Item label="บริษัทที่ออกหนังสือ" name="company">
                 <Select
-                  showSearch
                   style={{
                     width: 250,
                   }}
                   disabled
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                   defaultValue={parseInt(userCompany) === 3 ? 3 : 2}

@@ -560,7 +560,8 @@ const Main = () => {
             width: "auto",
           }}
           placeholder="เลือกประเภทสัญญา"
-          optionFilterProp="value"
+          showSearch
+          optionFilterProp="label"
           onChange={(value) => onChange(value, record.CONTNO, record.id)}
           options={optionsLone}
         ></Select>
@@ -573,7 +574,8 @@ const Main = () => {
         <>
           <Select
             placeholder="เลือกทนายรับงาน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) =>
               onChangeSelect(value, record.CONTNO, record.id)
             }

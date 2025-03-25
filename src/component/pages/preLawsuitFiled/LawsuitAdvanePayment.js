@@ -445,7 +445,8 @@ const Main = () => {
             <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Select
                 placeholder="เลือกบริษัท"
-                optionFilterProp="value"
+                showSearch
+                optionFilterProp="label"
                 options={companiesOption}
                 onChange={(value) => onChangeSelect(value)}
                 defaultValue={userCompany === "3" ? 3 : 2}

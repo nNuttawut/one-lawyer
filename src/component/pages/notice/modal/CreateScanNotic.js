@@ -373,12 +373,12 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               <Form.Item label="เลขสัญญา">{dataDefault?.CONTNO}</Form.Item>
               <Form.Item label="ประเภทสัญญา" name="loanType">
                 <Select
-                  showSearch
                   popupMatchSelectWidth={false}
                   style={{
                     width: "auto",
                   }}
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={optionsLone}
                   onChange={(value) => onChangeSelectLoanType(value)}
                 />
@@ -394,13 +394,13 @@ const CreateScanNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Select
-                  showSearch
                   popupMatchSelectWidth={false}
                   style={{
                     width: "auto",
                   }}
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                 />

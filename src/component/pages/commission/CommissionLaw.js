@@ -500,7 +500,8 @@ const Main = () => {
               <Space direction="vertical" size={12}>
                 <Select
                   placeholder="เลือกทนาย"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   onChange={(value) => onChangeSelectLawyer(value)}
                   options={lawyersOption}
                   style={{

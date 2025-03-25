@@ -856,7 +856,8 @@ const Main = () => {
         <>
           <Select
             placeholder="เลือกทนายรับงาน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) =>
               onChangeSelect(value, record.contract_no, record.id)
             }

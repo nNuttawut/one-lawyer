@@ -866,13 +866,13 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Select
-            showSearch
             popupMatchSelectWidth={false}
             style={{
               width: "auto",
             }}
             placeholder="เลือกบริษัท"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             options={companiesOption}
             onChange={(value) => onChangeSelect(value)}
           />
@@ -900,13 +900,13 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ]}
         >
           <Select
-            showSearch
             popupMatchSelectWidth={false}
             style={{
               width: "auto",
             }}
             placeholder="โปรดเลือกประเภทสัญญา"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             options={optionsLone}
             onChange={(value) => onChangeSelectLoanType(value)}
           />

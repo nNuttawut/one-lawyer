@@ -1621,7 +1621,8 @@ const Main = () => {
             <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Select
                 placeholder="เลือกบริษัท"
-                optionFilterProp="value"
+                showSearch
+                optionFilterProp="label"
                 options={companiesOption}
                 onChange={(value) => onChangeSelectCompany(value)}
                 defaultValue={userCompany === "3" ? 3 : 2}
@@ -1637,7 +1638,8 @@ const Main = () => {
               <Space direction="vertical" size={12}>
                 <Select
                   placeholder="เลือกทนาย"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   onChange={(value, label) =>
                     onChangeSelectLawyer(value, label)
                   }

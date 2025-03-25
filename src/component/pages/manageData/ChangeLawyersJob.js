@@ -161,10 +161,10 @@ const Main = () => {
         }
       });
 
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
+      console.log("filteredData3", value);
+      setArrayTable(value);
+      setDataArr(value);
+      setTableLength(value.length);
     }
   };
 
@@ -424,7 +424,8 @@ const Main = () => {
         <>
           <Select
             placeholder="เลือกทนายรับงาน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) =>
               onChangeSelect(value, record.LAWSUIT_ID, record.id)
             }

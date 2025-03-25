@@ -380,13 +380,13 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Select
-                  showSearch
                   popupMatchSelectWidth={false}
                   style={{
                     width: "auto",
                   }}
                   placeholder="เลือกประเภทสัญญา"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={loanOption}
                   onChange={(value) => onChangeSelectLoanType(value)}
                 />
@@ -402,13 +402,13 @@ const CreateNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Select
-                  showSearch
                   popupMatchSelectWidth={false}
                   style={{
                     width: "auto",
                   }}
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                   defaultValue={

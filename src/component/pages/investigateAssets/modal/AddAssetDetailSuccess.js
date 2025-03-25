@@ -628,7 +628,8 @@ const AddAssetDetailSuccess = ({
         >
           <Select
             placeholder="ประเภททรัพย์"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectAssetPropotyType(value)}
             options={optionsAssetsType}
             style={{ width: "100%" }}
@@ -646,7 +647,8 @@ const AddAssetDetailSuccess = ({
         >
           <Select
             placeholder="เลือกลักษณะที่ดิน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectLandDetail(value)}
             options={dataLandDetailList}
             style={{ width: "100%" }}
@@ -680,7 +682,8 @@ const AddAssetDetailSuccess = ({
         >
           <Select
             placeholder="เลือกจังหวัด"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectProviceAsset(value)}
             options={dataProviceList}
             style={{ width: "100%" }}
@@ -698,7 +701,8 @@ const AddAssetDetailSuccess = ({
         >
           <Select
             placeholder="เลือกอำเภอ"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectDistrictAsset(value)}
             options={dataDistrictList}
             style={{ width: "100%" }}
@@ -866,7 +870,8 @@ const AddAssetDetailSuccess = ({
         >
           <Select
             placeholder="เลือกผู้สืบทรัพย์"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}
             style={{ width: "100%" }}

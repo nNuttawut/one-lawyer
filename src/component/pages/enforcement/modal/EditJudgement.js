@@ -103,30 +103,21 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
       console.log("judgeNumber1", judgeNumber1);
 
       form.setFieldsValue({
+        enforceCaseDate: dayjs(dataJudgement?.enforce_case_date),
         redNumber: dataJudgement?.red_case_number,
-        judgement1: currencyFormatNoPoint(dataJudgement?.judgement),
-        costUnless1: currencyFormatNoPoint(
-          judgeNumber1[0]?.cost_of_uselessness
-        ),
+        judgement1: dataJudgement?.judgement,
+        costUnless1: judgeNumber1[0]?.cost_of_uselessness,
         interestRate: dataJudgement?.interest_rate,
         interestRateLack: dataJudgement?.interest_rate_of_lack,
-        costPermonth1: currencyFormatNoPoint(
-          judgeNumber1[0]?.cost_of_useleseness_per_month
-        ),
+        costPermonth1: judgeNumber1[0]?.cost_of_useleseness_per_month,
         costMonth1: judgeNumber1[0]?.cost_of_useleseness_month,
-        judgementLack: currencyFormatNoPoint(dataJudgement?.judgement_lack),
-        trackingFeeEnforce: currencyFormatNoPoint(dataJudgement?.tracking_fee),
-        lawyerFeeEnforce: currencyFormatNoPoint(dataJudgement?.attorney_fees),
-        suspensionAmount: currencyFormatNoPoint(
-          dataJudgement?.suspension_amount
-        ),
+        judgementLack: dataJudgement?.judgement_lack,
+        trackingFeeEnforce: dataJudgement?.tracking_fee,
+        lawyerFeeEnforce: dataJudgement?.attorney_fees,
+        suspensionAmount: dataJudgement?.suspension_amount,
         judgementFile: dataJudgement?.judgement_filepath,
-        costUnless2: currencyFormatNoPoint(
-          judgeNumber2[0]?.cost_of_uselessness
-        ),
-        costPermonth2: currencyFormatNoPoint(
-          judgeNumber2[0]?.cost_of_useleseness_per_month
-        ),
+        costUnless2: judgeNumber2[0]?.cost_of_uselessness,
+        costPermonth2: judgeNumber2[0]?.cost_of_useleseness_per_month,
         costMonth2: judgeNumber2[0]?.cost_of_useleseness_month,
       });
     }
@@ -145,18 +136,20 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   }, [arrow]);
 
   const handleCancel = () => {
-    Modal.confirm({
-      title: "โปรดอ่านก่อนดำเนินการ",
-      content:
-        "กรุณาทำรายการให้เสร็จเนื่องจากการปิดจะทำให้ข้อมูลไม่ถูกต้อง หากดำเนินการผิดพลาดโปรดแจ้งผู้ดูแลระบบทันที !",
-      okText: "ยืนยัน",
-      cancelText: "ปิด",
-      onOk: () => {
-        // close(false);
-        // setIsModal(false);
-        message.error("กรุณากรอกข้อมูลให้ครบและกดบันทึก");
-      },
-    });
+    // Modal.confirm({
+    //   title: "โปรดอ่านก่อนดำเนินการ",
+    //   content:
+    //     "กรุณาทำรายการให้เสร็จเนื่องจากการปิดจะทำให้ข้อมูลไม่ถูกต้อง หากดำเนินการผิดพลาดโปรดแจ้งผู้ดูแลระบบทันที !",
+    //   okText: "ยืนยัน",
+    //   cancelText: "ปิด",
+    //   onOk: () => {
+    //     close(false);
+    //     setIsModal(false);
+    //     message.error("กรุณากรอกข้อมูลให้ครบและกดบันทึก");
+    //   },
+    // });
+    close(false);
+    setIsModal(false);
   };
 
   useEffect(() => {
@@ -434,7 +427,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
             : parseInt(values.costPermonth1)
             ? parseInt(values.costPermonth1)
             : null,
-        cost_of_useleseness_month: values.costMonth1,
+        cost_of_useleseness_month: values.costMonth1 ? values.costMonth1 : null,
         judge_number: 1,
       }));
       defendants.push(...govermentfinal1);
@@ -684,19 +677,19 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
             ย้อนกลับ
           </Button>
         ) : null}
-        {/* <Button
+        <Button
           onClick={handleCancel}
           style={{ color: "red", marginRight: "20px" }}
         >
           ปิด
-        </Button> */}
+        </Button>
 
         <Popconfirm
           placement="topLeft"
           title="อัพเดทสถานะ"
           description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
           onConfirm={confirm}
-          // onCancel={() => cancel(record)}
+          onCancel={() => handleCancel()}
           okText="ยืนยัน"
           cancelText="ปิด"
         >
@@ -951,6 +944,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRate"
                   options={optionsInterest}
                   size="large"
@@ -992,6 +986,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRateLack"
                   options={optionsInterest}
                   size="large"
@@ -1034,6 +1029,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="เลือกจำนวนเดือน"
@@ -1208,6 +1204,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="กรอกจำนวนเดือน"

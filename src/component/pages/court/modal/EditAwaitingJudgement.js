@@ -812,6 +812,7 @@ const EditAwaitingJudgement = ({
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRate"
                   options={optionsInterest}
                   size="large"
@@ -853,6 +854,7 @@ const EditAwaitingJudgement = ({
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRateLack"
                   options={optionsInterest}
                   size="large"
@@ -895,6 +897,7 @@ const EditAwaitingJudgement = ({
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="กรอกจำนวนเดือน"
@@ -1051,6 +1054,7 @@ const EditAwaitingJudgement = ({
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="กรอกจำนวนเดือน"
@@ -1199,7 +1203,12 @@ const EditAwaitingJudgement = ({
               },
             ]}
           >
-            <Select type="number" name="costMonth3" options={optionsMonth} />
+            <Select
+              showSearch
+              type="number"
+              name="costMonth3"
+              options={optionsMonth}
+            />
           </Form.Item>
 
           <Form.Item

@@ -516,7 +516,8 @@ const EstimateAssetsResult = ({
         <Form.Item label="ประเภททรัพย์" name="assetPropotyType">
           <Select
             placeholder="ประเภททรัพย์"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectAssetPropotyType(value)}
             options={optionsAssetsType}
             style={{ width: "100%" }}
@@ -535,7 +536,8 @@ const EstimateAssetsResult = ({
         >
           <Select
             placeholder="เลือกลักษณะที่ดิน"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectLandDetail(value)}
             options={dataLandDetailList}
             style={{ width: "100%" }}
@@ -692,7 +694,8 @@ const EstimateAssetsResult = ({
         <Form.Item label="เลือกผู้สืบทรัพย์" name="investigatorAsset">
           <Select
             placeholder="เลือกผู้สืบทรัพย์"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}
             style={{ width: "100%" }}

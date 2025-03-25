@@ -377,11 +377,11 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
               <Form.Item label="เลขสัญญา">{dataDefault.CONTNO}</Form.Item>
               <Form.Item label="ประเภทสัญญา" name="loanType">
                 <Select
-                  showSearch
                   style={{
                     width: 150,
                   }}
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={optionsLoan}
                   onChange={(value) => onChangeSelectLoanType(value)}
                   defaultValue={
@@ -400,12 +400,12 @@ const EditNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Select
-                  showSearch
                   style={{
                     width: 350,
                   }}
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                 />

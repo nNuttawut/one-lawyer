@@ -17,7 +17,6 @@ import {
   InputNumber,
   Row,
   Col,
-  Upload,
   Popconfirm,
 } from "antd";
 import {
@@ -29,7 +28,6 @@ import {
   POST_JUDGE,
   POST_JUDGE_DEFENDANTS,
   POST_STATUS,
-  PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
 import { InboxOutlined } from "@ant-design/icons";
@@ -47,6 +45,7 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import Dragger from "antd/es/upload/Dragger";
+import ThaiDatePickerFrom from "../../../../hook/ThaiDatePickerFrom";
 
 const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
@@ -801,7 +800,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             suspensionAmount: null,
           }}
         >
-          <Form.Item
+          {/* <Form.Item
             label="วันที่พิพากษา"
             name="enforceCaseDate"
             rules={[
@@ -812,7 +811,16 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             ]}
           >
             <DatePicker onChange={onChangeCourt} size="large" />
+           
+          </Form.Item> */}
+          <Form.Item
+            label="วันที่พิพากษา"
+            name="enforceCaseDate"
+            rules={[{ required: true, message: "กรุณาเลือกวันที่" }]}
+          >
+            <ThaiDatePickerFrom />
           </Form.Item>
+
           <Form.Item
             label="เลขคดีแดง"
             name="redNumber"
@@ -880,6 +888,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRate"
                   options={optionsInterest}
                   size="large"
@@ -921,6 +930,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   name="interestRateLack"
                   options={optionsInterest}
                   size="large"
@@ -963,6 +973,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="เลือกจำนวนเดือน"
@@ -1137,6 +1148,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                 labelCol={{ span: 6 }}
               >
                 <Select
+                  showSearch
                   size="large"
                   style={{ width: "auto" }}
                   placeholder="กรอกจำนวนเดือน"
@@ -1243,12 +1255,13 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                   },
                 ]}
               >
-                <DatePicker
+                {/* <DatePicker
                   onChange={onChangeDateAgreement}
                   placeholder="กรุณาเลือกวันที่"
                   size="large"
                   style={{ width: "auto" }}
-                />
+                /> */}
+                <ThaiDatePickerFrom />
               </Form.Item>
             </Col>
             <Col span={12}>

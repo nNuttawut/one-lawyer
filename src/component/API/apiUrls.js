@@ -1,5 +1,5 @@
 //------dev-------
-// // ดีงข้อมูลจาก server ibm
+// // // ดีงข้อมูลจาก server ibm
 const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
@@ -390,7 +390,7 @@ export {
 //   POST_JUDGE,
 //   PUT_JUDGE,
 //   GET_JUDGE_BY_ID,
-// GET_JUDGE_LIST,
+//   GET_JUDGE_LIST,
 //   POST_JUDGE_DEFENDANTS,
 //   PUT_JUDGE_DEFENDANTS,
 //   GET_JUDGE_DEFENDANTS_BY_ID,

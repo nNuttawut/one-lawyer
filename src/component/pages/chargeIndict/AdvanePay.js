@@ -1981,7 +1981,8 @@ const Main = () => {
             >
               <Select
                 placeholder="เลือกบริษัท"
-                optionFilterProp="value"
+                showSearch
+                optionFilterProp="label"
                 options={companiesOption}
                 onChange={(value) => onChangeSelectCompany(value)}
                 defaultValue={userCompany === "3" ? 3 : 2}
@@ -2018,7 +2019,8 @@ const Main = () => {
               <Space direction="vertical" size={12}>
                 <Select
                   placeholder="เลือกทนาย"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   onChange={(value, label) =>
                     onChangeSelectLawyer(value, label)
                   }
@@ -2033,7 +2035,7 @@ const Main = () => {
               </Space>
               <Select
                 placeholder="เลือกสถานะ"
-                optionFilterProp="value"
+                optionFilterProp="label"
                 onChange={(value) => onChangeSelectStatus(value)}
                 defaultValue={4}
                 style={{

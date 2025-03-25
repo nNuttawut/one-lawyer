@@ -722,7 +722,8 @@ const EditAssetsSuccess = ({
         >
           <Select
             placeholder="เลือกผู้สืบทรัพย์"
-            optionFilterProp="value"
+            showSearch
+            optionFilterProp="label"
             disabled
             onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}

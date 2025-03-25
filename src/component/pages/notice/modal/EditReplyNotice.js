@@ -557,12 +557,12 @@ const EditReplyNotice = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 ]}
               >
                 <Select
-                  showSearch
                   style={{
                     width: 250,
                   }}
                   placeholder="เลือกบริษัท"
-                  optionFilterProp="value"
+                  showSearch
+                  optionFilterProp="label"
                   options={companiesOption}
                   onChange={(value) => onChangeSelect(value)}
                 />

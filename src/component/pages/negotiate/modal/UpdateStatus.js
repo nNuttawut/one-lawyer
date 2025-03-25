@@ -487,6 +487,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             ]}
           >
             <Select
+              showSearch
               size="large"
               style={{ width: "auto" }}
               type="number"
@@ -509,7 +510,8 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             <Select
               popupMatchSelectWidth={false}
               placeholder="เลือกผู้เจรจา"
-              optionFilterProp="value"
+              showSearch
+              optionFilterProp="label"
               onChange={(value) => onChangeSelectnegotiator(value)}
               options={assistantOption}
               size="large"
