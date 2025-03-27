@@ -98,36 +98,36 @@ const Main = () => {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
 
-      let filteredData;
+      // let filteredData;
 
-      if (userCompany === "3") {
-        filteredData = newData.filter((item) => {
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
-            return item;
-          } else {
-            return false;
-          }
-        });
-      } else {
-        filteredData = newData.filter((item) => {
-          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (containsNo && !containsEng) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
-        });
-      }
+      // if (userCompany === "3") {
+      //   filteredData = newData.filter((item) => {
+      //     const containsEng = item.CONTNO.substring(0, 1) === "4";
+      //     // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+      //     if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
+      //       return item;
+      //     } else {
+      //       return false;
+      //     }
+      //   });
+      // } else {
+      //   filteredData = newData.filter((item) => {
+      //     const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+      //     const containsEng = item.CONTNO.substring(0, 1) === "4";
+      //     // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+      //     if (containsNo && !containsEng) {
+      //       return item; // เก็บ item นี้ไว้
+      //     } else {
+      //       return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+      //     }
+      //   });
+      // }
 
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log("newData", newData);
+      console.log("Length of filtered data:", newData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);

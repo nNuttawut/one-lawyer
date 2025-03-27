@@ -208,8 +208,6 @@ const Main = () => {
   const generatePDF = () => {
     const doc = new jsPDF();
 
-    // ตั้งค่าฟอนต์ภาษาไทย (ถ้าจำเป็น)
-
     doc.setFontSize(16);
     doc.setFont("THSarabunNew", "bold");
     // ส่วนหัวของเอกสาร
@@ -225,18 +223,20 @@ const Main = () => {
       null,
       "center"
     );
+
     doc.setFont("THSarabunNew", "normal");
     if (arrData?.guarantor?.length > 0 && queryContno.substring(0, 1) !== "1") {
-      arrData.guarantor.map((data, index) =>
+      arrData.guarantor.forEach((data, index) => {
+        yLine += 6; // เพิ่มค่า yLine ทีละ 5
         doc.text(
-          `คนค้ำที่ ${index + data.GARNO}: ${data.NAME}`,
+          `คนค้ำที่ ${index + 1}: ${data.NAME}`,
           105,
-          yLine + 5,
+          yLine,
           null,
           null,
           "center"
-        )
-      );
+        );
+      });
     }
     yLine += 5;
     doc.text(`เลขที่สัญญา: ${arrData?.chqtran[0]?.contno}`, 50, yLine + 5);
@@ -261,6 +261,15 @@ const Main = () => {
       120,
       yLine + 10
     );
+    doc.text(
+      `ยอดกู้: ${
+        arrData?.loan?.ncshprc
+          ? currencyFormatPoint(arrData?.loan?.ncshprc)
+          : "-"
+      } บาท`,
+      120,
+      yLine + 15
+    );
     doc.setTextColor(255, 0, 0);
     doc.text(
       `ต้นคงเหลือ: ${
@@ -269,16 +278,16 @@ const Main = () => {
           : "-"
       } บาท`,
       120,
-      yLine + 15
+      yLine + 20
     );
     doc.text(
-      `ดอกเบี้ยคงเหลือ: ${
-        arrData?.loan?.kangdok
+      `ค้างดอกเบี้ย: ${
+        arrData?.loan?.flag === 1
           ? currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.dok)
-          : "-"
+          : arrData?.loan?.kangdok
       } บาท`,
       120,
-      yLine + 20
+      yLine + 25
     );
 
     doc.setTextColor(0, 0, 0);
@@ -291,21 +300,21 @@ const Main = () => {
           : "-"
       }`,
       120,
-      yLine + 25
+      yLine + 30
     );
     doc.text(
       `ผ่อน: ${
         arrData?.loan?.tnopay ? currencyFormatPoint(arrData?.loan?.tnopay) : 0
       } งวด`,
       120,
-      yLine + 30
+      yLine + 35
     );
     doc.text(
       `งวดละ: ${
         arrData?.loan?.totUpay ? currencyFormatPoint(arrData?.loan?.totUpay) : 0
       } บาท`,
       145,
-      yLine + 30
+      yLine + 35
     );
 
     // สร้างตาราง
@@ -344,7 +353,7 @@ const Main = () => {
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: yLine + 35,
+      startY: yLine + 40,
       theme: "striped",
       styles: {
         font: "THSarabunNew",
@@ -535,6 +544,7 @@ const Main = () => {
                 </Tooltip>
               </Col>
             </Row>
+
             <Divider>
               รายละเอียดสัญญา{" "}
               <FontAwesomeIcon
@@ -601,6 +611,13 @@ const Main = () => {
                     ? convertDateThaiShort(arrData?.chqtran[0]?.inpdt)
                     : "-"}
                 </p>
+                <p>
+                  <b>ยอดกู้ : </b>{" "}
+                  {arrData?.loan?.ncshprc
+                    ? currencyFormatPoint(arrData?.loan?.ncshprc)
+                    : 0}{" "}
+                  บาท
+                </p>
                 <p style={{ color: "red" }}>
                   <b>ต้นคงเหลือ : </b>{" "}
                   {arrData?.loan?.tonkong
@@ -617,6 +634,7 @@ const Main = () => {
                     : arrData?.loan?.kangdok}{" "}
                   บาท
                 </p>
+
                 <p>
                   <b>วันที่คิดดอกเบี้ย : </b>
                   {arrData?.loan?.startdate

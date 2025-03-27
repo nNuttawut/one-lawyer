@@ -154,8 +154,7 @@ const Main = () => {
     const preData = value.filter((item) =>
       item.parcel_list.every(
         (parcel) =>
-          (parcel.status === 1 || parcel.status === 2 || parcel.status === 3) &&
-          !parcel.remark
+          parcel.status === 1 || parcel.status === 2 || parcel.status === 3
       )
     );
     console.log("preData--->", preData);

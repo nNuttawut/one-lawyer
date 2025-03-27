@@ -150,6 +150,7 @@ const Main = () => {
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.account_type === "repurchase"
       );
+
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -197,11 +198,15 @@ const Main = () => {
         });
       });
 
-      console.log(sortEms);
+      let i = 1;
+      const preData = filteredData.map((item) => ({
+        ...item,
+        no: i++,
+      }));
 
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
+      setArrayTable(preData);
+      setDataArr(preData);
+      setTableLength(preData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -234,8 +239,11 @@ const Main = () => {
     );
     console.log("ssdss", value.length);
 
-    if (value.length === 13 && result.length > 0) {
-      console.log("ssdss--->", value.length);
+    let resultReturn = dataArr
+      .filter((item) => item.parcel_no_response === value) // กรองเฉพาะค่าที่ตรงกับ value
+      .map((item) => item.parcel_no_response); // ดึงเฉพาะค่าที่ต้องการออกมาฃ
+
+    if (value.length === 13 && result.length > 0 && resultReturn[0] === value) {
       setIsModalUpdateEms(true);
       setDataModal(result[0]);
       console.log("result---->", result);
@@ -1092,9 +1100,8 @@ const Main = () => {
     {
       title: "ลำดับ",
       align: "center",
-      render: (text, record, index) => (
-        <>{index + 1}</> // คำนวณลำดับจาก index ของแถวใน Table
-      ),
+      dataIndex: "no", // ใช้ dataIndex เพื่อรองรับการ sort
+      render: (text, record, index) => <>{record.no}</>, // แสดงค่า no + 1
     },
 
     {

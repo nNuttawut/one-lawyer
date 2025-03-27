@@ -73,32 +73,6 @@ const Main = () => {
     { value: 3, label: "ตีกลับ" },
   ];
 
-  // const optionSelectCode = [
-  //   { value: "all", label: "ทั้งหมด" },
-  //   {
-  //     label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
-  //     title: "บอกเลิกสัญญาคนค้ำ(116)",
-  //     options: [
-  //       { value: "P21", label: "P21" },
-  //       { value: "P22", label: "P22" },
-  //       { value: "P23", label: "P23" },
-  //       { value: "P31", label: "P31" },
-  //       { value: "P32", label: "P32" },
-  //       { value: "P33", label: "P33" },
-  //       { value: "P41", label: "P41" },
-  //     ],
-  //   },
-  //   {
-  //     label: <span>บอกเลิกสัญญาผู้เช่าซื้อ(119)</span>,
-  //     title: "บอกเลิกสัญญาผู้เช่าซื้อ(119)",
-  //     options: [
-  //       { value: "P11", label: "P11" },
-  //       { value: "P12", label: "P12" },
-  //       { value: "P13", label: "P13" },
-  //     ],
-  //   },
-  // ];
-
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
       return false;
@@ -224,10 +198,15 @@ const Main = () => {
       });
 
       console.log(sortEms);
+      let i = 1;
+      const preData = filteredData.map((item) => ({
+        ...item,
+        no: i++,
+      }));
 
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
+      setArrayTable(preData);
+      setDataArr(preData);
+      setTableLength(preData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -260,8 +239,11 @@ const Main = () => {
     );
     console.log("ssdss", value.length);
 
-    if (value.length === 13 && result.length > 0) {
-      console.log("ssdss--->", value.length);
+    let resultReturn = dataArr
+      .filter((item) => item.parcel_no_response === value) // กรองเฉพาะค่าที่ตรงกับ value
+      .map((item) => item.parcel_no_response); // ดึงเฉพาะค่าที่ต้องการออกมาฃ
+
+    if (value.length === 13 && result.length > 0 && resultReturn[0] === value) {
       setIsModalUpdateEms(true);
       setDataModal(result[0]);
       console.log("result---->", result);
@@ -1113,9 +1095,8 @@ const Main = () => {
     {
       title: "ลำดับ",
       align: "center",
-      render: (text, record, index) => (
-        <>{index + 1}</> // คำนวณลำดับจาก index ของแถวใน Table
-      ),
+      dataIndex: "no", // ใช้ dataIndex เพื่อรองรับการ sort
+      render: (text, record, index) => <>{record.no}</>, // แสดงค่า no + 1
     },
 
     {

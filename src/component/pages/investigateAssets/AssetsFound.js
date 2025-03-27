@@ -124,11 +124,11 @@ const Main = () => {
         });
       }
 
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
+      setArrayTable(newData);
+      setDataArr(newData);
+      setTableLength(newData.length);
+      console.log("newData", newData);
+      console.log("Length of filtered data:", newData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);

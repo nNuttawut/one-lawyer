@@ -119,6 +119,8 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
                       ? "ใบตอบกลับ"
                       : parcel.status === 2
                       ? "เว็บไปรษณย์"
+                      : parcel.status === 3
+                      ? "ตีกลับ"
                       : "ยังไม่ตอบกลับ"}
                   </Form.Item>
                   <Form.Item label="ลิ้งค์เก็บรูปตอบกลับ" name="imageReplyFile">

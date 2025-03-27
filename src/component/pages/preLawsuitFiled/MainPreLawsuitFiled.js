@@ -13,7 +13,12 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  SyncOutlined,
+  FormOutlined,
+  FilePdfOutlined,
+} from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -470,6 +475,16 @@ const Main = () => {
                           />
                         </Button>
                       ) : null}
+
+                      <Button
+                        name="document"
+                        style={{ boxShadow: "0 4px 3px" }}
+                        // onClick={() => {}}
+                      >
+                        <FilePdfOutlined
+                          style={{ color: "orange", fontSize: "16px" }}
+                        />
+                      </Button>
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,

@@ -418,6 +418,7 @@ const Main = () => {
       if (dataFilter?.length === 0) {
         message.error("ไม่พบข้อมูล");
       }
+
       setArrayTable(dataFilter);
       setTableLength(dataFilter.length);
       setLoading(false);

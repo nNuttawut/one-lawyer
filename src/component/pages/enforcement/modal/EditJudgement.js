@@ -54,8 +54,6 @@ import CurrencyFormat from "../../../../hook/CurrencyFormat";
 const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
     CheckGovermentOfficer();
-  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
-    CurrencyFormat();
   const USER_ID = localStorage.getItem("USER_ID");
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [form] = Form.useForm();
@@ -72,7 +70,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
     considerationDate: null,
     dateAgreement: null,
   });
-  const [radioDecide, setRadioDecide] = useState("enforce");
+  const [radioDecide, setRadioDecide] = useState(null);
   const [arrow, setArrow] = useState("Show");
 
   const [tabsKey, setTabsKey] = useState("1");
@@ -101,7 +99,8 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
       );
 
       console.log("judgeNumber1", judgeNumber1);
-
+      console.log("judgeNumber2", judgeNumber2);
+      setRadioDecide(null);
       form.setFieldsValue({
         enforceCaseDate: dayjs(dataJudgement?.enforce_case_date),
         redNumber: dataJudgement?.red_case_number,
@@ -759,65 +758,56 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   };
 
   const handleCheckBoxGroupGoverment = () => {
+    // กรองเอาเฉพาะ judge_number === 1 แล้วดึง id (CUSTOMER_ID)
+    const judgeCustomerIdsTab1 = dataJudgeDefendants
+      ?.filter((item) => item.judge_number === 1)
+      ?.map((item) => item.CUSTOMER_ID); // ดึงเฉพาะ id ออกมาเป็น array
+
+    // กรองเอาเฉพาะ judge_number === 1 แล้วดึง id (CUSTOMER_ID)
+    const judgeCustomerIdsTab2 = dataJudgeDefendants
+      ?.filter((item) => item.judge_number === 2)
+      ?.map((item) => item.CUSTOMER_ID); // ดึงเฉพาะ id ออกมาเป็น array
+
+    console.log("judgeCustomerIdsTab1", judgeCustomerIdsTab1);
+    console.log(
+      "governmentOfficers",
+      judgeCustomerIdsTab1?.some((id) => id === governmentOfficers.id)
+    );
+
     return (
-      <>
-        <Checkbox.Group onChange={onChangeGovermentOfficer}>
-          <Space direction="vertical" style={{ marginTop: "5px" }}>
-            {tabsKey === "1" ? (
-              <Checkbox value={governmentOfficers}>
-                {governmentOfficers
-                  ? `จำเลยที่ 1 ${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`
-                  : "-"}
-              </Checkbox>
-            ) : null}
-            {governmentOfficers?.guarantors?.map((guarantor, index) => (
-              <Checkbox key={index} value={guarantor} disabled={false}>
-                {`จำเลยที่ ${index + 2} ${guarantor?.SNAM} ${
-                  guarantor?.NAME1
-                } ${guarantor?.NAME2}`}
-              </Checkbox>
-            ))}
-          </Space>
-        </Checkbox.Group>
-      </>
+      <Space direction="vertical" style={{ marginTop: "5px" }}>
+        {/* เช็ค governmentOfficers ว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
+        {tabsKey === "1" && governmentOfficers ? (
+          <Checkbox
+            value={governmentOfficers}
+            checked={judgeCustomerIdsTab1?.some(
+              (id) => id === governmentOfficers.id
+            )}
+            onChange={onChangeGovermentOfficer}
+          >
+            {`จำเลยที่ 1 ${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`}
+          </Checkbox>
+        ) : null}
+
+        {/* เช็ค guarantors แต่ละตัวว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
+        {governmentOfficers?.guarantors?.map((guarantor, index) => (
+          <Checkbox
+            key={index}
+            value={guarantor}
+            checked={
+              tabsKey === "1"
+                ? judgeCustomerIdsTab1?.some((id) => id === guarantor.id)
+                : judgeCustomerIdsTab2?.some((id) => id === guarantor.id)
+            }
+          >
+            {`จำเลยที่ ${index + 2} ${guarantor?.SNAM} ${guarantor?.NAME1} ${
+              guarantor?.NAME2
+            }`}
+          </Checkbox>
+        ))}
+      </Space>
     );
   };
-
-  // const handleCheckBoxGroupGoverment = () => {
-  //   // ดึง CUSTOMER_ID จาก judgeDefendants.data
-  //   const judgeCustomerIds =
-  //     dataJudgement?.map((item) => item.CUSTOMER_ID) || [];
-  //   console.log("judgeCustomerIds---->", judgeCustomerIds);
-
-  //   return (
-  //     <Checkbox.Group onChange={onChangeGovermentOfficer}>
-  //       <Space direction="vertical" style={{ marginTop: "5px" }}>
-  //         {/* เช็ค governmentOfficers ว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
-  //         {tabsKey === "1" && governmentOfficers ? (
-  //           <Checkbox
-  //             value={governmentOfficers}
-  //             checked={judgeCustomerIds.includes(governmentOfficers.id)}
-  //           >
-  //             {`จำเลยที่ 1 ${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`}
-  //           </Checkbox>
-  //         ) : null}
-
-  //         {/* เช็ค guarantors แต่ละตัวว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
-  //         {governmentOfficers?.guarantors?.map((guarantor, index) => (
-  //           <Checkbox
-  //             key={index}
-  //             value={guarantor}
-  //             checked={judgeCustomerIds.includes(guarantor.id)}
-  //           >
-  //             {`จำเลยที่ ${index + 2} ${guarantor?.SNAM} ${guarantor?.NAME1} ${
-  //               guarantor?.NAME2
-  //             }`}
-  //           </Checkbox>
-  //         ))}
-  //       </Space>
-  //     </Checkbox.Group>
-  //   );
-  // };
 
   const props = {
     multiple: true,

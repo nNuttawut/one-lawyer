@@ -1,330 +1,113 @@
 //------dev-------
-// // // ดีงข้อมูลจาก server ibm
-const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
-
-//ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
-const GET_ALL_LOAN = "/lawyer/dev/api/loans";
-
-///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
-const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
-
-//ดึงจำนวนงานที่ users รับงาน
-const GET_JOB_COUNT = "/lawyer/dev/api/loans/notics/count";
-
-//ดึงจำนานงานที่กำลังดำเนินการ
-const GET_JOB_IN_PROGRESS = "/lawyer/dev/api/jobs";
-
-//ดึงจำนานงานที่กำลังดำเนินการตามสถานะ
-const GET_JOB_IN_PROGRESS_BY_STATUS = "/lawyer/dev/api/jobs/";
-
-//นำข้อมูลเข้า db lawyers
-const POST_LOAN_IN_LAWYERS_DB = "/lawyer/dev/api/loans";
-
-//เปลี่ยนสถานะสัญญา
-const POST_STATUS = "/lawyer/dev/api/loans/status";
-
-//อัพเดทสถานะสัญญา
-const PUT_STATUS = "/lawyer/dev/api/loans/status";
-
-//ดึงข้อมูลแบบคำฟ้อง
-const GET_LAWSUIT_DETAIL_BY_ID = `/lawyer/dev/api/lawsuits/`;
-const GET_LAWSUIT_LIST = `/lawyer/dev/api/lawsuits`;
-//อัพเดทข้อมูลคำฟ้อง
-const PUT_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits`;
-const GET_LAWSUIT_DETAIL_BY_LOAN = `/lawyer/dev/api/lawsuits/loan/`;
-
-//ดึงข้อมูลสืบทรัพย์
-const GET_INVESTIGATE_BY_LAWSUIT = `/lawyer/dev/api/investigate-properties/`;
-const GET_INVESTIGATE_LIST = `/lawyer/dev/api/investigate-properties`;
-//สร้างข้อมูลสืบทรัพย์
-const POST_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
-const POST_INVESTIGATE_ITEM = `/lawyer/dev/api/investigate-properties`;
-//อัพเดทข้อมูลสืบทรัพย์
-const PUT_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
-const PUT_INVESTIGATE_ITEM_BY_ID = `/lawyer/dev/api/investigate-properties`;
-//ดึงข้อมูลเพื่อสืบทรัพย์
-const GET_INVESTIGATE_LOANS_LIST = `/lawyer/dev/api/investigate-properties/loans/list`;
-//ข้อมูลลักษณะที่ดิน
-const GET_LAND_DETAIL_LIST = `/lawyer/dev/api/investigate-properties/details/list`;
-
-//ข้อมูลทั้งหมดของ id
-const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/dev/api/worklogs/`;
-
-//คำพิพากษา
-const POST_JUDGE = `/lawyer/dev/api/judgements`;
-const PUT_JUDGE = `/lawyer/dev/api/judgements`;
-const GET_JUDGE_BY_ID = `/lawyer/dev/api/judgements/`;
-const GET_JUDGE_LIST = `/lawyer/dev/api/judgements`;
-
-//ข้อมูลจำเลย
-const POST_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
-const PUT_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
-const GET_JUDGE_DEFENDANTS_BY_ID = `/lawyer/dev/api/judgement-defendants/`;
-
-//ข้อมูลจทำยอม
-const POST_AGREEMENTS = `/lawyer/dev/api/agreements/`;
-const PUT_AGREEMENTS = `/lawyer/dev/api/agreements`;
-const GET_AGREEMENTS_BY_ID = `/lawyer/dev/api/agreements/`;
-
-//notice
-const POST_PARCELS = `/lawyer/dev/api/parcels`;
-const PUT_PARCELS = `/lawyer/dev/api/parcels`;
-const GET_PARCELS = `/lawyer/dev/api/parcels/worklogs/`;
-
-//ems terminate
-const POST_CANCEL = `/lawyer/dev/api/cancel-contracts`;
-const PUT_CANCEL = `/lawyer/dev/api/cancel-contracts`;
-const GET_CANCEL = `/lawyer/dev/api/cancel-contracts`;
-
-//expenses
-
-const POST_EXPENSES = `/lawyer/dev/api/expenses`;
-const PUT_EXPENSES = `/lawyer/dev/api/expenses/`;
-const GET_EXPENSES_LIST = `/lawyer/dev/api/expenses`;
-const GET_EXPENSES_CONTNO_LIST = "/lawyer/dev/api/expenses/contract-list";
-const GET_EXPENSES_LOAN_ID = `/lawyer/dev/api/expenses/loan/`;
-const GET_EXPENSES_CONTNO = `/lawyer/dev/api/expenses/contract/`;
-const POST_DELETE_ID = `/lawyer/dev/api/expenses/`;
-const GET_EXPENSE_REF_GROUP = `/lawyer/dev/api/expenses/reference-list`;
-//ดึง users ในระบบ
-
-const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
-const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
-const GET_ROLE_LIST = "/lawyer/dev/api/roles";
-const GET_USERS_LIST = "/lawyer/dev/api/users";
-const GET_BY_ID = "/lawyer/dev/api/users/";
-
-//post
-const LOG_IN = `/lawyer/dev/api/login`;
-const REGISTER = `/lawyer/dev/api/register`;
-const POST_USER = `/lawyer/dev/api/users`;
-const PUT_USER_UPDATE = `/lawyer/dev/api/customers`;
-
-//all details
-const GET_DETAILS = `/lawyer/dev/api/all-details?contractNo=`;
-
-//delete status
-const DELETE_STATUS_BY_WORKLOG = `/lawyer/dev/api/worklogs/`;
-
-const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
-// const baseUrl = "http://localhost:8080";
-
-const TOKEN = localStorage.getItem("TOKEN");
-const HEADERS_EXPORT = {
-  "x-access-token": TOKEN,
-};
-
-const HEADERS_LOGIN = {
-  "Content-Type": "application/json",
-};
-
-//get ข้อมูลบอกเลิกสัญญาเบน
-const POST_TERMINATE_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki`;
-const POST_TERMINATE_CONTRACT_RECORD = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki2`;
-const POST_TERMINATE_BY_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/detail-contno`;
-
-//ค้นหาสัญญา เบน
-const POST_LOAN_DB2 =
-  "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/search-contno";
-
-//ข้อมูลการผ่อน
-const POST_DETAIL_PAYMENT =
-  "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/tonbalance";
-
-//get GeoThailand ของเอื้อ
-const GET_PROVICE = `https://eua-i67f6gaaqa-as.a.run.app/Api/provinces`;
-const GET_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/districted/`;
-const GET_SUB_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/subdistricted/`;
-const GET_ZIPCODE = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
-
-//get GeoThailand ที่ดิน
-const GET_PROVICE_LAND = `https://onemoney.ngrok.app/GetProvince`;
-const POST_DISTRICT_LAND = `https://onemoney.ngrok.app/GetAmphur`;
-const POST_CALCULATE_LAND = `https://onemoney.ngrok.app/AllData`;
-
-export {
-  PUT_INVESTIGATE_ITEM_BY_ID,
-  POST_INVESTIGATE_ITEM,
-  GET_LAND_DETAIL_LIST,
-  GET_INVESTIGATE_LOANS_LIST,
-  PUT_USER_UPDATE,
-  HEADERS_LOGIN,
-  GET_LOAN_FROM_SERVER_IBM,
-  GET_ALL_LOAN,
-  GET_LOAN_BY_CONTNO,
-  GET_LAWYERS_LIST,
-  GET_JOB_COUNT,
-  GET_JOB_IN_PROGRESS,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
-  POST_LOAN_IN_LAWYERS_DB,
-  POST_STATUS,
-  PUT_STATUS,
-  HEADERS_EXPORT,
-  baseUrl,
-  GET_LAWSUIT_DETAIL_BY_LOAN,
-  PUT_LAWSUIT_DETAIL,
-  GET_INVESTIGATE_BY_LAWSUIT,
-  GET_INVESTIGATE_LIST,
-  POST_INVESTIGATE_LOG,
-  PUT_INVESTIGATE_LOG,
-  LOG_IN,
-  REGISTER,
-  GET_WORK_LOG_DETAIL_BY_ID,
-  POST_JUDGE,
-  PUT_JUDGE,
-  GET_JUDGE_BY_ID,
-  GET_JUDGE_LIST,
-  POST_JUDGE_DEFENDANTS,
-  PUT_JUDGE_DEFENDANTS,
-  GET_JUDGE_DEFENDANTS_BY_ID,
-  GET_COMPANIES_LIST,
-  POST_AGREEMENTS,
-  PUT_AGREEMENTS,
-  GET_AGREEMENTS_BY_ID,
-  GET_LAWSUIT_DETAIL_BY_ID,
-  GET_LAWSUIT_LIST,
-  GET_ROLE_LIST,
-  GET_USERS_LIST,
-  GET_BY_ID,
-  POST_USER,
-  GET_PROVICE,
-  GET_DISTRICT,
-  GET_SUB_DISTRICT,
-  GET_ZIPCODE,
-  DELETE_STATUS_BY_WORKLOG,
-  GET_DETAILS,
-  GET_PROVICE_LAND,
-  POST_DISTRICT_LAND,
-  POST_CALCULATE_LAND,
-  POST_PARCELS,
-  PUT_PARCELS,
-  GET_PARCELS,
-  POST_TERMINATE_CONTRACT,
-  POST_TERMINATE_CONTRACT_RECORD,
-  POST_TERMINATE_BY_CONTRACT,
-  POST_CANCEL,
-  PUT_CANCEL,
-  GET_CANCEL,
-  POST_EXPENSES,
-  PUT_EXPENSES,
-  GET_EXPENSES_LIST,
-  GET_EXPENSES_LOAN_ID,
-  GET_EXPENSES_CONTNO,
-  POST_DELETE_ID,
-  GET_EXPENSES_CONTNO_LIST,
-  GET_EXPENSE_REF_GROUP,
-  POST_LOAN_DB2,
-  POST_DETAIL_PAYMENT,
-};
-
-// // ----production-----
-// //ดีงข้อมูลจาก server ibm
+// // ดีงข้อมูลจาก server ibm
 // const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 // //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
-// const GET_ALL_LOAN = "/lawyer/api/loans";
+// const GET_ALL_LOAN = "/lawyer/dev/api/loans";
 
 // ///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
-// const GET_LOAN_BY_CONTNO = "/lawyer/api/loans/";
+// const GET_LOAN_BY_CONTNO = "/lawyer/dev/api/loans/";
 
 // //ดึงจำนวนงานที่ users รับงาน
-// const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
+// const GET_JOB_COUNT = "/lawyer/dev/api/loans/notics/count";
 
 // //ดึงจำนานงานที่กำลังดำเนินการ
-// const GET_JOB_IN_PROGRESS = "/lawyer/api/jobs";
+// const GET_JOB_IN_PROGRESS = "/lawyer/dev/api/jobs";
 
 // //ดึงจำนานงานที่กำลังดำเนินการตามสถานะ
-// const GET_JOB_IN_PROGRESS_BY_STATUS = "/lawyer/api/jobs/";
+// const GET_JOB_IN_PROGRESS_BY_STATUS = "/lawyer/dev/api/jobs/";
 
 // //นำข้อมูลเข้า db lawyers
-// const POST_LOAN_IN_LAWYERS_DB = "/lawyer/api/loans";
+// const POST_LOAN_IN_LAWYERS_DB = "/lawyer/dev/api/loans";
 
 // //เปลี่ยนสถานะสัญญา
-// const POST_STATUS = "/lawyer/api/loans/status";
+// const POST_STATUS = "/lawyer/dev/api/loans/status";
 
 // //อัพเดทสถานะสัญญา
-// const PUT_STATUS = "/lawyer/api/loans/status";
+// const PUT_STATUS = "/lawyer/dev/api/loans/status";
 
 // //ดึงข้อมูลแบบคำฟ้อง
-// const GET_LAWSUIT_DETAIL_BY_ID = `/lawyer/api/lawsuits/`;
-// const GET_LAWSUIT_LIST = `/lawyer/api/lawsuits`;
+// const GET_LAWSUIT_DETAIL_BY_ID = `/lawyer/dev/api/lawsuits/`;
+// const GET_LAWSUIT_LIST = `/lawyer/dev/api/lawsuits`;
 // //อัพเดทข้อมูลคำฟ้อง
-// const PUT_LAWSUIT_DETAIL = `/lawyer/api/lawsuits`;
-// const GET_LAWSUIT_DETAIL_BY_LOAN = `/lawyer/api/lawsuits/loan/`;
+// const PUT_LAWSUIT_DETAIL = `/lawyer/dev/api/lawsuits`;
+// const GET_LAWSUIT_DETAIL_BY_LOAN = `/lawyer/dev/api/lawsuits/loan/`;
 
 // //ดึงข้อมูลสืบทรัพย์
-// const GET_INVESTIGATE_BY_LAWSUIT = `/lawyer/api/investigate-properties/`;
-// const GET_INVESTIGATE_LIST = `/lawyer/api/investigate-properties`;
+// const GET_INVESTIGATE_BY_LAWSUIT = `/lawyer/dev/api/investigate-properties/`;
+// const GET_INVESTIGATE_LIST = `/lawyer/dev/api/investigate-properties`;
 // //สร้างข้อมูลสืบทรัพย์
-// const POST_INVESTIGATE_LOG = `/lawyer/api/investigate-log`;
-// const POST_INVESTIGATE_ITEM = `/lawyer/api/investigate-properties`;
+// const POST_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
+// const POST_INVESTIGATE_ITEM = `/lawyer/dev/api/investigate-properties`;
 // //อัพเดทข้อมูลสืบทรัพย์
-// const PUT_INVESTIGATE_LOG = `/lawyer/api/investigate-log`;
-// const PUT_INVESTIGATE_ITEM_BY_ID = `/lawyer/api/investigate-properties`;
+// const PUT_INVESTIGATE_LOG = `/lawyer/dev/api/investigate-log`;
+// const PUT_INVESTIGATE_ITEM_BY_ID = `/lawyer/dev/api/investigate-properties`;
 // //ดึงข้อมูลเพื่อสืบทรัพย์
-// const GET_INVESTIGATE_LOANS_LIST = `/lawyer/api/investigate-properties/loans/list`;
+// const GET_INVESTIGATE_LOANS_LIST = `/lawyer/dev/api/investigate-properties/loans/list`;
 // //ข้อมูลลักษณะที่ดิน
-// const GET_LAND_DETAIL_LIST = `/lawyer/api/investigate-properties/details/list`;
+// const GET_LAND_DETAIL_LIST = `/lawyer/dev/api/investigate-properties/details/list`;
 
 // //ข้อมูลทั้งหมดของ id
-// const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/api/worklogs/`;
+// const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/dev/api/worklogs/`;
 
 // //คำพิพากษา
-// const POST_JUDGE = `/lawyer/api/judgements`;
-// const PUT_JUDGE = `/lawyer/api/judgements`;
-// const GET_JUDGE_BY_ID = `/lawyer/api/judgements/`;
+// const POST_JUDGE = `/lawyer/dev/api/judgements`;
+// const PUT_JUDGE = `/lawyer/dev/api/judgements`;
+// const GET_JUDGE_BY_ID = `/lawyer/dev/api/judgements/`;
 // const GET_JUDGE_LIST = `/lawyer/dev/api/judgements`;
 
 // //ข้อมูลจำเลย
-// const POST_JUDGE_DEFENDANTS = `/lawyer/api/judgement-defendants`;
-// const PUT_JUDGE_DEFENDANTS = `/lawyer/api/judgement-defendants`;
-// const GET_JUDGE_DEFENDANTS_BY_ID = `/lawyer/api/judgement-defendants/`;
+// const POST_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
+// const PUT_JUDGE_DEFENDANTS = `/lawyer/dev/api/judgement-defendants`;
+// const GET_JUDGE_DEFENDANTS_BY_ID = `/lawyer/dev/api/judgement-defendants/`;
 
 // //ข้อมูลจทำยอม
-// const POST_AGREEMENTS = `/lawyer/api/agreements/`;
-// const PUT_AGREEMENTS = `/lawyer/api/agreements`;
-// const GET_AGREEMENTS_BY_ID = `/lawyer/api/agreements/`;
+// const POST_AGREEMENTS = `/lawyer/dev/api/agreements/`;
+// const PUT_AGREEMENTS = `/lawyer/dev/api/agreements`;
+// const GET_AGREEMENTS_BY_ID = `/lawyer/dev/api/agreements/`;
 
 // //notice
-// const POST_PARCELS = `/lawyer/api/parcels`;
-// const PUT_PARCELS = `/lawyer/api/parcels`;
-// const GET_PARCELS = `/lawyer/api/parcels/worklogs/`;
+// const POST_PARCELS = `/lawyer/dev/api/parcels`;
+// const PUT_PARCELS = `/lawyer/dev/api/parcels`;
+// const GET_PARCELS = `/lawyer/dev/api/parcels/worklogs/`;
 
 // //ems terminate
-// const POST_CANCEL = `/lawyer/api/cancel-contracts`;
-// const PUT_CANCEL = `/lawyer/api/cancel-contracts`;
-// const GET_CANCEL = `/lawyer/api/cancel-contracts`;
+// const POST_CANCEL = `/lawyer/dev/api/cancel-contracts`;
+// const PUT_CANCEL = `/lawyer/dev/api/cancel-contracts`;
+// const GET_CANCEL = `/lawyer/dev/api/cancel-contracts`;
 
-// // expenses
-// const POST_EXPENSES = `/lawyer/api/expenses`;
-// const PUT_EXPENSES = `/lawyer/api/expenses/`;
-// const GET_EXPENSES_LIST = `/lawyer/api/expenses`;
+// //expenses
+
+// const POST_EXPENSES = `/lawyer/dev/api/expenses`;
+// const PUT_EXPENSES = `/lawyer/dev/api/expenses/`;
+// const GET_EXPENSES_LIST = `/lawyer/dev/api/expenses`;
 // const GET_EXPENSES_CONTNO_LIST = "/lawyer/dev/api/expenses/contract-list";
-// const GET_EXPENSES_LOAN_ID = `/lawyer/api/expenses/loan/`;
-// const GET_EXPENSES_CONTNO = `/lawyer/api/expenses/contract/`;
-// const POST_DELETE_ID = `/lawyer/api/expenses/`;
+// const GET_EXPENSES_LOAN_ID = `/lawyer/dev/api/expenses/loan/`;
+// const GET_EXPENSES_CONTNO = `/lawyer/dev/api/expenses/contract/`;
+// const POST_DELETE_ID = `/lawyer/dev/api/expenses/`;
 // const GET_EXPENSE_REF_GROUP = `/lawyer/dev/api/expenses/reference-list`;
-
 // //ดึง users ในระบบ
-// const GET_LAWYERS_LIST = "/lawyer/api/users";
-// const GET_COMPANIES_LIST = "/lawyer/api/companies";
-// const GET_ROLE_LIST = "/lawyer/api/roles";
-// const GET_USERS_LIST = "/lawyer/api/users";
-// const GET_BY_ID = "/lawyer/api/users/";
+
+// const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
+// const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
+// const GET_ROLE_LIST = "/lawyer/dev/api/roles";
+// const GET_USERS_LIST = "/lawyer/dev/api/users";
+// const GET_BY_ID = "/lawyer/dev/api/users/";
 
 // //post
-// const LOG_IN = `/lawyer/api/login`;
-// const REGISTER = `/lawyer/api/register`;
-// const POST_USER = `/lawyer/api/users`;
-// const PUT_USER_UPDATE = `/lawyer/api/customers`;
+// const LOG_IN = `/lawyer/dev/api/login`;
+// const REGISTER = `/lawyer/dev/api/register`;
+// const POST_USER = `/lawyer/dev/api/users`;
+// const PUT_USER_UPDATE = `/lawyer/dev/api/customers`;
 
 // //all details
-// const GET_DETAILS = `/lawyer/api/all-details?contractNo=`;
+// const GET_DETAILS = `/lawyer/dev/api/all-details?contractNo=`;
 
 // //delete status
-// const DELETE_STATUS_BY_WORKLOG = `/lawyer/api/worklogs/`;
+// const DELETE_STATUS_BY_WORKLOG = `/lawyer/dev/api/worklogs/`;
 
 // const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
+// // const baseUrl = "http://localhost:8080";
 
 // const TOKEN = localStorage.getItem("TOKEN");
 // const HEADERS_EXPORT = {
@@ -340,11 +123,11 @@ export {
 // const POST_TERMINATE_CONTRACT_RECORD = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki2`;
 // const POST_TERMINATE_BY_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/detail-contno`;
 
-// // ค้นหาสัญญา เบน
+// //ค้นหาสัญญา เบน
 // const POST_LOAN_DB2 =
 //   "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/search-contno";
 
-// // ข้อมูลการผ่อน
+// //ข้อมูลการผ่อน
 // const POST_DETAIL_PAYMENT =
 //   "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/tonbalance";
 
@@ -433,3 +216,220 @@ export {
 //   POST_LOAN_DB2,
 //   POST_DETAIL_PAYMENT,
 // };
+
+// // ----production-----
+// //ดีงข้อมูลจาก server ibm
+const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
+
+//ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
+const GET_ALL_LOAN = "/lawyer/api/loans";
+
+///ดึงสัญญาตาม contno ที่อยู่ใน server lawyers
+const GET_LOAN_BY_CONTNO = "/lawyer/api/loans/";
+
+//ดึงจำนวนงานที่ users รับงาน
+const GET_JOB_COUNT = "/lawyer/api/loans/notics/count";
+
+//ดึงจำนานงานที่กำลังดำเนินการ
+const GET_JOB_IN_PROGRESS = "/lawyer/api/jobs";
+
+//ดึงจำนานงานที่กำลังดำเนินการตามสถานะ
+const GET_JOB_IN_PROGRESS_BY_STATUS = "/lawyer/api/jobs/";
+
+//นำข้อมูลเข้า db lawyers
+const POST_LOAN_IN_LAWYERS_DB = "/lawyer/api/loans";
+
+//เปลี่ยนสถานะสัญญา
+const POST_STATUS = "/lawyer/api/loans/status";
+
+//อัพเดทสถานะสัญญา
+const PUT_STATUS = "/lawyer/api/loans/status";
+
+//ดึงข้อมูลแบบคำฟ้อง
+const GET_LAWSUIT_DETAIL_BY_ID = `/lawyer/api/lawsuits/`;
+const GET_LAWSUIT_LIST = `/lawyer/api/lawsuits`;
+//อัพเดทข้อมูลคำฟ้อง
+const PUT_LAWSUIT_DETAIL = `/lawyer/api/lawsuits`;
+const GET_LAWSUIT_DETAIL_BY_LOAN = `/lawyer/api/lawsuits/loan/`;
+
+//ดึงข้อมูลสืบทรัพย์
+const GET_INVESTIGATE_BY_LAWSUIT = `/lawyer/api/investigate-properties/`;
+const GET_INVESTIGATE_LIST = `/lawyer/api/investigate-properties`;
+//สร้างข้อมูลสืบทรัพย์
+const POST_INVESTIGATE_LOG = `/lawyer/api/investigate-log`;
+const POST_INVESTIGATE_ITEM = `/lawyer/api/investigate-properties`;
+//อัพเดทข้อมูลสืบทรัพย์
+const PUT_INVESTIGATE_LOG = `/lawyer/api/investigate-log`;
+const PUT_INVESTIGATE_ITEM_BY_ID = `/lawyer/api/investigate-properties`;
+//ดึงข้อมูลเพื่อสืบทรัพย์
+const GET_INVESTIGATE_LOANS_LIST = `/lawyer/api/investigate-properties/loans/list`;
+//ข้อมูลลักษณะที่ดิน
+const GET_LAND_DETAIL_LIST = `/lawyer/api/investigate-properties/details/list`;
+
+//ข้อมูลทั้งหมดของ id
+const GET_WORK_LOG_DETAIL_BY_ID = `/lawyer/api/worklogs/`;
+
+//คำพิพากษา
+const POST_JUDGE = `/lawyer/api/judgements`;
+const PUT_JUDGE = `/lawyer/api/judgements`;
+const GET_JUDGE_BY_ID = `/lawyer/api/judgements/`;
+const GET_JUDGE_LIST = `/lawyer/dev/api/judgements`;
+
+//ข้อมูลจำเลย
+const POST_JUDGE_DEFENDANTS = `/lawyer/api/judgement-defendants`;
+const PUT_JUDGE_DEFENDANTS = `/lawyer/api/judgement-defendants`;
+const GET_JUDGE_DEFENDANTS_BY_ID = `/lawyer/api/judgement-defendants/`;
+
+//ข้อมูลจทำยอม
+const POST_AGREEMENTS = `/lawyer/api/agreements/`;
+const PUT_AGREEMENTS = `/lawyer/api/agreements`;
+const GET_AGREEMENTS_BY_ID = `/lawyer/api/agreements/`;
+
+//notice
+const POST_PARCELS = `/lawyer/api/parcels`;
+const PUT_PARCELS = `/lawyer/api/parcels`;
+const GET_PARCELS = `/lawyer/api/parcels/worklogs/`;
+
+//ems terminate
+const POST_CANCEL = `/lawyer/api/cancel-contracts`;
+const PUT_CANCEL = `/lawyer/api/cancel-contracts`;
+const GET_CANCEL = `/lawyer/api/cancel-contracts`;
+
+// expenses
+const POST_EXPENSES = `/lawyer/api/expenses`;
+const PUT_EXPENSES = `/lawyer/api/expenses/`;
+const GET_EXPENSES_LIST = `/lawyer/api/expenses`;
+const GET_EXPENSES_CONTNO_LIST = "/lawyer/dev/api/expenses/contract-list";
+const GET_EXPENSES_LOAN_ID = `/lawyer/api/expenses/loan/`;
+const GET_EXPENSES_CONTNO = `/lawyer/api/expenses/contract/`;
+const POST_DELETE_ID = `/lawyer/api/expenses/`;
+const GET_EXPENSE_REF_GROUP = `/lawyer/dev/api/expenses/reference-list`;
+
+//ดึง users ในระบบ
+const GET_LAWYERS_LIST = "/lawyer/api/users";
+const GET_COMPANIES_LIST = "/lawyer/api/companies";
+const GET_ROLE_LIST = "/lawyer/api/roles";
+const GET_USERS_LIST = "/lawyer/api/users";
+const GET_BY_ID = "/lawyer/api/users/";
+
+//post
+const LOG_IN = `/lawyer/api/login`;
+const REGISTER = `/lawyer/api/register`;
+const POST_USER = `/lawyer/api/users`;
+const PUT_USER_UPDATE = `/lawyer/api/customers`;
+
+//all details
+const GET_DETAILS = `/lawyer/api/all-details?contractNo=`;
+
+//delete status
+const DELETE_STATUS_BY_WORKLOG = `/lawyer/api/worklogs/`;
+
+const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
+
+const TOKEN = localStorage.getItem("TOKEN");
+const HEADERS_EXPORT = {
+  "x-access-token": TOKEN,
+};
+
+const HEADERS_LOGIN = {
+  "Content-Type": "application/json",
+};
+
+//get ข้อมูลบอกเลิกสัญญาเบน
+const POST_TERMINATE_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki`;
+const POST_TERMINATE_CONTRACT_RECORD = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/nikki2`;
+const POST_TERMINATE_BY_CONTRACT = `https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/detail-contno`;
+
+// ค้นหาสัญญา เบน
+const POST_LOAN_DB2 =
+  "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/search-contno";
+
+// ข้อมูลการผ่อน
+const POST_DETAIL_PAYMENT =
+  "https://api-nikki-539174983798.asia-southeast1.run.app/api-lawyer/tonbalance";
+
+//get GeoThailand ของเอื้อ
+const GET_PROVICE = `https://eua-i67f6gaaqa-as.a.run.app/Api/provinces`;
+const GET_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/districted/`;
+const GET_SUB_DISTRICT = `https://eua-i67f6gaaqa-as.a.run.app/Api/subdistricted/`;
+const GET_ZIPCODE = `https://eua-i67f6gaaqa-as.a.run.app/Api/zipcodes/`;
+
+//get GeoThailand ที่ดิน
+const GET_PROVICE_LAND = `https://onemoney.ngrok.app/GetProvince`;
+const POST_DISTRICT_LAND = `https://onemoney.ngrok.app/GetAmphur`;
+const POST_CALCULATE_LAND = `https://onemoney.ngrok.app/AllData`;
+
+export {
+  PUT_INVESTIGATE_ITEM_BY_ID,
+  POST_INVESTIGATE_ITEM,
+  GET_LAND_DETAIL_LIST,
+  GET_INVESTIGATE_LOANS_LIST,
+  PUT_USER_UPDATE,
+  HEADERS_LOGIN,
+  GET_LOAN_FROM_SERVER_IBM,
+  GET_ALL_LOAN,
+  GET_LOAN_BY_CONTNO,
+  GET_LAWYERS_LIST,
+  GET_JOB_COUNT,
+  GET_JOB_IN_PROGRESS,
+  GET_JOB_IN_PROGRESS_BY_STATUS,
+  POST_LOAN_IN_LAWYERS_DB,
+  POST_STATUS,
+  PUT_STATUS,
+  HEADERS_EXPORT,
+  baseUrl,
+  GET_LAWSUIT_DETAIL_BY_LOAN,
+  PUT_LAWSUIT_DETAIL,
+  GET_INVESTIGATE_BY_LAWSUIT,
+  GET_INVESTIGATE_LIST,
+  POST_INVESTIGATE_LOG,
+  PUT_INVESTIGATE_LOG,
+  LOG_IN,
+  REGISTER,
+  GET_WORK_LOG_DETAIL_BY_ID,
+  POST_JUDGE,
+  PUT_JUDGE,
+  GET_JUDGE_BY_ID,
+  GET_JUDGE_LIST,
+  POST_JUDGE_DEFENDANTS,
+  PUT_JUDGE_DEFENDANTS,
+  GET_JUDGE_DEFENDANTS_BY_ID,
+  GET_COMPANIES_LIST,
+  POST_AGREEMENTS,
+  PUT_AGREEMENTS,
+  GET_AGREEMENTS_BY_ID,
+  GET_LAWSUIT_DETAIL_BY_ID,
+  GET_LAWSUIT_LIST,
+  GET_ROLE_LIST,
+  GET_USERS_LIST,
+  GET_BY_ID,
+  POST_USER,
+  GET_PROVICE,
+  GET_DISTRICT,
+  GET_SUB_DISTRICT,
+  GET_ZIPCODE,
+  DELETE_STATUS_BY_WORKLOG,
+  GET_DETAILS,
+  GET_PROVICE_LAND,
+  POST_DISTRICT_LAND,
+  POST_CALCULATE_LAND,
+  POST_PARCELS,
+  PUT_PARCELS,
+  GET_PARCELS,
+  POST_TERMINATE_CONTRACT,
+  POST_TERMINATE_CONTRACT_RECORD,
+  POST_TERMINATE_BY_CONTRACT,
+  POST_CANCEL,
+  PUT_CANCEL,
+  GET_CANCEL,
+  POST_EXPENSES,
+  PUT_EXPENSES,
+  GET_EXPENSES_LIST,
+  GET_EXPENSES_LOAN_ID,
+  GET_EXPENSES_CONTNO,
+  POST_DELETE_ID,
+  GET_EXPENSES_CONTNO_LIST,
+  GET_EXPENSE_REF_GROUP,
+  POST_LOAN_DB2,
+  POST_DETAIL_PAYMENT,
+};
