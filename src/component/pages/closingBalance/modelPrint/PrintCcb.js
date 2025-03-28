@@ -116,6 +116,16 @@ export default function PrintCcb({ dataPost }) {
                             <Col></Col>
                             <Col><div style={{ fontSize: '12px', color: 'black' }} >วันที่ขอ: {dayjs(mainData?.inputDate).format("DD/MM/YYYY")}</div></Col>
                         </Row>
+                        <Row justify="space-between" style={{ fontSize: "12px", margin: "1px" }}>
+                            <Col></Col>
+                            <Col>
+                                <div style={{ fontSize: '12px', color: 'black' }} >
+                                    <b style={{ color: "red", fontSize: "12px", textDecoration: "underline", }}>
+                                        ใบนี้หมดอายุวันที่: {dayjs(mainData?.inputDate).add(7, "day").format("DD/MM/YYYY")}
+                                    </b>
+                                </div>
+                            </Col>
+                        </Row>
                     </Col>
                     {
                         mainData?.company?.length > 0 ?
@@ -346,11 +356,12 @@ export default function PrintCcb({ dataPost }) {
                                     </Col>
                                 </Row>
                                 {/* <Divider /> */}
-                                <Divider orientation="center">
+                                {/* <Divider orientation="center">
                                     <b style={{ color: "red", fontSize: "12px", textDecoration: "underline", }}>
                                         ใบนี้หมดอายุวันที่: {dayjs(mainData?.inputDate).add(7, "day").format("DD/MM/YYYY")}
                                     </b>
-                                </Divider>
+                                </Divider>*/}
+                                <Divider />
                             </> : <><Divider orientation="center"><b style={{ fontSize: "12px" }}>*** ไม่พบข้อมูล ***</b></Divider></>
                     }
 
