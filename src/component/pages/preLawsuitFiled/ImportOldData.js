@@ -168,8 +168,8 @@ const Main = () => {
         }
       });
 
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
+      console.log("filteredData3", value);
+      setArrayTable(value);
       setDataArr(filteredData);
       setTableLength(filteredData.length);
     }

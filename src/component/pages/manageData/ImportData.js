@@ -213,11 +213,14 @@ const Main = () => {
               console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
               duplicate += 1;
               duplicateContracts.push(item.LOAN.CONTNO);
+              console.log("ssssssssss----->", item.LOAN.CONTNO);
+
               return null;
             } else {
               console.log(`นำเข้าข้อมูลไม่สำเร็จ`);
               failed += 1;
               failedContracts.push(item.LOAN.CONTNO);
+              console.log("xxxxxxxxxx----->", item.LOAN.CONTNO);
               return null;
             }
           } catch (err) {
@@ -233,6 +236,7 @@ const Main = () => {
         // หน่วงเวลา 1 วินาทีเพื่อไม่ให้เซิร์ฟเวอร์โหลดหนักเกินไป
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
+
       console.log(
         `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
       );
@@ -259,9 +263,6 @@ const Main = () => {
       // }
 
       // ล้างข้อมูลเมื่อเสร็จสิ้น
-      setFailedData([]);
-      setMissedData([]);
-      setDuplicateData([]);
       setArrayTable([]);
     }
   };
@@ -269,7 +270,9 @@ const Main = () => {
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
       message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
-
+      setFailedData([]);
+      setMissedData([]);
+      setDuplicateData([]);
       handleFileUpload(file);
       if (file.status !== "uploading") {
         console.log(file, fileList);
