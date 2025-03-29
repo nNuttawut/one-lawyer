@@ -394,7 +394,7 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "send-to-enforcement",
               path: "enforcement/send-to-enforcement",
-              label: "1. รายงานการยึด",
+              label: "1. สร้างรายงานการยึด",
             },
             // {
             //   key: "92",
@@ -540,6 +540,13 @@ function Sidenav({ color, onClick }) {
             },
             {
               key: "132",
+              icon: <CaretRightOutlined />,
+              pageName: "assign-lawyers",
+              path: "manage-data/assign-lawyers",
+              label: "มอบหมายงาน",
+            },
+            {
+              key: "133",
               icon: <CaretRightOutlined />,
               pageName: "change-lawyers-jobs",
               path: "manage-data/change-lawyers-jobs",

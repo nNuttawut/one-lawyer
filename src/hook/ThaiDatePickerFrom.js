@@ -18,7 +18,7 @@ const ThaiDatePicker = ({ value, onChange }) => {
           onChange(date ? date.format("YYYY-MM-DD") : null); // ✅ ส่งค่าออกเป็น YYYY-MM-DD
         }}
         format="DD/MM/BBBB" // ✅ ใช้ พ.ศ.
-        placeholder="เลือกวันที่ (พ.ศ.)"
+        placeholder="เลือกวันที่"
       />
     </ConfigProvider>
   );

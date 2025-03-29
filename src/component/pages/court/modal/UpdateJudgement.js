@@ -225,7 +225,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         ...dataLoadJudgement,
         enforce_case_date: dateEnforceCase,
         copying_fee: values.docFee,
-        fee: values.otherFee,
+        // fee: values.otherFee,
       };
       console.log("postData", postData);
       console.log("putJudgement", putJudgement);
@@ -390,7 +390,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   onChange={onChange}
                 />
               </Form.Item>
-              <Form.Item
+              {/* <Form.Item
                 label="ค่าออกหมายตั้ง"
                 name="otherFee"
                 rules={[
@@ -411,7 +411,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   style={{ width: "100%", color: "black" }}
                   onChange={(value) => onChangeTotalFee(value)}
                 />
-              </Form.Item>
+              </Form.Item> */}
               <Form.Item label="ค่าคัดเอกสาร" name="docFee">
                 <InputNumber
                   suffix="บาท"

@@ -19,9 +19,11 @@ import {
   Col,
   Upload,
   Popconfirm,
+  Image,
 } from "antd";
 import {
   baseUrl,
+  GET_AGREEMENTS_BY_ID,
   GET_JUDGE_BY_ID,
   GET_JUDGE_DEFENDANTS_BY_ID,
   GET_LOAN_BY_CONTNO,
@@ -34,7 +36,12 @@ import {
   PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import { InboxOutlined } from "@ant-design/icons";
+import {
+  InboxOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+} from "@ant-design/icons";
 import { optionsInterest } from "../../../../utils/constant/ Interest";
 import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import { optionsMonth } from "../../../../utils/constant/MonthSelect";
@@ -72,18 +79,20 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   });
   const [radioDecide, setRadioDecide] = useState(null);
   const [arrow, setArrow] = useState("Show");
-
   const [tabsKey, setTabsKey] = useState("1");
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
   const [fileList, setFileList] = useState([]);
   const [dataJudgement, setDataJudgement] = useState(null);
   const [dataJudgeDefendants, setDataJudgeDefendants] = useState(null);
+  const [imageList, setImageList] = useState([]);
+  const [dataAgreement, setDataAgreement] = useState();
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
       loadData();
+      loadImagesProduct();
       setLoadingData(true);
       console.log("loadData", dataDefualt);
     }
@@ -100,9 +109,14 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
 
       console.log("judgeNumber1", judgeNumber1);
       console.log("judgeNumber2", judgeNumber2);
-      setRadioDecide(null);
+      if (dataAgreement) {
+        setRadioDecide("agreement");
+      } else {
+        setRadioDecide("enforce");
+      }
+
       form.setFieldsValue({
-        enforceCaseDate: dayjs(dataJudgement?.enforce_case_date),
+        enforceCaseDate: dayjs(dataJudgement?.judge_date),
         redNumber: dataJudgement?.red_case_number,
         judgement1: dataJudgement?.judgement,
         costUnless1: judgeNumber1[0]?.cost_of_uselessness,
@@ -118,6 +132,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         costUnless2: judgeNumber2[0]?.cost_of_uselessness,
         costPermonth2: judgeNumber2[0]?.cost_of_useleseness_per_month,
         costMonth2: judgeNumber2[0]?.cost_of_useleseness_month,
+        // paymentDue: dataAgreement
       });
     }
   }, [dataJudgement, dataJudgeDefendants]);
@@ -135,18 +150,6 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   }, [arrow]);
 
   const handleCancel = () => {
-    // Modal.confirm({
-    //   title: "โปรดอ่านก่อนดำเนินการ",
-    //   content:
-    //     "กรุณาทำรายการให้เสร็จเนื่องจากการปิดจะทำให้ข้อมูลไม่ถูกต้อง หากดำเนินการผิดพลาดโปรดแจ้งผู้ดูแลระบบทันที !",
-    //   okText: "ยืนยัน",
-    //   cancelText: "ปิด",
-    //   onOk: () => {
-    //     close(false);
-    //     setIsModal(false);
-    //     message.error("กรุณากรอกข้อมูลให้ครบและกดบันทึก");
-    //   },
-    // });
     close(false);
     setIsModal(false);
   };
@@ -183,8 +186,8 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [worklogs, loanRes, judgement, judgeDefendants] = await Promise.all(
-        [
+      const [worklogs, loanRes, judgement, judgeDefendants, agreement] =
+        await Promise.all([
           axios.get(
             `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
             {
@@ -203,8 +206,13 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
               headers: HEADERS_EXPORT,
             }
           ),
-        ]
-      );
+          axios.get(
+            `${baseUrl}${GET_AGREEMENTS_BY_ID}${dataDefualt.LAWSUIT_ID}`,
+            {
+              headers: HEADERS_EXPORT,
+            }
+          ),
+        ]);
 
       if (worklogs.status === 200) {
         setDataLoadLawSuit(worklogs.data);
@@ -236,12 +244,38 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
       } else {
         message.error("ไม่พบข้อมูลเงิน");
       }
+      if (agreement.status === 200) {
+        setDataAgreement(agreement.data);
+        console.log("dataDefualt", dataDefualt);
+
+        console.log("agreement.data---->", agreement.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
     } catch (error) {
       console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadImagesProduct = async () => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คำพิพากษา${dataDefualt.contno}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
   };
 
   const sendStatus = async (
@@ -512,7 +546,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
             ? parseInt(values.trackingFeeEnforce)
             : null,
         fee: dataLoadLawSuit?.lawsuit?.fee,
-        enforce_case_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+        enforce_case_date: null,
         enforce_case_filepath: null,
         attorney_fees:
           values?.lawyerFeeEnforce &&
@@ -529,6 +563,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         interest_rate_of_lack: values.interestRateLack
           ? values.interestRateLack
           : null,
+        judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
       };
       console.log("dataDefualt", dataDefualt);
 
@@ -676,6 +711,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
             ย้อนกลับ
           </Button>
         ) : null}
+
         <Button
           onClick={handleCancel}
           style={{ color: "red", marginRight: "20px" }}
@@ -688,7 +724,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
           title="อัพเดทสถานะ"
           description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
           onConfirm={confirm}
-          onCancel={() => handleCancel()}
+          // onCancel={() => handleCancel()}
           okText="ยืนยัน"
           cancelText="ปิด"
         >
@@ -707,6 +743,12 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         >
           ปิด
         </Button> */}
+        <Button
+          onClick={handleCancel}
+          style={{ color: "red", marginRight: "20px" }}
+        >
+          ปิด
+        </Button>
 
         {dataDefualt.LOAN_TYPE_ID !== 2 && radioDecide === "enforce" ? (
           <Button
@@ -779,6 +821,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         {/* เช็ค governmentOfficers ว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
         {tabsKey === "1" && governmentOfficers ? (
           <Checkbox
+            disabled
             value={governmentOfficers}
             checked={judgeCustomerIdsTab1?.some(
               (id) => id === governmentOfficers.id
@@ -792,6 +835,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         {/* เช็ค guarantors แต่ละตัวว่ามี CUSTOMER_ID อยู่ใน judgeDefendants หรือไม่ */}
         {governmentOfficers?.guarantors?.map((guarantor, index) => (
           <Checkbox
+            disabled
             key={index}
             value={guarantor}
             checked={
@@ -1108,7 +1152,6 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
           <Form.Item label="จำเลยประสงค์">
             <Radio.Group
               onChange={onChange}
-              defaultValue="enforce"
               value={radioDecide}
               style={{ margin: "10px" }}
             >
@@ -1120,16 +1163,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
           {radioDecide === "agreement" || radioDecide === "agreementFinish"
             ? formDataPayment()
             : null}
-          <Form.Item
-            label="ไฟล์คำพิพากษา"
-            name="file"
-            rules={[
-              {
-                required: true,
-                message: "กรุณาใส่ url ของคำพิพากษาจากไฟล์กลาง !",
-              },
-            ]}
-          >
+          <Form.Item label="ไฟล์คำพิพากษา" name="file">
             <Dragger {...props}>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined style={{ color: "blue" }} />
@@ -1140,6 +1174,98 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
               </p>
             </Dragger>
           </Form.Item>
+          {imageList.length > 0 ? (
+            <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                  justifyContent: "center", // จัดให้อยู่ตรงกลาง
+                }}
+              >
+                <Image.PreviewGroup>
+                  {imageList?.map((image, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                        textAlign: "center",
+                      }}
+                    >
+                      {image.url.includes("pdf") ? (
+                        <>
+                          <FilePdfOutlined
+                            style={{ fontSize: "40px", color: "red" }}
+                          />
+                          {image.url ? (
+                            <a
+                              style={{
+                                display: "block",
+                                marginTop: "8px",
+                              }}
+                              href={image.url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              คลิกเพื่อดาวน์โหลด
+                            </a>
+                          ) : null}
+                        </>
+                      ) : image.url.includes(".xlsx") ? (
+                        <>
+                          <FileExcelOutlined
+                            style={{ fontSize: "40px", color: "green" }}
+                          />
+                          {image.url ? (
+                            <a
+                              style={{
+                                display: "block",
+                                marginTop: "8px",
+                              }}
+                              href={image.url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              คลิกเพื่อดาวน์โหลด
+                            </a>
+                          ) : null}
+                        </>
+                      ) : image.url.includes(".docx") ? (
+                        <>
+                          <FileWordOutlined
+                            style={{ fontSize: "40px", color: "blue" }}
+                          />
+                          {image.url ? (
+                            <a
+                              style={{
+                                display: "block",
+                                marginTop: "8px",
+                              }}
+                              href={image.url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              คลิกเพื่อดาวน์โหลด
+                            </a>
+                          ) : null}
+                        </>
+                      ) : (
+                        <Image
+                          src={image.url}
+                          alt={`Captured ${index}`}
+                          width="150px"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </Image.PreviewGroup>
+              </div>
+            </Form.Item>
+          ) : null}
           <Tooltip
             placement="bottom"
             title="เลือกจำเลยที่โดนพิพากษาในคำตัดสินนี้ !"

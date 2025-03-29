@@ -362,7 +362,7 @@ const Main = () => {
                           </Button>
                         </Tooltip>
                       ) : null}
-                      {/* <Tooltip
+                      <Tooltip
                         placement="bottom"
                         title="คลิกเพื่อแก้ไขคำพิพากษา !"
                         arrow={mergedArrow}
@@ -382,7 +382,7 @@ const Main = () => {
                             style={{ color: "orange", fontSize: "16px" }}
                           />
                         </Button>
-                      </Tooltip> */}
+                      </Tooltip>
                     </p>
                   ),
                   rowExpandable: (record) => record,

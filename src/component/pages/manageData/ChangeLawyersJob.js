@@ -99,11 +99,15 @@ const Main = () => {
         })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
-            let i = 1;
-            const newData = resQuery.data.map((item) => ({
-              ...item,
-              key: i++,
-            }));
+            let i = 0;
+            const newData = resQuery.data
+              .filter((item) => item.LAWYER_ID)
+              .map((item) => ({
+                ...item,
+                key: i++,
+              }));
+
+            console.log(newData);
 
             filterDataNotAssign(newData);
             console.log("resQuery", resQuery.data);

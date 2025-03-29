@@ -1,5 +1,5 @@
 //------dev-------
-// // ดีงข้อมูลจาก server ibm
+//  // ดีงข้อมูลจาก server ibm
 // const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 // //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db

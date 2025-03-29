@@ -39,6 +39,7 @@ const Main = () => {
   const [data, setData] = useState(null);
   const [failedData, setFailedData] = useState([]);
   const [missedData, setMissedData] = useState([]);
+  const [duplicateData, setDuplicateData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
@@ -103,7 +104,7 @@ const Main = () => {
 
   const queryMultiData = async () => {
     setLoading(true);
-    let missed = 0;
+
     console.log("queryData ImportData--->", data);
 
     if (!data || data.length === 0) {
@@ -120,14 +121,15 @@ const Main = () => {
             setArrayTable(resQuery.data);
             setTableLength(resQuery.data.length);
             console.log("resQuery", resQuery.data);
+            checkData(resQuery.data);
             setLoading(false);
           } else if (resQuery.data === "Contract No. Not Found") {
-            console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
-            missed += 1;
+            console.log(`Contract No. Not Found`);
+
             return null;
           } else {
-            console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
-            missed += 1;
+            console.log(`Contract No. Not Found`);
+
             return null;
           }
         })
@@ -182,6 +184,8 @@ const Main = () => {
     let duplicate = 0;
     let success = 0;
     let failed = 0;
+    let duplicateContracts = []; // เก็บค่าที่ซ้ำ
+    let failedContracts = []; // เก็บค่าที่นำเข้าไม่สำเร็จ
     const batchSize = 10; // ส่งข้อมูลเป็นชุดละ 10 รายการ
 
     if (!arrayTable || arrayTable.length === 0) {
@@ -208,15 +212,18 @@ const Main = () => {
             } else if (resQuery.data === "Duplicate Contract No.") {
               console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
               duplicate += 1;
+              duplicateContracts.push(item.LOAN.CONTNO);
               return null;
             } else {
               console.log(`นำเข้าข้อมูลไม่สำเร็จ`);
               failed += 1;
+              failedContracts.push(item.LOAN.CONTNO);
               return null;
             }
           } catch (err) {
             console.error("Error:", err);
             failed += 1;
+            failedContracts.push(item.LOAN.CONTNO);
             return null;
           }
         });
@@ -226,36 +233,43 @@ const Main = () => {
         // หน่วงเวลา 1 วินาทีเพื่อไม่ให้เซิร์ฟเวอร์โหลดหนักเกินไป
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-
       console.log(
         `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
       );
+      message.warning(
+        `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
+      );
+
+      setFailedData(failedContracts);
+      setDuplicateData(duplicateContracts);
     } catch (error) {
       console.error("Error inserting data:", error);
       message.error("เกิดข้อผิดพลาดในการนำเข้าข้อมูล");
     } finally {
       setLoading(false);
 
-      if (success > 0) {
-        message.success(`นำเข้าข้อมูลสำเร็จ ${success} รายการ`);
-      }
-      if (duplicate > 0) {
-        message.warning(`มีเลขสัญญาซ้ำ ${duplicate} รายการ`);
-      }
-      if (failed > 0) {
-        message.error(`นำเข้าข้อมูลไม่สำเร็จ ${failed} รายการ`);
-      }
+      // if (success > 0) {
+      //   message.success(`นำเข้าข้อมูลสำเร็จ ${success} รายการ`);
+      // }
+      // if (duplicate > 0) {
+      //   message.warning(`มีเลขสัญญาซ้ำ ${duplicate} รายการ`);
+      // }
+      // if (failed > 0) {
+      //   message.error(`นำเข้าข้อมูลไม่สำเร็จ ${failed} รายการ`);
+      // }
 
       // ล้างข้อมูลเมื่อเสร็จสิ้น
+      setFailedData([]);
+      setMissedData([]);
+      setDuplicateData([]);
       setArrayTable([]);
     }
   };
 
   const uploadProps = {
     customRequest: ({ file, onSuccess, fileList }) => {
-      setTimeout(() => {
-        message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
-      }, 1000);
+      message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
+
       handleFileUpload(file);
       if (file.status !== "uploading") {
         console.log(file, fileList);
@@ -291,19 +305,17 @@ const Main = () => {
     message.error("ยกเลิกการนำเข้าข้อมูล");
   };
 
-  const confirmModal = () => {
-    if (!data) {
-      return message.error("ไม่มีข้อมูล");
-    }
-
+  const checkData = (dataRes) => {
     // แปลง CONTNO เป็น array
+    console.log("data", data);
+
     let contnoList = data?.CONTNO?.split(",").map((c) =>
       c.trim().replace(/'/g, "")
     );
     console.log("contnoList", contnoList);
 
     // ดึงค่า CONTNO ทั้งหมดจาก arrayTable
-    let existingContnos = arrayTable?.map((item) => item?.LOAN?.CONTNO);
+    let existingContnos = dataRes?.map((item) => item?.LOAN?.CONTNO);
 
     // หาค่าที่ไม่มีใน existingContnos
     let missingContnos = contnoList.filter(
@@ -311,12 +323,21 @@ const Main = () => {
     );
 
     if (missingContnos.length > 0) {
-      setFailedData(missingContnos);
+      setMissedData(missingContnos);
+      message.error(` ❌ ไม่พบสัญญา: ${missingContnos.length}`);
       console.log("missingContnos", missingContnos);
-      setIsModalFailed(true);
+
       // message.error(`ไม่พบสัญญา: ${missingContnos.join(", ")}`);
     } else {
       message.success("พบสัญญาครบทุกตัว");
+    }
+  };
+
+  const confirmModal = () => {
+    if (!data) {
+      return message.error("ไม่มีข้อมูล");
+    } else {
+      setIsModalFailed(true);
     }
   };
 
@@ -447,8 +468,9 @@ const Main = () => {
         <FailedImport
           open={isModalFailed}
           close={setIsModalFailed}
-          data={failedData}
+          dataFailed={failedData}
           dataMiss={missedData}
+          dataDuplicate={duplicateData}
         />
       ) : null}
     </>

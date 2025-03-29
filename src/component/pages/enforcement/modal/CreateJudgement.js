@@ -28,6 +28,7 @@ import {
   POST_JUDGE,
   POST_JUDGE_DEFENDANTS,
   POST_STATUS,
+  PUT_STATUS,
 } from "../../../API/apiUrls";
 import axios from "axios";
 import { InboxOutlined } from "@ant-design/icons";
@@ -258,7 +259,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             }
           });
       }
-      if (radioDecide === "payment") {
+      if (radioDecide === "agreement") {
         console.log("agreement", agreement);
 
         await axios
@@ -300,23 +301,23 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           });
       }
 
-      // await axios
-      //   .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
-      //   .then(async (res) => {
-      //     if (res.status === 200) {
-      //       console.log("resQuery", res.data);
-      //     } else {
-      //       message.error("ไม่สามารถส่งข้อมูลได้");
-      //       console.log("ไม่สามารถส่งข้อมูลได้");
-      //       setLoading(false);
-      //     }
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //     if (err.status > 400) {
-      //       message.error("ไม่สามารถส่งข้อมูลได้");
-      //     }
-      //   });
+      await axios
+        .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
       handleUploadAllImage();
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -413,16 +414,15 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         };
       }
 
-      // putStatus = {
-      //   id: responseData.WORK_LOG_ID,
-      //   USER_ID: dataDefualt.LAWYER_ID,
-      //   LOAN_ID: dataDefualt.LOAN_ID,
-      //   MEMO:
-      //     values.memo + "คำพิพากษาไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
-      //   DATE: dataDefualt.DATE,
-      //   PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
-      //   LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-      // };
+      putStatus = {
+        id: responseData.WORK_LOG_ID,
+        USER_ID: dataDefualt.USER_ID,
+        LOAN_ID: dataDefualt.LOAN_ID,
+        MEMO: dataDefualt.MEMO,
+        DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+        PROCESS_ID: dataDefualt.PROCESS_ID,
+        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+      };
 
       judgementData = {
         LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
@@ -448,7 +448,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             ? parseInt(values.trackingFeeEnforce)
             : null,
         fee: dataLoadLawSuit?.lawsuit?.fee,
-        enforce_case_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+        enforce_case_date: null,
         enforce_case_filepath: null,
         attorney_fees:
           values?.lawyerFeeEnforce &&
@@ -465,6 +465,8 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         interest_rate_of_lack: values.interestRateLack
           ? values.interestRateLack
           : null,
+        judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+        // trial_money_cleared_status: radioDecide === "enfroce" ? 1 : 2,
       };
       console.log("dataDefualt", dataDefualt);
 
@@ -501,11 +503,11 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           installment_count: values.costMonth3,
           document_filepath: null,
           mark: values.memo,
-          due_date: preData?.dateAgreement,
+          due_date: values?.dateAgreement,
           already_paid: null,
           payment_status: null,
           payment_status_date: null,
-          negotiator_id: parseInt(USER_ID),
+          negotiator_id: dataDefualt.USER_ID,
           NEW_CONTNO: dataDefualt?.contno,
         };
       }

@@ -564,7 +564,7 @@ const Main = () => {
           optionFilterProp="label"
           onChange={(value) => onChange(value, record.CONTNO, record.id)}
           options={optionsLone}
-        ></Select>
+        />
       ),
     },
     {
