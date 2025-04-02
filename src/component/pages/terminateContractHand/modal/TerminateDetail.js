@@ -1,8 +1,17 @@
-import { Button, Form, Modal, Card, Spin, message } from "antd";
-import { useState } from "react";
+import { Button, Form, Modal, Card, Spin, message, Image } from "antd";
+import { useEffect, useState } from "react";
 import TokenCheck from "../../../../hook/TokenCheck";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import axios from "axios";
+import { baseUrl } from "../../../API/apiUrls";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import {
+  InboxOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
+} from "@ant-design/icons";
 
 const TerminateDetail = ({ open, close, dataDefault }) => {
   const [convertDateThai] = DateCustom();
@@ -13,11 +22,18 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
     currencyFormatNoPoint,
   ] = CurrencyFormat();
   const [loading, setLoading] = useState(false);
+  const [imageList, setImageList] = useState([]);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
   };
+
+  useEffect(() => {
+    loadImagesProduct();
+
+    console.log("loadData", dataDefault);
+  }, []);
 
   const onFinish = (values) => {
     console.log("Success:", values);
@@ -44,6 +60,31 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
     }
     const matchedOption = options.find((opt) => opt.value === record);
     return matchedOption ? matchedOption.label : "-"; // ถ้าไม่เจอ ให้แสดง "-"
+  };
+
+  const loadImagesProduct = async () => {
+    setLoading(true);
+
+    try {
+      // ใช้ Promise.all() เพื่อรอทุก request เสร็จ
+      const responses = await Promise.all(
+        dataDefault.parcel_list.map((parcel) =>
+          axios.get(
+            `${baseUrl}/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${dataDefault.contract_no}${parcel.parcel_no_response}`
+          )
+        )
+      );
+
+      // รวมค่าทั้งหมดจาก API response
+      const allImages = responses.flatMap((res) => res.data);
+
+      console.log("ImageList", allImages);
+      setImageList(allImages);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,8 +158,12 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
                         : `(ผู้ค้ำที่ ${parcel.customer_type_id})`
                     }`}
                   </Form.Item>
-                  <Form.Item label="หมายเลข EMS" name="ems">
+
+                  <Form.Item label="จดหมาย EMS" name="ems">
                     {parcel.parcel_no}
+                  </Form.Item>
+                  <Form.Item label="ใบตอบกลับ EMS" name="ems">
+                    {parcel.parcel_no_response}
                   </Form.Item>
                   <Form.Item label="การตอบกลับ" name="radioCus">
                     {parcel.status === 1
@@ -129,11 +174,107 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
                       ? "ตีกลับ"
                       : "ยังไม่ตอบกลับ"}
                   </Form.Item>
-                  <Form.Item label="ลิ้งค์เก็บรูปตอบกลับ" name="imageReplyFile">
-                    {parcel.url_path}
-                  </Form.Item>
                 </div>
               ))}
+
+              {imageList.length > 0 ? (
+                <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                      justifyContent: "center", // จัดให้อยู่ตรงกลาง
+                    }}
+                  >
+                    <Image.PreviewGroup>
+                      {imageList?.map((image, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                            textAlign: "center",
+                          }}
+                        >
+                          {image.url.includes("pdf") ? (
+                            <>
+                              <FilePdfOutlined
+                                style={{ fontSize: "40px", color: "red" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : image.url.includes(".xlsx") ? (
+                            <>
+                              <FileExcelOutlined
+                                style={{
+                                  fontSize: "40px",
+                                  color: "green",
+                                }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : image.url.includes(".docx") ? (
+                            <>
+                              <FileWordOutlined
+                                style={{
+                                  fontSize: "40px",
+                                  color: "blue",
+                                }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
 
               {/* <Form.Item label="หมายเหตุ" name="memo">
                   <TextArea
@@ -149,10 +290,6 @@ const TerminateDetail = ({ open, close, dataDefault }) => {
                 >
                   ปิด
                 </Button>
-
-                {/* <Button style={{ color: "green" }} htmlType="submit">
-                  บันทึก
-                </Button> */}
               </div>
             </Form>
           </Card>

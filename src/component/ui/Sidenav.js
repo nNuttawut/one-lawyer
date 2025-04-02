@@ -105,49 +105,21 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "2"
+    ROLE_ID === "1" || ROLE_ID === "3"
       ? {
-          key: "17",
+          key: "26",
           pageName: "terminate",
           label: "terminate-contract-hand",
           path: "/terminate-contract-hand",
           icon: <FileExcelOutlined />,
-          title: "บอกเลิกสัญญา(มือ)",
+          title: "บอกเลิกสัญญา",
           children: [
             {
-              key: "171",
-              icon: <CaretRightOutlined />,
-              pageName: "create-terminate-Contract",
-              path: "terminate-contract-hand/create-terminate-Contract",
-              label: "1. ออกบอกเลิกสัญญา",
-            },
-            {
-              key: "172",
-              icon: <CaretRightOutlined />,
-              pageName: "create-terminate-Contract",
-              path: "terminate-contract-hand/import-terminate-Contract-ems",
-              label: "2. นำเข้าข้อมูล EMS",
-            },
-            {
-              key: "173",
-              icon: <CaretRightOutlined />,
-              pageName: "reply-terminate-Contract",
-              path: "terminate-contract-hand/reply-terminate-Contract",
-              label: "3. ตอบกลับบอกเลิกสัญญา",
-            },
-            {
-              key: "174",
+              key: "261",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
-              label: "4. สัญญาเตรียมส่งฟ้อง",
-            },
-            {
-              key: "175",
-              icon: <CaretRightOutlined />,
-              pageName: "terminate-contract-hand-chart",
-              path: "terminate-contract-hand/terminate-Contract-chart",
-              label: "5. รายงาน",
+              label: "สัญญาเตรียมส่งฟ้อง",
             },
           ],
         }
@@ -241,6 +213,7 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
+
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
       ? {
           key: "4",
@@ -380,7 +353,7 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
       ? {
           key: "9",
           pageName: "send-to-enforcement",
@@ -556,33 +529,33 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    //ค่าคอมมิชชั่นทนาย
-    // ROLE_ID === "1" || ROLE_ID === "6"
-    //   ? {
-    //       key: "12",
-    //       pageName: "commission",
-    //       label: "commission",
-    //       path: "/commission",
-    //       icon: <DollarOutlined />,
-    //       title: "คอมมิชชั่นทนาย",
-    //       children: [
-    //         {
-    //           key: "121",
-    //           icon: <CaretRightOutlined />,
-    //           pageName: "commission-law",
-    //           path: "commission/commission-law",
-    //           label: "คดีในชั้นศาล",
-    //         },
-    //         // {
-    //         //   key: "122",
-    //         //   icon: <CaretRightOutlined />,
-    //         //   pageName: "commission-investigate",
-    //         //   path: "commission/commission-investigate",
-    //         //   label: "ค่าคอมมิชชั่นสืบทรัพย์",
-    //         // },
-    //       ],
-    //     }
-    //   : null,
+    // ค่าคอมมิชชั่นทนาย
+    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "6"
+      ? {
+          key: "12",
+          pageName: "commission",
+          label: "commission",
+          path: "/commission",
+          icon: <DollarOutlined />,
+          title: "คอมมิชชั่นทนาย",
+          children: [
+            {
+              key: "121",
+              icon: <CaretRightOutlined />,
+              pageName: "commission-law",
+              path: "commission/commission-law",
+              label: "คดีในชั้นศาล",
+            },
+            // {
+            //   key: "122",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "commission-investigate",
+            //   path: "commission/commission-investigate",
+            //   label: "ค่าคอมมิชชั่นสืบทรัพย์",
+            // },
+          ],
+        }
+      : null,
 
     ROLE_ID === "1" || ROLE_ID === "6"
       ? {

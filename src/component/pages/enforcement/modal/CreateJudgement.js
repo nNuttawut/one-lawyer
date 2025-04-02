@@ -1325,7 +1325,8 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
         radioDecide === "enforce" ? "คำพิพากษาจำเลยที่ ๑" : "คำพิพากษาจำเลย",
       children: formJudge1(),
     },
-    ...(dataDefualt.LOAN_TYPE_ID !== 2 && radioDecide === "enforce"
+    ...((dataDefualt.LOAN_TYPE_ID !== 2 || dataDefualt.LOAN_TYPE_ID !== 5) &&
+    radioDecide === "enforce"
       ? [
           {
             key: "2",

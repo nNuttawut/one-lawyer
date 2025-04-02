@@ -6,6 +6,7 @@ import {
   Divider,
   Empty,
   Form,
+  Image,
   message,
   Modal,
   Row,
@@ -23,6 +24,9 @@ import {
   CreditCardOutlined,
   SoundOutlined,
   ThunderboltOutlined,
+  FileWordOutlined,
+  FileExcelOutlined,
+  FilePdfOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import {
@@ -34,6 +38,7 @@ import {
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import dayjs from "dayjs";
+import { PARAM_PUBLIC } from "../../../utils/constant/StatusConstant";
 
 const DetailModal = ({ open, close, dataRec }) => {
   const [form] = Form.useForm();
@@ -70,6 +75,7 @@ const DetailModal = ({ open, close, dataRec }) => {
   const [dataProvice, setDataProvice] = useState(null);
   const [dataDistrict, setDataDistrict] = useState();
   const [dataSubDistrict, setDataSubDistrict] = useState();
+  const [imageList, setImageList] = useState([]);
 
   const handleStatusChange = (current) => {
     const newStatus = { ...status };
@@ -636,6 +642,26 @@ const DetailModal = ({ open, close, dataRec }) => {
     }
   };
 
+  // const loadImagesProduct = async () => {
+  //   await axios
+  //     .get(
+  //       baseUrl +
+  //       `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
+  //         dataDefault.contract_no + dataDefault.parcel_no_response
+  //       }`
+  //     )
+  //     .then((response) => {
+  //       console.log("ImageList", response.data);
+  //       setImageList(response.data);
+
+  //       setLoading(false);
+  //     })
+  //     .catch((err) => {
+  //       setLoading(false);
+  //       console.log(err);
+  //     });
+  // };
+
   const sortedParcels = dataDetail?.parcel?.sort((a, b) => a.GARNO - b.GARNO);
 
   const formNotice = () => {
@@ -692,7 +718,7 @@ const DetailModal = ({ open, close, dataRec }) => {
                   </Form.Item>
                 </div>
               ))}
-              <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
+              {/* <Form.Item label="ลิ้งเก็บรูปภาพ" name="urlFileNotice">
                 {dataDetail?.parcel[0]?.url_path ? (
                   <a
                     href={dataDetail?.parcel[0]?.url_path || "#"}
@@ -704,7 +730,99 @@ const DetailModal = ({ open, close, dataRec }) => {
                 ) : (
                   <span>ไม่มีลิงก์รูปภาพ</span>
                 )}
-              </Form.Item>
+              </Form.Item> */}
+              {imageList.length > 0 ? (
+                <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                      justifyContent: "center", // จัดให้อยู่ตรงกลาง
+                    }}
+                  >
+                    <Image.PreviewGroup>
+                      {imageList?.map((image, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                            textAlign: "center",
+                          }}
+                        >
+                          {image.url.includes("pdf") ? (
+                            <>
+                              <FilePdfOutlined
+                                style={{ fontSize: "40px", color: "red" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : image.url.includes(".xlsx") ? (
+                            <>
+                              <FileExcelOutlined
+                                style={{ fontSize: "40px", color: "green" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : image.url.includes(".docx") ? (
+                            <>
+                              <FileWordOutlined
+                                style={{ fontSize: "40px", color: "blue" }}
+                              />
+                              {image.url ? (
+                                <a
+                                  style={{
+                                    display: "block",
+                                    marginTop: "8px",
+                                  }}
+                                  href={image.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  คลิกเพื่อดาวน์โหลด
+                                </a>
+                              ) : null}
+                            </>
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </Image.PreviewGroup>
+                  </div>
+                </Form.Item>
+              ) : null}
               <Form.Item label="หมายเหตุ" name="urlFileNotice">
                 {dataDetail?.parcel[0]?.mark}
               </Form.Item>

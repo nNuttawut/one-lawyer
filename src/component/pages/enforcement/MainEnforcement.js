@@ -295,7 +295,7 @@ const Main = () => {
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
-    ...(ROLE_ID === "1" || ROLE_ID === "2"
+    ...(ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
       ? [
           {
             title: "เจ้าของคดี",

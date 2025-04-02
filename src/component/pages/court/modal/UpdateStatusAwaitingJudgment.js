@@ -22,6 +22,7 @@ import {
 } from "antd";
 import {
   baseUrl,
+  GET_LAWSUIT_DETAIL_BY_ID,
   GET_LOAN_BY_CONTNO,
   GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
@@ -81,6 +82,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [checkboxTab1, setCheckBoxTab1] = useState({});
   const [checkboxTab2, setCheckBoxTab2] = useState({});
   const [fileList, setFileList] = useState([]);
+  const [dataLawsuit, setDataLawsuit] = useState(null);
 
   console.log("governmentOfficers", governmentOfficers);
 
@@ -124,7 +126,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [worklogs, loanRes] = await Promise.all([
+      const [worklogs, loanRes, lawsuit] = await Promise.all([
         axios.get(
           `${baseUrl}${GET_WORK_LOG_DETAIL_BY_ID}${dataDefualt.WORK_LOG_ID}`,
           {
@@ -134,6 +136,12 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefualt.CONTNO}`, {
           headers: HEADERS_EXPORT,
         }),
+        axios.get(
+          `${baseUrl}${GET_LAWSUIT_DETAIL_BY_ID}${dataDefualt.LAWSUIT_ID}`,
+          {
+            headers: HEADERS_EXPORT,
+          }
+        ),
       ]);
 
       if (worklogs.status === 200) {
@@ -148,6 +156,15 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         console.log("loanRes", loanRes.data);
         setDataLoadLoan(loanRes.data);
         setupGovernmentOfficerList(loanRes.data);
+
+        console.log("loanRes.data---->", loanRes.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
+      }
+
+      if (lawsuit.status === 200) {
+        console.log("lawsuit.status", lawsuit.data);
+        setDataLawsuit(lawsuit.data);
 
         console.log("loanRes.data---->", loanRes.data);
       } else {
@@ -192,10 +209,30 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     judgementData,
     agreement,
     putDataLawSuit,
-    postFinish
+    postFinish,
+    lawsuitData
   ) => {
     setLoading(true);
     try {
+      await axios
+        .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuitData, {
+          headers: HEADERS_EXPORT,
+        })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
       if (defaultRadio === "postponed") {
         console.log("putDataLawSuit--->", putDataLawSuit);
 
@@ -247,6 +284,27 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             }
           });
       } else if (defaultRadio === "normal") {
+        console.log("lawsuitData", lawsuitData);
+        await axios
+          .put(baseUrl + PUT_LAWSUIT_DETAIL, lawsuitData, {
+            headers: HEADERS_EXPORT,
+          })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+              setLoading(false);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+
         console.log("post judgement", judgementData);
         await axios
           .post(baseUrl + POST_JUDGE, judgementData, {
@@ -444,6 +502,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     let agreement;
     let putDataLawSuit;
     let postFinish;
+    let lawsuitData;
 
     if (values?.file?.fileList?.length < 1 && fileList.length < 1) {
       message.error("กรุณาอัปโหลดไฟล์เพื่อบันทึก");
@@ -461,6 +520,14 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           consideration_date: preData.considerationDate,
         };
       } else if (defaultRadio === "normal") {
+        lawsuitData = {
+          ...dataLawsuit,
+          attorney_fees:
+            dataLawsuit?.LOAN_TYPE_ID === 2 || dataLawsuit?.LOAN_TYPE_ID === 5
+              ? 2500
+              : 3500,
+          mark: values.memo,
+        };
         judgementData = {
           LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
           red_case_number: values.redNumber,
@@ -647,6 +714,15 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           };
         }
       } else {
+        lawsuitData = {
+          ...dataLawsuit,
+          attorney_fees:
+            dataLawsuit?.LOAN_TYPE_ID === 2 || dataLawsuit?.LOAN_TYPE_ID === 5
+              ? 2500
+              : 3500,
+          mark: values.memo,
+        };
+
         postFinish = {
           USER_ID: dataDefualt.LAWYER_ID,
           LOAN_ID: dataDefualt.id,
@@ -715,6 +791,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("agreement", agreement);
     console.log("putDataLawSuit", putDataLawSuit);
     console.log("postFinish", postFinish);
+    console.log("lawsuitData", lawsuitData);
 
     sendStatusReal(
       postponeStatus,
@@ -724,7 +801,8 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       judgementData,
       agreement,
       putDataLawSuit,
-      postFinish
+      postFinish,
+      lawsuitData
     );
   };
 
@@ -1697,7 +1775,8 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         radioDecide === "enforce" ? "คำพิพากษาจำเลยที่ ๑" : "คำพิพากษาจำเลย",
       children: formJudge1(),
     },
-    ...(dataDefualt.LOAN_TYPE_ID === 1 && radioDecide === "enforce"
+    ...((dataDefualt.LOAN_TYPE_ID !== 2 || dataDefualt.LOAN_TYPE_ID !== 5) &&
+    radioDecide === "enforce"
       ? [
           {
             key: "2",

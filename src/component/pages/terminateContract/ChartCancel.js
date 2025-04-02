@@ -170,11 +170,11 @@ const Main = () => {
           }
 
           if (item.status === 1) {
-            groupedByMonth[month].normalResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].normalResponse++;
           } else if (item.status === 2) {
-            groupedByMonth[month].postResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].postResponse++;
           } else if (item.status === 3) {
-            groupedByMonth[month].abnormalResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].abnormalResponse++;
           }
         }
       });
@@ -288,7 +288,10 @@ const Main = () => {
 
       dataThisYear.forEach((item) => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
-        if (item.account_type) {
+        if (
+          item.account_type !== "cancelHand" ||
+          item.account_type !== "repurchase"
+        ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
               total: 0,
@@ -306,6 +309,7 @@ const Main = () => {
       setCancelData(groupedByMonth);
     }
   };
+  console.log("cancelData", cancelData);
 
   const renderDateProcess = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
@@ -350,7 +354,7 @@ const Main = () => {
 
         // เพิ่มข้อมูลจาก items ของเดือนนั้น ๆ
         data.items.forEach((item, index) => {
-          worksheet.addRow({
+          const row = worksheet.addRow({
             no: index + 1,
             datetime: convertDateThaiShort(item.datetime),
             contno: item.contract_no,
@@ -369,13 +373,26 @@ const Main = () => {
             createDate: renderDateProcess(item),
             status:
               item.status === 1
-                ? "ตอบกลับแล้ว"
+                ? "ใบตอบกลับ"
                 : item.status === 2
                 ? "ไปรษณีย์"
                 : item.status === 3
                 ? "ตีกลับ"
                 : "รอดำเนินการ",
           });
+          // หาตำแหน่งคอลัมน์ของ `status`
+          const statusCell = row.getCell("status");
+
+          // กำหนดสีตัวหนังสือตาม `status`
+          if (item.status === 1) {
+            statusCell.font = { color: { argb: "008000" } }; // เขียว
+          } else if (item.status === 2) {
+            statusCell.font = { color: { argb: "0000FF" } }; // น้ำเงิน
+          } else if (item.status === 3) {
+            statusCell.font = { color: { argb: "FFA500" } }; // ส้ม
+          } else {
+            statusCell.font = { color: { argb: "FF0000" } }; // แดง
+          }
         });
 
         // เพิ่มแถวว่างเพื่อเว้นระยะ
@@ -426,7 +443,52 @@ const Main = () => {
           emsNo: "",
           emsNoResponse: "",
           date_response: "",
-          createDate: "ตอบกลับแล้ว:",
+          createDate: "ใบตอบกลับ:",
+          status: data.normalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "ตีกลับ:",
+          status: data.abnormalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "ไปรษณีย์:",
+          status: data.postResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "ตอบกลับทั้งหมด:",
           status: data.withDateResponse, // แสดงจำนวนที่ตอบกลับแล้ว
         }).font = { bold: true };
 

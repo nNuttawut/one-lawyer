@@ -68,7 +68,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/hand${
+          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
             dataDefault.contract_no + dataDefault.parcel_no_response
           }`
       )
@@ -96,7 +96,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     axios
       .post(
         baseUrl +
-          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/hand${
+          `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
             dataDefault.contract_no + dataDefault.parcel_no_response
           }`,
         formData,

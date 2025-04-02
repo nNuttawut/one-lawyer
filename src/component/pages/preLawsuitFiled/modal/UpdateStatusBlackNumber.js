@@ -191,12 +191,7 @@ const UpdateStatusBlackNumber = ({
         ...dataLoadLawSuit,
         black_case_number: values.blackNumber,
         consideration_date: dataForm.considerationDate,
-        attorney_fees:
-          dataLoadLawSuit?.LOAN_TYPE_ID === 1
-            ? 3500
-            : dataLoadLawSuit?.LOAN_TYPE_ID === 2
-            ? 2500
-            : 0,
+        attorney_fees: null,
         // file_path: values.imageReplyFile,
       };
       const postStatus = {

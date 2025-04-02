@@ -373,32 +373,49 @@ const Main = () => {
   };
 
   const filterData = (value) => {
-    if (value) {
-      let data = [];
-      if (userCompany === "3") {
-        data = value.filter(
-          (item) =>
-            item.LOCAT.includes("K") &&
-            optionsCheckData.some((option) => item.GCODE.includes(option.value))
-        );
-      } else {
-        console.log("else----->");
-        data = value.filter(
-          (item) =>
-            !item.LOCAT.includes("K") &&
-            optionsCheckData.some((option) => item.GCODE.includes(option.value))
-        );
+    if (Array.isArray(value)) {
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
 
-      console.log("data------->", data);
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = value.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = value.filter((item) => {
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (containsNo && !containsEng) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      console.log("data------->", value);
       console.log("forPaySelect---->", selectedContract);
 
-      setArrData(data);
+      setArrData(filteredData);
       let dataFilter;
 
       if (forPaySelect === "116") {
         console.log("if");
-        dataFilter = data.filter(
+        dataFilter = filteredData.filter(
           (item) =>
             (forPaySelect.includes(item.FORCODE) ||
               item.FORCODE.includes("115")) &&
@@ -408,7 +425,7 @@ const Main = () => {
       } else {
         console.log("else");
 
-        dataFilter = data.filter(
+        dataFilter = filteredData.filter(
           (item) =>
             forPaySelect.includes(item.FORCODE) &&
             selectedContract === item.DATA_TYPE

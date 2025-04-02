@@ -439,11 +439,9 @@ const Main = () => {
       // render: (record) => <>{currencyFormatNoPoint(record.attorney_fees)}</>,
       render: (record) => (
         <>
-          {record.LOAN_TYPE_ID === 1
-            ? "3,500"
-            : record.LOAN_TYPE_ID === 2
+          {record.LOAN_TYPE_ID === 2 || record.LOAN_TYPE_ID === 5
             ? "2,500"
-            : null}
+            : "3,500"}
         </>
       ),
     },
