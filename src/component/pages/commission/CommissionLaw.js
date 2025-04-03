@@ -12,14 +12,16 @@ import {
   Button,
   Popconfirm,
   Select,
+  Tooltip,
 } from "antd";
 import {
   DollarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  PrinterOutlined,
 } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -35,10 +37,12 @@ import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import LoadLawyers from "../../../hook/LoadLawyers";
-import { Option } from "antd/es/mentions";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 
 const Main = () => {
-  const [convertDateThai] = DateCustom();
+  const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [
     currencyFormat,
     currencyFormatComma,
@@ -58,10 +62,17 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
-  const [lawyerId, setLawyerId] = useState(null);
+  const [lawyerId, setLawyerId] = useState(2);
   const [lawyersOption, setLawyersOption] = useState();
-  const [statusId, setStatusId] = useState(0);
+  const [statusId, setStatusId] = useState("all");
   const [selectPrint, setSelectPrint] = useState(1);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedDate, setSelectedDate] = useState([
+    dayjs().startOf("month").subtract(1, "month"),
+    dayjs().date(5),
+  ]);
+  const [arrow, setArrow] = useState("Show");
   const { Option } = Select;
 
   const printOption = [
@@ -104,10 +115,10 @@ const Main = () => {
       label: item.NNAME,
     }));
 
-    options.unshift({
-      value: "all", // ค่าที่แทน "ทั้งหมด"
-      label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
-    });
+    // options.unshift({
+    //   value: "all", // ค่าที่แทน "ทั้งหมด"
+    //   label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
+    // });
     setLawyersOption(options);
   };
 
@@ -121,12 +132,13 @@ const Main = () => {
       if (response.data) {
         let i = 1;
         if (response.data) {
-          const newData = response.data.map((item) => ({
+          const useData = response.data.map((item) => ({
             ...item,
             key: i++,
           }));
-          filterDataLawyer(newData);
-          console.log(newData);
+
+          filterDataLawyer(useData);
+          console.log(response.data);
 
           setLoading(false);
         }
@@ -140,6 +152,76 @@ const Main = () => {
       );
       setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    }
+  };
+
+  const filterDataLawyer = (data) => {
+    if (Array.isArray(data)) {
+      const preData = data.filter(
+        (item) =>
+          item.attorney_fees &&
+          item.trial_money_cleared_datetime &&
+          item.trial_money_cleared_status
+      );
+
+      function containsNumber(str) {
+        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
+      }
+
+      function isEnglishOnly(str) {
+        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
+      }
+
+      console.log("list lawsuit--->", preData);
+
+      let filteredData;
+
+      if (userCompany === "3") {
+        filteredData = preData.filter((item) => {
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
+          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
+          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
+            return item;
+          } else {
+            return false;
+          }
+        });
+      } else {
+        filteredData = preData.filter((item) => {
+          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+          const containsEng = item.CONTNO.substring(0, 1) === "4";
+          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
+          if (containsNo && !containsEng) {
+            return item; // เก็บ item นี้ไว้
+          } else {
+            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          }
+        });
+      }
+
+      let newData = filteredData
+        .filter((item) => {
+          const itemDate = dayjs(item.trial_money_cleared_datetime);
+
+          return (
+            item.USER_ID === lawyerId &&
+            itemDate.isAfter(selectedDate[0]?.subtract(1, "second")) && // รวมวันแรก
+            itemDate.isBefore(selectedDate[1]?.add(1, "day")) // รวมวันสุดท้าย
+          );
+        })
+        .sort((a, b) =>
+          dayjs(a.trial_money_cleared_datetime).diff(
+            dayjs(b.trial_money_cleared_datetime)
+          )
+        );
+
+      setArrayTable(newData);
+      setDataArr(filteredData);
+      setTableLength(newData.length);
+      console.log("newData", newData);
+    } else {
+      console.error("data is not an array or is undefined");
+      setTableLength(0);
     }
   };
 
@@ -167,7 +249,7 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      if (dataLawsuit.attorney_fees_payment_datetime === 1) {
+      if (dataLawsuit.attorney_fees_payment_status === 1) {
         message.success(`อนุมัติสัญญาเลขท่ี ${dataLawsuit.CONTNO}`);
       } else {
         message.error(`ไม่อนุมัติสัญญาเลขที่ ${dataLawsuit.CONTNO}`);
@@ -176,57 +258,39 @@ const Main = () => {
     }
   };
 
-  const filterDataLawyer = (data) => {
-    if (Array.isArray(data)) {
-      const preData = data.filter((item) => item.black_case_number);
+  const sendStatusAll = async (rows, status) => {
+    if (rows.length === 0) {
+      message.error("ไม่มีข้อมูล");
+      return;
+    }
 
-      const newData = preData.filter(
-        (item) => !item.attorney_fees_payment_datetime
+    setLoading(true);
+
+    try {
+      const responses = await Promise.all(
+        rows.map((dataLawsuit) =>
+          axios.put(baseUrl + PUT_LAWSUIT_DETAIL, dataLawsuit, {
+            headers: HEADERS_EXPORT,
+          })
+        )
       );
 
-      function containsNumber(str) {
-        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-      }
-
-      function isEnglishOnly(str) {
-        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-      }
-
-      console.log("list lawsuit--->", newData);
-
-      let filteredData;
-
-      if (userCompany === "3") {
-        filteredData = newData.filter((item) => {
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
-            return item;
-          } else {
-            return false;
-          }
-        });
+      // ตรวจสอบผลลัพธ์ของทุก request
+      console.log(
+        "Updated Data:",
+        responses.map((res) => res.data)
+      );
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล", error);
+      message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
+    } finally {
+      setLoading(false);
+      if (status === 1) {
+        message.success(`อนุมัติสัญญาจำนวน ${rows.length}`);
       } else {
-        filteredData = newData.filter((item) => {
-          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (containsNo && !containsEng) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
-        });
+        message.error(`ไม่อนุมัติสัญญาจำนวน ${rows.length}`);
       }
-
-      setArrayTable(filteredData);
-      setDataArr(preData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
-    } else {
-      console.error("data is not an array or is undefined");
-      setTableLength(0);
+      handleUpdateAll(rows);
     }
   };
 
@@ -247,91 +311,151 @@ const Main = () => {
   };
 
   const onSearchLawyers = (value) => {
-    if (value === "all") {
-      let result = dataArr.filter((item) => item);
-      setArrayTable(result);
-      setTableLength(result.length);
-    } else {
-      let result = dataArr.filter((item) => item.USER_ID === value);
-      setArrayTable(result);
-      setTableLength(result.length);
-    }
+    let dataUse = dataArr.filter((item) => {
+      const itemDate = dayjs(item.trial_money_cleared_datetime);
+      if (statusId === "all") {
+        console.log("statusId all", statusId);
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
+          item.USER_ID === value
+        );
+      } else {
+        console.log("statusId", statusId);
+
+        let statusCheck;
+        if (statusId === 0) {
+          statusCheck = null;
+        } else {
+          statusCheck = statusId;
+        }
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
+          item.USER_ID === value &&
+          item.attorney_fees_payment_status === statusCheck
+        );
+      }
+    });
+    console.log("dataUse", dataUse);
+    console.log("dataArr", dataArr);
+
+    setArrayTable(dataUse);
+    setTableLength(dataUse.length);
   };
 
   const onSearchStatus = (value) => {
-    let result;
-    if (lawyerId && lawyerId !== "all") {
-      result = dataArr.filter(
-        (item) =>
-          item.attorney_fees_payment_datetime === value &&
+    let dataUse = dataArr.filter((item) => {
+      const itemDate = dayjs(item.trial_money_cleared_datetime);
+      if (value === "all") {
+        console.log("statusId all", statusId);
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
           item.USER_ID === lawyerId
-      );
-      console.log("if", result);
-    } else {
-      if (!value) {
-        result = dataArr.filter((item) => !item.attorney_fees_payment_datetime);
+        );
       } else {
-        result = dataArr.filter(
-          (item) => item.attorney_fees_payment_datetime === value
+        console.log("statusId", statusId);
+
+        let statusCheck;
+        if (value === 0) {
+          statusCheck = null;
+        } else {
+          statusCheck = value;
+        }
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
+          item.USER_ID === lawyerId &&
+          item.attorney_fees_payment_status === statusCheck
         );
       }
-      console.log("else", result);
-    }
-    setArrayTable(result);
-    setTableLength(result.length);
+    });
+    console.log("dataUse", dataUse);
+    console.log("dataArr", dataArr);
+
+    setArrayTable(dataUse);
+    setTableLength(dataUse.length);
   };
 
   const onChangeSelectLawyer = (value) => {
     console.log("onChangeSelectLawyer-->", value);
-    onSearchLawyers(value);
     setLawyerId(value);
+    onSearchLawyers(value);
   };
 
   const onChangeSelectStatus = (value) => {
     console.log("onChangeSelectStatus-->", value);
-    onSearchStatus(value);
     setStatusId(value);
+    onSearchStatus(value);
   };
 
-  const onSearchByDate = (startDate, endDate) => {
-    console.log(endDate[0]);
-    console.log(endDate[1]);
+  const onSearchByDate = (dates) => {
+    if (!dates || dates.length < 2) return;
+    console.log("dates", dates);
 
-    const start = dayjs(endDate[0], "YYYY-MM-DD");
-    const end = dayjs(endDate[1], "YYYY-MM-DD");
+    const start = dayjs(dates[0]);
+    const end = dayjs(dates[1]);
 
-    const timestampStart = start.valueOf();
-    const timestampEnd = end.valueOf();
-
-    if (startDate && endDate) {
-      const selectSearch = dataArr.filter((item) => {
-        const date = dayjs(item.DATE, "YYYY-MM-DD");
-        const itemDate = date.valueOf();
-        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
-          return item;
-        } else {
-          return null;
-        }
-      });
-      setArrayTable(selectSearch);
-    } else {
-      setArrayTable(dataArr);
+    if (!start.isValid() || !end.isValid()) {
+      console.error("Invalid dates selected!");
+      return;
     }
+
+    setSelectedDate([start, end]); // อัปเดต state
+
+    let dataUse = dataArr.filter((item) => {
+      const itemDate = dayjs(item.trial_money_cleared_datetime);
+      if (statusId === "all") {
+        console.log("statusId all", statusId);
+
+        return (
+          itemDate.isAfter(start) &&
+          itemDate.isBefore(end) &&
+          item.USER_ID === lawyerId
+        );
+      } else {
+        console.log("statusId", statusId);
+
+        let statusCheck;
+        if (statusId === 0) {
+          statusCheck = null;
+        } else {
+          statusCheck = statusId;
+        }
+
+        return (
+          itemDate.isAfter(start) &&
+          itemDate.isBefore(end) &&
+          item.USER_ID === lawyerId &&
+          item.attorney_fees_payment_status === statusCheck
+        );
+      }
+    });
+    console.log("dataUse", dataUse);
+    console.log("dataArr", dataArr);
+
+    setArrayTable(dataUse);
+    setTableLength(dataUse.length);
   };
 
   const renderStatus = (record) => {
     let color =
-      record.attorney_fees_payment_datetime === 1
+      record.attorney_fees_payment_status === 1
         ? "green"
-        : record.attorney_fees_payment_datetime === 2
+        : record.attorney_fees_payment_status === 2
         ? "red"
         : "silver";
 
     return (
       <Tag color={color} key={record} style={{ textAlign: "center" }}>
-        {record.attorney_fees_payment_datetime === 1
+        {record.attorney_fees_payment_status === 1
           ? "อนุมัติ"
-          : record.attorney_fees_payment_datetime === 2
+          : record.attorney_fees_payment_status === 2
           ? "ไม่อนุมัติ"
           : "รอดำเนินการ"}
       </Tag>
@@ -341,6 +465,10 @@ const Main = () => {
   const renderOpteionStatus = () => {
     return (
       <>
+        <Option value={"all"}>
+          <span style={{ marginRight: 8 }}>🗂️</span>
+          ทั้งหมด
+        </Option>
         <Option value={0}>
           <span style={{ marginRight: 8 }}>🕒</span>
           รอดำเนินการ
@@ -360,7 +488,7 @@ const Main = () => {
   const confirmInsertOne = (data) => {
     const dataLawsuit = {
       ...data,
-      attorney_fees_payment_datetime: 1,
+      attorney_fees_payment_status: 1,
       attorney_fees_payment_datetime: dayjs().format(),
     };
 
@@ -371,14 +499,46 @@ const Main = () => {
   const cancel = (data) => {
     const dataLawsuit = {
       ...data,
-      attorney_fees_payment_datetime: 2,
-      tracking_fee_payment_datetime: dayjs().format(),
+      attorney_fees_payment_status: 2,
+      attorney_fees_payment_datetime: dayjs().format(),
     };
     console.log(dataLawsuit);
     sendStatus(dataLawsuit);
   };
 
+  const confirmInsertAll = () => {
+    if (selectedRows.length > 0) {
+      let rows = selectedRows.map((item) => ({
+        ...item, // ใช้ item ไม่ใช่ selectedRows ทั้งหมด
+        attorney_fees_payment_status: 1,
+        attorney_fees_payment_datetime: dayjs().format(),
+      }));
+      let status = 1;
+      console.log(rows); // ตรวจสอบค่าที่ได้
+      sendStatusAll(rows, status); // ถ้าต้องการส่งข้อมูลไปยัง API
+    } else {
+      message.error("กรุณาเลือกสัญญาที่จะอนุมัติก่อน");
+    }
+  };
+
+  const cancelAll = () => {
+    if (selectedRows.length > 0) {
+      let rows = selectedRows.map((item) => ({
+        ...item, // ใช้ item ไม่ใช่ selectedRows ทั้งหมด
+        attorney_fees_payment_status: 2,
+        attorney_fees_payment_datetime: dayjs().format(),
+      }));
+      let status = 2;
+      console.log(rows); // ตรวจสอบค่าที่ได้
+      sendStatusAll(rows, status); // ถ้าต้องการส่งข้อมูลไปยัง API
+    } else {
+      message.error("กรุณาเลือกสัญญาที่จะไม่อนุมัติก่อน");
+    }
+  };
+
   const handleUpdate = (data) => {
+    console.log(data);
+
     const result = dataArr.map((item) => {
       if (item.id === data.id) {
         return { ...data };
@@ -386,22 +546,261 @@ const Main = () => {
         return { ...item };
       }
     });
+
+    let dataUse = result.filter((item) => {
+      const itemDate = dayjs(item.trial_money_cleared_datetime);
+      if (statusId === "all") {
+        console.log("statusId all", statusId);
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
+          item.USER_ID === lawyerId
+        );
+      } else {
+        console.log("statusId", statusId);
+
+        let statusCheck;
+        if (statusId === 0) {
+          statusCheck = null;
+        } else {
+          statusCheck = statusId;
+        }
+
+        return (
+          itemDate.isAfter(selectedDate[0]) &&
+          itemDate.isBefore(selectedDate[1]) &&
+          item.USER_ID === lawyerId &&
+          item.attorney_fees_payment_status === statusCheck
+        );
+      }
+    });
+    setDataArr(result);
+    setArrayTable(dataUse);
+    setTableLength(dataUse.length);
+  };
+
+  const handleUpdateAll = (data) => {
+    const result = dataArr.map((item) => {
+      // ค้นหา data ที่มี id ตรงกับ item.id
+      const updatedItem = data.find((d) => d.id === item.id);
+
+      return updatedItem ? { ...updatedItem } : { ...item };
+    });
+
     let newData;
     if (lawyerId !== "all" && statusId) {
       newData = result.filter(
         (item) =>
-          item.attorney_fees_payment_datetime === statusId &&
+          item.attorney_fees_payment_status === statusId &&
           item.USER_ID === lawyerId
       );
     } else {
-      newData = result.filter(
-        (item) => item.attorney_fees_payment_datetime === statusId
-      );
+      newData = result;
     }
 
     setDataArr(result);
     setArrayTable(newData);
     setTableLength(newData.length);
+  };
+
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    console.log("selectedRowKeys changed: ", selectedRowKeys);
+    setSelectedRowKeys(selectedRowKeys);
+    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
+    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
+    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (rowKeys, selectedRows) => {
+      onSelectChange(rowKeys, selectedRows);
+    },
+  };
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
+  }, [arrow]);
+
+  const renderLoanType = (value) => {
+    return (
+      optionsLone.find((item) => item.value === value)?.label || "ไม่พบชื่อ"
+    );
+  };
+
+  const createAndDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("ข้อมูล");
+
+    // กำหนดชื่อคอลัมน์
+    worksheet.columns = [
+      { header: "ลำดับ", key: "no", width: 10 },
+      { header: "สัญญา", key: "contno", width: 25 },
+      { header: "ชื่อลูกค้า", key: "cusName", width: 25 },
+      { header: "ประเภทบัญชี", key: "loanType", width: 25 },
+      { header: "ผู้รับผิดชอบคดี", key: "lawyer", width: 15 },
+      { header: "วันที่พิพากษา", key: "judgeDate", width: 20 },
+      { header: "วันที่ดำเนินการ", key: "actionDate", width: 20 },
+      { header: "พิพากษา", key: "judgement", width: 20 },
+      { header: "พิพากษาตามยอม", key: "judgementAgreement", width: 20 },
+      { header: "ถอนฟ้อง", key: "withdrawCase", width: 20 },
+      { header: "ปิดบัญชี", key: "finalCase", width: 20 },
+      { header: "ปรับโครงสร้าง", key: "reFinance", width: 20 },
+      { header: "สถานะ", key: "status", width: 20 },
+    ];
+
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.font = { bold: true }; // ทำให้ตัวหนังสือเป็นตัวหนา
+    });
+
+    let data = selectedRows.length > 0 ? selectedRows : arrayTable;
+
+    // คำนวณยอดรวมเฉพาะที่อนุมัติ (attorney_fees_payment_status === 1)
+    const totalApprovedAmount = data
+      .filter((item) => item.attorney_fees_payment_status === 1)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    const totalJudgeAmount = data
+      .filter((item) => item.trial_money_cleared_status === 1)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    const totalJudgeAgreementAmount = data
+      .filter((item) => item.trial_money_cleared_status === 2)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    const totalWithdrawCaseAmount = data
+      .filter((item) => item.trial_money_cleared_status === 3)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    const totalFinalCaseAmount = data
+      .filter((item) => item.trial_money_cleared_status === 4)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    const totalReFinanceCaseAmount = data
+      .filter((item) => item.trial_money_cleared_status === 5)
+      .reduce((sum, item) => sum + item.attorney_fees, 0);
+
+    // เพิ่มข้อมูลลงใน Excel
+    data.forEach((item, index) => {
+      let row = worksheet.addRow({
+        no: index + 1,
+        contno: item.CONTNO,
+        cusName: `${item.customer_title}${item.customer_name} ${item.customer_lastname}`,
+        loanType: renderLoanType(item.LOAN_TYPE_ID),
+        lawyer: item.NNAME,
+        judgeDate: convertDateThaiShort(item.trial_money_cleared_datetime),
+        actionDate: item.attorney_fees_payment_datetime
+          ? convertDateThaiShort(item.attorney_fees_payment_datetime)
+          : "-",
+        judgement:
+          item.trial_money_cleared_status === 1
+            ? currencyFormatComma(item.attorney_fees)
+            : null,
+        judgementAgreement:
+          item.trial_money_cleared_status === 2
+            ? currencyFormatComma(item.attorney_fees)
+            : null,
+        withdrawCase:
+          item.trial_money_cleared_status === 3
+            ? currencyFormatComma(item.attorney_fees)
+            : null,
+        finalCase:
+          item.trial_money_cleared_status === 4
+            ? currencyFormatComma(item.attorney_fees)
+            : null,
+        reFinance:
+          item.trial_money_cleared_status === 5
+            ? currencyFormatComma(item.attorney_fees)
+            : null,
+        status:
+          item.attorney_fees_payment_status === 1
+            ? "อนุมัติ"
+            : item.attorney_fees_payment_status === 2
+            ? "ไม่อนุมัติ"
+            : "รอดำเนินการ",
+      });
+
+      // จัดกึ่งกลางทุกเซลล์ในแถว
+      row.eachCell((cell) => {
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+      });
+    });
+
+    // ✅ เพิ่มแถวรวมยอด
+    let detailRow = worksheet.addRow({
+      no: "",
+      contno: "",
+      cusName: "",
+      loanType: "",
+      lawyer: "",
+      actionDate: "รวม",
+      judgement: currencyFormatComma(totalJudgeAmount),
+      judgementAgreement: currencyFormatComma(totalJudgeAgreementAmount),
+      withdrawCase: currencyFormatComma(totalWithdrawCaseAmount),
+      finalCase: currencyFormatComma(totalFinalCaseAmount),
+      reFinance: currencyFormatComma(totalReFinanceCaseAmount),
+      status: "",
+    });
+
+    // ทำให้แถวรวมยอดเป็นตัวหนา
+    detailRow.font = { bold: true };
+
+    // จัดกึ่งกลางแถวรวมยอด
+    detailRow.eachCell((cell) => {
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
+
+    // ✅ เพิ่มแถวรวมยอด
+    let totalRow = worksheet.addRow({
+      no: "",
+      contno: "",
+      cusName: "",
+      loanType: "",
+      lawyer: "",
+      actionDate: "รวมยอดอนุมัติทั้งหมด",
+      judgement: currencyFormatComma(totalApprovedAmount),
+      judgementAgreement: "",
+      withdrawCase: "",
+      finalCase: "",
+      reFinance: "",
+      status: "",
+    });
+
+    // ทำให้แถวรวมยอดเป็นตัวหนา
+    totalRow.font = { bold: true };
+
+    // จัดกึ่งกลางแถวรวมยอด
+    totalRow.eachCell((cell) => {
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
+
+    let lawyerName =
+      lawyersOption.find((item) => item.value === lawyerId)?.label ||
+      "ไม่พบชื่อ";
+
+    // สร้างไฟล์และดาวน์โหลด
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    // ดาวน์โหลดไฟล์
+    saveAs(
+      blob,
+      `รายงานค่าคอม ${lawyerName} ${convertDateThaiShort(
+        selectedDate[0]
+      )} - ${convertDateThaiShort(selectedDate[1])}.xlsx`
+    );
   };
 
   const columns = [
@@ -433,6 +832,34 @@ const Main = () => {
         </Link>
       ),
     },
+
+    {
+      title: "ผู้รับผิดชอบคดี",
+      align: "center",
+      render: (record) => <>{record.NNAME ? record.NNAME : null}</>,
+    },
+    {
+      title: "วันที่พิพากษา",
+      align: "center",
+      render: (record) => (
+        <>
+          {record.trial_money_cleared_datetime
+            ? convertDateThaiShort(record.trial_money_cleared_datetime)
+            : null}
+        </>
+      ),
+    },
+    {
+      title: "วันที่อนุมัติ",
+      align: "center",
+      render: (record) => (
+        <>
+          {record.attorney_fees_payment_datetime
+            ? convertDateThaiShort(record.attorney_fees_payment_datetime)
+            : null}
+        </>
+      ),
+    },
     {
       title: "จำนวนเงิน",
       align: "center",
@@ -446,26 +873,11 @@ const Main = () => {
       ),
     },
     {
-      title: "ผู้รับผิดชอบคดี",
-      align: "center",
-      render: (record) => <>{record.NNAME ? record.NNAME : null}</>,
-    },
-    {
-      title: "วันที่อนุมัติ",
-      align: "center",
-      render: (record) => (
-        <>
-          {record.attorney_fees_payment_datetime
-            ? convertDateThai(record.attorney_fees_payment_datetime)
-            : null}
-        </>
-      ),
-    },
-    {
       title: "สถานะการอนุมัติ",
       align: "center",
       render: (record) => <>{renderStatus(record)}</>,
     },
+
     {
       title: "การจัดการ",
       align: "center",
@@ -500,6 +912,7 @@ const Main = () => {
                   placeholder="เลือกทนาย"
                   showSearch
                   optionFilterProp="label"
+                  value={lawyerId}
                   onChange={(value) => onChangeSelectLawyer(value)}
                   options={lawyersOption}
                   style={{
@@ -512,6 +925,8 @@ const Main = () => {
               <Select
                 placeholder="เลือกสถานะ"
                 optionFilterProp="value"
+                popupMatchSelectWidth={false}
+                value={statusId}
                 onChange={(value) => onChangeSelectStatus(value)}
                 style={{
                   width: 200,
@@ -528,7 +943,12 @@ const Main = () => {
                 <RangePicker
                   size="large"
                   style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
+                  onChange={(dates) => {
+                    if (dates) {
+                      onSearchByDate(dates);
+                    }
+                  }}
+                  value={selectedDate}
                 />
               </Space>
               <Search
@@ -541,11 +961,51 @@ const Main = () => {
                 size="large"
               />
             </Col>
+          </Row>
+          <Row>
+            <Col
+              span={"12"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Popconfirm
+                placement="topLeft"
+                title="อัพเดทสถานะหลายสัญญา"
+                description="คุณต้องการอัพเดทสถานะให้ทนายใช่หรือไม่ ?"
+                onConfirm={() => confirmInsertAll()}
+                onCancel={() => cancelAll()}
+                okText="อนุมัติ"
+                cancelText="ไม่อนุมัติ"
+              >
+                <Button style={{ fontSize: "20px", color: "green" }}>
+                  <DollarOutlined />
+                </Button>
+              </Popconfirm>
+            </Col>
+            <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
+              <Tooltip
+                placement="bottom"
+                title="คลิกเพื่อบันทึกสรุปรายงาน"
+                arrow={mergedArrow}
+              >
+                <PrinterOutlined
+                  style={{
+                    fontSize: "40px",
+                    color: printOption ? "green" : "blue",
+                    cursor: "pointer",
+                  }}
+                  key="print"
+                  onClick={() => {
+                    createAndDownloadExcel();
+                  }}
+                />
+              </Tooltip>
+            </Col>
             <Col span={"24"}>
               <Table
                 size="small"
                 columns={columns}
                 dataSource={arrayTable}
+                rowSelection={rowSelection}
                 scroll={{ x: 850 }}
                 footer={() => (
                   <>
@@ -602,6 +1062,7 @@ const Main = () => {
                   ),
                   rowExpandable: (record) => !record,
                 }}
+                rowKey="key"
               />
             </Col>
           </Row>

@@ -27,6 +27,8 @@ import {
   baseUrl,
   PUT_STATUS,
   GET_JOB_IN_PROGRESS_BY_STATUS,
+  PUT_LAWSUIT_DETAIL,
+  GET_LAWSUIT_LIST,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -49,6 +51,8 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
   const [dataRecord, setDataRecord] = useState();
+  const [lawsuitData, setLawsuitData] = useState();
+  const [lawsuitSend, setLawsuitSend] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -172,9 +176,10 @@ const Main = () => {
     }
   };
 
-  const insertDataOne = async (id, idLawSuit) => {
+  const insertDataOne = async (id, lawsuitId) => {
     setLoading(true);
     const data = dataSend.find((item) => item.LOAN_ID === id);
+    // const lawsuit = lawsuitSend.find((item) => item.id === lawsuitId);
     let filteredData;
     let setSucess = 0;
     let dataApprove = data;
@@ -214,14 +219,14 @@ const Main = () => {
     }
   };
 
-  const onChangeSelect = (value, contno, id) => {
-    console.log(`selected ${value} contno ${contno} id ${id}`);
-    onApporvedData(value, contno, id);
+  const onChangeSelect = (value, lawsuitId, id) => {
+    console.log(`selected ${value} lawsuitId ${lawsuitId} id ${id}`);
+    onApporvedData(value, lawsuitId, id);
   };
 
-  const onApporvedData = (userId, contno, id, lawType) => {
+  const onApporvedData = (userId, lawsuitId, id, lawType) => {
     console.log(
-      `selected ${userId} contno ${contno} id ${id} lawType ${lawType} `
+      `selected ${userId} lawsuitId ${lawsuitId} id ${id} lawType ${lawType} `
     );
 
     const ownData = arrayTable.filter((item) => item.id === id);
@@ -240,13 +245,33 @@ const Main = () => {
         LOAN_TYPE_ID: ownData[0]?.LOAN_TYPE_ID,
         LAW_TYPE_ID: ownData[0]?.LAW_TYPE_ID,
         MEMO: null,
-        PROCESS_ID: ownData[0]?.PROCESS_ID,
         DATE: dayjs(ownData[0]?.DATE).format("YYYY-MM-DD"),
       };
 
       // Return อัพเดท array
       return [...updatedData, newItem];
     });
+
+    // const ownLawsuit = lawsuitData.find((item) => item.id === lawsuitId);
+
+    // setLawsuitSend((prevFailedData) => {
+    //   // สร้างอาร์เรย์ใหม่โดย **ลบ item ที่มี id ตรงกับ lawsuitId**
+    //   const updatedData = prevFailedData.filter(
+    //     (item) => item.id !== lawsuitId
+    //   );
+
+    //   // เพิ่มข้อมูลใหม่ที่อัปเดตแล้วเข้าไป
+    //   const newItem = {
+    //     ...ownLawsuit, // ใช้ Object จริง ๆ
+    //     USER_ID: userId, // เพิ่ม USER_ID เข้าไป
+    //   };
+
+    //   console.log("updatedData:", updatedData);
+    //   console.log("newItem:", newItem);
+
+    //   // Return อัพเดท array ใหม่
+    //   return [...updatedData, newItem];
+    // });
   };
 
   const search = (event) => {
@@ -259,8 +284,8 @@ const Main = () => {
     setArrayTable(result);
   };
 
-  const confirmInsertOne = (id) => {
-    insertDataOne(id);
+  const confirmInsertOne = (id, lawsuitId) => {
+    insertDataOne(id, lawsuitId);
   };
 
   const cancel = (e) => {

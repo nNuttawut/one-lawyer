@@ -299,7 +299,7 @@ const Main = () => {
     if (startDate) {
       const selectSearch = selectData.filter(
         (item) =>
-          item.datetime.includes(dayjs(startDate).format("YYYY-MM-DD")) &&
+          item?.datetime?.includes(dayjs(startDate).format("YYYY-MM-DD")) &&
           selectCallback
       );
       console.log(dayjs(startDate).format("YYYY-MM-DD"));
@@ -871,7 +871,7 @@ const Main = () => {
     if (selectedRows.length > 0) {
       dataExport = selectedRows;
     } else {
-      dataExport = dataArr;
+      dataExport = arrayTable;
     }
 
     let rowIndex = 12; // เริ่มที่แถวที่ 12

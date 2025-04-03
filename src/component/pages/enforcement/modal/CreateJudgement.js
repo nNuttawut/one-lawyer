@@ -848,6 +848,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           >
             <InputNumber
               suffix="บาท"
+              precision={2}
               formatter={(value) =>
                 `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
               }

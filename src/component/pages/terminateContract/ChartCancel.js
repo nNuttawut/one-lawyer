@@ -150,7 +150,10 @@ const Main = () => {
 
       dataThisYear.forEach((item) => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
-        if (item.account_type && item.account_type !== "cancelHand") {
+        if (
+          item.account_type !== "cancelHand" &&
+          item.account_type !== "repurchase"
+        ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
               total: 0,
@@ -289,13 +292,16 @@ const Main = () => {
       dataThisYear.forEach((item) => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
         if (
-          item.account_type !== "cancelHand" ||
+          item.account_type !== "cancelHand" &&
           item.account_type !== "repurchase"
         ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
               total: 0,
               withDateResponse: 0,
+              normalResponse: 0,
+              postResponse: 0,
+              abnormalResponse: 0,
               items: [],
             }; // เริ่มต้นที่ 0
           }
@@ -445,7 +451,7 @@ const Main = () => {
           date_response: "",
           createDate: "ใบตอบกลับ:",
           status: data.normalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
-        }).font = { bold: true };
+        }).font = { bold: true, color: { argb: "008000" } };
 
         worksheet.addRow({
           no: "",
@@ -460,7 +466,7 @@ const Main = () => {
           date_response: "",
           createDate: "ตีกลับ:",
           status: data.abnormalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
-        }).font = { bold: true };
+        }).font = { bold: true, color: { argb: "FFA500" } };
 
         worksheet.addRow({
           no: "",
@@ -475,7 +481,7 @@ const Main = () => {
           date_response: "",
           createDate: "ไปรษณีย์:",
           status: data.postResponse, // แสดงจำนวนที่ตอบกลับแล้ว
-        }).font = { bold: true };
+        }).font = { bold: true, color: { argb: "0000FF" } };
 
         worksheet.addRow({
           no: "",
@@ -505,7 +511,7 @@ const Main = () => {
           date_response: "",
           createDate: "ยังไม่ตอบกลับแล้ว:",
           status: data.total - data.withDateResponse, // แสดงจำนวนที่ตอบกลับแล้ว
-        }).font = { bold: true };
+        }).font = { bold: true, color: { argb: "FF0000" } };
         console.log("data------>", data);
 
         // จัดรูปแบบเซลล์ใน Worksheet

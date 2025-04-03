@@ -50,6 +50,13 @@ import dayjs from "dayjs";
 import LoadLawyers from "../../../../hook/LoadLawyers";
 import Dragger from "antd/es/upload/Dragger";
 import { InboxOutlined } from "@ant-design/icons";
+import {
+  STATUS_FINAL_CASE,
+  STATUS_JUDGEMENT,
+  STATUS_JUDGEMENT_AND_AGREEMENT,
+  STATUS_REFINANCE_CASE,
+  STATUS_WITHDRAW_CASE,
+} from "../../../../utils/constant/StatusCommission";
 
 const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
@@ -520,6 +527,12 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           consideration_date: preData.considerationDate,
         };
       } else if (defaultRadio === "normal") {
+        let statusJudgement;
+        if (radioDecide === "enforce") {
+          statusJudgement = STATUS_JUDGEMENT;
+        } else {
+          statusJudgement = STATUS_JUDGEMENT_AND_AGREEMENT;
+        }
         lawsuitData = {
           ...dataLawsuit,
           attorney_fees:
@@ -527,6 +540,10 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               ? 2500
               : 3500,
           mark: values.memo,
+          trial_money_cleared_datetime: dayjs(values.enforceCaseDate).format(
+            "YYYY-MM-DD"
+          ),
+          trial_money_cleared_status: statusJudgement,
         };
         judgementData = {
           LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
@@ -714,6 +731,14 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           };
         }
       } else {
+        let statusJudgement;
+        if (radioFinish === "withdrawAccusation") {
+          statusJudgement = STATUS_WITHDRAW_CASE;
+        } else if (radioFinish === "accountFinish") {
+          statusJudgement = STATUS_FINAL_CASE;
+        } else {
+          statusJudgement = STATUS_REFINANCE_CASE;
+        }
         lawsuitData = {
           ...dataLawsuit,
           attorney_fees:
@@ -721,6 +746,10 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               ? 2500
               : 3500,
           mark: values.memo,
+          trial_money_cleared_datetime: dayjs(values.actionDate).format(
+            "YYYY-MM-DD"
+          ),
+          trial_money_cleared_status: statusJudgement,
         };
 
         postFinish = {
@@ -793,17 +822,17 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("postFinish", postFinish);
     console.log("lawsuitData", lawsuitData);
 
-    sendStatusReal(
-      postponeStatus,
-      enforceStatus,
-      agreementStatus,
-      defendants,
-      judgementData,
-      agreement,
-      putDataLawSuit,
-      postFinish,
-      lawsuitData
-    );
+    // sendStatusReal(
+    //   postponeStatus,
+    //   enforceStatus,
+    //   agreementStatus,
+    //   defendants,
+    //   judgementData,
+    //   agreement,
+    //   putDataLawSuit,
+    //   postFinish,
+    //   lawsuitData
+    // );
   };
 
   const onFinishFailed = (errorInfo) => {

@@ -849,7 +849,7 @@ const Main = () => {
     if (selectedRows.length > 0) {
       dataExport = selectedRows;
     } else {
-      dataExport = dataArr;
+      dataExport = arrayTable;
     }
 
     let rowIndex = 12; // เริ่มที่แถวที่ 12

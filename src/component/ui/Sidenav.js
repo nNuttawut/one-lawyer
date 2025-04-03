@@ -35,7 +35,7 @@ function Sidenav({ color, onClick }) {
   const [signOut] = TokenCheck();
   const [openKeys, setOpenKeys] = useState([]);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
-
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const { pathname } = useLocation();
   const page = pathname.replace("/", "");
 
@@ -105,21 +105,49 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "3"
+    ROLE_ID === "1" || ROLE_ID === "2"
       ? {
-          key: "26",
+          key: "31",
           pageName: "terminate",
           label: "terminate-contract-hand",
           path: "/terminate-contract-hand",
           icon: <FileExcelOutlined />,
-          title: "บอกเลิกสัญญา",
+          title: "บอกเลิกสัญญา(มือ)",
           children: [
             {
-              key: "261",
+              key: "311",
               icon: <CaretRightOutlined />,
-              pageName: "terminate-Contract-to-lawsuit",
+              pageName: "terminate-contract-hand-Contract",
+              path: "terminate-contract-hand/create-terminate-Contract",
+              label: "1. ออกบอกเลิกสัญญา",
+            },
+            {
+              key: "312",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-contract-hand-Contract",
+              path: "terminate-contract-hand/import-terminate-Contract-ems",
+              label: "2. นำเข้าข้อมูล EMS",
+            },
+            {
+              key: "313",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-contract-hand-Contract",
+              path: "terminate-contract-hand/reply-terminate-Contract",
+              label: "3. ตอบกลับบอกเลิกสัญญา",
+            },
+            {
+              key: "314",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-contract-hand-to-lawsuit",
               path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
-              label: "สัญญาเตรียมส่งฟ้อง",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
+            },
+            {
+              key: "315",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-contract-hand-chart",
+              path: "terminate-contract-hand/terminate-Contract-chart",
+              label: "5. รายงาน",
             },
           ],
         }
@@ -165,6 +193,27 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
+
+    ROLE_ID === "1" || ROLE_ID === "3"
+      ? {
+          key: "26",
+          pageName: "terminate",
+          label: "terminate-contract-hand",
+          path: "/terminate-contract-hand",
+          icon: <FileExcelOutlined />,
+          title: "บอกเลิกสัญญา",
+          children: [
+            {
+              key: "261",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
+              label: "สัญญาเตรียมส่งฟ้อง",
+            },
+          ],
+        }
+      : null,
+
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
           key: "3",
@@ -530,7 +579,7 @@ function Sidenav({ color, onClick }) {
       : null,
 
     // ค่าคอมมิชชั่นทนาย
-    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "6"
+    ROLE_ID === "1" || (ROLE_ID === "2" && userId === 4)
       ? {
           key: "12",
           pageName: "commission",
