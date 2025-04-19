@@ -21,19 +21,18 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_INVESTIGATE_LOANS_LIST,
   GET_JOB_IN_PROGRESS_BY_STATUS,
-  GET_LAWSUIT_LIST,
+  GET_JUDGE_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
-import {
-  AWAITING_JUDMENT,
-  JUDGEMENT,
-} from "../../../utils/constant/StatusConstant";
+import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
+import CreateAdvanePaymentCourt from "./modal/CreateAdvanePaymentCourt";
+import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
+import { blue } from "@mui/material/colors";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -42,10 +41,8 @@ const Main = () => {
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [isModal, setIsModal] = useState(false);
-  const [
-    isModalCreateAdvanePaymentAssets,
-    setIsModalCreateAdvanePaymentAssets,
-  ] = useState(false);
+  const [isModalCreateAdvanePaymentCourt, setIsModalCreateAdvanePaymentCourt] =
+    useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
@@ -84,38 +81,36 @@ const Main = () => {
     };
   }, []);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
+
     try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + JUDGEMENT,
-        {
-          headers: HEADERS_EXPORT,
-        }
-      );
-      if (response.data) {
-        let i = 1;
-        if (response.data) {
-          const newData = response.data.map((item) => ({
-            ...item,
-            key: i++,
-          }));
-          filterData(newData);
-          console.log(newData);
-          setSearchEdit(newData);
-          setLoading(false);
-        }
+      const response = await axios.get(baseUrl + GET_JUDGE_LIST, {
+        headers: HEADERS_EXPORT,
+      });
+
+      const responseData = response.data;
+
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        const newData = responseData.map((item, index) => ({
+          ...item,
+          key: index + 1,
+        }));
+
+        filterData(newData);
+        setSearchEdit(newData);
       } else {
         setArrayTable([]);
+        message.info("ไม่พบข้อมูล");
       }
     } catch (error) {
       console.error(
-        "Error posting data:",
+        "Error fetching data:",
         error.response ? error.response.data : error.message
       );
-      setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -129,10 +124,11 @@ const Main = () => {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
 
+      const preData = data.filter((item) => item.trial_money_cleared_status);
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
           if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
@@ -142,7 +138,7 @@ const Main = () => {
           }
         });
       } else {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
           const containsEng = item.CONTNO.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
@@ -158,9 +154,8 @@ const Main = () => {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
-        let dataFilter = filteredData.filter((item) => item.COMPANY_ID !== 3);
-        dataUse = dataFilter.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(dataFilter);
+        dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
+        setDataArr(filteredData);
       }
 
       setArrayTable(dataUse);
@@ -226,10 +221,8 @@ const Main = () => {
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
           (item.customer_name && item.customer_name.includes(value)) ||
-          (item.customer_lastname && item.customer_lastname.includes(value)) ||
-          (item.provincial_court && item.provincial_court.includes(value))) &&
+          (item.customer_lastname && item.customer_lastname.includes(value))) &&
         item.USER_ID === userId &&
-        !item.fee_payment_status &&
         item.COMPANY_ID === companieSelect.value
     );
 
@@ -314,11 +307,11 @@ const Main = () => {
 
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.date_of_plaint) {
+    if (!record.judge_date) {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.date_of_plaint).startOf("day");
+    const recordDate = dayjs(record.judge_date).startOf("day");
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -338,10 +331,10 @@ const Main = () => {
     // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
     const remainingDays = today.diff(recordDate, "day");
 
-    color = remainingDays > 30 ? "red" : "green";
+    color = "blue";
 
-    const formattedDate = record.date_of_plaint
-      ? convertDateThai(record.date_of_plaint)
+    const formattedDate = record.judge_date
+      ? convertDateThai(record.judge_date)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
@@ -354,11 +347,17 @@ const Main = () => {
                 : record.LOAN_TYPE_ID === 2 && remainingDays > 60
                 ? "เกิน"
                 : null}{" "} */}
-            {remainingDays > 30 ? "เกิน" : null}
-            {remainingDays} วัน
+            {/* {remainingDays > 30 ? "เกิน" : null} */}
+            {/* {remainingDays} วัน */}
           </span>
         }
       </Tag>
+    );
+  };
+
+  const renderLoanType = (value) => {
+    return (
+      optionsLone.find((item) => item.value === value)?.label || "ไม่พบชื่อ"
     );
   };
 
@@ -396,23 +395,26 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <>
-          {record.CUSTOMER_TNAME}
-          {record.CUSTOMER_FNAME}{" "}
-          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : ""}
+          {record.customer_title}
+          {record.customer_name}{" "}
+          {record.customer_lastname ? record.customer_lastname : ""}
         </>
       ),
     },
     {
       title: "ประเภทสัญญา",
       align: "center",
-      render: (record) => (
-        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
-      ),
+      render: (record) => <>{renderLoanType(record.LOAN_TYPE_ID)}</>,
     },
     {
-      title: "วันประทับฟ้อง",
+      title: "วันที่พิพากษา",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+    },
+    {
+      title: "ทนาย",
+      align: "center",
+      render: (record) => <>{record.lawyer_nickname}</>,
     },
   ];
 
@@ -451,7 +453,7 @@ const Main = () => {
                     type="primary"
                     icon={<PlusOutlined />} // ไอคอน
                     size="small" // ขนาดเล็ก
-                    // onClick={() => setIsModalCreateAdvanePayment(true)}
+                    onClick={() => setIsModalCreateAdvanePaymentCourt(true)}
                     disabled={
                       selectedRowKeys.length === 0 || selectedRowKeys.length > 4
                     }
@@ -510,14 +512,14 @@ const Main = () => {
       {isModal ? (
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
-      {/* {isModalCreateAdvanePaymentAssets ? (
-        <CreateAdvanePaymentAssets
-          open={isModalCreateAdvanePaymentAssets}
-          close={setIsModalCreateAdvanePaymentAssets}
+      {isModalCreateAdvanePaymentCourt ? (
+        <CreateAdvanePaymentCourt
+          open={isModalCreateAdvanePaymentCourt}
+          close={setIsModalCreateAdvanePaymentCourt}
           dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
         />
-      ) : null} */}
+      ) : null}
     </>
   );
 };

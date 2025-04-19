@@ -5,12 +5,14 @@ import {
   MenuUnfoldOutlined,
   SettingOutlined,
   LogoutOutlined,
-  BellOutlined,
+  ReloadOutlined,
   KeyOutlined,
 } from "@ant-design/icons";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import "../../assets/styles/Sidenav.css";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { baseUrl, GET_BY_ID, HEADERS_EXPORT } from "../API/apiUrls";
 
 function Header({ title, onPress, onClick }) {
   // const navigate = useNavigate();
@@ -19,7 +21,7 @@ function Header({ title, onPress, onClick }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const openMenuItem = Boolean(anchorEl);
   const navigate = useNavigate();
-
+  const userId = localStorage.getItem("USER_ID");
   const userName = localStorage.getItem("USERNAME");
 
   const handleClickMenuItem = (event) => {
@@ -27,6 +29,37 @@ function Header({ title, onPress, onClick }) {
   };
   const handleCloseMenuItem = () => {
     setAnchorEl(null);
+  };
+
+  const loadData = async () => {
+    try {
+      const res = await axios.get(baseUrl + GET_BY_ID + userId, {
+        headers: HEADERS_EXPORT,
+      });
+      if (res.data) {
+        if (res.status === 200) {
+          console.log("response.data", res.data);
+          localStorage.setItem("USER_ID", res.data?.id);
+          localStorage.setItem("USERNAME", res.data?.USERNAME);
+          localStorage.setItem("TNAME", res.data?.TNAME);
+          localStorage.setItem("FNAME", res.data?.FNAME);
+          localStorage.setItem("LNAME", res.data?.LNAME);
+          localStorage.setItem("NNAME", res.data?.NNAME);
+          localStorage.setItem("LICENCE_NO_LAWYERS", res.data?.LICENCE_NO);
+          localStorage.setItem("COMPANY_ID", res.data?.COMPANY_ID);
+          localStorage.setItem("ROLE_ID", res.data?.ROLE_ID);
+          localStorage.setItem("ACTIVE_STATUS", res.data?.ACTIVE_STATUS);
+          localStorage.setItem("line", res.data?.line_uid);
+          message.success("รีโหลดข้อมูลใหม่สำเร็จ");
+        }
+      }
+    } catch (error) {
+      console.error(
+        "Error posting data:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    window.location.reload();
   };
 
   const signOut = () => {
@@ -103,7 +136,7 @@ function Header({ title, onPress, onClick }) {
               fontSize: "20px",
               marginLeft: "20px",
             }}
-          ></div>
+          />
           {/* แก้ไขเวอร์ชั่นตรงนี้ */}
           <div
             className="menu-start"
@@ -145,7 +178,11 @@ function Header({ title, onPress, onClick }) {
             >
               <UserOutlined fontSize="large" style={{ marginRight: "5px" }} />
             </IconButton>
+            <IconButton>
+              <ReloadOutlined onClick={() => loadData()} />
+            </IconButton>
             <b style={{ marginTop: "7px", marginRight: "5px" }}>{userName}</b>
+
             {/* <a
               style={{ marginTop: "5px", marginRight: "5px" }}
               href="#/notifications"

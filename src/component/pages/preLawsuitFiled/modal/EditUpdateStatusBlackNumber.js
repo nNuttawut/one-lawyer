@@ -116,7 +116,7 @@ const EditUpdateStatusBlackNumber = ({
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/คำฟ้อง${dataDefault.CONTNO}`
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/black-number_${dataDefault.CONTNO}`
       )
       .then((response) => {
         console.log("ImageList", response.data);

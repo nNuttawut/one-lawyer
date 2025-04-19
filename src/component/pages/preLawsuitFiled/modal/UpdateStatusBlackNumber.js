@@ -57,7 +57,7 @@ const UpdateStatusBlackNumber = ({
   };
   console.log(fileList);
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
 
     fileList.forEach((file) => {
@@ -66,10 +66,10 @@ const UpdateStatusBlackNumber = ({
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/คำฟ้อง${dataDefault.CONTNO}`,
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/black-number_${dataDefault.CONTNO}`,
         formData,
         {
           headers: {

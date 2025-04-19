@@ -545,6 +545,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ),
           trial_money_cleared_status: statusJudgement,
         };
+
         judgementData = {
           LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
           red_case_number: values.redNumber,
@@ -569,6 +570,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               ? parseInt(values.trackingFeeEnforce)
               : null,
           fee: null,
+          fee_payment_status: STATUS_PROCESS_PROGRESS,
           enforce_case_date: null,
           enforce_case_filepath: null,
           attorney_fees:
@@ -597,7 +599,12 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               : null,
           mark: values.memo,
           judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+          trial_money_cleared_status:
+            radioDecide === "enfroce"
+              ? STATUS_JUDGEMENT
+              : STATUS_JUDGEMENT_AND_AGREEMENT,
         };
+
         if (checkboxTab1 && values.governmentOfficer1) {
           const govermentResult1 = values.governmentOfficer1.filter(
             (item) => item
@@ -822,17 +829,17 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log("postFinish", postFinish);
     console.log("lawsuitData", lawsuitData);
 
-    // sendStatusReal(
-    //   postponeStatus,
-    //   enforceStatus,
-    //   agreementStatus,
-    //   defendants,
-    //   judgementData,
-    //   agreement,
-    //   putDataLawSuit,
-    //   postFinish,
-    //   lawsuitData
-    // );
+    sendStatusReal(
+      postponeStatus,
+      enforceStatus,
+      agreementStatus,
+      defendants,
+      judgementData,
+      agreement,
+      putDataLawSuit,
+      postFinish,
+      lawsuitData
+    );
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -1027,7 +1034,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     console.log(date, dateString);
   };
 
-  const handleUploadAllImage = (mainType, textName) => {
+  const handleUploadAllImage = async (mainType, textName) => {
     console.log("mainType", mainType, textName);
     const formData = new FormData();
     fileList.forEach((file) => {
@@ -1036,7 +1043,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
           `/files/lawyer/${mainType}/${PARAM_PUBLIC}/${textName}${dataDefualt.CONTNO}`,

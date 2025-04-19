@@ -238,7 +238,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -246,10 +246,10 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/หมายตั้ง${dataDefualt.contno}`,
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/enforce-case_${dataDefualt.contno}`,
         formData,
         {
           headers: {

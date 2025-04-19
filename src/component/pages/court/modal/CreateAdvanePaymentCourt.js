@@ -30,6 +30,8 @@ import {
   STATUS_WITHDRAW_PROCESS,
   STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
+import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
+import ExpenseList from "./ExpenseList";
 
 const CreateAdvanePayment = ({
   open,
@@ -37,6 +39,7 @@ const CreateAdvanePayment = ({
   dataDefault,
   funcUpdateStatus,
 }) => {
+  const USER_ID = localStorage.getItem("USER_ID");
   const [form] = Form.useForm();
   const [convertDateThai] = DateCustom();
   const [
@@ -141,7 +144,7 @@ const CreateAdvanePayment = ({
   };
 
   const handleEdit = (item, index) => {
-    console.log("item0", item, index);
+    console.log("item", item, index);
     setEditPayment(dataPropertyList[index]);
     setIsEditModal(true);
   };
@@ -166,6 +169,15 @@ const CreateAdvanePayment = ({
     let setPutLawsuit = [];
     let setPreExpense = [];
 
+    let defindNo;
+    if (dataDefault.COMPANY_ID === 1 || dataDefault.COMPANY_ID === 4) {
+      defindNo = "LBN";
+    } else if (dataDefault.COMPANY_ID === 2 || dataDefault.COMPANY_ID === 5) {
+      defindNo = "MBN";
+    } else {
+      defindNo = "KBN";
+    }
+
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
       withdraw_datetime: null,
@@ -174,7 +186,7 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: "BN" + dayjs().format("YYYYMMDDHHmmss"),
+      reference_no: `${defindNo}${USER_ID}-${dayjs().format("YYYYMMDDHHmmss")}`,
     };
 
     dataPropertyList?.forEach((lawsuit, index) => {
@@ -215,7 +227,7 @@ const CreateAdvanePayment = ({
 
     console.log("putLawsuit---->", setPutLawsuit);
     console.log("setDataExpense---->", setPreExpense);
-    sendData(setPutLawsuit, setPreExpense);
+    // sendData(setPutLawsuit, setPreExpense);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -247,6 +259,15 @@ const CreateAdvanePayment = ({
       setDataPropertyList(result);
     }
   };
+
+  const renderLoanType = (value) => {
+    return (
+      optionsLone.find((item) => item.value === value)?.label ||
+      "ไม่พบประเภทสัญญา"
+    );
+  };
+
+  console.log("prop--->", dataPropertyList);
 
   const formDataSet = () => {
     return (
@@ -283,7 +304,7 @@ const CreateAdvanePayment = ({
             label="สัญญาที่ต้องการเบิก"
             name="contnoWithdraw"
             labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-            wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+            wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
           >
             <List
               itemLayout="horizontal"
@@ -291,12 +312,22 @@ const CreateAdvanePayment = ({
               renderItem={(item, index) => (
                 <List.Item
                   actions={[
-                    <Link
-                      key="list-loadmore-edit"
-                      onClick={() => handleEdit(item, index)}
-                    >
-                      แก้ไข
-                    </Link>,
+                    !item?.setPreExpense ? (
+                      <Link
+                        key="list-loadmore-edit"
+                        onClick={() => handleEdit(item, index)}
+                      >
+                        เพิ่ม
+                      </Link>
+                    ) : (
+                      <Link
+                        key="list-loadmore-edit"
+                        style={{ color: "orange" }}
+                        onClick={() => handleEdit(item, index)}
+                      >
+                        แก้ไข
+                      </Link>
+                    ),
                     <Link
                       key="list-loadmore-more"
                       style={{ color: "red" }}
@@ -308,48 +339,29 @@ const CreateAdvanePayment = ({
                 >
                   <List.Item.Meta
                     title={
-                      <Link onClick={() => handleEdit(item, index)}>
-                        {item.CONTNO}
-                        {` ${item.customer_title}${item.customer_name} ${item.customer_lastname}`}
-                      </Link>
+                      <p style={{ color: "black" }}>
+                        {item.CONTNO} {item.customer_title}
+                        {item.customer_name} {item.customer_lastname}
+                        {"  "}
+                        {renderLoanType(item.LOAN_TYPE_ID)}
+                      </p>
                     }
                     description={
-                      <>
-                        <p>
-                          ค่าธรรมเนียมศาล {currencyFormatPoint(item.fee)} บาท
-                        </p>
-                        <p>
-                          ค่าอากรณ์สแตมป์ {currencyFormatPoint(item.stamp_cost)}{" "}
-                          บาท
-                        </p>
-                        <p>
-                          ค่าจัดทำเอกสาร{" "}
-                          {currencyFormatPoint(item.document_cost)} บาท
-                        </p>
-                        <p>
-                          ค่าส่งจดหมาย{" "}
-                          {currencyFormatPoint(item.delivery_of_summons)} บาท
-                        </p>
-                        <p>
-                          รวม{" "}
-                          {currencyFormatPoint(
-                            item.fee +
-                              item.stamp_cost +
-                              item.document_cost +
-                              item.delivery_of_summons
-                          )}{" "}
-                          บาท
-                        </p>
-                      </>
+                      <p style={{ color: "black" }}>
+                        {item?.setPreExpense?.map((expense, i) => (
+                          <div key={i}>
+                            - {expense.label} :{" "}
+                            {currencyFormatPoint(expense.withdraw)}
+                            {" บาท"}
+                          </div>
+                        ))}
+                      </p>
                     }
                   />
+
                   <div>
                     {" "}
-                    {item.investigation_type_id === 1
-                      ? "ก่อนฟ้อง"
-                      : item.investigation_type_id === 2
-                      ? "หลังฟ้อง"
-                      : null}
+                    {item?.initDataExpense?.withdraw ? "ก่อนฟ้อง" : null}
                   </div>
                 </List.Item>
               )}
@@ -391,14 +403,14 @@ const CreateAdvanePayment = ({
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Card>{formDataSet()}</Card>
         </Spin>
-        {/* {isEditModal ? (
-          <EditAdvancePaymentDetail
+        {isEditModal ? (
+          <ExpenseList
             open={isEditModal}
             close={setIsEditModal}
             dataDefault={editPayment}
             handleEdit={handleUpdateDataEdit}
           />
-        ) : null} */}
+        ) : null}
       </Modal>
     </>
   );

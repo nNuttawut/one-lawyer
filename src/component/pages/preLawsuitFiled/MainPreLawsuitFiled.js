@@ -476,7 +476,7 @@ const Main = () => {
                         </Button>
                       ) : null}
 
-                      <Button
+                      {/* <Button
                         name="document"
                         style={{ boxShadow: "0 4px 3px" }}
                         // onClick={() => {}}
@@ -484,7 +484,7 @@ const Main = () => {
                         <FilePdfOutlined
                           style={{ color: "orange", fontSize: "16px" }}
                         />
-                      </Button>
+                      </Button> */}
                     </p>
                   ),
                   rowExpandable: (record) => userId === record.LAWYER_ID,

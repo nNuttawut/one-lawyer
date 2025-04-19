@@ -135,7 +135,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
 
     fileList.forEach((file) => {
@@ -144,7 +144,7 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
           `/files/lawyer/cancel_contract/${PARAM_PUBLIC}/${
@@ -511,7 +511,6 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 <Radio.Group
                   onChange={(e) => onChangeRadio(e.target.value)}
                   defaultValue={defaultRadio}
-                  disabled={imageList.length > 0}
                 >
                   <Radio value={1}>จากใบตอบกลับ</Radio>
                   <Radio value={2}>จากเว็บไปษณีย์</Radio>

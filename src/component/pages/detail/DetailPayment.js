@@ -515,9 +515,12 @@ const Main = () => {
                 {arrData?.guarantor?.length > 0 &&
                 queryContno.substring(0, 1) !== "1"
                   ? arrData.guarantor.map((data, index) => (
-                      <b key={index}>
-                        คนค้ำที่ {index + data.GARNO}: {data.NAME}
-                      </b>
+                      <>
+                        <b key={index}>
+                          คนค้ำที่ {data.GARNO}: {data.NAME}
+                        </b>
+                        <br />
+                      </>
                     ))
                   : null}
               </Col>

@@ -228,7 +228,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -236,10 +236,10 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/settlement_agreement/${PARAM_PUBLIC}/${dataDefualt.CONTNO}`,
+          `/files/lawyer/settlement_agreement/${PARAM_PUBLIC}/agreement_${dataDefualt.CONTNO}`,
         formData,
         {
           headers: {

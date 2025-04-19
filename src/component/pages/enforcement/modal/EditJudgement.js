@@ -264,7 +264,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คำพิพากษา${dataDefualt.contno}`
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/judgement_${dataDefualt.CONTNO}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -415,200 +415,199 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
       //       message.error("ไม่สามารถส่งข้อมูลได้");
       //     }
       //   });
-      handleUploadAllImage();
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      window.location.reload();
     }
   };
 
   const onFinish = (values) => {
     console.log("Success:", values);
-    let defendants = [];
-    let statusData;
-    let judgementData;
-    let agreement;
-    let finishStatus;
-    let putStatus;
+    handleUploadAllImage();
+    // let defendants = [];
+    // let statusData;
+    // let judgementData;
+    // let agreement;
+    // let finishStatus;
+    // let putStatus;
 
-    const govermentResult1 = values?.governmentOfficer1.filter((item) => item);
-    const govermentfinal1 = govermentResult1.map((item) => ({
-      LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-      CUSTOMER_ID: item.id,
-      defendant_number: item.GARNO + 1,
-      cost_of_uselessness:
-        values?.costUnless1 &&
-        typeof values.costUnless1 === "string" &&
-        values.costUnless1.includes(",")
-          ? parseInt(values.costUnless1.replace(/,/g, ""))
-          : parseInt(values.costUnless1)
-          ? parseInt(values.costUnless1)
-          : null,
-      cost_of_useleseness_per_month:
-        values?.costPermonth1 &&
-        typeof values.costPermonth1 === "string" &&
-        values.costPermonth1.includes(",")
-          ? parseInt(values.costPermonth1.replace(/,/g, ""))
-          : parseInt(values.costPermonth1)
-          ? parseInt(values.costPermonth1)
-          : null,
-      cost_of_useleseness_month: values.costMonth1 ? values.costMonth1 : null,
-      judge_number: 1,
-    }));
-    defendants.push(...govermentfinal1);
+    // const govermentResult1 = values?.governmentOfficer1.filter((item) => item);
+    // const govermentfinal1 = govermentResult1.map((item) => ({
+    //   LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+    //   CUSTOMER_ID: item.id,
+    //   defendant_number: item.GARNO + 1,
+    //   cost_of_uselessness:
+    //     values?.costUnless1 &&
+    //     typeof values.costUnless1 === "string" &&
+    //     values.costUnless1.includes(",")
+    //       ? parseInt(values.costUnless1.replace(/,/g, ""))
+    //       : parseInt(values.costUnless1)
+    //       ? parseInt(values.costUnless1)
+    //       : null,
+    //   cost_of_useleseness_per_month:
+    //     values?.costPermonth1 &&
+    //     typeof values.costPermonth1 === "string" &&
+    //     values.costPermonth1.includes(",")
+    //       ? parseInt(values.costPermonth1.replace(/,/g, ""))
+    //       : parseInt(values.costPermonth1)
+    //       ? parseInt(values.costPermonth1)
+    //       : null,
+    //   cost_of_useleseness_month: values.costMonth1 ? values.costMonth1 : null,
+    //   judge_number: 1,
+    // }));
+    // defendants.push(...govermentfinal1);
 
-    if (
-      dataDefualt.LOAN_TYPE_ID !== 2 &&
-      values?.governmentOfficer2?.length > 0
-    ) {
-      const govermentResult2 = values?.governmentOfficer2?.filter(
-        (item) => item
-      );
-      const govermentfinal2 = govermentResult2.map((item) => ({
-        LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-        CUSTOMER_ID: item.id,
-        defendant_number: item.GARNO + 1,
-        cost_of_uselessness:
-          values?.costUnless2 &&
-          typeof values.costUnless2 === "string" &&
-          values.costUnless2.includes(",")
-            ? parseInt(values.costUnless2.replace(/,/g, ""))
-            : parseInt(values.costUnless2)
-            ? parseInt(values.costUnless2)
-            : null,
-        cost_of_useleseness_per_month:
-          values?.costPermonth2 &&
-          typeof values.costPermonth2 === "string" &&
-          values.costPermonth2.includes(",")
-            ? parseInt(values.costPermonth2.replace(/,/g, ""))
-            : parseInt(values.costPermonth2)
-            ? parseInt(values.costPermonth2)
-            : null,
-        cost_of_useleseness_month: values.costMonth2,
-        judge_number: 2,
-      }));
-      defendants.push(...govermentfinal2);
-    }
+    // if (
+    //   dataDefualt.LOAN_TYPE_ID !== 2 &&
+    //   values?.governmentOfficer2?.length > 0
+    // ) {
+    //   const govermentResult2 = values?.governmentOfficer2?.filter(
+    //     (item) => item
+    //   );
+    //   const govermentfinal2 = govermentResult2.map((item) => ({
+    //     LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+    //     CUSTOMER_ID: item.id,
+    //     defendant_number: item.GARNO + 1,
+    //     cost_of_uselessness:
+    //       values?.costUnless2 &&
+    //       typeof values.costUnless2 === "string" &&
+    //       values.costUnless2.includes(",")
+    //         ? parseInt(values.costUnless2.replace(/,/g, ""))
+    //         : parseInt(values.costUnless2)
+    //         ? parseInt(values.costUnless2)
+    //         : null,
+    //     cost_of_useleseness_per_month:
+    //       values?.costPermonth2 &&
+    //       typeof values.costPermonth2 === "string" &&
+    //       values.costPermonth2.includes(",")
+    //         ? parseInt(values.costPermonth2.replace(/,/g, ""))
+    //         : parseInt(values.costPermonth2)
+    //         ? parseInt(values.costPermonth2)
+    //         : null,
+    //     cost_of_useleseness_month: values.costMonth2,
+    //     judge_number: 2,
+    //   }));
+    //   defendants.push(...govermentfinal2);
+    // }
 
-    if (radioDecide === "agreementFinish") {
-      finishStatus = {
-        USER_ID: parseInt(USER_ID),
-        LOAN_ID: dataDefualt.LOAN_ID,
-        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-        MEMO: "คำพิพากษาไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
-        DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
-        MAIN_STATUS_ID: FINISH,
-        PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
-      };
-    }
+    // if (radioDecide === "agreementFinish") {
+    //   finishStatus = {
+    //     USER_ID: parseInt(USER_ID),
+    //     LOAN_ID: dataDefualt.LOAN_ID,
+    //     LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+    //     LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+    //     MEMO: "คำพิพากษาไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
+    //     DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+    //     MAIN_STATUS_ID: FINISH,
+    //     PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+    //   };
+    // }
 
-    // putStatus = {
-    //   id: responseData.WORK_LOG_ID,
-    //   USER_ID: dataDefualt.LAWYER_ID,
-    //   LOAN_ID: dataDefualt.LOAN_ID,
-    //   MEMO:
-    //     values.memo + "คำพิพากษาไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
-    //   DATE: dataDefualt.DATE,
-    //   PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
-    //   LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+    // // putStatus = {
+    // //   id: responseData.WORK_LOG_ID,
+    // //   USER_ID: dataDefualt.LAWYER_ID,
+    // //   LOAN_ID: dataDefualt.LOAN_ID,
+    // //   MEMO:
+    // //     values.memo + "คำพิพากษาไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
+    // //   DATE: dataDefualt.DATE,
+    // //   PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+    // //   LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+    // // };
+
+    // judgementData = {
+    //   LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
+    //   red_case_number: values.redNumber,
+    //   judgement:
+    //     values?.judgement1 &&
+    //     typeof values.judgement1 === "string" &&
+    //     values.judgement1.includes(",")
+    //       ? parseInt(values.judgement1.replace(/,/g, ""))
+    //       : parseInt(values.judgement1)
+    //       ? parseInt(values.judgement1)
+    //       : null,
+    //   judgement_filepath: null,
+    //   interest_rate: values.interestRate,
+    //   final_case_date: null,
+    //   final_case_filepath: null,
+    //   tracking_fee:
+    //     values?.trackingFeeEnforce &&
+    //     typeof values.trackingFeeEnforce === "string" &&
+    //     values.trackingFeeEnforce.includes(",")
+    //       ? parseInt(values.trackingFeeEnforce.replace(/,/g, ""))
+    //       : parseInt(values.trackingFeeEnforce)
+    //       ? parseInt(values.trackingFeeEnforce)
+    //       : null,
+    //   fee: dataLoadLawSuit?.lawsuit?.fee,
+    //   enforce_case_date: null,
+    //   enforce_case_filepath: null,
+    //   attorney_fees:
+    //     values?.lawyerFeeEnforce &&
+    //     typeof values.lawyerFeeEnforce === "string" &&
+    //     values.lawyerFeeEnforce.includes(",")
+    //       ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
+    //       : parseInt(values.lawyerFeeEnforce)
+    //       ? parseInt(values.lawyerFeeEnforce)
+    //       : null,
+    //   suspension_amount: values.suspensionAmount
+    //     ? values.suspensionAmount
+    //     : null,
+    //   judgement_lack: values.judgement_lack ? values.judgement_lack : null,
+    //   interest_rate_of_lack: values.interestRateLack
+    //     ? values.interestRateLack
+    //     : null,
+    //   judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
     // };
+    // console.log("dataDefualt", dataDefualt);
 
-    judgementData = {
-      LAWSUIT_ID: dataLoadLawSuit.lawsuit.id,
-      red_case_number: values.redNumber,
-      judgement:
-        values?.judgement1 &&
-        typeof values.judgement1 === "string" &&
-        values.judgement1.includes(",")
-          ? parseInt(values.judgement1.replace(/,/g, ""))
-          : parseInt(values.judgement1)
-          ? parseInt(values.judgement1)
-          : null,
-      judgement_filepath: null,
-      interest_rate: values.interestRate,
-      final_case_date: null,
-      final_case_filepath: null,
-      tracking_fee:
-        values?.trackingFeeEnforce &&
-        typeof values.trackingFeeEnforce === "string" &&
-        values.trackingFeeEnforce.includes(",")
-          ? parseInt(values.trackingFeeEnforce.replace(/,/g, ""))
-          : parseInt(values.trackingFeeEnforce)
-          ? parseInt(values.trackingFeeEnforce)
-          : null,
-      fee: dataLoadLawSuit?.lawsuit?.fee,
-      enforce_case_date: null,
-      enforce_case_filepath: null,
-      attorney_fees:
-        values?.lawyerFeeEnforce &&
-        typeof values.lawyerFeeEnforce === "string" &&
-        values.lawyerFeeEnforce.includes(",")
-          ? parseInt(values.lawyerFeeEnforce.replace(/,/g, ""))
-          : parseInt(values.lawyerFeeEnforce)
-          ? parseInt(values.lawyerFeeEnforce)
-          : null,
-      suspension_amount: values.suspensionAmount
-        ? values.suspensionAmount
-        : null,
-      judgement_lack: values.judgement_lack ? values.judgement_lack : null,
-      interest_rate_of_lack: values.interestRateLack
-        ? values.interestRateLack
-        : null,
-      judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
-    };
-    console.log("dataDefualt", dataDefualt);
+    // if (radioDecide === "agreement") {
+    //   statusData = {
+    //     USER_ID: parseInt(USER_ID),
+    //     LOAN_ID: dataDefualt.LOAN_ID,
+    //     LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
+    //     LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
+    //     MEMO: values.memo + "ไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
+    //     DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
+    //     MAIN_STATUS_ID: PAYMENT,
+    //     PROCESS_ID: STATUS_PROCESS_PROGRESS,
+    //   };
 
-    if (radioDecide === "agreement") {
-      statusData = {
-        USER_ID: parseInt(USER_ID),
-        LOAN_ID: dataDefualt.LOAN_ID,
-        LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
-        LAW_TYPE_ID: dataDefualt.LAW_TYPE_ID,
-        MEMO: values.memo + "ไม่ผ่านระบบไม่บันทึกหมายตั้งและคดีถึงที่สุด",
-        DATE: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
-        MAIN_STATUS_ID: PAYMENT,
-        PROCESS_ID: STATUS_PROCESS_PROGRESS,
-      };
-
-      agreement = {
-        LAWSUIT_ID: dataLoadLawSuit?.lawsuit.id,
-        total_amount:
-          values?.judgement1 &&
-          typeof values.judgement1 === "string" &&
-          values.judgement1.includes(",")
-            ? parseInt(values.judgement1.replace(/,/g, ""))
-            : parseInt(values.judgement1)
-            ? parseInt(values.judgement1)
-            : null,
-        installment_amount:
-          values?.paymentPerMonthAmount &&
-          typeof values.paymentPerMonthAmount === "string" &&
-          values.paymentPerMonthAmount.includes(",")
-            ? parseInt(values.paymentPerMonthAmount.replace(/,/g, ""))
-            : parseInt(values.paymentPerMonthAmount)
-            ? parseInt(values.paymentPerMonthAmount)
-            : null,
-        installment_count: values.costMonth3,
-        document_filepath: null,
-        mark: values.memo,
-        due_date: preData?.dateAgreement,
-        already_paid: null,
-        payment_status: null,
-        payment_status_date: null,
-        negotiator_id: parseInt(USER_ID),
-        NEW_CONTNO: dataDefualt?.contno,
-      };
-    }
-    console.log("defendants", defendants);
-    console.log("judgementData", judgementData);
-    console.log("statusData", statusData);
-    console.log("agreement", agreement);
-    console.log("finishStatus", finishStatus);
-    console.log("putStatus", putStatus);
+    //   agreement = {
+    //     LAWSUIT_ID: dataLoadLawSuit?.lawsuit.id,
+    //     total_amount:
+    //       values?.judgement1 &&
+    //       typeof values.judgement1 === "string" &&
+    //       values.judgement1.includes(",")
+    //         ? parseInt(values.judgement1.replace(/,/g, ""))
+    //         : parseInt(values.judgement1)
+    //         ? parseInt(values.judgement1)
+    //         : null,
+    //     installment_amount:
+    //       values?.paymentPerMonthAmount &&
+    //       typeof values.paymentPerMonthAmount === "string" &&
+    //       values.paymentPerMonthAmount.includes(",")
+    //         ? parseInt(values.paymentPerMonthAmount.replace(/,/g, ""))
+    //         : parseInt(values.paymentPerMonthAmount)
+    //         ? parseInt(values.paymentPerMonthAmount)
+    //         : null,
+    //     installment_count: values.costMonth3,
+    //     document_filepath: null,
+    //     mark: values.memo,
+    //     due_date: preData?.dateAgreement,
+    //     already_paid: null,
+    //     payment_status: null,
+    //     payment_status_date: null,
+    //     negotiator_id: parseInt(USER_ID),
+    //     NEW_CONTNO: dataDefualt?.contno,
+    //   };
+    // }
+    // console.log("defendants", defendants);
+    // console.log("judgementData", judgementData);
+    // console.log("statusData", statusData);
+    // console.log("agreement", agreement);
+    // console.log("finishStatus", finishStatus);
+    // console.log("putStatus", putStatus);
 
     //   sendStatus(
     //     judgementData,
@@ -739,15 +738,31 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
         </Button>
 
         {dataDefualt.LOAN_TYPE_ID !== 2 && radioDecide === "enforce" ? (
-          <Button
-            style={{ color: "blue" }}
-            // htmlType="submit"
-            onClick={() => {
-              setTabsKey("2");
-            }}
-          >
-            ถัดไป
-          </Button>
+          <>
+            <Popconfirm
+              placement="topLeft"
+              title="อัพเดทสถานะ"
+              description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
+              onConfirm={confirm}
+              // onCancel={() => cancel(record)}
+              okText="ยืนยัน"
+              cancelText="ปิด"
+            >
+              <Button style={{ color: "green", marginRight: "20px" }}>
+                บันทึก
+              </Button>
+            </Popconfirm>
+
+            <Button
+              style={{ color: "blue" }}
+              // htmlType="submit"
+              onClick={() => {
+                setTabsKey("2");
+              }}
+            >
+              ถัดไป
+            </Button>
+          </>
         ) : (
           <Popconfirm
             placement="topLeft"
@@ -858,7 +873,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
     fileList,
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -866,10 +881,10 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คำพิพากษา${dataDefualt.contno}`,
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/judgement_${dataDefualt.CONTNO}`,
         formData,
         {
           headers: {
@@ -891,6 +906,7 @@ const EditJudgement = ({ open, close, dataDefualt, responseData }) => {
       })
       .finally(() => {
         setLoading(false);
+        handleCancel();
       });
   };
 

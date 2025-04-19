@@ -101,7 +101,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/เคลียร์ทดรอง${dataDefault.reference_no}`
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/clear-advance-money_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -121,7 +121,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/สลิปโอนเคลียร์ทดรอง${dataDefault.reference_no}`
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/slip-clear-advance-money_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -137,7 +137,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
       });
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
 
     fileList.forEach((file) => {
@@ -145,10 +145,10 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     });
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/เคลียร์ทดรอง${dataDefault.reference_no}`,
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/clear-advance-money_${dataDefault.reference_no}`,
         formData,
         {
           headers: {
@@ -173,7 +173,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
       });
   };
 
-  const handleUploadAllImageTranferMoney = () => {
+  const handleUploadAllImageTranferMoney = async () => {
     const formData = new FormData();
 
     fileTranferMoney.forEach((file) => {
@@ -181,10 +181,10 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     });
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/สลิปโอนเคลียร์ทดรอง${dataDefault.reference_no}`,
+          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/slip-clear-advance-money_${dataDefault.reference_no}`,
         formData,
         {
           headers: {

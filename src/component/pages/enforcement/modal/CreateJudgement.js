@@ -47,6 +47,7 @@ import {
 } from "../../../../utils/constant/StatusConstant";
 import Dragger from "antd/es/upload/Dragger";
 import ThaiDatePickerFrom from "../../../../hook/ThaiDatePickerFrom";
+import DateInput from "../../../../hook/DateInput";
 
 const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
   const [setupGovernmentOfficerList, governmentOfficers] =
@@ -202,7 +203,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
           }
         })
         .catch((err) => {
@@ -225,7 +225,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
               } else {
                 message.error("ไม่สามารถส่งข้อมูลได้");
                 console.log("ไม่สามารถส่งข้อมูลได้");
-                setLoading(false);
               }
             })
             .catch((err) => {
@@ -249,7 +248,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
               console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
             }
           })
           .catch((err) => {
@@ -290,7 +288,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
               console.log("ไม่สามารถส่งข้อมูลได้");
-              setLoading(false);
             }
           })
           .catch((err) => {
@@ -309,7 +306,6 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
           }
         })
         .catch((err) => {
@@ -318,13 +314,13 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-      handleUploadAllImage();
+
+      await handleUploadAllImage();
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      window.location.reload();
     }
   };
 
@@ -737,18 +733,17 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
     fileList,
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
     });
 
     setLoading(true);
-
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คำพิพากษา${dataDefualt.contno}`,
+          `/files/lawyer/enforcement/public/judgement_${dataDefualt.contno}`,
         formData,
         {
           headers: {
@@ -759,7 +754,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
       .then((res) => {
         console.log(res);
         setFileList([]);
-        setLoading(false);
+        setLoading(true);
       })
       .catch((err) => {
         Modal.error({
@@ -770,6 +765,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
       })
       .finally(() => {
         setLoading(false);
+        window.location.reload();
       });
   };
 
@@ -820,7 +816,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
             name="enforceCaseDate"
             rules={[{ required: true, message: "กรุณาเลือกวันที่" }]}
           >
-            <ThaiDatePickerFrom />
+            <DateInput />
           </Form.Item>
 
           <Form.Item
@@ -1264,7 +1260,7 @@ const CreateJudgement = ({ open, close, dataDefualt, responseData }) => {
                   size="large"
                   style={{ width: "auto" }}
                 /> */}
-                <ThaiDatePickerFrom />
+                <DateInput />
               </Form.Item>
             </Col>
             <Col span={12}>

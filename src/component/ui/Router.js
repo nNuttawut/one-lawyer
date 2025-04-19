@@ -63,6 +63,10 @@ import CreateTerminateContractRepurchase from "../pages/terminateContractRepurch
 import ImportTerminateContractEmsRepurchase from "../pages/terminateContractRepurchase/ImportTerminateContractEmsRepurchase";
 import ReplyTerminateContractRepurchase from "../pages/terminateContractRepurchase/ReplyTerminateContractRepurchase";
 import ContractToLawuitRepurchase from "../pages/terminateContractRepurchase/ContractToLawuitRepurchase";
+import CreateTerminateContractLand from "../pages/terminateContractLand/CreateTerminateContractLand";
+import ImportTerminateContractEmsLand from "../pages/terminateContractLand/ImportTerminateContractEmsLand";
+import ReplyTerminateContractLand from "../pages/terminateContractLand/ReplyTerminateContractLand";
+import ContractToLawuitLand from "../pages/terminateContractLand/ContractToLawuitLand";
 import ChartCancel from "../pages/terminateContract/ChartCancel";
 import ChartCancelHand from "../pages/terminateContractHand/ChartCancelHand";
 import SettingSystem from "../pages/userManage/SettingSystem";
@@ -151,6 +155,22 @@ export default function Router() {
           <Route
             path="/terminate-contract-repurchase/terminate-contract-to-lawsuit"
             element={<ContractToLawuitRepurchase />}
+          />
+          <Route
+            path="/terminate-contract-land/create-terminate-contract"
+            element={<CreateTerminateContractLand />}
+          />
+          <Route
+            path="/terminate-contract-land/import-terminate-contract-ems"
+            element={<ImportTerminateContractEmsLand />}
+          />
+          <Route
+            path="/terminate-contract-land/reply-terminate-contract"
+            element={<ReplyTerminateContractLand />}
+          />
+          <Route
+            path="/terminate-contract-land/terminate-contract-to-lawsuit"
+            element={<ContractToLawuitLand />}
           />
           <Route
             path="/investigate-assets"
@@ -267,7 +287,7 @@ export default function Router() {
           <Route path="/guidbook/test" element={<Test />} />
           <Route path="/liff" element={<Liff />} />
           <Route path="/login-line" element={<Loginline />} />
-          //ขอปิดยอดเบน
+          {/* ขอปิดยอดเบน */}
           <Route
             path="/closing-balance/request-closing-balance"
             element={<MainClosingBalance />}

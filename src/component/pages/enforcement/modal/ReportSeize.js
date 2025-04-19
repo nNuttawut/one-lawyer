@@ -242,18 +242,17 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
     });
 
     setLoading(true);
-
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/seize_assets/${PARAM_PUBLIC}/รายงานการยึด${dataDefualt.CONTNO}`,
+          `/files/lawyer/seize_assets/${PARAM_PUBLIC}/report-seize_${dataDefualt.CONTNO}`,
         formData,
         {
           headers: {

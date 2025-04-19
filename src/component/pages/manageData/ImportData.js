@@ -60,7 +60,9 @@ const Main = () => {
     }
   }, [data]);
 
-  const queryData = async () => {
+  const queryData = async (queryContno) => {
+    let contno = `'${queryContno}'`;
+    console.log("contno", contno);
     setLoading(true);
     // const tk = JSON.parse(token);
     let companyUse;
@@ -72,13 +74,10 @@ const Main = () => {
     }
     try {
       await axios
-        .get(baseUrl + GET_LOAN_FROM_SERVER_IBM, {
-          params: { contractNo: queryContno, company: companyUse },
-          headers: HEADERS_EXPORT,
-        })
+        .post(POST_LOAN_DB2, { CONTNO: contno })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
-            setArrayTable([resQuery.data]);
+            setArrayTable(resQuery.data);
             console.log("resQuery", resQuery.data);
             setLoading(false);
           } else {
@@ -355,7 +354,7 @@ const Main = () => {
       key: "CONTNO",
       align: "center",
       render: (text, record) => (
-        <>{record.LOAN.CONTNO ? record.LOAN.CONTNO : null}</>
+        <>{record?.LOAN?.CONTNO ? record?.LOAN?.CONTNO : null}</>
       ),
     },
     {
@@ -365,9 +364,9 @@ const Main = () => {
       align: "center",
       render: (text, record) => (
         <>
-          {record.CUSTOMER.SNAM ? record.CUSTOMER.SNAM : null}{" "}
-          {record.CUSTOMER.NAME1 ? record.CUSTOMER.NAME1 : null}{" "}
-          {record.CUSTOMER.NAME2 ? record.CUSTOMER.NAME2 : null}
+          {record?.CUSTOMER?.SNAM ? record?.CUSTOMER?.SNAM : null}{" "}
+          {record?.CUSTOMER?.NAME1 ? record?.CUSTOMER?.NAME1 : null}{" "}
+          {record?.CUSTOMER?.NAME2 ? record?.CUSTOMER?.NAME2 : null}
         </>
       ),
     },

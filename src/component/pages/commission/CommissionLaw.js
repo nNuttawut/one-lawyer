@@ -638,24 +638,24 @@ const Main = () => {
   };
 
   const createAndDownloadExcel = async () => {
+    let lawyerName =
+      lawyersOption.find((item) => item.value === lawyerId)?.label ||
+      "ไม่พบชื่อ";
+
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("ข้อมูล");
+    const worksheet = workbook.addWorksheet(lawyerName);
 
     // กำหนดชื่อคอลัมน์
     worksheet.columns = [
-      { header: "ลำดับ", key: "no", width: 10 },
-      { header: "สัญญา", key: "contno", width: 25 },
+      { header: "ลำดับ", key: "no", width: 5 },
+      { header: "สัญญา", key: "contno", width: 10 },
       { header: "ชื่อลูกค้า", key: "cusName", width: 25 },
-      { header: "ประเภทบัญชี", key: "loanType", width: 25 },
-      { header: "ผู้รับผิดชอบคดี", key: "lawyer", width: 15 },
-      { header: "วันที่พิพากษา", key: "judgeDate", width: 20 },
-      { header: "วันที่ดำเนินการ", key: "actionDate", width: 20 },
-      { header: "พิพากษา", key: "judgement", width: 20 },
-      { header: "พิพากษาตามยอม", key: "judgementAgreement", width: 20 },
-      { header: "ถอนฟ้อง", key: "withdrawCase", width: 20 },
-      { header: "ปิดบัญชี", key: "finalCase", width: 20 },
-      { header: "ปรับโครงสร้าง", key: "reFinance", width: 20 },
-      { header: "สถานะ", key: "status", width: 20 },
+      { header: "วันที่พิพากษา", key: "judgeDate", width: 15 },
+      { header: "วันที่ดำเนินการ", key: "actionDate", width: 15 },
+      { header: "พิพากษา", key: "judgement", width: 10 },
+      { header: "ทำยอม", key: "judgementAgreement", width: 10 },
+      { header: "ถอนฟ้อง", key: "withdrawCase", width: 10 },
+      { header: "สถานะ", key: "status", width: 15 },
     ];
 
     worksheet.getRow(1).eachCell((cell) => {
@@ -696,8 +696,6 @@ const Main = () => {
         no: index + 1,
         contno: item.CONTNO,
         cusName: `${item.customer_title}${item.customer_name} ${item.customer_lastname}`,
-        loanType: renderLoanType(item.LOAN_TYPE_ID),
-        lawyer: item.NNAME,
         judgeDate: convertDateThaiShort(item.trial_money_cleared_datetime),
         actionDate: item.attorney_fees_payment_datetime
           ? convertDateThaiShort(item.attorney_fees_payment_datetime)
@@ -712,14 +710,6 @@ const Main = () => {
             : null,
         withdrawCase:
           item.trial_money_cleared_status === 3
-            ? currencyFormatComma(item.attorney_fees)
-            : null,
-        finalCase:
-          item.trial_money_cleared_status === 4
-            ? currencyFormatComma(item.attorney_fees)
-            : null,
-        reFinance:
-          item.trial_money_cleared_status === 5
             ? currencyFormatComma(item.attorney_fees)
             : null,
         status:
@@ -741,14 +731,11 @@ const Main = () => {
       no: "",
       contno: "",
       cusName: "",
-      loanType: "",
-      lawyer: "",
       actionDate: "รวม",
       judgement: currencyFormatComma(totalJudgeAmount),
       judgementAgreement: currencyFormatComma(totalJudgeAgreementAmount),
       withdrawCase: currencyFormatComma(totalWithdrawCaseAmount),
-      finalCase: currencyFormatComma(totalFinalCaseAmount),
-      reFinance: currencyFormatComma(totalReFinanceCaseAmount),
+
       status: "",
     });
 
@@ -765,14 +752,12 @@ const Main = () => {
       no: "",
       contno: "",
       cusName: "",
-      loanType: "",
-      lawyer: "",
+
       actionDate: "รวมยอดอนุมัติทั้งหมด",
       judgement: currencyFormatComma(totalApprovedAmount),
       judgementAgreement: "",
       withdrawCase: "",
-      finalCase: "",
-      reFinance: "",
+
       status: "",
     });
 
@@ -783,10 +768,6 @@ const Main = () => {
     totalRow.eachCell((cell) => {
       cell.alignment = { horizontal: "center", vertical: "middle" };
     });
-
-    let lawyerName =
-      lawyersOption.find((item) => item.value === lawyerId)?.label ||
-      "ไม่พบชื่อ";
 
     // สร้างไฟล์และดาวน์โหลด
     const buffer = await workbook.xlsx.writeBuffer();

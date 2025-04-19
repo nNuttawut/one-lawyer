@@ -67,35 +67,35 @@ function Sidenav({ color, onClick }) {
           title: "บอกเลิกสัญญา",
           children: [
             {
-              key: "21",
+              key: "2.1",
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract/create-terminate-Contract",
               label: "1. ออกบอกเลิกสัญญา",
             },
             {
-              key: "22",
+              key: "2.2",
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract/import-terminate-Contract-ems",
               label: "2. นำเข้าข้อมูล EMS",
             },
             {
-              key: "23",
+              key: "2.3",
               icon: <CaretRightOutlined />,
               pageName: "reply-terminate-Contract",
               path: "terminate-contract/reply-terminate-Contract",
               label: "3. ตอบกลับบอกเลิกสัญญา",
             },
             {
-              key: "24",
+              key: "2.4",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract/terminate-Contract-to-lawsuit",
               label: "4. สัญญาเตรียมส่งฟ้อง",
             },
             {
-              key: "25",
+              key: "2.5",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-chart",
               path: "terminate-contract/terminate-Contract-chart",
@@ -107,7 +107,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
-          key: "31",
+          key: "3",
           pageName: "terminate",
           label: "terminate-contract-hand",
           path: "/terminate-contract-hand",
@@ -115,35 +115,35 @@ function Sidenav({ color, onClick }) {
           title: "บอกเลิกสัญญา(มือ)",
           children: [
             {
-              key: "311",
+              key: "3.1",
               icon: <CaretRightOutlined />,
               pageName: "terminate-contract-hand-Contract",
               path: "terminate-contract-hand/create-terminate-Contract",
               label: "1. ออกบอกเลิกสัญญา",
             },
             {
-              key: "312",
+              key: "3.2",
               icon: <CaretRightOutlined />,
               pageName: "terminate-contract-hand-Contract",
               path: "terminate-contract-hand/import-terminate-Contract-ems",
               label: "2. นำเข้าข้อมูล EMS",
             },
             {
-              key: "313",
+              key: "3.3",
               icon: <CaretRightOutlined />,
               pageName: "terminate-contract-hand-Contract",
               path: "terminate-contract-hand/reply-terminate-Contract",
               label: "3. ตอบกลับบอกเลิกสัญญา",
             },
             {
-              key: "314",
+              key: "3.4",
               icon: <CaretRightOutlined />,
               pageName: "terminate-contract-hand-to-lawsuit",
               path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
               label: "4. สัญญาเตรียมส่งฟ้อง",
             },
             {
-              key: "315",
+              key: "3.5",
               icon: <CaretRightOutlined />,
               pageName: "terminate-contract-hand-chart",
               path: "terminate-contract-hand/terminate-Contract-chart",
@@ -155,7 +155,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
-          key: "18",
+          key: "4",
           pageName: "terminate",
           label: "terminate-contract-repurchase",
           path: "/terminate-contract-repurchase",
@@ -163,28 +163,28 @@ function Sidenav({ color, onClick }) {
           title: "หนังสือแจ้งสิทธ์ซื้อรถคืน",
           children: [
             {
-              key: "181",
+              key: "4.1",
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract-repurchase/create-terminate-Contract",
               label: "1. ออกหนังสือแจ้งสิทธ์",
             },
             {
-              key: "182",
+              key: "4.2",
               icon: <CaretRightOutlined />,
               pageName: "create-terminate-Contract",
               path: "terminate-contract-repurchase/import-terminate-Contract-ems",
               label: "2. นำเข้าข้อมูล EMS",
             },
             {
-              key: "183",
+              key: "4.3",
               icon: <CaretRightOutlined />,
               pageName: "reply-terminate-Contract",
               path: "terminate-contract-repurchase/reply-terminate-Contract",
               label: "3. ตอบกลับหนังสือแจ้งสิทธ์",
             },
             {
-              key: "184",
+              key: "4.4",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract-repurchase/terminate-Contract-to-lawsuit",
@@ -194,9 +194,50 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
+    ROLE_ID === "1"
+      ? {
+          key: "44",
+          pageName: "terminate",
+          label: "terminate-contract-land",
+          path: "/terminate-contract-land",
+          icon: <FileExcelOutlined />,
+          title: "หนังสือบอกเลิกที่ดิน",
+          children: [
+            {
+              key: "44.1",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-land/create-terminate-Contract",
+              label: "1. ออกหนังสือบอกเลิก",
+            },
+            {
+              key: "44.2",
+              icon: <CaretRightOutlined />,
+              pageName: "create-terminate-Contract",
+              path: "terminate-contract-land/import-terminate-Contract-ems",
+              label: "2. นำเข้าข้อมูล EMS",
+            },
+            {
+              key: "44.3",
+              icon: <CaretRightOutlined />,
+              pageName: "reply-terminate-Contract",
+              path: "terminate-contract-land/reply-terminate-Contract",
+              label: "3. ตอบกลับบอกเลิก",
+            },
+            {
+              key: "44.4",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract-land/terminate-Contract-to-lawsuit",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
+            },
+          ],
+        }
+      : null,
+
     ROLE_ID === "1" || ROLE_ID === "3"
       ? {
-          key: "26",
+          key: "5",
           pageName: "terminate",
           label: "terminate-contract-hand",
           path: "/terminate-contract-hand",
@@ -204,7 +245,7 @@ function Sidenav({ color, onClick }) {
           title: "บอกเลิกสัญญา",
           children: [
             {
-              key: "261",
+              key: "5.1",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
               path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
@@ -216,7 +257,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
-          key: "3",
+          key: "6",
           pageName: "notice",
           label: "notice",
           path: "/notice",
@@ -224,7 +265,7 @@ function Sidenav({ color, onClick }) {
           title: "ออก notice",
           children: [
             {
-              key: "31",
+              key: "6.1",
               icon: <CaretRightOutlined />,
               pageName: "assign-lawyers",
               path: "manage-data/assign-lawyers",
@@ -232,28 +273,28 @@ function Sidenav({ color, onClick }) {
             },
 
             {
-              key: "32",
+              key: "6.2",
               icon: <CaretRightOutlined />,
               pageName: "create-notice",
               path: "notice/create-notice",
               label: "2. ออกโนติส",
             },
             {
-              key: "33",
+              key: "6.3",
               icon: <CaretRightOutlined />,
               pageName: "reply-notice",
               path: "notice/reply-notice",
               label: "3. ตอบกลับโนติส",
             },
             {
-              key: "34",
+              key: "6.4",
               icon: <CaretRightOutlined />,
               pageName: "create-notice-ems",
               path: "notice/create-notice-ems",
               label: "2. สร้างโนติส EMS",
             },
             {
-              key: "35",
+              key: "6.5",
               icon: <CaretRightOutlined />,
               pageName: "reply-notice-ems",
               path: "notice/reply-notice-ems",
@@ -265,7 +306,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
       ? {
-          key: "4",
+          key: "7",
           pageName: "lawsuit",
           label: "lawsuit",
           path: "/lawsuit",
@@ -273,28 +314,28 @@ function Sidenav({ color, onClick }) {
           title: "ส่วนฟ้อง",
           children: [
             {
-              key: "41",
+              key: "7.1",
               icon: <CaretRightOutlined />,
               pageName: "create-lawsuit",
               path: "lawsuit/pre-lawsuit-filed",
               label: "1. สร้างคำฟ้อง",
             },
             {
-              key: "42",
+              key: "7.2",
               icon: <CaretRightOutlined />,
               pageName: "lawsuit-advane-patment",
               path: "lawsuit/advane-payment",
               label: "2. เบิกเงินทดรองจ่าย",
             },
             {
-              key: "43",
+              key: "7.3",
               icon: <CaretRightOutlined />,
               pageName: "lawsuit-clear-advane-patment",
               path: "lawsuit/clear-advane-payment",
               label: "3. เคลียร์เงินทดรองจ่าย",
             },
             {
-              key: "44",
+              key: "7.4",
               icon: <CaretRightOutlined />,
               pageName: "lawsuit-import-old-data",
               path: "lawsuit/import-old-data",
@@ -303,9 +344,10 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
+
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
       ? {
-          key: "6",
+          key: "8",
           pageName: "awaiting-judgment",
           label: "awaiting-judgment",
           path: "/awaiting-judgment",
@@ -313,40 +355,40 @@ function Sidenav({ color, onClick }) {
           title: "ชั้นศาล",
           children: [
             {
-              key: "61",
+              key: "8.1",
               icon: <CaretRightOutlined />,
               pageName: "awaiting-judgment",
               path: "court/awaiting-judgment",
               label: "1. พิพากษา",
             },
             {
-              key: "62",
+              key: "8.2",
               icon: <CaretRightOutlined />,
               pageName: "judgement",
               path: "court/judgement",
               label: "2. หมายคดีตั้ง",
             },
             {
-              key: "63",
+              key: "8.3",
               icon: <CaretRightOutlined />,
               pageName: "adjudge",
               path: "court/case-is-final",
               label: "3. คดีถึงที่สุด",
             },
-            // {
-            //   key: "64",
-            //   icon: <CaretRightOutlined />,
-            //   pageName: "court-advane-payment",
-            //   path: "court/advane-payment",
-            //   label: "4. เบิกเงินทดรอง",
-            // },
-            // {
-            //   key: "65",
-            //   icon: <CaretRightOutlined />,
-            //   pageName: "court-clear-advane-payment",
-            //   path: "court/clear-advane-payment",
-            //   label: "5. เคลียร์เงินทดรอง",
-            // },
+            {
+              key: "8.4",
+              icon: <CaretRightOutlined />,
+              pageName: "court-advane-payment",
+              path: "court/advane-payment",
+              label: "4. เบิกเงินทดรอง",
+            },
+            {
+              key: "8.5",
+              icon: <CaretRightOutlined />,
+              pageName: "court-clear-advane-payment",
+              path: "court/clear-advane-payment",
+              label: "5. เคลียร์เงินทดรอง",
+            },
           ],
         }
       : null,
@@ -356,7 +398,7 @@ function Sidenav({ color, onClick }) {
     ROLE_ID === "4" ||
     ROLE_ID === "7"
       ? {
-          key: "5",
+          key: "9",
           pageName: "investigate-assets",
           label: "investigate-assets",
           path: "/investigate-assets",
@@ -364,35 +406,35 @@ function Sidenav({ color, onClick }) {
           title: "สืบทรัพย์ลูกหนี้",
           children: [
             {
-              key: "51",
+              key: "9.1",
               icon: <CaretRightOutlined />,
               pageName: "create-invitigate-assets",
               path: "investigate-assets/create-invitigate-assets",
               label: "1. สืบทรัพย์",
             },
             {
-              key: "52",
+              key: "9.2",
               icon: <CaretRightOutlined />,
               pageName: "estimate-assets",
               path: "investigate-assets/estimate-assets",
               label: "2. ประเมินทรัพย์",
             },
             {
-              key: "53",
+              key: "9.3",
               icon: <CaretRightOutlined />,
               pageName: "assets-found",
               path: "investigate-assets/assets-found",
               label: "3. ทรัพย์สินที่พบ",
             },
             // {
-            //   key: "54",
+            //   key: "9.4",
             //   icon: <CaretRightOutlined />,
             //   pageName: "assets-found",
             //   path: "investigate-assets/advane-payment-assets-found",
             //   label: "4. เบิกทดรองสืบทรัพย์",
             // },
             // {
-            //   key: "55",
+            //   key: "9.5",
             //   icon: <CaretRightOutlined />,
             //   pageName: "assets-found",
             //   path: "investigate-assets/clear-advane-payment-assets-found",
@@ -402,9 +444,13 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
+    ROLE_ID === "1" ||
+    ROLE_ID === "2" ||
+    ROLE_ID === "3" ||
+    ROLE_ID === "4" ||
+    ROLE_ID === "9"
       ? {
-          key: "9",
+          key: "10",
           pageName: "send-to-enforcement",
           label: "enforcement",
           path: "/enforcement",
@@ -412,32 +458,39 @@ function Sidenav({ color, onClick }) {
           title: "ส่วนบังคับคดี",
           children: [
             {
-              key: "91",
+              key: "10.1",
               icon: <CaretRightOutlined />,
               pageName: "send-to-enforcement",
               path: "enforcement/send-to-enforcement",
               label: "1. สร้างรายงานการยึด",
             },
             // {
-            //   key: "92",
+            //   key: "10.2",
             //   icon: <CaretRightOutlined />,
             //   pageName: "send-to-enforcement",
             //   path: "enforcement/send-to-enforcement",
             //   label: "2. บันทึกยึดทรัพย์",
             // },
             {
-              key: "95",
+              key: "10.3",
               icon: <CaretRightOutlined />,
               pageName: "import-lawsuit-data",
               path: "enforcement/import-lawsuit-data",
               label: "นำเข้าคำพิพากษา",
+            },
+            {
+              key: "10.4",
+              icon: <CaretRightOutlined />,
+              pageName: "import-data",
+              path: "manage-data/import-data",
+              label: "นำข้อมูลเข้า",
             },
           ],
         }
       : null,
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
       ? {
-          key: "8",
+          key: "11",
           pageName: "debt-payment",
           label: "debt-payment",
           path: "/debt-payment",
@@ -447,7 +500,7 @@ function Sidenav({ color, onClick }) {
       : null,
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
       ? {
-          key: "10",
+          key: "12",
           pageName: "sale-announcement",
           label: "sale-announcement",
           path: "/sale-announcement",
@@ -457,7 +510,7 @@ function Sidenav({ color, onClick }) {
       : null,
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
       ? {
-          key: "7",
+          key: "13",
           pageName: "negotiate",
           label: "negotiate",
           path: "/negotiate",
@@ -467,7 +520,7 @@ function Sidenav({ color, onClick }) {
       : null,
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3"
       ? {
-          key: "11",
+          key: "14",
           pageName: "final-case",
           label: "final-case",
           path: "/final-case",
@@ -477,7 +530,7 @@ function Sidenav({ color, onClick }) {
       : null,
     ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2"
       ? {
-          key: "20",
+          key: "15",
           pageName: "withdraw-case",
           label: "withdraw-case",
           path: "/withdraw-case",
@@ -488,7 +541,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2"
       ? {
-          key: "211",
+          key: "16",
           pageName: "timeout-case",
           label: "timeout-case",
           path: "/timeout-case",
@@ -499,7 +552,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2"
       ? {
-          key: "222",
+          key: "17",
           pageName: "bad-debt",
           label: "bad-debt",
           path: "/bad-debt",
@@ -526,7 +579,7 @@ function Sidenav({ color, onClick }) {
     // },
     ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2" || ROLE_ID === "8"
       ? {
-          key: "19",
+          key: "18",
           pageName: "contract-detail",
           label: "contract-detail",
           path: "/contract-detail",
@@ -534,7 +587,7 @@ function Sidenav({ color, onClick }) {
           title: "ข้อมูลสัญญา",
           children: [
             {
-              key: "191",
+              key: "18.1",
               icon: <CaretRightOutlined />,
               pageName: "import-data",
               path: "contract-detail/detail-payment",
@@ -546,7 +599,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
-          key: "13",
+          key: "19",
           pageName: "import",
           label: "manage-data",
           path: "/manage-data",
@@ -554,21 +607,21 @@ function Sidenav({ color, onClick }) {
           title: "จัดการข้อมูล",
           children: [
             {
-              key: "131",
+              key: "19.1",
               icon: <CaretRightOutlined />,
               pageName: "import-data",
               path: "manage-data/import-data",
               label: "นำข้อมูลเข้า",
             },
             {
-              key: "132",
+              key: "19.2",
               icon: <CaretRightOutlined />,
               pageName: "assign-lawyers",
               path: "manage-data/assign-lawyers",
               label: "มอบหมายงาน",
             },
             {
-              key: "133",
+              key: "19.3",
               icon: <CaretRightOutlined />,
               pageName: "change-lawyers-jobs",
               path: "manage-data/change-lawyers-jobs",
@@ -581,7 +634,7 @@ function Sidenav({ color, onClick }) {
     // ค่าคอมมิชชั่นทนาย
     ROLE_ID === "1" || (ROLE_ID === "2" && userId === 4)
       ? {
-          key: "12",
+          key: "20",
           pageName: "commission",
           label: "commission",
           path: "/commission",
@@ -589,14 +642,14 @@ function Sidenav({ color, onClick }) {
           title: "คอมมิชชั่นทนาย",
           children: [
             {
-              key: "121",
+              key: "20.1",
               icon: <CaretRightOutlined />,
               pageName: "commission-law",
               path: "commission/commission-law",
               label: "คดีในชั้นศาล",
             },
             // {
-            //   key: "122",
+            //   key: "20.2",
             //   icon: <CaretRightOutlined />,
             //   pageName: "commission-investigate",
             //   path: "commission/commission-investigate",
@@ -608,7 +661,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "6"
       ? {
-          key: "16",
+          key: "21",
           pageName: "charge-indict",
           label: "charge-indict",
           path: "/charge-indict",
@@ -616,14 +669,14 @@ function Sidenav({ color, onClick }) {
           title: "เบิกเงินทดรองจ่าย",
           children: [
             {
-              key: "161",
+              key: "21.1",
               icon: <CaretRightOutlined />,
               pageName: "advane-pay",
               path: "charge-indict/advane-pay",
               label: "1. ค่าฤชาส่วนคำฟ้อง",
             },
             {
-              key: "162",
+              key: "21.2",
               icon: <CaretRightOutlined />,
               pageName: "clear-advane-pay",
               path: "charge-indict/clear-advane-pay",
@@ -643,7 +696,7 @@ function Sidenav({ color, onClick }) {
     // การเงินเบน
     ROLE_ID === "1" || ROLE_ID === "6"
       ? {
-          key: "30",
+          key: "22",
           pageName: "closing-balance",
           label: "closing-balance",
           path: "/closing-balance",
@@ -651,7 +704,7 @@ function Sidenav({ color, onClick }) {
           title: "การเงิน",
           children: [
             {
-              key: "301",
+              key: "22.1",
               icon: <CaretRightOutlined />,
               pageName: "request-closing-balance",
               path: "closing-balance/request-closing-balance",
@@ -663,7 +716,7 @@ function Sidenav({ color, onClick }) {
 
     ROLE_ID === "1" || ROLE_ID === "5"
       ? {
-          key: "14",
+          key: "23",
           pageName: "report",
           label: "report",
           path: "/report",
@@ -671,7 +724,7 @@ function Sidenav({ color, onClick }) {
           title: "รายงาน",
           children: [
             {
-              key: "141",
+              key: "23.1",
               icon: <CaretRightOutlined />,
               pageName: "notice",
               path: "report/chart-terminate",
@@ -703,7 +756,7 @@ function Sidenav({ color, onClick }) {
       : null,
 
     {
-      key: "15",
+      key: "24",
       pageName: "import",
       label: "guidbook",
       path: "/guidbook",
@@ -711,14 +764,14 @@ function Sidenav({ color, onClick }) {
       title: "คู่มือ",
       children: [
         {
-          key: "151",
+          key: "24.1",
           icon: <CaretRightOutlined />,
           pageName: "import-data",
           path: "guidbook/read-text",
           label: "วิธีแปลงรูปภาพเป็นตัวหนังสือ",
         },
         {
-          key: "152",
+          key: "24.2",
           icon: <CaretRightOutlined />,
           pageName: "import-data",
           path: "guidbook/test",

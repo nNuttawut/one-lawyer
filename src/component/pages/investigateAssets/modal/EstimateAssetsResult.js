@@ -178,7 +178,7 @@ const EstimateAssetsResult = ({
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataDefualt?.CUSTOMER_ID}_${dataDefualt?.deed_number}_${dataDefualt?.province}_${dataDefualt?.district}`
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/asset_${dataDefualt?.CONTNO}_${dataDefualt?.CUSTOMER_ID}_${dataDefualt?.deed_number}_${dataDefualt?.province}_${dataDefualt?.district}`
       )
       .then((response) => {
         console.log("ImageList", response.data);

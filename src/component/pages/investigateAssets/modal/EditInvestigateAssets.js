@@ -700,11 +700,10 @@ const EditInvestigateAssets = ({
           >
             ปิด
           </Button>
-          {dataPropertyList.length > 0 ? (
-            <Button style={{ color: "green" }} htmlType="submit">
-              บันทึก
-            </Button>
-          ) : null}
+
+          <Button style={{ color: "green" }} htmlType="submit">
+            บันทึก
+          </Button>
         </div>
       </Form>
     );

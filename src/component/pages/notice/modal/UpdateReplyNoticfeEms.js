@@ -372,7 +372,7 @@ const UpdateReplyNoticeEms = ({
       });
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
 
     fileList.forEach((file) => {
@@ -381,7 +381,7 @@ const UpdateReplyNoticeEms = ({
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl + `/files/lawyer/notice/${PARAM_PUBLIC}/${dataDefault.CONTNO}`,
         formData,

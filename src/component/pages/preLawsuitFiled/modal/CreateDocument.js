@@ -16,6 +16,7 @@ import {
   GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
+  POST_DETAIL_PAYMENT,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
@@ -26,8 +27,20 @@ import { STATUS_PROCESS_SUCCESSFUL } from "../../../../utils/constant/StatusCons
 import dayjs from "dayjs";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
+import {
+  interest,
+  optionsInterest,
+} from "../../../../utils/constant/ Interest";
+import DateCustom from "../../../../hook/DateCustom";
 
 const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
+  const [convertDateThai, convertDateThaiShort] = DateCustom();
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
   const [form] = Form.useForm();
@@ -35,6 +48,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
+  const [dataFormApiJojo, setDataFormApiJojo] = useState(null);
   const { TextArea } = Input;
   const [dataStore, setDataStore] = useState();
   const [dataForm, setDataForm] = useState({
@@ -54,11 +68,13 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [buttonCal, setButtonCal] = useState(false);
   const [buttonSubmit, setButtonSubmit] = useState(false);
   const [buttonCalFounds, setButtonCalFounds] = useState(false);
-  const [currencyFormatNoPoint, currencyFormatComma, currencyFormatPoint] =
-    CurrencyFormat();
   const [loanType, setLoanType] = useState(
     dataDefault?.LOAN_TYPE_ID ? dataDefault?.LOAN_TYPE_ID : 2
   );
+
+  console.log("dataDefault------>", dataDefault);
+  console.log("dataLoadLawSuit---->", dataLoadLawSuit);
+  console.log("dataLoadLoan----->", dataLoadLoan);
 
   useEffect(() => {
     setIsModal(open);
@@ -194,39 +210,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     let calFeeCourt;
     let calStampDuty;
 
-    // if (buttonCalFounds) {
-    //   console.log("intTrackingFee", intTrackingFee);
-    //   console.log("intLostbenefit", intLostbenefit);
-    //   console.log("intSuspensionAmount", intSuspensionAmount);
-
-    //   if (
-    //     (dataDefault?.LOAN_TYPE_ID !== 2 && dataDefault?.LOAN_TYPE_ID !== 5) ||
-    //     (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
-    //   ) {
-    //     balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
-    //     calIntigationFounds = balance  - intSuspensionAmount;
-    //   } else {
-    //     balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
-    //     calIntigationFounds =
-    //       balance  + intLostbenefit - intSuspensionAmount;
-    //   }
-
-    //   console.log("calIntigationFounds--->", calIntigationFounds);
-    //   if (calIntigationFounds < 0) {
-    //     calIntigationFounds = 0;
-    //     message.error("ไม่สามารถคำนวณได้เนื่องจากมีค่าติดลบ");
-    //   }
-    //   if (dataForm.dateCourt) {
-    //     form.setFieldsValue({
-    //       intigationFounds: currencyFormatComma(calIntigationFounds),
-    //       feeCourt: 0,
-    //       stampDuty: 0,
-    //     });
-    //   }
-
-    //   setButtonCalFounds(false);
-    // }
-
     if (buttonCal) {
       console.log("values.intigationFounds--->", values.intigationFounds);
 
@@ -239,7 +222,14 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         calFeeCourt = values.intigationFounds * 0.02;
       }
 
-      calStampDuty = values.intigationFounds / 2000;
+      console.log();
+
+      if (loanType === 1) {
+        calStampDuty = values.intigationFounds / 1000;
+      } else {
+        calStampDuty = values.intigationFounds / 2000;
+      }
+
       if (calStampDuty > 10000) {
         calStampDuty = 10000;
       }
@@ -412,7 +402,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const onChangeCourt = (date, dateString) => {
     console.log(date, dateString);
     setDataForm({ ...dataForm, dateCourt: dateString });
-
     if (!date) {
       form.setFieldsValue({
         intigationFounds: 0,
@@ -479,7 +468,9 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log("date", value);
     let dateCurrent = dayjs(value);
     let lastPayDate = dayjs(dataLoadLoan?.LOAN?.LPAYD);
+    const differenceDay = dateCurrent.diff(lastPayDate, "day");
     const differenceMonth = dateCurrent.diff(lastPayDate, "month");
+    console.log("differenceDay", differenceDay);
 
     if (value) {
       let lossBenefitValue;
@@ -517,8 +508,13 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } else {
         calFeeCourt = result * 0.02;
       }
+      let calStampDuty;
 
-      let calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 2000;
+      if (loanType === 1) {
+        calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000;
+      } else {
+        calStampDuty = dataLoadLoan?.LOAN?.NCSHPRC / 2000;
+      }
 
       if (calStampDuty > 10000) {
         calStampDuty = 10000;
@@ -590,6 +586,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           documentCost: 0,
           company: dataDefault?.COMPANY_ID,
           loanType: loanType,
+          interestRate: dataDefault?.LOAN_TYPE_ID === 3 ? 0.24 : 0.15,
         }}
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
@@ -610,6 +607,18 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         >
           <DatePicker onChange={onChangeCourt} />
         </Form.Item>
+        {/* <Form.Item label="ดอกเบี้ยตามวัน" name="interestRate">
+          <Select
+            showSearch
+            name="interestRate"
+            options={optionsInterest}
+            style={{ width: "auto" }}
+            placeholder="เลือกอัตราดอกเบี้ย"
+            optionFilterProp="value"
+            popupMatchSelectWidth={false}
+            defaultValue={dataDefault?.LOAN_TYPE_ID === 3 ? 0.24 : 0.15}
+          />
+        </Form.Item> */}
         <Form.Item
           label="บริษัทที่ส่งคำฟ้อง"
           name="company"
@@ -722,24 +731,23 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             onChange={(value) => onChangeSuspensionAmount(value)}
           />
         </Form.Item>
-        <Form.Item label="ผิดนัดชำระจำนวน" name="noPay">
-          <p>{dataForm.nopay ? dataForm.nopay + " งวด" : "-"}</p>
+        <Form.Item label="จ่ายล่าสุด" name="noPay">
+          <p>{convertDateThai(dataLoadLoan?.LOAN?.LPAYD)}</p>
         </Form.Item>
         {dataForm.dateCourt ? (
           <>
-            <Form.Item label="เงินต้น" name="principle">
-              <p>
-                {loanType !== 2 && loanType !== 5
-                  ? currencyFormatComma(dataLoadLoan?.LOAN?.TOTPRC) + " บาท"
-                  : currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC) + " บาท"}
-              </p>
+            <Form.Item label="ยอดกู้" name="principle">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC)} บาท</p>
+            </Form.Item>
+            <Form.Item label="ยอดกู้รวมดอก" name="principle">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.TOTPRC)} บาท</p>
             </Form.Item>
             <Form.Item label="ยอดที่จ่ายมาทั้งหมด" name="sumaryPay">
               <p>{currencyFormatComma(dataLoadLoan?.LOAN?.SMPAY) + " บาท"}</p>
             </Form.Item>
-            <Form.Item label="เงินค้างจ่ายโดยประมาณ" name="balance">
+            <Form.Item label="เงินค้างจ่าย ≈" name="balance">
               <p>
-                {loanType !== 2 && loanType !== 5
+                {loanType !== 2 || loanType !== 5
                   ? currencyFormatComma(
                       dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY
                     ) + " บาท"
@@ -748,7 +756,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     ) + " บาท"}
               </p>
             </Form.Item>
-            {loanType !== 2 && loanType !== 5 ? (
+            {loanType === 1 || loanType === 4 || loanType === 6 ? (
               <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
                 <InputNumber
                   suffix="บาท"
@@ -816,7 +824,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 onChange={(value) => feeCourt(value)}
               />
             </Form.Item>
-            {loanType !== 2 && loanType !== 5 ? (
+            {loanType === 1 ||
+            loanType === 3 ||
+            loanType === 4 ||
+            loanType === 6 ? (
               <Form.Item
                 label="ค่าอากรสแตมป์"
                 name="stampDuty"

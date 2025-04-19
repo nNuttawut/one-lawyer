@@ -141,7 +141,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const handleUploadAllImage = () => {
+  const handleUploadAllImage = async () => {
     const formData = new FormData();
     fileList.forEach((file) => {
       formData.append("files", file);
@@ -149,10 +149,10 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     setLoading(true);
 
-    axios
+    await axios
       .post(
         baseUrl +
-          `/files/lawyer/enforcement/${PARAM_PUBLIC}/คดีถึงที่สุด${dataDefualt.contno}`,
+          `/files/lawyer/enforcement/${PARAM_PUBLIC}/final-case_${dataDefualt.contno}`,
         formData,
         {
           headers: {
