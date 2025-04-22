@@ -8,16 +8,17 @@ import "./css/mainPage.css";
 import SubDateThai from "./SubDateThai";
 import THBText from "thai-baht-text";
 
-function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName }) {
+function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName, dateQuery }) {
   console.log("PrintPDF/dataCus", dataCus);
   //console.log("PrintPDF/arrData", arrData);
   //console.log("PrintPDF/nameLawyerA1", nameLawyerA1);
   //console.log("PrintPDF/uniqueCusName", uniqueCusName);
+  //console.log("PrintPDF/dateQuery", dateQuery);
 
   //สับวันดื่อนปี ปี เดือน วัน ไทย
   const { formattedDateYMD } = SubDateThai();
   const dataCusSDate = dataCus[0]?.NAME ? formattedDateYMD(dataCus[0]?.LOAN.SDATE) : ''; 
-  const dataSDatePrint = nameLawyerA1?.selectdate ? formattedDateYMD(nameLawyerA1?.selectdate) : ''; 
+  const dataSDatePrint = dateQuery? formattedDateYMD(dateQuery) : ''; 
   
   //นับจำนวน  เช็คค่าว่างคนค้ำประกัน
   // const dataCusName0 = dataCus[0]?.NAME ? `${dataCus[0].NAME} (ผู้กู้/ผู้จำนอง) ` : ''; 
@@ -47,6 +48,7 @@ function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName }) {
         ? dataCus.map((dataCus, index) => (
       <div className="divA4Cut" key={index}>
             <Row>
+            <Col span={24} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>
             <Col span={2} className="colCenter"></Col>
             <Col span={3} className="colLeft">กรุณาส่ง</Col>
             <Col span={19} className="colLeft">{dataCus?.NAME} {dataCus?.cusType === 0 ? '(ผู้กู้/ผู้จำนอง)' : '(คนค้ำประกัน)'} ({dataCus?.CONTNO}) </Col>

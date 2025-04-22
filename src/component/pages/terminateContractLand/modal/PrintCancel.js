@@ -28,7 +28,7 @@ import { faMapLocationDot, faCarSide } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MainLoanPDF from './modalPDF/MainLoanPDF';
 
-const PrintCancel = ({ open, close, data, queryContno }) => {
+const PrintCancel = ({ open, close, data, queryContno,dateQuery }) => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [
     currencyFormat,
@@ -89,7 +89,7 @@ const PrintCancel = ({ open, close, data, queryContno }) => {
       await axios
         .post(POST_DETAIL_PAYMENT, {
           contno: queryContno,
-          todate: dayjs().format("YYYY-MM-DD"),
+          todate: dayjs(dateQuery).format("YYYY-MM-DD"),
           type: typeValue,
         })
         .then(async (resQuery) => {
@@ -257,7 +257,7 @@ const PrintCancel = ({ open, close, data, queryContno }) => {
         </Row>
         <Divider />
         <center>
-        <MainLoanPDF dataCus = {data ? data : null} arrData = {arrData ? arrData.loan : null}/>       
+        <MainLoanPDF dataCus = {data ? data : null} arrData = {arrData ? arrData.loan : null} dateQuery = {dateQuery ? dateQuery : null}/>       
         </center>
       </Card>
     </Modal>

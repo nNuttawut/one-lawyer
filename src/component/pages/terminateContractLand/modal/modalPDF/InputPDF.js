@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Button, Select, Form, Col, Row, DatePicker } from "antd";
+import { Button, Select, Form, Col, Row } from "antd";
 import { useReactToPrint } from "react-to-print";
 import dataNameLawyer from "./DataNameLawyer";
 import PrintPDF from "./PrintPDF";
 
-const InputPDF = ({ dataCus, arrData }) => {
+const InputPDF = ({ dataCus, arrData, dateQuery }) => {
   const [form] = Form.useForm(); //กำหนด form ก่อนใช้งาน
   //console.log("3333//", dataCus[0].CONTNO);
   //  console.log("3333///", arrData);
@@ -77,16 +77,7 @@ const InputPDF = ({ dataCus, arrData }) => {
         form={form}
       >
         <Row>
-        <Col span={11} style={{ marginLeft: "5px" }}>
-            <Form.Item
-              label="เลือกวันที่พิมพ์"
-              name="selectdate"
-              rules={[{ required: true, message: "เลือกวันที่พิมพ์!" }]}
-            >
-              <DatePicker onChange={onChangeDateA}/>
-            </Form.Item>
-          </Col>
-          <Col span={12} style={{ marginLeft: "5px" }}>
+          <Col span={23} style={{ marginLeft: "5px" }}>
             <Form.Item
               label="เลือกทนาย"
               name="selectNameLawyer"
@@ -117,7 +108,7 @@ const InputPDF = ({ dataCus, arrData }) => {
         </Row>
       </Form>
       <div className="print-only" ref={conponentPDF}>
-        {arrData ? <PrintPDF dataCus={dataCus} arrData={arrData} nameLawyerA1 = {nameLawyerA1} uniqueCusName = {uniqueCusName} /> : null}
+        {arrData ? <PrintPDF dataCus={dataCus} arrData={arrData} nameLawyerA1 = {nameLawyerA1} uniqueCusName = {uniqueCusName} dateQuery = {dateQuery} /> : null}
       </div>
     </>
   );

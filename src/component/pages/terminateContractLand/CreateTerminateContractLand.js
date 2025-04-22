@@ -11,6 +11,7 @@ import {
   Popconfirm,
   Tooltip,
   Modal,
+  DatePicker,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect, useMemo } from "react";
@@ -61,6 +62,7 @@ const Main = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [dataSearch, setDataSearch] = useState(0);
   const [dataCheck, setDataCheck] = useState([]);
+  const [dateQuery, setDateQuery] = useState(dayjs());
 
   const onQuery = () => {
     if (queryContno) {
@@ -142,21 +144,25 @@ const Main = () => {
         ADDRESS: addr, // แยกตามที่อยู่
       }));
 
-      // ข้อมูลผู้ค้ำประกัน (แยกตามที่อยู่)
-      const guarantorData = (record.GUARANTORS || []).flatMap((guarantor) =>
-        (Array.isArray(guarantor.ADDRESS)
+      const guarantorData = (record.GUARANTORS || []).map((guarantor) => {
+        const addressList = Array.isArray(guarantor.ADDRESS)
           ? guarantor.ADDRESS
-          : [guarantor.ADDRESS]
-        ).map((addr) => ({
+          : [guarantor.ADDRESS];
+
+        // หา address ที่ตรงกับ ADDRMAIL
+        const mainAddress = addressList.find(
+          (addr) => addr.ADDRNO === guarantor.ADDRMAIL
+        );
+        return {
           ...record,
-          cusType: parseInt(guarantor.GARNO), // ระบุเป็นผู้ค้ำประกัน
+          cusType: parseInt(guarantor.GARNO), // ผู้ค้ำ
           CONTNO: record.LOAN?.CONTNO || "",
           NAME: `${guarantor.SNAM} ${guarantor.NAME1 || ""} ${
             guarantor.NAME2 || ""
           }`.trim(),
-          ADDRESS: addr, // แยกตามที่อยู่ของผู้ค้ำ
-        }))
-      );
+          ADDRESS: mainAddress || {}, // แสดงเฉพาะที่อยู่หลัก
+        };
+      });
 
       return [...acc, ...mainData, ...guarantorData];
     }, []);
@@ -171,7 +177,6 @@ const Main = () => {
       key: index + 1,
     }));
   };
-
   const filterData = (value) => {
     console.log(value);
     setArrayTable(value);
@@ -426,6 +431,11 @@ const Main = () => {
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
   };
 
+  const handleChangeDate = (date) => {
+    console.log("date", date);
+    setDateQuery(dayjs(date).format("YYYY-MM-DD"));
+  };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (rowKeys, selectedRows) => {
@@ -521,17 +531,25 @@ const Main = () => {
                 </Button>
               </Popconfirm>
             </Col>
-            <Col span={"12"} style={{ textAlign: "end" }}>
-              {/* <Space direction="vertical" size={12}>
-                <Upload {...uploadProps}>
-                  <Button
-                    style={{ color: "green", marginRight: "5px" }}
-                    icon={<ImportOutlined />}
-                  >
-                    นำเข้าสัญญา
-                  </Button>
-                </Upload>
-              </Space> */}
+          
+            <Col span={"24"} style={{ textAlign: "end" }}>
+              <Space direction="vertical" size={12}>
+                <Tooltip
+                  placement="bottom"
+                  title="วันที่คิดดอกเบี้ยถึง"
+                  arrow={mergedArrow}
+                >
+                  <DatePicker
+                    size="large"
+                    style={{
+                      marginRight: "10px",
+                      marginBottom: "10px",
+                    }}
+                    defaultValue={dateQuery}
+                    onChange={handleChangeDate}
+                  />
+                </Tooltip>
+              </Space>
               <Search
                 placeholder="ค้นหาสัญญา"
                 onSearch={onQuery}
@@ -564,7 +582,14 @@ const Main = () => {
                     }}
                     key="print"
                     // onClick={onClickDownload}
-                    onClick={() => setIsModalPrint(true)}
+                    onClick={() => {
+                      if(dateQuery){
+                       setIsModalPrint(true)
+                      }else{
+                        message.error('กรุณาเลือกวันที่คิดดอกเบี้ยถึง !!')
+                      }
+                    }
+                      }
                   />
                 </Tooltip>
               </Space>
@@ -575,7 +600,7 @@ const Main = () => {
                 size="small"
                 columns={columns}
                 dataSource={arrayTable}
-                rowSelection={rowSelection}
+                // rowSelection={rowSelection}
                 scroll={{ x: 850 }}
                 footer={() => (
                   <p>
@@ -603,6 +628,7 @@ const Main = () => {
           close={setIsModalPrint}
           data={arrayTable}
           queryContno={queryContno}
+          dateQuery={dateQuery}
         />
       ) : null}
     </>

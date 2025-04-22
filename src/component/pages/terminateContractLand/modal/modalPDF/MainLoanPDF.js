@@ -4,7 +4,7 @@ import { Modal, Button } from "antd";
 //import { FilePdfOutlined } from "@ant-design/icons";
 import InputPDF from "./InputPDF";
 
-function MainLoanPDF({dataCus, arrData}) {
+function MainLoanPDF({dataCus, arrData, dateQuery}) {
   // console.log("2222//",dataCus);
   // console.log("2222///",arrData);
   const [open, setOpen] = useState(false);
@@ -43,7 +43,7 @@ function MainLoanPDF({dataCus, arrData}) {
           </Button>,
         ]}
       >
-        <InputPDF dataCus = {dataCus ? dataCus : null} arrData = {arrData ? arrData : null}/>
+        <InputPDF dataCus = {dataCus ? dataCus : null} arrData = {arrData ? arrData : null} dateQuery = {dateQuery ? dateQuery : null}/>
       </Modal>
     </>
   );

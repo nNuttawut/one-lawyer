@@ -17,7 +17,7 @@
       border: none; /* ไม่ต้องการเส้นขอบตอนพิมพ์ */
       page-break-after: always; /* บังคับการแบ่งหน้าหลัง divA4 */
       padding-top: 14mm; /* กำหนด 4 ขอบกระดาษ ขอบกระดาษจริง == 96px*/
-      padding-bottom: 12mm;
+      padding-bottom: 12mm; /* padding-bottom: 12mm; */
       padding-left: 25mm;
       padding-right: 25mm;
     }
@@ -25,7 +25,7 @@
   :root {
     --marginTopBottom: 0px;     /* var(--aa);  */
     /* pt (point) ใน Microsoft Word  */
-    --fontSize: 15pt;
+    --fontSize: 14pt;
     --fontFamily: Angsana New;
     /* --fontFamily: Cordia new; */
     /* --fontFamily: TH-Sarabun-PSK; */
