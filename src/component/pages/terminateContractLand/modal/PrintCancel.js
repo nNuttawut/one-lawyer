@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 
 import { faMapLocationDot, faCarSide } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import MainLoanPDF from './modalPDF/MainLoanPDF';
 
 const PrintCancel = ({ open, close, data, queryContno }) => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -255,6 +256,9 @@ const PrintCancel = ({ open, close, data, queryContno }) => {
           </Col>
         </Row>
         <Divider />
+        <center>
+        <MainLoanPDF dataCus = {data ? data : null} arrData = {arrData ? arrData.loan : null}/>       
+        </center>
       </Card>
     </Modal>
   );

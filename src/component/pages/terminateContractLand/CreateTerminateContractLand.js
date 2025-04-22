@@ -478,28 +478,28 @@ const Main = () => {
       ),
     },
 
-    {
-      title: "การจัดการ",
-      align: "center",
-      render: (text, record) => (
-        <>
-          <Popconfirm
-            title="ลบสัญญา"
-            description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
-            onConfirm={() => {
-              confirm(record);
-            }}
-            onCancel={cancel}
-            okText="ยืนยัน"
-            cancelText="ยกเลิก"
-          >
-            <Button style={{ fontSize: "16px", color: "red" }}>
-              <DeleteOutlined />
-            </Button>
-          </Popconfirm>
-        </>
-      ),
-    },
+    // {
+    //   title: "การจัดการ1",
+    //   align: "center",
+    //   render: (text, record) => (
+    //     <>
+    //       <Popconfirm
+    //         title="ลบสัญญา"
+    //         description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
+    //         onConfirm={() => {
+    //           confirm(record);
+    //         }}
+    //         onCancel={cancel}
+    //         okText="ยืนยัน"
+    //         cancelText="ยกเลิก"
+    //       >
+    //         <Button style={{ fontSize: "16px", color: "red" }}>
+    //           <DeleteOutlined />
+    //         </Button>
+    //       </Popconfirm>
+    //     </>
+    //   ),
+    // },
   ];
 
   return (

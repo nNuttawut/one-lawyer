@@ -15,10 +15,10 @@ function PrintPage4({ record, dataInputA, dataLawsuit }) {
    console.log("PrintPage4/dataInputA", dataInputA);
    console.log("PrintPage4/dataLawsuit", dataLawsuit);
 
-   //แปลงตัวไทย เป็นตัวเลขอารบิก
+  //แปลงตัวเลขอารบิก เป็นตัวไทย
   const [convertToThaiNumerals] = arabicToThai();
-  //สับวันดื่อนปี ปี เดือน วัน ไทย
-  const { formattedDateYMD, formattedDateY, formattedDateM, formattedDateD } = SubDateThai();
+  //สับวันดื่อนปี ปี เดือน วัน ไทย formattedDateYMD
+  const {formattedDateY, formattedDateM, formattedDateD } = SubDateThai();
 
    let caseType1,caseType2 = null; //ประเภทนิติบุคคล
    const blackCaseNumber = dataLawsuit?.black_case_number     //คดีหมายเลขดำ
@@ -40,8 +40,6 @@ function PrintPage4({ record, dataInputA, dataLawsuit }) {
 
   
 
-
-  
 
   return (
     <div>
