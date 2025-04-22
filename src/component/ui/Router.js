@@ -26,7 +26,7 @@ import FinalCase from "../pages/finalCase/MainFinal";
 import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
-import Test from "../pages/guidebook/Test";
+import Resize from "../pages/guidebook/Resize";
 import ReplyNotice from "../pages/notice/ReplyNotice";
 import Liff from "../pages/lineLogIn/Liff";
 import Loginline from "../pages/lineLogIn/LoginLine";
@@ -77,6 +77,7 @@ import CourtAdvanePayment from "../pages/court/CourtAdvanePayment";
 import CourtClearAdvanePayment from "../pages/court/CourtClearAdvanePayment";
 import ImportDecideData from "../pages/enforcement/ImportDecideData";
 import MainClosingBalance from "../pages/closingBalance/MainClosingBalance";
+import MainAverage from "../pages/saleAnnouncement/MainAverage";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -217,8 +218,12 @@ export default function Router() {
             element={<ReportTerminateHand />}
           />
           <Route
-            path="/sale-announcement/*"
+            path="sale-announcement/report-sale"
             element={<SaleAnnouncementRoute />}
+          />
+          <Route
+            path="sale-announcement/report-average"
+            element={<MainAverage />}
           />
           <Route
             path="enforcement/send-to-enforcement/*"
@@ -284,7 +289,7 @@ export default function Router() {
           <Route path="/timeout-case" element={<MainTimeoutCase />} />
           <Route path="/bad-debt" element={<MainBadDebt />} />
           <Route path="/guidbook/read-text" element={<ReadText />} />
-          <Route path="/guidbook/test" element={<Test />} />
+          <Route path="/guidbook/resize" element={<Resize />} />
           <Route path="/liff" element={<Liff />} />
           <Route path="/login-line" element={<Loginline />} />
           {/* ขอปิดยอดเบน */}

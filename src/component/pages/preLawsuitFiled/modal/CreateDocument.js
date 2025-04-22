@@ -43,12 +43,13 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   ] = CurrencyFormat();
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
+  const [companiesSelect, setCompanieSelect] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
-  const [dataFormApiJojo, setDataFormApiJojo] = useState(null);
+  const [dataHirePurchase, setDataHirePurchase] = useState();
   const { TextArea } = Input;
   const [dataStore, setDataStore] = useState();
   const [dataForm, setDataForm] = useState({
@@ -71,10 +72,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loanType, setLoanType] = useState(
     dataDefault?.LOAN_TYPE_ID ? dataDefault?.LOAN_TYPE_ID : 2
   );
-
-  console.log("dataDefault------>", dataDefault);
-  console.log("dataLoadLawSuit---->", dataLoadLawSuit);
-  console.log("dataLoadLoan----->", dataLoadLoan);
 
   useEffect(() => {
     setIsModal(open);
@@ -119,32 +116,88 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [lawsuitRes, loanRes] = await Promise.all([
-        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefault.id}`, {
+      const response = await axios.get(
+        `${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefault.id}`,
+        {
           headers: HEADERS_EXPORT,
-        }),
-        axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefault.CONTNO}`, {
-          headers: HEADERS_EXPORT,
-        }),
-      ]);
-
-      if (lawsuitRes.status === 200) {
-        console.log("lawsuitRes", lawsuitRes.data);
-        setDataLoadLawSuit(lawsuitRes.data);
-        setDataStore(lawsuitRes.data);
+        }
+      );
+      const { status, data } = response;
+      if (status === 200 && data) {
+        console.log("lawsuitRes", data);
+        setDataLoadLawSuit(data);
+        setDataStore(data);
       } else {
         message.error("ไม่พบข้อมูลคดี");
-      }
-
-      if (loanRes.status === 200) {
-        console.log("loanRes", loanRes.data);
-        setDataLoadLoan(loanRes.data);
-      } else {
-        message.error("ไม่พบข้อมูลเงิน");
       }
     } catch (error) {
       console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const queryDataHirePurchase = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefault.CONTNO}`,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
+      if (response.status === 200 && response.data) {
+        console.log("ข้อมูลสัญญาเช่าซื้อ:", response.data);
+        setDataHirePurchase(response.data);
+      } else {
+        message.warning("ไม่พบข้อมูลที่ต้องการ");
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const queryDataLoan = async (queryContno, typeValue, date) => {
+    setLoading(true);
+    try {
+      await axios
+        .post(POST_DETAIL_PAYMENT, {
+          contno: queryContno,
+          todate: dayjs(date).format("YYYY-MM-DD"),
+          type: typeValue,
+        })
+        .then(async (resQuery) => {
+          let i = 1;
+          if (resQuery.status === 200) {
+            setDataLoadLoan(resQuery?.data[0]);
+            const newData = resQuery?.data[0]?.resultdata?.map((item) => ({
+              ...item,
+              key: i++,
+            }));
+            console.log("newData", newData);
+            console.log("resQuery", resQuery.data);
+            setLoading(false);
+          } else {
+            setDataLoadLoan();
+            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
+            console.log("ไม่มีเลขที่สัญญาที่ค้นหา");
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status === 404) {
+            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
+          }
+        });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
     }
@@ -544,6 +597,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
+    setCompanieSelect(value);
   };
 
   const setLawType = () => {
@@ -558,6 +612,44 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       : null;
     setDataForm((prev) => ({ ...prev, lawTypeTH: result }));
     return result;
+  };
+
+  const preQuery = () => {
+    if (dataDefault.CONTNO) {
+      let typeValue;
+      let subData = dataDefault.CONTNO.substring(0, 1);
+      let subDataLand = dataDefault.CONTNO.substring(0, 3);
+      console.log("subDataLand", subDataLand);
+
+      if (dataDefault?.COMPANY_ID === "3" || companiesSelect === "3") {
+        typeValue = "KSM";
+        queryDataLoan(dataDefault.CONTNO, typeValue);
+        console.log("subData", subData);
+        console.log("typeValue", typeValue);
+        console.log("dataDefault.CONTNO--->", dataDefault.CONTNO);
+      } else {
+        if (subData === "1" || subDataLand === "222") {
+          typeValue = "LSFHP";
+          queryDataLoan(dataDefault.CONTNO, typeValue);
+        } else if (subData === "3") {
+          let checkType = dataDefault.CONTNO.substring(5, 9);
+          console.log("checkType", checkType);
+          if (parseInt(checkType) > 1200) {
+            typeValue = "RPSL";
+            queryDataLoan(dataDefault.CONTNO, typeValue);
+          } else {
+            message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
+          }
+        } else {
+          typeValue = "RPSL";
+          queryDataLoan(dataDefault.CONTNO, typeValue);
+        }
+
+        console.log("subData", subData);
+        console.log("typeValue", typeValue);
+        console.log("dataDefault.CONTNO--->", dataDefault.CONTNO);
+      }
+    }
   };
 
   const formDataSet = () => {

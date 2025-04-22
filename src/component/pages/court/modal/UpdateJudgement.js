@@ -224,7 +224,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       const putJudgement = {
         ...dataLoadJudgement,
         enforce_case_date: dateEnforceCase,
-        copying_fee: values.docFee,
+        // copying_fee: values.docFee,
         // fee: values.otherFee,
       };
       console.log("postData", postData);
@@ -325,6 +325,13 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
 
       return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
@@ -412,7 +419,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   onChange={(value) => onChangeTotalFee(value)}
                 />
               </Form.Item> */}
-              <Form.Item label="ค่าคัดเอกสาร" name="docFee">
+              {/* <Form.Item label="ค่าคัดเอกสาร" name="docFee">
                 <InputNumber
                   suffix="บาท"
                   formatter={(value) =>
@@ -424,7 +431,7 @@ const UpdateJudgement = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                   style={{ width: "100%", color: "black" }}
                   onChange={(value) => onChangeDocFee(value)}
                 />
-              </Form.Item>
+              </Form.Item> */}
 
               <Form.Item
                 label="ไฟลหมายตั้ง"

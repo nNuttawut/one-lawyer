@@ -50,6 +50,9 @@ const Main = () => {
     if (queryContno) {
       let typeValue;
       let subData = queryContno.substring(0, 1);
+      let subDataLand = queryContno.substring(0, 3);
+      console.log("subDataLand", subDataLand);
+
       if (userCompany === "3") {
         typeValue = "KSM";
         queryData(queryContno, typeValue);
@@ -57,7 +60,7 @@ const Main = () => {
         console.log("typeValue", typeValue);
         console.log("queryContno--->", queryContno);
       } else {
-        if (subData === "1") {
+        if (subData === "1" || subDataLand === "222") {
           typeValue = "LSFHP";
           queryData(queryContno, typeValue);
         } else if (subData === "3") {

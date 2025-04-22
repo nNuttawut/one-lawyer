@@ -7,14 +7,29 @@ import {
   message,
   InputNumber,
   Input,
+  List,
+  Image,
 } from "antd";
 
 import { useEffect, useState } from "react";
 import TokenCheck from "../../../../hook/TokenCheck";
 import axios from "axios";
 import { baseUrl, HEADERS_EXPORT, PUT_EXPENSES } from "../../../API/apiUrls";
+import Dragger from "antd/es/upload/Dragger";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
+import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
-const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
+const ClearAdvanePaymentCourt = ({
+  open,
+  close,
+  dataDefault,
+  funcUpdateStatus,
+}) => {
   const [loading, setLoading] = useState(false);
   const [dataRender, setDataRender] = useState([]);
   const [inputValues, setInputValues] = useState({});
@@ -22,6 +37,10 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const { TextArea } = Input;
   const [form] = Form.useForm();
   const [totalPay, setTotalPay] = useState({});
+  const [fileList, setFileList] = useState([]);
+  const [fileTranferMoney, setFileTranferMoney] = useState([]);
+  const [fileListLoad, setFileListLoad] = useState([]);
+  const [fileTranferMoneyLoad, setFileTranferMoneyLoad] = useState([]);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -31,9 +50,11 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   useEffect(() => {
     if (dataDefault) {
       renderDataDetail(dataDefault);
+      loadImagesProduct();
+      loadImagesProductTranferMoney();
       console.log(dataDefault);
       form.setFieldsValue({
-        imageReplyFile: dataDefault.file_path,
+        // imageReplyFile: dataDefault.file_path,
         memo: dataDefault.withdraw_mark,
       });
     }
@@ -81,8 +102,116 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     console.log(value);
   };
 
-  const onChangeReplyFile = (value) => {
-    console.log(value);
+  const loadImagesProduct = async () => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/receipt_${dataDefault.reference_no}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        if (response.data.length > 0) {
+          setFileListLoad(response.data);
+          setLoading(true);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const loadImagesProductTranferMoney = async () => {
+    await axios
+      .get(
+        baseUrl +
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/slip_${dataDefault.reference_no}`
+      )
+      .then((response) => {
+        console.log("ImageList", response.data);
+        if (response.data.length > 0) {
+          setFileTranferMoneyLoad(response.data);
+          setLoading(true);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const handleUploadAllImage = async () => {
+    const formData = new FormData();
+
+    fileList?.forEach((file) => {
+      formData.append("files", file);
+    });
+    setLoading(true);
+
+    await axios
+      .post(
+        baseUrl +
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/receipt_${dataDefault.reference_no}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleUploadAllImageTranferMoney = async () => {
+    const formData = new FormData();
+
+    fileTranferMoney.forEach((file) => {
+      formData.append("files", file);
+    });
+    setLoading(true);
+
+    await axios
+      .post(
+        baseUrl +
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/slip_${dataDefault.reference_no}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setFileList([]);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const sendData = async (data) => {
@@ -135,6 +264,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   const onFinish = (values) => {
     console.log(values);
+
     let dataset = [];
     let setdataSend = [];
     dataset = dataDefault.expenseList.map((item) => {
@@ -145,16 +275,33 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ...item,
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
           withdraw_mark: values.memo || null,
-          file_path: values.imageReplyFile,
+          // file_path: values.imageReplyFile,
           pay_type_id: 4,
         };
       }
     });
+
     const checkData = dataset.filter((item) => item); // กรองค่า null, undefined, false ออก
     setdataSend.push(...checkData);
+    if (fileList?.length > 0) {
+      console.log("handleUploadAllImage");
 
-    sendData(setdataSend);
-    console.log("dataSend", setdataSend);
+      handleUploadAllImage();
+      if (setdataSend.length < 1 || fileTranferMoney.length < 1) {
+        handleCancel();
+      }
+    }
+    if (fileTranferMoney.length > 0) {
+      console.log("handleUploadAllImageTranferMoney");
+      handleUploadAllImageTranferMoney();
+      if (setdataSend.length < 1 || fileList?.length < 1) {
+        handleCancel();
+      }
+    }
+    if (setdataSend.length > 0) {
+      sendData(setdataSend);
+      console.log("dataSend", setdataSend);
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -220,6 +367,65 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       return updatedValues;
     });
+  };
+
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList?.indexOf(file);
+      const newFileList = fileList?.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const propsMoney = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList?.indexOf(file);
+      const newFileList = fileList?.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
+      // ตรวจสอบประเภทของไฟล์
+      const isImage = file.type.startsWith("image/");
+
+      if (!isImage) {
+        message.error("สามารถอัปโหลดได้เฉพาะไฟล์รูปภาพเท่านั้น");
+        return false;
+      } else if (fileList?.length >= 4) {
+        message.error("เลือกไฟล์อัปโหลดได้ไม่เกิน 4 ไฟล์");
+        return false;
+      } else {
+        setFileTranferMoney((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+      }
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileTranferMoney,
   };
 
   if (dataRender) {
@@ -322,23 +528,172 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     </div>
                   );
                 })}
-                <Form.Item
-                  label="ลิ้งเก็บรูปส่วนฟ้อง"
-                  name="imageReplyFile"
-                  rules={[
-                    {
-                      required: true,
-                      message: "กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง !",
-                    },
-                  ]}
-                >
-                  <Input
-                    placeholder="กรุณากรอกลิ้งเก็บรูปส่วนฟ้อง"
-                    name="imageReplyFile"
-                    style={{ width: "92%" }}
-                    onChange={(e) => onChangeReplyFile(e.target.value)}
-                  />
+                <Form.Item label="อัปโหลดใบเสร็จ" name="imageUrlFile">
+                  <Dragger
+                    {...props}
+                    style={{
+                      width: "300px", // กำหนดความกว้าง
+                      height: "200px", // กำหนดความสูง
+                      margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+                    }}
+                  >
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined style={{ color: "blue" }} />
+                    </p>
+                    <p className="ant-upload-text">
+                      กรุณาคลิกหรือลากเพื่อเลือกไฟล์
+                    </p>
+                    <p className="ant-upload-hint">
+                      รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                    </p>
+                  </Dragger>
                 </Form.Item>
+                {fileListLoad?.length > 0 ? (
+                  <Form.Item label="ใบเสร็จ" name={"imageFile"}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                        justifyContent: "center", // จัดให้อยู่ตรงกลาง
+                      }}
+                    >
+                      <Image.PreviewGroup>
+                        {fileListLoad?.map((image, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                              textAlign: "center",
+                            }}
+                          >
+                            {image.url.includes("pdf") ? (
+                              <>
+                                <FilePdfOutlined
+                                  style={{ fontSize: "40px", color: "red" }}
+                                />
+                                {image.url ? (
+                                  <a
+                                    style={{
+                                      display: "block",
+                                      marginTop: "8px",
+                                    }}
+                                    href={image.url || "#"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    คลิกเพื่อดาวน์โหลด
+                                  </a>
+                                ) : null}
+                              </>
+                            ) : image.url.includes(".xlsx") ? (
+                              <>
+                                <FileExcelOutlined
+                                  style={{ fontSize: "40px", color: "green" }}
+                                />
+                                {image.url ? (
+                                  <a
+                                    style={{
+                                      display: "block",
+                                      marginTop: "8px",
+                                    }}
+                                    href={image.url || "#"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    คลิกเพื่อดาวน์โหลด
+                                  </a>
+                                ) : null}
+                              </>
+                            ) : image.url.includes(".docx") ? (
+                              <>
+                                <FileWordOutlined
+                                  style={{ fontSize: "40px", color: "blue" }}
+                                />
+                                {image.url ? (
+                                  <a
+                                    style={{
+                                      display: "block",
+                                      marginTop: "8px",
+                                    }}
+                                    href={image.url || "#"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    คลิกเพื่อดาวน์โหลด
+                                  </a>
+                                ) : null}
+                              </>
+                            ) : (
+                              <Image
+                                src={image.url}
+                                alt={`Captured ${index}`}
+                                width="150px"
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </Image.PreviewGroup>
+                    </div>
+                  </Form.Item>
+                ) : null}
+
+                <Form.Item label="อัปโหลดสลิปโอนเงิน" name="imageUrlFile">
+                  <Dragger
+                    {...propsMoney}
+                    style={{
+                      width: "300px", // กำหนดความกว้าง
+                      height: "200px", // กำหนดความสูง
+                      margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+                    }}
+                  >
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined style={{ color: "blue" }} />
+                    </p>
+                    <p className="ant-upload-text">
+                      กรุณาคลิกหรือลากเพื่อเลือกไฟล์
+                    </p>
+                    <p className="ant-upload-hint">
+                      รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                    </p>
+                  </Dragger>
+                </Form.Item>
+                {fileTranferMoneyLoad.length > 0 ? (
+                  <Form.Item label="สลิปโอนเงิน" name={"imageFile"}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "16px", // เพิ่มช่องว่างระหว่างแต่ละไฟล์
+                        justifyContent: "center", // จัดให้อยู่ตรงกลาง
+                      }}
+                    >
+                      <Image.PreviewGroup>
+                        {fileTranferMoneyLoad?.map((image, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: "8px", // ระยะห่างระหว่างไอคอนกับลิงก์
+                              textAlign: "center",
+                            }}
+                          >
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          </div>
+                        ))}
+                      </Image.PreviewGroup>
+                    </div>
+                  </Form.Item>
+                ) : null}
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"
@@ -356,7 +711,9 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   >
                     ปิด
                   </Button>
-                  {btnOn ? (
+                  {btnOn ||
+                  fileList?.length > 0 ||
+                  fileTranferMoney?.length > 0 ? (
                     <Button style={{ color: "green" }} htmlType="submit">
                       บันทึก
                     </Button>
@@ -370,4 +727,4 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     );
   }
 };
-export default ClearAdvanePayment;
+export default ClearAdvanePaymentCourt;

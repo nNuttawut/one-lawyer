@@ -188,6 +188,24 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       // รอให้ทุก API request เสร็จ
       const responses = await Promise.all(promises);
 
+      await axios
+        .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
+        .then(async (res) => {
+          if (res.status === 200) {
+            console.log("resQuery", res.data);
+            funcUpdateStatus(putStatus);
+          } else {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+            console.log("ไม่สามารถส่งข้อมูลได้");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.status > 400) {
+            message.error("ไม่สามารถส่งข้อมูลได้");
+          }
+        });
+
       // ตรวจสอบว่า API ตอบกลับสำเร็จหรือไม่
       if (responses.every((res) => res.status === 200)) {
         message.success("อัพเดทข้อมูลทั้งหมดสำเร็จ");
@@ -204,7 +222,6 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
           }
         })
         .catch((err) => {
@@ -214,31 +231,13 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           }
         });
 
-      await axios
-        .put(baseUrl + PUT_STATUS, putStatus, { headers: HEADERS_EXPORT })
-        .then(async (res) => {
-          if (res.status === 200) {
-            console.log("resQuery", res.data);
-            funcUpdateStatus(putStatus);
-          } else {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-            console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.status > 400) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
-        });
       handleUploadAllImage();
     } catch (error) {
       console.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล:", error);
       message.error("อัพเดทข้อมูลล้มเหลว");
     } finally {
+      console.log("sendStatus okay");
       setLoading(false);
-      handleCancel();
     }
   };
 
@@ -263,7 +262,6 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       .then((res) => {
         console.log(res);
         setFileList([]);
-        setLoading(false);
       })
       .catch((err) => {
         Modal.error({
@@ -274,6 +272,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       })
       .finally(() => {
         setLoading(false);
+        handleCancel();
       });
   };
 
@@ -317,6 +316,8 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ...asset, // คัดลอกข้อมูลเดิมของ asset
           ...initData, // เพิ่มข้อมูลของ initData เข้าไป
         }));
+        console.log("preData", preData);
+
         sendStatus(preData, sellStatus, putStatus);
       } else {
         message.error("กรุณาเลือกแปลงที่อยู่ในรายงานบันทึกการยึด");
@@ -398,6 +399,13 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       );
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       const fileType = file.type; // ตรวจสอบ MIME type
       const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
 
@@ -517,7 +525,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           label="ทรัพย์ที่สืบพบผู้เช่าซื้อ"
           name="assetsFound"
           labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-          wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
         >
           <List
             itemLayout="horizontal"
@@ -525,7 +533,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             renderItem={(item, index) => (
               <List.Item
                 actions={[
-                  !item.seize_status && (
+                  !item.seize_status && !item.sequestrate_status && (
                     <Checkbox
                       key={item.id}
                       checked={selectedAssets.some((i) => i.id === item.id)}
@@ -577,7 +585,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                         }}
                       >
                         {item.estimated_enforce_price
-                          ? `ยอดประเมินจากกรมบังคับคดี ${currencyFormatComma(
+                          ? `ยอดประเมินจาก(จพค.) ${currencyFormatComma(
                               item.estimated_enforce_price
                             )}  บาท `
                           : "กรุณาอัพเดทราคาประเมินจากกรมบังคับคดี"}
@@ -591,7 +599,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                         }}
                       >
                         {item.mortgagee
-                          ? `ผู้รับจำนอง ${
+                          ? `เจ้าหนี้จำนอง ${
                               item.mortgagee
                             } จำนวน ${currencyFormatComma(
                               item.mortgage_balance
@@ -627,13 +635,24 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                     </>
                   }
                 />
-                <div>
+                <div
+                  style={{
+                    marginLeft: "10px",
+                  }}
+                >
                   <p
                     style={{
                       color: !item.seize_status ? "red" : "green",
                     }}
                   >
                     {!item.seize_status ? null : "ยึดแล้ว"}
+                  </p>
+                  <p
+                    style={{
+                      color: item.sequestrate_status ? "red" : "green",
+                    }}
+                  >
+                    {item.sequestrate_status ? "ติดอายัด" : null}
                   </p>
                 </div>
               </List.Item>
@@ -645,7 +664,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           label="ทรัพย์ที่สืบพบของคนค้ำ"
           name="assetsFound"
           labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-          wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
         >
           <List
             itemLayout="horizontal"
@@ -653,7 +672,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             renderItem={(item, index) => (
               <List.Item
                 actions={[
-                  !item.seize_status && (
+                  !item.seize_status && !item.sequestrate_status && (
                     <Checkbox
                       key={item.id}
                       checked={selectedAssets.some((i) => i.id === item.id)}
@@ -754,13 +773,24 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                     </>
                   }
                 />
-                <div>
+                <div
+                  style={{
+                    marginLeft: "10px",
+                  }}
+                >
                   <p
                     style={{
                       color: !item.seize_status ? "red" : "green",
                     }}
                   >
                     {!item.seize_status ? null : "ยึดแล้ว"}
+                  </p>
+                  <p
+                    style={{
+                      color: item.sequestrate_status ? "red" : "green",
+                    }}
+                  >
+                    {item.sequestrate_status ? "ติดอายัด" : null}
                   </p>
                 </div>
               </List.Item>
@@ -780,7 +810,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           <Dragger
             {...props}
             style={{
-              width: "300px", // กำหนดความกว้าง
+              width: "460px", // กำหนดความกว้าง
               height: "200px", // กำหนดความสูง
               margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
             }}
@@ -790,7 +820,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             </p>
             <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
             <p className="ant-upload-hint">
-              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
             </p>
           </Dragger>
         </Form.Item>

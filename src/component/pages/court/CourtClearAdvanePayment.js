@@ -31,6 +31,7 @@ import CurrencyFormat from "../../../hook/CurrencyFormat";
 // import DetailWithdraw from "./modal/DetailWithdraw";
 import ClearAdvanePayment from "./modal/ClearAdvanePaymentCourt";
 import {
+  JUDGEMENT,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
@@ -102,14 +103,15 @@ const Main = () => {
 
   const filterData = (data) => {
     if (Array.isArray(data)) {
-      console.log("data00", data);
+      const newData = data.filter((item) => {
+        const isPending = item.withdraw_process_id <= 4;
+        const isOwner = item.USER_ID === userId;
+        const isAdmin = ROLE_ID === "1";
+        const isJudgement = parseInt(item.reference_no[0]) === JUDGEMENT;
 
-      const newData = data.filter(
-        (item) =>
-          (item.withdraw_process_id <= 4 && item.USER_ID === userId) ||
-          ROLE_ID === "1"
-      );
-      console.log("newData", newData);
+        return isPending && (isOwner || isAdmin) && isJudgement;
+      });
+
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }

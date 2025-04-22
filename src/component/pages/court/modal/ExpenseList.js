@@ -54,7 +54,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
 
   const setOptionExpenseType = () => {
     const options = expenseList
-      .filter((item) => item.id === 5 || item.id === 6 || item.id === 19)
+      .filter((item) => item.id === 5 || item.id === 6)
       .map((item) => ({
         value: item.id,
         name: item.name,
@@ -132,10 +132,30 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
         const isDuplicate = updatedList.some(
           (item) => item.expense_type_id === values.expenseType
         );
+        const isDuplicateFee = dataDefault.fee ? true : false;
+        const isDuplicateCopyingFee = dataDefault.copying_fee ? true : false;
+
+        console.log("isDuplicateFee", isDuplicateFee);
+        console.log("isDuplicateCopyingFee", isDuplicateCopyingFee);
+
+        if (isDuplicateFee && values.expenseType === 5) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("1");
+
+          return;
+        }
+
+        if (isDuplicateCopyingFee && values.expenseType === 6) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("2");
+          return;
+        }
+
         if (isDuplicate) {
           message.warning("มีรายการนี้อยู่แล้ว");
           return;
         }
+
         updatedList.push(newItem);
       }
 

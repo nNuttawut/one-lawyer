@@ -39,6 +39,7 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userName = localStorage.getItem("FNAME");
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [isModal, setIsModal] = useState(false);
   const [isModalCreateAdvanePaymentCourt, setIsModalCreateAdvanePaymentCourt] =
@@ -124,7 +125,12 @@ const Main = () => {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
 
-      const preData = data.filter((item) => item.trial_money_cleared_status);
+      const preData = data.filter(
+        (item) =>
+          item.trial_money_cleared_status &&
+          (!item.fee || !item.copying_fee) &&
+          item.lawyer_name === userName
+      );
       let filteredData;
 
       if (userCompany === "3") {
@@ -518,6 +524,7 @@ const Main = () => {
           close={setIsModalCreateAdvanePaymentCourt}
           dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
+          company={companieSelect}
         />
       ) : null}
     </>

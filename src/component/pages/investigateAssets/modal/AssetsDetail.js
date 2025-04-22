@@ -515,6 +515,13 @@ const AssetsDetail = ({
       );
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       const fileType = file.type; // ตรวจสอบ MIME type
       const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
 
@@ -951,7 +958,7 @@ const AssetsDetail = ({
             </p>
             <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
             <p className="ant-upload-hint">
-              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
             </p>
           </Dragger>
         </Form.Item>

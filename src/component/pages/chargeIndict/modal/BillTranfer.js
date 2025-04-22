@@ -42,7 +42,7 @@ const BillTranfer = ({ open, close, dataDefault }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/clear-advance-money_${dataDefault.reference_no}`
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/receipt_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -62,7 +62,7 @@ const BillTranfer = ({ open, close, dataDefault }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/slip-clear-advance-money_${dataDefault.reference_no}`
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/slip_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);

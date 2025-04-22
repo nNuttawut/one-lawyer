@@ -26,6 +26,7 @@ import CurrencyFormat from "../../../hook/CurrencyFormat";
 import DetailWithdraw from "./modal/DetailWithdraw";
 import ClearAdvanePayment from "./modal/ClearAdvanePayment";
 import {
+  INDICT,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
@@ -97,13 +98,16 @@ const Main = () => {
 
   const filterData = (data) => {
     if (Array.isArray(data)) {
-      console.log("data00", data);
+      console.log(data);
 
-      const newData = data.filter(
-        (item) =>
-          (item.withdraw_process_id <= 4 && item.USER_ID === userId) ||
-          ROLE_ID === "1"
-      );
+      const newData = data.filter((item, index) => {
+        const isPending = item.withdraw_process_id <= 4;
+        const isOwner = item.USER_ID === userId;
+        const isAdmin = ROLE_ID === "1";
+        const isIndect = parseInt(item.reference_no[0]) === INDICT;
+
+        return isPending && (isOwner || isAdmin) && isIndect;
+      });
       console.log("newData", newData);
 
       function containsNumber(str) {

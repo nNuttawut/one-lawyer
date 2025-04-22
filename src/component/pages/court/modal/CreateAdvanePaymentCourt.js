@@ -14,6 +14,7 @@ import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
+  PUT_JUDGE,
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
 import axios from "axios";
@@ -32,12 +33,14 @@ import {
 } from "../../../../utils/constant/ExpenseType";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
+import { JUDGEMENT } from "../../../../utils/constant/StatusConstant";
 
 const CreateAdvanePayment = ({
   open,
   close,
   dataDefault,
   funcUpdateStatus,
+  company,
 }) => {
   const USER_ID = localStorage.getItem("USER_ID");
   const [form] = Form.useForm();
@@ -83,13 +86,13 @@ const CreateAdvanePayment = ({
     setIsModal(false);
   };
 
-  const sendData = async (setPutLawsuit, setPreExpense) => {
+  const sendData = async (setPutJudgement, setPreExpenseSend) => {
     setLoading(true);
 
     try {
       // ตรวจสอบข้อมูลก่อนส่ง
-      const hasInvalidLawsuit = setPutLawsuit.some((item) => !item);
-      const hasInvalidExpense = setPreExpense.some((item) => !item);
+      const hasInvalidLawsuit = setPutJudgement.some((item) => !item);
+      const hasInvalidExpense = setPreExpenseSend.some((item) => !item);
 
       if (hasInvalidLawsuit || hasInvalidExpense) {
         message.warning("พบค่าที่ไม่ถูกต้อง");
@@ -97,22 +100,22 @@ const CreateAdvanePayment = ({
         return;
       }
 
-      // สร้างคำสั่ง Promise สำหรับ `setPutLawsuit`
-      const promisesLawsuit = setPutLawsuit.map((item) =>
-        axios.put(`${baseUrl}${PUT_LAWSUIT_DETAIL}`, item, {
+      // สร้างคำสั่ง Promise สำหรับ `setPutJudgement`
+      const promisesJudgement = setPutJudgement.map((item) =>
+        axios.put(`${baseUrl}${PUT_JUDGE}`, item, {
           headers: HEADERS_EXPORT,
         })
       );
 
-      // สร้างคำสั่ง Promise สำหรับ `setPreExpense`
-      const promisesExpense = setPreExpense.map((item) =>
+      // สร้างคำสั่ง Promise สำหรับ `setPreExpenseSend`
+      const promisesExpense = setPreExpenseSend.map((item) =>
         axios.post(`${baseUrl}${POST_EXPENSES}`, item, {
           headers: HEADERS_EXPORT,
         })
       );
 
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesLawsuit, ...promisesExpense];
+      const allPromises = [...promisesJudgement, ...promisesExpense];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -130,16 +133,16 @@ const CreateAdvanePayment = ({
         message.error("มีข้อมูลบางรายการที่อัพเดทไม่สำเร็จ");
       }
       // หากสำเร็จทั้งหมดให้ปรับสถานะ
-      funcUpdateStatus([...setPutLawsuit]);
+      funcUpdateStatus([...setPutJudgement]);
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
       handleCancel();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     }
   };
 
@@ -166,13 +169,13 @@ const CreateAdvanePayment = ({
   const onFinish = (values) => {
     console.log("values", values);
     console.log(dataPropertyList);
-    let setPutLawsuit = [];
-    let setPreExpense = [];
+    let setPutJudgement = [];
+    let setPreExpenseSend = [];
 
     let defindNo;
-    if (dataDefault.COMPANY_ID === 1 || dataDefault.COMPANY_ID === 4) {
+    if (company.value === 1 || company.value === 4) {
       defindNo = "LBN";
-    } else if (dataDefault.COMPANY_ID === 2 || dataDefault.COMPANY_ID === 5) {
+    } else if (company.value === 2 || company.value === 5) {
       defindNo = "MBN";
     } else {
       defindNo = "KBN";
@@ -186,48 +189,66 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${defindNo}${USER_ID}-${dayjs().format("YYYYMMDDHHmmss")}`,
+      reference_no: `${JUDGEMENT}${defindNo}${USER_ID}-${dayjs().format(
+        "YYYYMMDDHHmmss"
+      )}`,
     };
 
-    dataPropertyList?.forEach((lawsuit, index) => {
-      setPutLawsuit.push({
-        ...lawsuit,
-        fee_payment_datetime: dayjs(values.dateWithdraw).format("YYYY-MM-DD"),
-        fee_payment_status: STATUS_WITHDRAW_SUCCESSFUL,
-      });
+    const uniqueJudgementIds = new Set(); // ใช้เก็บ id ที่เจอแล้ว
+    try {
+      dataPropertyList?.forEach((judgement) => {
+        // เก็บข้อมูลไว้ก่อน
+        const feeValue = judgement?.setPreExpense?.find(
+          (v) => v.expense_type_id === 5
+        );
+        const copyingFeeValue = judgement?.setPreExpense?.find(
+          (v) => v.expense_type_id === 6
+        );
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: FEE_COURT,
-        withdraw: lawsuit.fee ? lawsuit.fee : 0,
-      });
+        // ดันข้อมูลรายการย่อยทั้งหมดเข้า setPreExpenseSend
+        judgement?.setPreExpense.forEach((value) => {
+          setPreExpenseSend.push({
+            ...initDataExpense,
+            ...value,
+          });
+        });
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: STAMP_COST,
-        withdraw: lawsuit.stamp_cost ? lawsuit.stamp_cost : 0,
-      });
+        // ป้องกันการซ้ำ ด้วย Set
+        if (!uniqueJudgementIds.has(judgement.LAWSUIT_ID)) {
+          // const { setPreExpense, ...cleanJudgement } = judgement; // ลบ setPreExpense ออก
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: DOCUMENT_COST,
-        withdraw: lawsuit.document_cost ? lawsuit.document_cost : 0,
-      });
+          setPutJudgement.push({
+            ...judgement,
+            fee_payment_datetime: feeValue
+              ? dayjs().format("YYYY-MM-DD")
+              : judgement.fee_payment_datetime,
+            fee_payment_status: feeValue
+              ? STATUS_WITHDRAW_PROCESS
+              : judgement.fee_payment_status,
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: DELIVERY_OF_SUMMONS,
-        withdraw: lawsuit.delivery_of_summons ? lawsuit.delivery_of_summons : 0,
-      });
-    });
+            // ✅ ใช้ค่าที่แยกไว้
+            fee: feeValue?.withdraw || judgement.fee,
+            copying_fee: copyingFeeValue?.withdraw || judgement.copying_fee,
 
-    console.log("putLawsuit---->", setPutLawsuit);
-    console.log("setDataExpense---->", setPreExpense);
-    // sendData(setPutLawsuit, setPreExpense);
+            copying_fee_datetime: copyingFeeValue
+              ? dayjs().format("YYYY-MM-DD")
+              : judgement.copying_fee_datetime,
+            copying_fee_status: copyingFeeValue
+              ? STATUS_WITHDRAW_PROCESS
+              : judgement.copying_fee_status,
+          });
+
+          uniqueJudgementIds.add(judgement.LAWSUIT_ID);
+        }
+      });
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาด:", error.message);
+      message.error("กรุณาทำรายการเบิกให้ถูกต้อง");
+    }
+
+    console.log("setPutJudgement", setPutJudgement);
+    console.log("setDataExpense---->", setPreExpenseSend);
+    sendData(setPutJudgement, setPreExpenseSend);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -268,6 +289,7 @@ const CreateAdvanePayment = ({
   };
 
   console.log("prop--->", dataPropertyList);
+  console.log("company,", company);
 
   const formDataSet = () => {
     return (
@@ -284,90 +306,92 @@ const CreateAdvanePayment = ({
         onFinishFailed={onFinishFailed}
         initialValues={{
           memo: null,
-          dateWithdraw: dayjs(),
         }}
       >
-        <Form.Item
-          label="วันที่ขอเบิก"
-          name="dateWithdraw"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาเลือกวันที่สืบทรัพย์",
-            },
-          ]}
-        >
-          <DatePicker onChange={onChangeInputInvestigateDate} />
+        <Form.Item label="วันที่ทำรายการ" name="dateWithdraw">
+          {convertDateThai()}
+          {/* <DatePicker onChange={onChangeInputInvestigateDate} /> */}
         </Form.Item>
-        <>
-          <Form.Item
-            label="สัญญาที่ต้องการเบิก"
-            name="contnoWithdraw"
-            labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-            wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
-          >
-            <List
-              itemLayout="horizontal"
-              dataSource={dataPropertyList}
-              renderItem={(item, index) => (
-                <List.Item
-                  actions={[
-                    !item?.setPreExpense ? (
-                      <Link
-                        key="list-loadmore-edit"
-                        onClick={() => handleEdit(item, index)}
-                      >
-                        เพิ่ม
-                      </Link>
-                    ) : (
-                      <Link
-                        key="list-loadmore-edit"
-                        style={{ color: "orange" }}
-                        onClick={() => handleEdit(item, index)}
-                      >
-                        แก้ไข
-                      </Link>
-                    ),
-                    <Link
-                      key="list-loadmore-more"
-                      style={{ color: "red" }}
-                      onClick={() => handleDelete(index)} // ส่ง index เข้าไปในฟังก์ชัน
-                    >
-                      ลบ
-                    </Link>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={
-                      <p style={{ color: "black" }}>
-                        {item.CONTNO} {item.customer_title}
-                        {item.customer_name} {item.customer_lastname}
-                        {"  "}
-                        {renderLoanType(item.LOAN_TYPE_ID)}
-                      </p>
-                    }
-                    description={
-                      <p style={{ color: "black" }}>
-                        {item?.setPreExpense?.map((expense, i) => (
-                          <div key={i}>
-                            - {expense.label} :{" "}
-                            {currencyFormatPoint(expense.withdraw)}
-                            {" บาท"}
-                          </div>
-                        ))}
-                      </p>
-                    }
-                  />
 
-                  <div>
+        <Form.Item
+          label="สัญญาที่ต้องการเบิก"
+          name="contnoWithdraw"
+          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
+          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
+        >
+          <List
+            itemLayout="horizontal"
+            dataSource={dataPropertyList}
+            renderItem={(item, index) => (
+              <List.Item
+                actions={[
+                  !item?.setPreExpense ? (
+                    <Link
+                      key="list-loadmore-edit"
+                      onClick={() => handleEdit(item, index)}
+                    >
+                      เพิ่ม
+                    </Link>
+                  ) : (
+                    <Link
+                      key="list-loadmore-edit"
+                      style={{ color: "orange" }}
+                      onClick={() => handleEdit(item, index)}
+                    >
+                      แก้ไข
+                    </Link>
+                  ),
+                  <Link
+                    key="list-loadmore-more"
+                    style={{ color: "red" }}
+                    onClick={() => handleDelete(index)} // ส่ง index เข้าไปในฟังก์ชัน
+                  >
+                    ลบ
+                  </Link>,
+                ]}
+              >
+                <List.Item.Meta
+                  title={
+                    <p>
+                      {item.CONTNO} {item.customer_title}
+                      {item.customer_name} {item.customer_lastname}
+                      {"  "}
+                      {renderLoanType(item.LOAN_TYPE_ID)}
+                    </p>
+                  }
+                  description={
+                    <div>
+                      {item?.setPreExpense?.map((expense, index) => (
+                        <div key={index}>
+                          - {expense.label} :{" "}
+                          {currencyFormatPoint(expense.withdraw)} บาท
+                        </div>
+                      ))}
+
+                      {/* รวมยอดทั้งหมด */}
+                      <div style={{ marginTop: 8, fontWeight: "bold" }}>
+                        รวมทั้งหมด :{" "}
+                        {currencyFormatPoint(
+                          item?.setPreExpense?.reduce(
+                            (total, expense) =>
+                              total + Number(expense.withdraw || 0),
+                            0
+                          )
+                        )}{" "}
+                        บาท
+                      </div>
+                    </div>
+                  }
+                />
+
+                {/* <div>
                     {" "}
                     {item?.initDataExpense?.withdraw ? "ก่อนฟ้อง" : null}
-                  </div>
-                </List.Item>
-              )}
-            />
-          </Form.Item>
-        </>
+                  </div> */}
+              </List.Item>
+            )}
+          />
+        </Form.Item>
 
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea

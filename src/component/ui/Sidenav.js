@@ -239,8 +239,8 @@ function Sidenav({ color, onClick }) {
       ? {
           key: "5",
           pageName: "terminate",
-          label: "terminate-contract-hand",
-          path: "/terminate-contract-hand",
+          label: "terminate-contract",
+          path: "/terminate-contract",
           icon: <FileExcelOutlined />,
           title: "บอกเลิกสัญญา",
           children: [
@@ -248,7 +248,7 @@ function Sidenav({ color, onClick }) {
               key: "5.1",
               icon: <CaretRightOutlined />,
               pageName: "terminate-Contract-to-lawsuit",
-              path: "terminate-contract-hand/terminate-Contract-to-lawsuit",
+              path: "terminate-contract/terminate-Contract-to-lawsuit",
               label: "สัญญาเตรียมส่งฟ้อง",
             },
           ],
@@ -506,6 +506,22 @@ function Sidenav({ color, onClick }) {
           path: "/sale-announcement",
           icon: <NotificationOutlined />,
           title: "ประกาศขายทรัพย์",
+          children: [
+            {
+              key: "12.1",
+              icon: <CaretRightOutlined />,
+              pageName: "report-sale",
+              path: "sale-announcement/report-sale",
+              label: "1. บันทึกประกาศขายทรัพย์",
+            },
+            {
+              key: "12.2",
+              icon: <CaretRightOutlined />,
+              pageName: "report-average",
+              path: "sale-announcement/report-average",
+              label: "2. บันทึกขอเฉลียทรัพย์",
+            },
+          ],
         }
       : null,
     ROLE_ID === "1" || ROLE_ID === "2" || ROLE_ID === "3" || ROLE_ID === "4"
@@ -673,7 +689,7 @@ function Sidenav({ color, onClick }) {
               icon: <CaretRightOutlined />,
               pageName: "advane-pay",
               path: "charge-indict/advane-pay",
-              label: "1. ค่าฤชาส่วนคำฟ้อง",
+              label: "1. เบิกเงินทดรองจ่าย",
             },
             {
               key: "21.2",
@@ -766,16 +782,16 @@ function Sidenav({ color, onClick }) {
         {
           key: "24.1",
           icon: <CaretRightOutlined />,
-          pageName: "import-data",
+          pageName: "read-text",
           path: "guidbook/read-text",
           label: "วิธีแปลงรูปภาพเป็นตัวหนังสือ",
         },
         {
           key: "24.2",
           icon: <CaretRightOutlined />,
-          pageName: "import-data",
-          path: "guidbook/test",
-          label: "ทดสอบอัพรูป",
+          pageName: "resize",
+          path: "guidbook/resize",
+          label: "ลดขนาด รูปภาพ/ไฟล์",
         },
       ],
     },

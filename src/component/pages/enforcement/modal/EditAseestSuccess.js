@@ -527,13 +527,13 @@ const EditAssetsSuccess = ({
           arrow={mergedArrow}
         >
           <Form.Item
-            label="ราคาประเมิน(กบค)"
+            label="ราคาประเมิน(จพค.)"
             name="estimatedEnforcePrice"
             style={{ color: "red" }}
             rules={[
               {
                 required: true,
-                message: "กรุณาใส่ราคาประเมิน(กบค) !",
+                message: "กรุณาใส่ราคาประเมิน(จพค.) !",
               },
             ]}
           >

@@ -30,6 +30,7 @@ import {
   STATUS_WITHDRAW_PROCESS,
   STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
+import { INDICT } from "../../../../utils/constant/StatusConstant";
 
 const CreateAdvanePayment = ({
   open,
@@ -160,7 +161,6 @@ const CreateAdvanePayment = ({
       },
     });
   };
-  console.log(company);
 
   const onFinish = (values) => {
     console.log("values", values);
@@ -184,7 +184,9 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${defindNo}${USER_ID}-${dayjs().format("YYYYMMDDHHmmss")}`,
+      reference_no: `${INDICT}${defindNo}${USER_ID}-${dayjs().format(
+        "YYYYMMDDHHmmss"
+      )}`,
     };
 
     dataPropertyList?.forEach((lawsuit, index) => {
@@ -277,7 +279,7 @@ const CreateAdvanePayment = ({
         }}
       >
         <Form.Item
-          label="วันที่ขอเบิก"
+          label="วันที่ทำรายการ"
           name="dateWithdraw"
           rules={[
             {

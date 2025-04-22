@@ -216,6 +216,13 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
 
       return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
@@ -291,7 +298,7 @@ const UpdateCaseIsFinal = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               </p>
               <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
               <p className="ant-upload-hint">
-                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
               </p>
             </Dragger>
           </Card>

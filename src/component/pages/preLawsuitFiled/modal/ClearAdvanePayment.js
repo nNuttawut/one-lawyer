@@ -101,7 +101,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/clear-advance-money_${dataDefault.reference_no}`
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/receipt_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -121,7 +121,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/slip-clear-advance-money_${dataDefault.reference_no}`
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/slip_${dataDefault.reference_no}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -140,7 +140,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const handleUploadAllImage = async () => {
     const formData = new FormData();
 
-    fileList.forEach((file) => {
+    fileList?.forEach((file) => {
       formData.append("files", file);
     });
     setLoading(true);
@@ -148,7 +148,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .post(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/clear-advance-money_${dataDefault.reference_no}`,
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/receipt_${dataDefault.reference_no}`,
         formData,
         {
           headers: {
@@ -184,7 +184,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     await axios
       .post(
         baseUrl +
-          `/files/lawyer/lawsuit/${PARAM_PUBLIC}/slip-clear-advance-money_${dataDefault.reference_no}`,
+          `/files/lawyer/advance-payment/${PARAM_PUBLIC}/slip_${dataDefault.reference_no}`,
         formData,
         {
           headers: {
@@ -278,7 +278,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
     const checkData = dataset.filter((item) => item); // กรองค่า null, undefined, false ออก
     setdataSend.push(...checkData);
-    if (fileList.length > 0) {
+    if (fileList?.length > 0) {
       console.log("handleUploadAllImage");
 
       handleUploadAllImage();
@@ -289,7 +289,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     if (fileTranferMoney.length > 0) {
       console.log("handleUploadAllImageTranferMoney");
       handleUploadAllImageTranferMoney();
-      if (setdataSend.length < 1 || fileList.length < 1) {
+      if (setdataSend.length < 1 || fileList?.length < 1) {
         handleCancel();
       }
     }
@@ -367,12 +367,19 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const props = {
     multiple: true,
     onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
+      const index = fileList?.indexOf(file);
+      const newFileList = fileList?.slice();
       newFileList.splice(index, 1);
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
 
       return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
@@ -384,19 +391,26 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const propsMoney = {
     multiple: true,
     onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
+      const index = fileList?.indexOf(file);
+      const newFileList = fileList?.slice();
       newFileList.splice(index, 1);
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       // ตรวจสอบประเภทของไฟล์
       const isImage = file.type.startsWith("image/");
 
       if (!isImage) {
         message.error("สามารถอัปโหลดได้เฉพาะไฟล์รูปภาพเท่านั้น");
         return false;
-      } else if (fileList.length >= 4) {
+      } else if (fileList?.length >= 4) {
         message.error("เลือกไฟล์อัปโหลดได้ไม่เกิน 4 ไฟล์");
         return false;
       } else {

@@ -154,7 +154,8 @@ const Main = () => {
     const preData = value.filter((item) =>
       item.parcel_list.every(
         (parcel) =>
-          (parcel.status === 1 || parcel.status === 2) && !parcel.status_process
+          parcel.account_type === "cancelHand" &&
+          (parcel.status === 1 || parcel.status === 2 || parcel.status === 3)
       )
     );
     console.log("preData--->", preData);

@@ -1,5 +1,5 @@
 //------dev-------
-// ดีงข้อมูลจาก server ibm
+// // ดีงข้อมูลจาก server ibm
 const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
 //ดึงสัญญาทั้งหมดที่อยู่ใน server lawyers db
@@ -77,7 +77,6 @@ const PUT_CANCEL = `/lawyer/dev/api/cancel-contracts`;
 const GET_CANCEL = `/lawyer/dev/api/cancel-contracts`;
 
 //expenses
-
 const POST_EXPENSES = `/lawyer/dev/api/expenses`;
 const PUT_EXPENSES = `/lawyer/dev/api/expenses/`;
 const GET_EXPENSES_LIST = `/lawyer/dev/api/expenses`;
@@ -89,6 +88,11 @@ const GET_EXPENSE_REF_GROUP = `/lawyer/dev/api/expenses/reference-list`;
 
 const GET_EXPENSE_TYPE_LIST = "/lawyer/dev/api/expenses/types";
 
+//execute
+const POST_EXECUTE_CASE = "/lawyer/dev/api/execute-case";
+const PUT_EXECUTE_CASE = "/lawyer/dev/api/execute-case";
+const GET_EXECUTE_CASE = "/lawyer/dev/api/execute-case";
+
 //ดึง users ในระบบ
 
 const GET_LAWYERS_LIST = "/lawyer/dev/api/users";
@@ -96,6 +100,7 @@ const GET_COMPANIES_LIST = "/lawyer/dev/api/companies";
 const GET_ROLE_LIST = "/lawyer/dev/api/roles";
 const GET_USERS_LIST = "/lawyer/dev/api/users";
 const GET_BY_ID = "/lawyer/dev/api/users/";
+const GET_SELL_STATUS = "/lawyer/dev/api/sale-status";
 
 //post
 const LOG_IN = `/lawyer/dev/api/login`;
@@ -106,8 +111,15 @@ const PUT_USER_UPDATE = `/lawyer/dev/api/customers`;
 //all details
 const GET_DETAILS = `/lawyer/dev/api/all-details?contractNo=`;
 
-//delete status
-const DELETE_STATUS_BY_WORKLOG = `/lawyer/dev/api/worklogs/`;
+//method delete
+const DELETE_WORKLOG = `/lawyer/dev/api/worklogs/`;
+const DELETE_CANCEL_CONTRACTS = `/lawyer/dev/api/cancel-contracts/`;
+const DELETE_PARCELS = `/lawyer/dev/api/parcels/`;
+const DELETE_AGREEMENTS = `/lawyer/dev/api/agreements/`;
+const DELETE_JUDGEMENTS = `/lawyer/dev/api/judgements/`;
+const DELETE_JUDGEMENT_DEFENDANTS = `/lawyer/dev/api/judgement-defendants/`;
+const DELETE_INVESTIGATE_PROPERTIES = `/lawyer/dev/api/investigate-properties/`;
+const DELETE_EXPENSES = `/lawyer/dev/api/expenses/`;
 
 const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 // const baseUrl = "http://localhost:8080";
@@ -194,7 +206,6 @@ export {
   GET_DISTRICT,
   GET_SUB_DISTRICT,
   GET_ZIPCODE,
-  DELETE_STATUS_BY_WORKLOG,
   GET_DETAILS,
   GET_PROVICE_LAND,
   POST_DISTRICT_LAND,
@@ -219,9 +230,21 @@ export {
   POST_LOAN_DB2,
   POST_DETAIL_PAYMENT,
   GET_EXPENSE_TYPE_LIST,
+  GET_SELL_STATUS,
+  POST_EXECUTE_CASE,
+  PUT_EXECUTE_CASE,
+  GET_EXECUTE_CASE,
+  DELETE_WORKLOG,
+  DELETE_CANCEL_CONTRACTS,
+  DELETE_PARCELS,
+  DELETE_AGREEMENTS,
+  DELETE_JUDGEMENTS,
+  DELETE_JUDGEMENT_DEFENDANTS,
+  DELETE_INVESTIGATE_PROPERTIES,
+  DELETE_EXPENSES,
 };
 
-// ----production-----
+// // ----production-----
 // //ดีงข้อมูลจาก server ibm
 // const GET_LOAN_FROM_SERVER_IBM = "/lawyer/server/loans";
 
@@ -309,7 +332,12 @@ export {
 // const POST_DELETE_ID = `/lawyer/api/expenses/`;
 // const GET_EXPENSE_REF_GROUP = `/lawyer/api/expenses/reference-list`;
 
-// const GET_EXPENSE_TYPE_LIST = "/lawyer/dev/api/expenses/types"
+// const GET_EXPENSE_TYPE_LIST = "/lawyer/api/expenses/types";
+
+//execute
+// const POST_EXECUTE_CASE = "/lawyer/api/execute-case";
+// const PUT_EXECUTE_CASE = "/lawyer/api/execute-case";
+// const GET_EXECUTE_CASE = "/lawyer/api/execute-case";
 
 // //ดึง users ในระบบ
 // const GET_LAWYERS_LIST = "/lawyer/api/users";
@@ -317,6 +345,7 @@ export {
 // const GET_ROLE_LIST = "/lawyer/api/roles";
 // const GET_USERS_LIST = "/lawyer/api/users";
 // const GET_BY_ID = "/lawyer/api/users/";
+// const GET_SELL_STATUS = "/lawyer/api/sale-status";
 
 // //post
 // const LOG_IN = `/lawyer/api/login`;
@@ -327,8 +356,15 @@ export {
 // //all details
 // const GET_DETAILS = `/lawyer/api/all-details?contractNo=`;
 
-// //delete status
-// const DELETE_STATUS_BY_WORKLOG = `/lawyer/api/worklogs/`;
+//method delete
+// const DELETE_WORKLOG = `/lawyer/api/worklogs/`;
+// const DELETE_CANCEL_CONTRACTS = `/lawyer/api/cancel-contracts/`;
+// const DELETE_PARCELS = `/lawyer/api/parcels/`;
+// const DELETE_AGREEMENTS = `/lawyer/api/agreements/`;
+// const DELETE_JUDGEMENTS = `/lawyer/api/judgements/`;
+// const DELETE_JUDGEMENT_DEFENDANTS = `/lawyer/api/judgement-defendants/`;
+// const DELETE_INVESTIGATE_PROPERTIES = `/lawyer/api/investigate-properties/`;
+// const DELETE_EXPENSES = `/lawyer/api/expenses/`;
 
 // const baseUrl = "https://shark-app-j9jc9.ondigitalocean.app";
 
@@ -438,5 +474,17 @@ export {
 //   GET_EXPENSE_REF_GROUP,
 //   POST_LOAN_DB2,
 //   POST_DETAIL_PAYMENT,
-//   GET_EXPENSE_TYPE_LIST
+//   GET_EXPENSE_TYPE_LIST,
+//   GET_SELL_STATUS
+//   POST_EXECUTE_CASE,
+//   PUT_EXECUTE_CASE,
+//   GET_EXECUTE_CASE,
+// DELETE_WORKLOG,
+// DELETE_CANCEL_CONTRACTS,
+// DELETE_PARCELS,
+// DELETE_AGREEMENTS,
+// DELETE_JUDGEMENTS,
+// DELETE_JUDGEMENT_DEFENDANTS,
+// DELETE_INVESTIGATE_PROPERTIES,
+// DELETE_EXPENSES
 // };

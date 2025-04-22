@@ -320,7 +320,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           .then(async (res) => {
             if (res.status === 201) {
               console.log("resQuery", res.data);
-              handleUploadAllImage("enforcement", "ไฟล์คำพิพากษา");
+              handleUploadAllImage("enforcement", "judgement");
             } else {
               message.error("ไม่สามารถส่งข้อมูลได้");
               console.log("ไม่สามารถส่งข้อมูลได้");
@@ -474,7 +474,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             .then(async (res) => {
               if (res.status === 201) {
                 console.log("resQuery", res.data);
-                handleUploadAllImage("settlement_agreement", "ไฟล์เอกสาร");
+                handleUploadAllImage("settlement_agreement", "agreement");
               } else {
                 message.error("ไม่สามารถส่งข้อมูลได้");
                 console.log("ไม่สามารถส่งข้อมูลได้");
@@ -1080,6 +1080,13 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       setFileList(newFileList);
     },
     beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
       setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
 
       return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
@@ -1371,7 +1378,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               </p>
               <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
               <p className="ant-upload-hint">
-                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
               </p>
             </Dragger>
           </Form.Item>
@@ -1782,7 +1789,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               </p>
               <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
               <p className="ant-upload-hint">
-                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
               </p>
             </Dragger>
           </Form.Item>
