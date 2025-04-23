@@ -149,7 +149,7 @@ const Main = () => {
       const newData = data.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          (!item.account_type || item.account_type === "cancelHand")
+          (!item.account_type || item.account_type === "cancelLand")
       );
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด

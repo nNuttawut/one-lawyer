@@ -194,7 +194,7 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1"
+    ROLE_ID === "1" || ROLE_ID === "2"
       ? {
           key: "44",
           pageName: "terminate",
@@ -224,13 +224,13 @@ function Sidenav({ color, onClick }) {
               path: "terminate-contract-land/reply-terminate-Contract",
               label: "3. ตอบกลับบอกเลิก",
             },
-            {
-              key: "44.4",
-              icon: <CaretRightOutlined />,
-              pageName: "terminate-Contract-to-lawsuit",
-              path: "terminate-contract-land/terminate-Contract-to-lawsuit",
-              label: "4. สัญญาเตรียมส่งฟ้อง",
-            },
+            // {
+            //   key: "44.4",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "terminate-Contract-to-lawsuit",
+            //   path: "terminate-contract-land/terminate-Contract-to-lawsuit",
+            //   label: "4. สัญญาเตรียมส่งฟ้อง",
+            // },
           ],
         }
       : null,

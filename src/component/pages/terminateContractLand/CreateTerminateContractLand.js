@@ -531,7 +531,7 @@ const Main = () => {
                 </Button>
               </Popconfirm>
             </Col>
-          
+
             <Col span={"24"} style={{ textAlign: "end" }}>
               <Space direction="vertical" size={12}>
                 <Tooltip
@@ -583,13 +583,12 @@ const Main = () => {
                     key="print"
                     // onClick={onClickDownload}
                     onClick={() => {
-                      if(dateQuery){
-                       setIsModalPrint(true)
-                      }else{
-                        message.error('กรุณาเลือกวันที่คิดดอกเบี้ยถึง !!')
+                      if (dateQuery) {
+                        setIsModalPrint(true);
+                      } else {
+                        message.error("กรุณาเลือกวันที่คิดดอกเบี้ยถึง !!");
                       }
-                    }
-                      }
+                    }}
                   />
                 </Tooltip>
               </Space>
