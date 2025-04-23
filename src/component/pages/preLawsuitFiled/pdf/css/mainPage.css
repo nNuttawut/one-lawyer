@@ -1,0 +1,240 @@
+@media print {
+    /* กระดาษ A4 divA4Cut (21.0 x 29.7 cm) =  210 mm * 297mm */
+    .divA4{
+      width: 210mm;
+      height: 297mm;
+      box-sizing: border-box;
+      border: none; /* ไม่ต้องการเส้นขอบตอนพิมพ์ */
+      page-break-after: always; /* บังคับการแบ่งหน้าหลัง divA4 */
+      padding: 30px; /* กำหนด 4 ขอบกระดาษ ขอบกระดาษจริง == 96px*/
+    }
+   /* แบบกล่องเอกสารของทนาย 16.51*25.78 cm */
+    .divA4Cut{
+      width: 165 mm;
+      /* height: 257 mm; */
+      height: 257 mm;
+      box-sizing: border-box;
+      border: none; /* ไม่ต้องการเส้นขอบตอนพิมพ์ */
+      page-break-after: always; /* บังคับการแบ่งหน้าหลัง divA4 */
+      padding-top: 14mm; /* กำหนด 4 ขอบกระดาษ ขอบกระดาษจริง == 96px*/
+      padding-bottom: 12mm;
+      padding-left: 25mm;
+      padding-right: 25mm;
+    }
+
+    .divA4Cut2{
+      width: 165 mm;
+      height: 277 mm;
+      box-sizing: border-box;
+      border: none; /* ไม่ต้องการเส้นขอบตอนพิมพ์ */
+      page-break-after: always; /* บังคับการแบ่งหน้าหลัง divA4 */
+      padding-top: 20mm; /* กำหนด 4 ขอบกระดาษ ขอบกระดาษจริง == 96px*/
+      padding-bottom: 20mm;
+      padding-left: 25mm;
+      padding-right: 25mm;
+    }
+    
+    /* ขนาดตัวหนังสือของหัวตาราง */
+    .tabelA1 .ant-table-thead > tr > th {
+      font-size: 10px; 
+      background-color: #ffecb3;
+      /* font-weight: bold; */
+    }
+    /* ขนาดตัวหนังสือของข้อมูลในแต่ละ row */
+    .tabelA1 .ant-table-tbody > tr > td {
+      font-size: 10px; 
+      border: none; /* ไม่ต้องการเส้นขอบตอนพิมพ์ */
+      padding-bottom: 0px; /* ระยะห่างภายในแต่ละเซลล์ */
+    }
+  
+  :root {
+    --marginTopBottom: 0px;     /* var(--aa);  */
+    /* pt (point) ใน Microsoft Word  */
+    --fontSize: 17pt;
+    /* --fontFamily: Angsana New; */
+    --fontFamily: Cordia new;
+  }
+  
+  .colLeft {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    color: #000;
+  }
+  
+  .colCenter {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    text-align: center;
+    color: #000;
+    }
+  
+  .colRight {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    text-align: right;
+    color: #000;
+    }
+  
+  .colUnderline {
+    /* margin-top: 5px; 
+    margin-bottom: 5px;  */
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    border-bottom: 1px solid;
+    color: #000;
+  }
+
+  .textderline {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    color: #000;
+  }
+
+  .text2 {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    top: -8px; /* ขยับข้อความขึ้น 1px */
+    text-align: center;
+    color: #000;
+  }
+  .text2Left {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    top: -8px; /* ขยับข้อความขึ้น 1px */
+    text-align: Left;
+    color: #000;
+  }
+
+  .text2Center {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    top: -4px; /* ขยับข้อความขึ้น 1px */
+    text-align: center;
+    color: #000;
+  }
+
+  .text2LeftHeight {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    text-align: Left;
+    color: #000;
+    height: 14mm;
+    line-height: 18mm; 
+    /* ตัวหนังสือลอยสูง */
+  }
+
+  .text2CenterHeight {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    text-align: center;
+    color: #000;
+    height: 14mm;
+    line-height: 18mm; 
+    /* ตัวหนังสือลอยสูง */
+  }
+
+
+
+  .text3 {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    border-bottom: 1px solid;
+    position: relative;
+    top: -8px; /* ขยับข้อความขึ้น 1px */
+    text-align: center;
+    padding-top: 0px; 
+    color: #000; 
+  }
+
+
+  .span1a2cm {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    width: 12mm;
+    text-indent: -9999px; /* ซ่อนข้อความไม่ซ่อนเส้นใต้ */
+  }
+  .span2a4cm {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    width: 24mm;
+    text-indent: -9999px; /* ซ่อนข้อความไม่ซ่อนเส้นใต้ */
+  }
+  .span4ch {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: 18px; 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    width: 4ch;
+    text-indent: -9999px; /* ซ่อนข้อความไม่ซ่อนเส้นใต้ */
+  }
+
+  .spanUnderline {
+    margin-top: var(--marginTopBottom); 
+    margin-bottom: var(--marginTopBottom);
+    font-size: var(--fontSize); 
+    font-family: var(--fontFamily); 
+    display: inline-block;
+    color: #000;
+    /* padding-bottom: 4px;   */
+    /* เพิ่มช่องว่างระหว่างข้อความกับเส้น */
+}
+
+.spanUnderline2 {
+  margin-top: var(--marginTopBottom); 
+  margin-bottom: var(--marginTopBottom);
+  font-size: var(--fontSize); 
+  font-family: var(--fontFamily); 
+  display: inline-block;
+  border-bottom: 1px solid;
+  padding-bottom: 20px;
+  color: #000;  
+}
+
+  }
