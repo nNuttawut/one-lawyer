@@ -116,6 +116,8 @@ const Main = () => {
   };
 
   const filterData = (data) => {
+    console.log("data", data);
+
     if (Array.isArray(data)) {
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
@@ -452,7 +454,7 @@ const Main = () => {
               <Flex align="center" gap="middle">
                 <Tooltip
                   placement="bottom"
-                  title="เลือกทำรายการได้ไม่เกิน 4 สัญญา !"
+                  title="เลือกทำรายการได้ไม่เกิน 3 สัญญา !"
                   arrow={mergedArrow}
                 >
                   <Button
@@ -461,7 +463,7 @@ const Main = () => {
                     size="small" // ขนาดเล็ก
                     onClick={() => setIsModalCreateAdvanePaymentCourt(true)}
                     disabled={
-                      selectedRowKeys.length === 0 || selectedRowKeys.length > 4
+                      selectedRowKeys.length === 0 || selectedRowKeys.length > 3
                     }
                     loading={loading}
                   >

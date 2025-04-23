@@ -23,6 +23,7 @@ import {
   FileWordOutlined,
 } from "@ant-design/icons";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import dayjs from "dayjs";
 
 const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -272,6 +273,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
           withdraw_mark: values.memo || null,
           // file_path: values.imageReplyFile,
           pay_type_id: 4,
+          pay_datetime: dayjs().format("YYYY-MM-DD"),
         };
       }
     });

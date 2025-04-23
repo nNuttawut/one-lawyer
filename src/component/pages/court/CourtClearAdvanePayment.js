@@ -597,7 +597,7 @@ const Main = () => {
       render: (record) => <>{renderTotalAmountPay(record)}</>,
     },
     {
-      title: "อนุมัติเคลียร์เมื่อ",
+      title: "เคลียร์เมื่อ",
       align: "center",
       render: (record) => (
         <>{renderDate(record.pay_datetime, record.pay_type_id)}</>
@@ -689,7 +689,7 @@ const Main = () => {
                   ),
                   rowExpandable: (record) =>
                     record.withdraw_process_id === STATUS_PROCESS_SUCCESSFUL &&
-                    !record.pay_datetime,
+                    (record.pay_type_id === 4 || record.pay_type_id === null),
                   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}

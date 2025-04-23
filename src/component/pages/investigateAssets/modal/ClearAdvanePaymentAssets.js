@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import TokenCheck from "../../../../hook/TokenCheck";
 import axios from "axios";
 import { baseUrl, HEADERS_EXPORT, PUT_EXPENSES } from "../../../API/apiUrls";
+import dayjs from "dayjs";
 
 const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
@@ -145,8 +146,9 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
           ...item,
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
           withdraw_mark: values.memo || null,
-          file_path: values.imageReplyFile,
+          // file_path: values.imageReplyFile,
           pay_type_id: 4,
+          pay_datetime: dayjs().format("YYYY-MM-DD"),
         };
       }
     });

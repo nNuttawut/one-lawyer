@@ -36,6 +36,7 @@ import UpdateStatusBlackNumber from "./modal/UpdateStatusBlackNumber";
 import EditFrom from "./modal/EditForm";
 import dayjs from "dayjs";
 import EditUpdateStatusBlackNumber from "./modal/EditUpdateStatusBlackNumber";
+import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -293,6 +294,11 @@ const Main = () => {
       </Tag>
     );
   };
+  const renderLoanType = (value) => {
+    return (
+      optionsLone.find((item) => item.value === value)?.label || "ไม่พบชื่อ"
+    );
+  };
 
   const columns = [
     {
@@ -339,9 +345,7 @@ const Main = () => {
     {
       title: "ประเภทสัญญา",
       align: "center",
-      render: (record) => (
-        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
-      ),
+      render: (record) => <>{renderLoanType(record.LOAN_TYPE_ID)} </>,
     },
     {
       title: "วันที่ส่งโนติส",

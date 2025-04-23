@@ -76,7 +76,6 @@ const Main = () => {
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
-  const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -94,7 +93,6 @@ const Main = () => {
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [lawsuitsData, setLawsuitsData] = useState([]);
   const [selectedDate, setSelectedDate] = useState([]);
-  const [dateApproved, setDateApproved] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
@@ -1235,8 +1233,8 @@ const Main = () => {
           if (!groupedData[refKey][key]) {
             groupedData[refKey][key] = {
               CONTNO: element.CONTNO,
-              pay_datetime: element?.pay_datetime
-                ? convertDateThai(element?.pay_datetime)
+              created_date: element?.withdraw_process_id
+                ? convertDateThai(element?.created_date)
                 : "-",
               expenses: [],
             };
@@ -1294,6 +1292,8 @@ const Main = () => {
       setDataExport(allPreData);
     }
   };
+
+  console.log("setDataExport", dataExport);
 
   const createPdf = () => {
     const pdf = new jsPDF();
@@ -1386,11 +1386,7 @@ const Main = () => {
 
         pdfPositionY += 10;
         // เพิ่มข้อความ
-        pdf.text(
-          "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
-          pdfPositionX + 80,
-          pdfPositionY
-        );
+        pdf.text("ใบเบิกเงินทดรองจ่าย", pdfPositionX + 80, pdfPositionY);
 
         pdf.setTextColor(0, 0, 0);
         pdfPositionY += 5;
@@ -1463,20 +1459,14 @@ const Main = () => {
 
         pdfPositionY += 10;
         // เพิ่มข้อความ
-        pdf.text(
-          "ใบเบิกเงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
-          pdfPositionX + 80,
-          pdfPositionY
-        );
+        pdf.text("ใบเบิกเงินทดรองจ่าย", pdfPositionX + 80, pdfPositionY);
 
         pdf.setTextColor(0, 0, 0);
         pdfPositionY += 5;
       }
       // เพิ่มตาราง
       pdf.autoTable({
-        head: [
-          ["ลำดับ", "เลขที่สัญญา", "วันที่ตรวจสอบ", "รายการ", "จำนวนเบิก"],
-        ],
+        head: [["ลำดับ", "เลขที่สัญญา", "วันที่ขอเบิก", "รายการ", "จำนวนเบิก"]],
         body: dataExport[refNo],
         startY: pdfPositionY,
         styles: { font: "THSarabunNew", fontSize: 14 },
@@ -1557,22 +1547,26 @@ const Main = () => {
       pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
 
       pdfPositionY += 40;
-      pdf.addImage(
-        oneTome,
-        "PNG",
-        143,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
+      if (selectedRows[index]?.withdraw_process_id === 3) {
+        pdf.addImage(
+          oneTome,
+          "PNG",
+          143,
+          finalY + 7,
+          imageWidthImg,
+          imageHeightImg
+        );
+      }
       pdf.text(
         `ลงชื่อผู้อนุมัติ..................................`,
         120,
         finalY + 20
       ); // (x, y)
-      if (dateApproved) {
+      if (selectedRows[index]?.withdraw_process_id === 3) {
         pdf.text(
-          `(วันที่อนุมัติ ${convertDateThai(dateApproved)})`,
+          `(วันที่อนุมัติ ${convertDateThai(
+            selectedRows[index]?.withdraw_datetime
+          )})`,
           125,
           finalY + 28
         ); // (x, y)
@@ -1839,12 +1833,6 @@ const Main = () => {
     console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
     console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-    setDataModal(selectedRows);
-    console.log(
-      "selectedRows[0]?.withdraw_datetime",
-      selectedRows[0]?.withdraw_datetime
-    );
-    setDateApproved(selectedRows[0]?.withdraw_datetime);
   };
 
   const rowSelection = {

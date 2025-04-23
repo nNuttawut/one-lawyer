@@ -134,8 +134,6 @@ const Main = () => {
         filteredData = newData.filter((item, index) => {
           const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
           const containsEng = item.CONTNO.substring(0, 1) === "4";
-          console.log("containsEng", containsEng + index);
-          console.log("containsNo", containsNo);
 
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
           if (containsNo && !containsEng) {
@@ -599,7 +597,7 @@ const Main = () => {
       render: (record) => <>{renderTotalAmountPay(record)}</>,
     },
     {
-      title: "อนุมัติเคลียร์เมื่อ",
+      title: "เคลียร์เมื่อ",
       align: "center",
       render: (record) => (
         <>{renderDate(record.pay_datetime, record.pay_type_id)}</>
@@ -691,7 +689,7 @@ const Main = () => {
                   ),
                   rowExpandable: (record) =>
                     record.withdraw_process_id === STATUS_PROCESS_SUCCESSFUL &&
-                    !record.pay_datetime,
+                    (record.pay_type_id === 4 || record.pay_type_id === null),
                   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}

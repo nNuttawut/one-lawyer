@@ -29,6 +29,7 @@ import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
 import CreateAdvanePayment from "./modal/CreateAdvanePayment";
+import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -387,6 +388,12 @@ const Main = () => {
     );
   };
 
+  const renderLoanType = (value) => {
+    return (
+      optionsLone.find((item) => item.value === value)?.label || "ไม่พบชื่อ"
+    );
+  };
+
   const columns = [
     {
       title: "ลำดับ",
@@ -426,9 +433,7 @@ const Main = () => {
     {
       title: "ประเภทสัญญา",
       align: "center",
-      render: (record) => (
-        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
-      ),
+      render: (record) => <>{renderLoanType(record.LOAN_TYPE_ID)} </>,
     },
     {
       title: "วันประทับฟ้อง",
@@ -465,7 +470,7 @@ const Main = () => {
               <Flex align="center" gap="middle">
                 <Tooltip
                   placement="bottom"
-                  title="เลือกทำรายการได้ไม่เกิน 4 สัญญา !"
+                  title="เลือกทำรายการได้ไม่เกิน 3 สัญญา !"
                   arrow={mergedArrow}
                 >
                   <Button
@@ -474,7 +479,7 @@ const Main = () => {
                     size="small" // ขนาดเล็ก
                     onClick={() => setIsModalCreateAdvanePayment(true)}
                     disabled={
-                      selectedRowKeys.length <= 0 || selectedRowKeys.length > 4
+                      selectedRowKeys.length <= 0 || selectedRowKeys.length > 3
                     }
                     loading={loading}
                   >

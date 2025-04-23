@@ -15,7 +15,6 @@ import {
   Tooltip,
 } from "antd";
 import {
-  CheckCircleOutlined,
   PrinterOutlined,
   CheckOutlined,
   FileImageOutlined,
@@ -47,7 +46,6 @@ import logoLeasing from "../../../assets/images/drawable-header.png";
 import logoMoney from "../../../assets/images/money.png";
 import logoKSM from "../../../assets/images/ksm.png";
 import LoadCompanies from "../../../hook/LoadCompanies";
-import { STATUS_WITHDRAW_UNSUCCESSFUL } from "../../../utils/constant/ExpenseType";
 import {
   PARAM_PUBLIC,
   STATUS_PROCESS_PROCESS,
@@ -75,7 +73,6 @@ const Main = () => {
   const [dataArr, setDataArr] = useState();
   const { RangePicker } = DatePicker;
   const [loading, setLoading] = useState();
-  const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -95,7 +92,6 @@ const Main = () => {
   const [selectedDate, setSelectedDate] = useState([]);
   const [arrow, setArrow] = useState("Show");
   const [statusClear, setStatusClear] = useState();
-  const [dateApproved, setDateApproved] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isModalFile, setIsModalFile] = useState(false);
@@ -241,8 +237,10 @@ const Main = () => {
   const filterData = (data, lawsuit) => {
     if (Array.isArray(data)) {
       const newData = data.filter(
-        (item) => item.pay_type_id <= 4 && (ROLE_ID === "1" || ROLE_ID === "6")
+        (item) =>
+          item.withdraw_process_id === 3 && (ROLE_ID === "1" || ROLE_ID === "6")
       );
+
       function containsNumber(str) {
         return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
       }
@@ -283,7 +281,7 @@ const Main = () => {
         (item) =>
           item.USER_ID === lawyerId &&
           item.COMPANY_ID === 2 &&
-          item.expenseList.every((epensePay) => epensePay.pay)
+          item.pay_type_id === 4
       );
 
       setArrayTable(useData);
@@ -311,6 +309,7 @@ const Main = () => {
         withdraw_process_id,
         USER_ID,
         created_date,
+        updated_date,
         withdraw_mark,
         pay_type_id,
         pay_datetime,
@@ -329,6 +328,7 @@ const Main = () => {
           withdraw_process_id,
           USER_ID,
           created_date,
+          updated_date,
           withdraw_mark,
           pay_type_id,
           pay_datetime,
@@ -355,6 +355,7 @@ const Main = () => {
       withdraw_process_id: group.withdraw_process_id,
       USER_ID: group.USER_ID,
       created_date: group.created_date,
+      updated_date: group.updated_date,
       withdraw_mark: group.withdraw_mark,
       pay_type_id: group.pay_type_id,
       pay_datetime: group.pay_datetime,
@@ -440,7 +441,7 @@ const Main = () => {
 
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -459,7 +460,7 @@ const Main = () => {
       console.log("onSearchLawyers 3 ----->");
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -511,7 +512,7 @@ const Main = () => {
 
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -530,7 +531,7 @@ const Main = () => {
       console.log("onSearchStatus 3 ----->");
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -591,7 +592,7 @@ const Main = () => {
 
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -610,7 +611,7 @@ const Main = () => {
       console.log("onChangeSelectCompany 3 ----->");
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -680,7 +681,7 @@ const Main = () => {
 
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -695,7 +696,7 @@ const Main = () => {
       console.log("onSearchByDate 3 ----->");
       dataUse = dataArr.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -729,8 +730,12 @@ const Main = () => {
           รอตรวจสอบ
         </Option>
         <Option value={1}>
-          <CheckCircleOutlined style={{ color: "green", marginRight: 8 }} />
-          สำเร็จ
+          <span style={{ marginRight: 8 }}>✅</span>
+          ตรวจสอบแล้ว
+        </Option>
+        <Option value={null}>
+          <span style={{ marginRight: 8 }}>💤</span>
+          ยังไม่เคลียร์เงิน
         </Option>
       </>
     );
@@ -739,12 +744,12 @@ const Main = () => {
   const confirmInsertOne = (data) => {
     const preData = {
       ...data,
-      pay_datetime: dayjs().format("YYYY-MM-DD"),
+      // pay_datetime: dayjs().format("YYYY-MM-DD"),
       pay_type_id: 1,
     };
     const putExpense = preData.expenseList.forEach((expense) => {
       expense.pay_type_id = 1;
-      expense.pay_datetime = dayjs().format("YYYY-MM-DD");
+      // expense.pay_datetime = dayjs().format("YYYY-MM-DD");
     });
     console.log(preData);
     sendData(preData);
@@ -856,8 +861,7 @@ const Main = () => {
       console.log("onSearchStatus 2 ----->");
 
       newData = result.filter((item) => {
-        // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -876,7 +880,7 @@ const Main = () => {
       console.log("onSearchStatus 3 ----->");
       newData = result.filter((item) => {
         // แปลงวันที่ใน item.created_date ด้วย dayjs
-        const date = dayjs(item.created_date, "YYYY-MM-DD");
+        const date = dayjs(item.pay_datetime, "YYYY-MM-DD");
         const itemDate = date.valueOf(); // แปลงเป็น timestamp
 
         // เงื่อนไขการกรอง
@@ -1069,7 +1073,7 @@ const Main = () => {
           "",
           "",
           "",
-          "ยอดสุทธิ",
+          "ส่วนต่าง",
           currencyFormatPoint(
             totalResultPayByRef[refKey] - totalResultByRef[refKey]
           ),
@@ -1410,23 +1414,16 @@ const Main = () => {
 
         pdfPositionY += 10;
         // เพิ่มข้อความ
-        pdf.text(
-          "ใบเคลียร์เงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
-          pdfPositionX + 80,
-          pdfPositionY
-        );
-        if (statusClear === 2) {
-          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-          pdf.text(" (ทนายโอนคืนการเงิน)", pdfPositionXCenter, pdfPositionY);
-        } else if (statusClear === 3) {
-          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-          pdf.text(" (การเงินโอนให้ทนาย)", pdfPositionXCenter, pdfPositionY);
-        } else if (statusClear === 4) {
+        pdf.text("ใบเคลียร์เงินทดรองจ่าย", pdfPositionX + 80, pdfPositionY);
+
+        if (selectedRows[index]?.pay_type_id === 1) {
           pdf.setTextColor(144, 238, 144);
-          pdf.text(" (ยอดตรง)", pdfPositionXCenter + 28, pdfPositionY);
+          pdf.text("(ตรวจสอบแล้ว)", pdfPositionXCenter + 25, pdfPositionY);
+        } else if (selectedRows[index]?.pay_type_id === 4) {
+          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
+          pdf.text(" (รอตรวจสอบ)", pdfPositionXCenter + 25, pdfPositionY);
         } else {
-          pdf.setTextColor(144, 238, 144);
-          pdf.text(" (สำเร็จ)", pdfPositionXCenter + 28, pdfPositionY);
+          pdf.text("(ยังไม่ทำรายการ)", pdfPositionXCenter + 23, pdfPositionY);
         }
 
         pdf.setTextColor(0, 0, 0);
@@ -1500,25 +1497,17 @@ const Main = () => {
 
         pdfPositionY += 10;
         // เพิ่มข้อความ
-        pdf.text(
-          "ใบเคลียร์เงินทดรองจ่ายค่าฤชาส่วนฟ้อง",
-          pdfPositionX + 80,
-          pdfPositionY
-        );
-        if (statusClear === 2) {
-          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-          pdf.text(" (ทนายโอนคืนการเงิน)", pdfPositionXCenter, pdfPositionY);
-        } else if (statusClear === 3) {
-          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
-          pdf.text(" (การเงินโอนให้ทนาย)", pdfPositionXCenter, pdfPositionY);
-        } else if (statusClear === 4) {
-          pdf.setTextColor(144, 238, 144);
-          pdf.text(" (ยอดตรง)", pdfPositionXCenter + 28, pdfPositionY);
-        } else {
-          pdf.setTextColor(144, 238, 144);
-          pdf.text(" (สำเร็จ)", pdfPositionXCenter + 28, pdfPositionY);
-        }
+        pdf.text("ใบเคลียร์เงินทดรองจ่าย", pdfPositionX + 80, pdfPositionY);
 
+        if (selectedRows[index]?.pay_type_id === 1) {
+          pdf.setTextColor(144, 238, 144);
+          pdf.text("(ตรวจสอบแล้ว)", pdfPositionXCenter + 25, pdfPositionY);
+        } else if (selectedRows[index]?.pay_type_id === 4) {
+          pdf.setTextColor(255, 0, 0); // สีแดง (RGB)
+          pdf.text(" (รอตรวจสอบ)", pdfPositionXCenter + 25, pdfPositionY);
+        } else {
+          pdf.text("(ยังไม่ทำรายการ)", pdfPositionXCenter + 23, pdfPositionY);
+        }
         pdf.setTextColor(0, 0, 0);
         pdfPositionY += 5;
       }
@@ -1528,7 +1517,7 @@ const Main = () => {
           [
             "ลำดับ",
             "เลขที่สัญญา",
-            "วันที่ตรวจสอบ",
+            "วันที่เคลียร์เงิน",
             "รายการ",
             "จำนวนเบิก",
             "จ่ายจริง",
@@ -1614,22 +1603,26 @@ const Main = () => {
       pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
 
       pdfPositionY += 40;
-      pdf.addImage(
-        oneTome,
-        "PNG",
-        143,
-        finalY + 7,
-        imageWidthImg,
-        imageHeightImg
-      );
+      if (selectedRows[index]?.pay_type_id === 1) {
+        pdf.addImage(
+          oneTome,
+          "PNG",
+          143,
+          finalY + 7,
+          imageWidthImg,
+          imageHeightImg
+        );
+      }
       pdf.text(
         `ลงชื่อผู้อนุมัติ..................................`,
         120,
         finalY + 20
       ); // (x, y)
-      if (dateApproved) {
+      if (selectedRows[index]?.pay_type_id === 1) {
         pdf.text(
-          `(วันที่อนุมัติ ${convertDateThai(dateApproved)})`,
+          `(วันที่อนุมัติ ${convertDateThai(
+            selectedRows[index]?.updated_date
+          )})`,
           125,
           finalY + 28
         ); // (x, y)
@@ -1671,6 +1664,10 @@ const Main = () => {
       return null;
     }
 
+    if (!record.pay_type_id) {
+      return null;
+    }
+
     let totalPay = 0;
     let totalWithdraw = 0;
 
@@ -1682,15 +1679,19 @@ const Main = () => {
       totalWithdraw += expense.withdraw;
     });
     let status =
-      totalPay === totalWithdraw
-        ? "สำเร็จ"
+      record.pay_type_id === 1
+        ? "ตรวจสอบแล้ว"
+        : totalPay === totalWithdraw
+        ? "ยอดตรง"
         : totalPay > totalWithdraw
         ? "โอนคืนทนาย"
         : totalPay < totalWithdraw
         ? "โอนคืนการเงิน"
         : null;
     let color =
-      totalPay === totalWithdraw
+      record.pay_type_id === 1
+        ? "green"
+        : totalPay === totalWithdraw
         ? "green"
         : totalPay > totalWithdraw
         ? "blue"
@@ -1778,40 +1779,83 @@ const Main = () => {
     );
   };
 
+  // const renderTotalAmountCal = (record) => {
+  //   // ตรวจสอบว่า record เป็น array หรือไม่
+  //   if (!Array.isArray(record.expenseList)) {
+  //     console.error("record is not an array");
+  //     return null;
+  //   }
+  //   let totalWithdraw = 0;
+
+  //   record.expenseList.forEach((expense) => {
+  //     totalWithdraw += expense.withdraw;
+  //   });
+
+  //   let totalPay = 0;
+
+  //   record.expenseList.forEach((expense) => {
+  //     totalPay += expense.pay;
+  //   });
+
+  //   let color =
+  //     totalPay === totalWithdraw
+  //       ? null
+  //       : totalPay > totalWithdraw
+  //       ? "green"
+  //       : totalPay < totalWithdraw
+  //       ? "red"
+  //       : null;
+  //   // แสดงข้อมูล totalWithdraw
+  //   return (
+  //     <div>
+  //       <p style={{ color: color, fontWeight: "bold" }}>
+  //         {" "}
+  //         {currencyFormatPoint(totalPay - totalWithdraw)} บาท
+  //       </p>
+  //     </div>
+  //   );
+  // };
+
   const renderTotalAmountCal = (record) => {
     // ตรวจสอบว่า record เป็น array หรือไม่
     if (!Array.isArray(record.expenseList)) {
       console.error("record is not an array");
       return null;
     }
+
+    let totalPay = 0;
+
     let totalWithdraw = 0;
 
     record.expenseList.forEach((expense) => {
       totalWithdraw += expense.withdraw;
     });
 
-    let totalPay = 0;
-
     record.expenseList.forEach((expense) => {
       totalPay += expense.pay;
     });
 
-    let color =
-      totalPay === totalWithdraw
-        ? null
-        : totalPay > totalWithdraw
-        ? "green"
-        : totalPay < totalWithdraw
-        ? "red"
-        : null;
-    // แสดงข้อมูล totalWithdraw
     return (
-      <div>
-        <p style={{ color: color, fontWeight: "bold" }}>
-          {" "}
-          {currencyFormatPoint(totalPay - totalWithdraw)} บาท
-        </p>
-      </div>
+      <p
+        style={{
+          color:
+            totalPay === totalWithdraw
+              ? null
+              : totalPay > totalWithdraw
+              ? "green"
+              : "red",
+        }}
+      >
+        {totalPay !== 0 && (
+          <>
+            {totalPay > totalWithdraw
+              ? `เบิกขาด ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              : totalPay < totalWithdraw
+              ? `เบิกเกิน ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              : " 0 บาท"}
+          </>
+        )}
+      </p>
     );
   };
 
@@ -1838,9 +1882,8 @@ const Main = () => {
       return (
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "20px",
           }}
         >
@@ -1858,7 +1901,6 @@ const Main = () => {
               <div
                 key={index}
                 style={{
-                  flex: "1 1 calc(30% - 20px)", // แสดงข้อมูลเป็น 3 คอลัมน์ (ปรับได้ตามหน้าจอ)
                   padding: "20px",
                   border: "1px solid #ddd",
                   borderRadius: "12px",
@@ -2005,16 +2047,64 @@ const Main = () => {
     );
   };
 
+  const renderManage = (record) => {
+    if (!record.pay_type_id) {
+      return null;
+    }
+
+    return (
+      <>
+        <Tooltip
+          placement="bottom"
+          title="กรุณากดเพื่อดูรูปใบเสร็จ !"
+          arrow={mergedArrow}
+        >
+          <Button
+            style={{ fontSize: "20px", marginRight: "5px", color: "blue" }}
+            onClick={() => {
+              setDataRecord(record);
+              console.log(record);
+
+              setIsModalFile(true);
+            }}
+          >
+            <FileImageOutlined />
+          </Button>
+        </Tooltip>
+        {record.pay_type_id === 1 ? null : (
+          <Tooltip
+            placement="bottom"
+            title="คลิกเพื่อยืนยันการตรวจสอบ !"
+            arrow={mergedArrow}
+          >
+            <Popconfirm
+              placement="topLeft"
+              title="อัพเดทสถานะ"
+              description="ยืนยันผลการตรวจสอบถูกต้องหรือไม่ ?"
+              onConfirm={() => confirmInsertOne(record)}
+              // onCancel={() => cancel(record)}
+              okText="ยืนยัน"
+              cancelText="ปิด"
+            >
+              <Button style={{ fontSize: "20px", color: "green" }}>
+                <CheckOutlined />
+              </Button>
+            </Popconfirm>
+          </Tooltip>
+        )}
+      </>
+    );
+  };
+
   const onSelectChange = (selectedRowKeys, selectedRows) => {
     console.log("selectedRowKeys changed: ", selectedRowKeys);
     setSelectedRowKeys(selectedRowKeys);
     console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
     console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-    setDataModal(selectedRows);
-    console.log(".pay_datetime", selectedRows[0]?.pay_datetime);
-    setDateApproved(selectedRows[0]?.pay_datetime);
   };
+
+  console.log("setSelectedRows", selectedRows);
 
   const rowSelection = {
     selectedRowKeys,
@@ -2085,9 +2175,18 @@ const Main = () => {
       render: (record) => <>{renderTotalAmountCal(record)}</>,
     },
     {
+      title: "วันที่เคลียร์",
+      align: "center",
+      render: (record) => (
+        <>{record.pay_type_id ? renderDate(record.pay_datetime) : null}</>
+      ),
+    },
+    {
       title: "วันที่ตรวจสอบ",
       align: "center",
-      render: (record) => <>{renderDate(record.pay_datetime)}</>,
+      render: (record) => (
+        <>{record.pay_type_id === 1 ? renderDate(record.updated_date) : null}</>
+      ),
     },
     {
       title: "สถานะ",
@@ -2097,46 +2196,7 @@ const Main = () => {
     {
       title: "การจัดการ",
       align: "center",
-      render: (record) => (
-        <>
-          <Tooltip
-            placement="bottom"
-            title="กรุณากดเพื่อดูรูปใบเสร็จ !"
-            arrow={mergedArrow}
-          >
-            <Button
-              style={{ fontSize: "20px", marginRight: "5px", color: "blue" }}
-              onClick={() => {
-                setDataRecord(record);
-                console.log(record);
-
-                setIsModalFile(true);
-              }}
-            >
-              <FileImageOutlined />
-            </Button>
-          </Tooltip>
-          <Tooltip
-            placement="bottom"
-            title="คลิกเพื่อยืนยันการตรวจสอบ !"
-            arrow={mergedArrow}
-          >
-            <Popconfirm
-              placement="topLeft"
-              title="อัพเดทสถานะ"
-              description="คุณต้องการอัพเดทสถานะให้บัญชีตรวจสอบ ?"
-              onConfirm={() => confirmInsertOne(record)}
-              // onCancel={() => cancel(record)}
-              okText="ยืนยัน"
-              cancelText="ปิด"
-            >
-              <Button style={{ fontSize: "20px", color: "green" }}>
-                <CheckOutlined />
-              </Button>
-            </Popconfirm>
-          </Tooltip>
-        </>
-      ),
+      render: (record) => <> {renderManage(record)}</>,
     },
   ];
 
@@ -2173,6 +2233,7 @@ const Main = () => {
                   onChange={onSearchByDate}
                 />
               </Space>
+
               <Search
                 placeholder="ค้นหาสัญญา"
                 onChange={search}
