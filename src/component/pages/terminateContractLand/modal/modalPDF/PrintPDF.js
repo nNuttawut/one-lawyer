@@ -121,7 +121,7 @@ function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName, dateQuery }) 
             <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>
             <Col span={6} className="colCenter"></Col>
-            <Col span={18} className="colCenter">({nameLawyerA1?.selectNameLawyer})</Col>
+            <Col span={18} className="colCenter">({nameLawyerA1?.fNmae} {nameLawyerA1?.lName})</Col>
             <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter">ทนายความผู้รับมอบอำนาจ</Col>
             <Col span={6} className="colCenter"></Col>
