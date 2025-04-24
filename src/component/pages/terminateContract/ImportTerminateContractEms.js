@@ -16,7 +16,6 @@ import MotionHoc from "../../../utils/MotionHoc";
 import {
   DeleteOutlined,
   PlusCircleOutlined,
-  CloseCircleOutlined,
   ImportOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
@@ -25,7 +24,6 @@ import FailedImport from "./modal/FailedImport";
 import { HEADERS_EXPORT, POST_CANCEL, baseUrl } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import { color } from "framer-motion";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();

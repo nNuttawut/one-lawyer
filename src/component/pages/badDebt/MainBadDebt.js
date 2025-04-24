@@ -34,10 +34,11 @@ import {
 } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
-
+  const companyId = localStorage.getItem("COMPANY_ID");
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [isModalDocument, setIsModalDocument] = useState(false);
@@ -89,22 +90,31 @@ const Main = () => {
     }
   };
 
-  const filterDataLawyer = (data) => {
-    if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
-          item.MAIN_STATUS_ID === item.STATUS_ID
-      );
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log(newData);
-      console.log("Length of filtered data:", newData.length);
+  const filterDataLawyer = (value) => {
+    let filteredData;
+
+    if (companyId === "3") {
+      filteredData = value.filter((item) => {
+        const branch = item.LOCAT;
+        // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+        if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+        // ถ้า branch มีค่า → เช็กตามปกติ
+        return !optionsLocat.some((opt) => branch.includes(opt.label));
+      });
     } else {
-      console.error("data is not an array or is undefined");
-      setTableLength(0);
+      filteredData = value.filter((item) => {
+        const branch = item.LOCAT;
+        if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+        return optionsLocat.some((opt) => branch.includes(opt.label));
+      });
     }
+
+    console.log("filteredData3", filteredData);
+    setArrayTable(filteredData);
+    setDataArr(filteredData);
+    setTableLength(filteredData?.length);
   };
 
   const search = (event) => {

@@ -26,6 +26,7 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import EstimateAssetsResult from "./modal/EstimateAssetsResult";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -38,8 +39,6 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
-  const [dataLoadJob, setDataLoadJob] = useState(null);
   const [dataRecord, setDataRecord] = useState();
   const [isModalEstimateAssetsResult, setIsModalEstimateAssetsResult] =
     useState(false);
@@ -66,7 +65,7 @@ const Main = () => {
               key: i++,
             }));
             filterData(newData);
-            setDataArr(newData);
+
             console.log("res Role", newData);
           } else {
             message.error("ไม่มีข้อมูล");
@@ -86,13 +85,35 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      const newData = data.filter((item) => item.estimated_price === null);
+      let filteredData;
+      if (userCompany === "3") {
+        filteredData = data.filter((item) => {
+          const branch = item.LOCAT;
+          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+          // ถ้า branch มีค่า → เช็กตามปกติ
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      } else {
+        filteredData = data.filter((item) => {
+          const branch = item.LOCAT;
+          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+          return optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      }
+
+      const newData = filteredData.filter(
+        (item) => item.estimated_price === null
+      );
       console.log("newDataLawsuit 11", newData);
 
+      setDataArr(filteredData);
       setArrayTable(newData);
-      setTableLength(newData.length);
+      setTableLength(newData?.length);
       console.log("newData", newData);
-      console.log("Length of filtered data:", newData.length);
+      console.log("Length of filtered data:", newData?.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);

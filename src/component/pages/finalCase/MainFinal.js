@@ -13,11 +13,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FileDoneOutlined,
-  EditOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SyncOutlined } from "@ant-design/icons";
 
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -27,16 +23,16 @@ import {
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 import axios from "axios";
-import { FINISH, NOTICE } from "../../../utils/constant/StatusConstant";
+import { FINISH } from "../../../utils/constant/StatusConstant";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
 
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
@@ -46,6 +42,7 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userCompany = parseInt(localStorage.getItem("COMPANY_ID"));
   const [dataRecord, setDataRecord] = useState();
 
   useEffect(() => {
@@ -92,11 +89,29 @@ const Main = () => {
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID
       );
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log(newData);
-      console.log("Length of filtered data:", newData.length);
+      let filteredData;
+      if (userCompany === "3") {
+        filteredData = newData.filter((item) => {
+          const branch = item.LOCAT;
+          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+          // ถ้า branch มีค่า → เช็กตามปกติ
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      } else {
+        filteredData = newData.filter((item) => {
+          const branch = item.LOCAT;
+          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+          return optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      }
+      setArrayTable(filteredData);
+      setDataArr(filteredData);
+      setTableLength(filteredData?.length);
+      console.log(filteredData);
+      console.log("Length of filtered data:", filteredData?.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);

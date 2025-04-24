@@ -31,6 +31,7 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -79,7 +80,6 @@ const Main = () => {
       });
       if (response.data) {
         if (response.data) {
-          setSearchEdit(response.data);
           setLoading(false);
           filterData(response.data);
         }
@@ -99,8 +99,29 @@ const Main = () => {
   const filterData = (data) => {
     if (Array.isArray(data)) {
       console.log(data);
+      let filteredData;
 
-      const newData = data.filter((item, index) => {
+      if (userCompany === "3") {
+        filteredData = data.filter((item) => {
+          const branch = item.LOCAT;
+          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+          // ถ้า branch มีค่า → เช็กตามปกติ
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      } else {
+        filteredData = data.filter((item) => {
+          const branch = item.LOCAT;
+          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+          return optionsLocat.some((opt) => branch.includes(opt.label));
+        });
+      }
+
+      setSearchEdit(filteredData);
+
+      const newData = filteredData.filter((item, index) => {
         const isPending = item.withdraw_process_id <= 4;
         const isOwner = item.USER_ID === userId;
         const isAdmin = ROLE_ID === "1";
@@ -108,42 +129,8 @@ const Main = () => {
 
         return isPending && (isOwner || isAdmin) && isIndect;
       });
-      console.log("newData", newData);
 
-      function containsNumber(str) {
-        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-      }
-
-      function isEnglishOnly(str) {
-        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-      }
-
-      let filteredData;
-
-      if (userCompany === "3") {
-        filteredData = newData.filter((item) => {
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
-            return item;
-          } else {
-            return false;
-          }
-        });
-      } else {
-        filteredData = newData.filter((item, index) => {
-          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (containsNo && !containsEng) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
-        });
-      }
-      const preData = groupByCreatedDateWithContno(filteredData);
+      const preData = groupByCreatedDateWithContno(newData);
 
       const useData = preData.filter((item) => item.reference_no);
 

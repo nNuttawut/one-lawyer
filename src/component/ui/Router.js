@@ -27,6 +27,7 @@ import CommissionLaw from "../pages/commission/CommissionLaw";
 import CommissionInvestigate from "../pages/commission/CommissionInvestigate";
 import ReadText from "../pages/guidebook/ReadText";
 import Resize from "../pages/guidebook/Resize";
+import Test from "../pages/guidebook/Test";
 import ReplyNotice from "../pages/notice/ReplyNotice";
 import Liff from "../pages/lineLogIn/Liff";
 import Loginline from "../pages/lineLogIn/LoginLine";
@@ -49,7 +50,6 @@ import ReportTerminate from "../pages/report/ReportTerminate";
 import ContractToLawuit from "../pages/terminateContract/ContractToLawuit";
 import ApprovedClearAdvanePay from "../pages/chargeIndict/ApprovedClearAdvanePay";
 import ImportOldData from "../pages/preLawsuitFiled/ImportOldData";
-
 import ContractToLawuitHand from "../pages/terminateContractHand/ContractToLawuitHand";
 import ReplyTerminateContractHand from "../pages/terminateContractHand/ReplyTerminateContractHand";
 import ImportTerminateContractEmsHand from "../pages/terminateContractHand/ImportTerminateContractEmsHand";
@@ -290,6 +290,7 @@ export default function Router() {
           <Route path="/bad-debt" element={<MainBadDebt />} />
           <Route path="/guidbook/read-text" element={<ReadText />} />
           <Route path="/guidbook/resize" element={<Resize />} />
+          <Route path="/guidbook/contno" element={<Test />} />
           <Route path="/liff" element={<Liff />} />
           <Route path="/login-line" element={<Loginline />} />
           {/* ขอปิดยอดเบน */}

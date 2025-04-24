@@ -239,7 +239,7 @@ const Main = () => {
       console.log(
         `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
       );
-      message.warning(
+      message.loading(
         `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
       );
 

@@ -29,6 +29,7 @@ import { AWAITING_JUDMENT } from "../../../utils/constant/StatusConstant";
 import UpdateStatusAwaitingJudgment from "./modal/UpdateStatusAwaitingJudgment";
 import EditAwaitingJudgement from "./modal/EditAwaitingJudgement";
 import dayjs from "dayjs";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -36,7 +37,6 @@ const Main = () => {
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
-  const [isModalDocument, setIsModalDocument] = useState(false);
   const [isModalUpdate, setIsModalUpdate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [dataArr, setDataArr] = useState();
@@ -44,7 +44,6 @@ const Main = () => {
   const [loading, setLoading] = useState();
   const [dataModal, setDataModal] = useState();
   const [tableLength, setTableLength] = useState(0);
-  const [dataStore, setDataStore] = useState(null);
   const [arrow, setArrow] = useState("Show");
   const [dataRecord, setDataRecord] = useState();
   const companyId = localStorage.getItem("COMPANY_ID");
@@ -120,36 +119,23 @@ const Main = () => {
           item.MAIN_STATUS_ID === item.STATUS_ID
       );
 
-      function containsNumber(str) {
-        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-      }
-
-      function isEnglishOnly(str) {
-        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-      }
-
       let filteredData;
 
       if (companyId === "3") {
         filteredData = newData.filter((item) => {
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2))) {
-            return item;
-          } else {
-            return false;
-          }
+          const branch = item.LOCAT;
+          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+          // ถ้า branch มีค่า → เช็กตามปกติ
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
         });
       } else {
         filteredData = newData.filter((item) => {
-          const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          console.log("test12", test);
+          const branch = item.LOCAT;
+          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
+          return optionsLocat.some((opt) => branch.includes(opt.label));
         });
       }
 

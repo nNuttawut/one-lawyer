@@ -38,6 +38,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import dayjs from "dayjs";
 import CreateJudgement from "./modal/CreateJudgement";
 import LoadCompanies from "../../../hook/LoadCompanies";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   //set hook
@@ -160,49 +161,30 @@ const Main = () => {
   };
 
   const filterDataLawyer = (value) => {
-    function containsNumber(str) {
-      return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-    }
-
-    function isEnglishOnly(str) {
-      return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-    }
-
     let filteredData;
 
     if (COMPANY_ID === "3") {
       filteredData = value.filter((item) => {
-        // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-        if (
-          isEnglishOnly(item.CONTNO.substring(0, 2)) ||
-          item.CONTNO.substring(0, 1) === "4"
-        ) {
-          return item;
-        } else {
-          return false;
-        }
-      });
+        const branch = item.LOCAT;
+        // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+        if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
 
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
+        // ถ้า branch มีค่า → เช็กตามปกติ
+        return !optionsLocat.some((opt) => branch.includes(opt.label));
+      });
     } else {
       filteredData = value.filter((item) => {
-        const test = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-        // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-        if (test || !isEnglishOnly(item.CONTNO.substring(0, 2))) {
-          return item; // เก็บ item นี้ไว้
-        } else {
-          return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-        }
-      });
+        const branch = item.LOCAT;
+        if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
+        return optionsLocat.some((opt) => branch.includes(opt.label));
+      });
     }
+
+    console.log("filteredData3", filteredData);
+    setArrayTable(filteredData);
+    setDataArr(filteredData);
+    setTableLength(filteredData.length);
   };
 
   const insertDataAll = async () => {

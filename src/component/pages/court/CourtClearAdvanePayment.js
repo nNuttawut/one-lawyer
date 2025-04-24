@@ -12,15 +12,10 @@ import {
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
-import { EditOutlined, SyncOutlined, FormOutlined } from "@ant-design/icons";
+import { FormOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import {
-  baseUrl,
-  GET_EXPENSES_LIST,
-  GET_LAWSUIT_LIST,
-  HEADERS_EXPORT,
-} from "../../API/apiUrls";
+import { baseUrl, GET_EXPENSES_LIST, HEADERS_EXPORT } from "../../API/apiUrls";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 
@@ -36,6 +31,7 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
+import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -60,7 +56,6 @@ const Main = () => {
   const [dataRecord, setDataRecord] = useState();
   const [searchEdit, setSearchEdit] = useState(null);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-  const [lawsuitsData, setLawsuitsData] = useState([]);
   useEffect(() => {
     loadData();
   }, []);
@@ -112,38 +107,26 @@ const Main = () => {
         return isPending && (isOwner || isAdmin) && isJudgement;
       });
 
-      function containsNumber(str) {
-        return /\d/.test(str); // เช็คว่า str เป็นตัวเลขทั้งหมด
-      }
-
-      function isEnglishOnly(str) {
-        return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
-      }
-
       let filteredData;
 
       if (userCompany === "3") {
         filteredData = newData.filter((item) => {
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.CONTNO.substring(0, 2)) || containsEng) {
-            return item;
-          } else {
-            return false;
-          }
+          const branch = item.LOCAT;
+          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+          // ถ้า branch มีค่า → เช็กตามปกติ
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
         });
       } else {
         filteredData = newData.filter((item) => {
-          const containsNo = containsNumber(item.CONTNO.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
-          const containsEng = item.CONTNO.substring(0, 1) === "4";
-          // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if (containsNo && !containsEng) {
-            return item; // เก็บ item นี้ไว้
-          } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
-          }
+          const branch = item.LOCAT;
+          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+          return optionsLocat.some((opt) => branch.includes(opt.label));
         });
       }
+
       const preData = groupByCreatedDateWithContno(filteredData);
 
       const useData = preData.filter((item) => item.reference_no);
