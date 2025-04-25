@@ -38,9 +38,18 @@ import dayjs from "dayjs";
 import EditUpdateStatusBlackNumber from "./modal/EditUpdateStatusBlackNumber";
 import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 const Main = () => {
-  const [convertDateThai] = DateCustom();
+  const [
+    convertDateThai,
+    convertDateThaiShort,
+    convertDateThaiYear,
+    convertDateThaiMonth,
+    convertDateThaiDate,
+    dateNow,
+  ] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
@@ -228,8 +237,8 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.DATE).startOf("day");
-    const today = dayjs().startOf("day");
+    const recordDate = dayjs.utc(record.DATE).startOf("day");
+    const today = dayjs.utc().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
     const yearsDifference = today.diff(recordDate, "year");
@@ -263,8 +272,11 @@ const Main = () => {
           ? "blue"
           : "red";
     }
+    console.log("recordDate----->", recordDate);
+    console.log("record.DATE", record.DATE);
+    console.log("con", record.CONTNO);
 
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
@@ -342,8 +354,7 @@ const Main = () => {
       render: (record) => <>{renderDate(record)}</>,
       sorter: (a, b) => {
         // เปรียบเทียบวันที่ระหว่าง a.DATE และ b.DATE
-
-        return dayjs(a.DATE).isBefore(b.DATE) ? -1 : 1;
+        return dayjs(b.DATE).isBefore(a.DATE) ? -1 : 1;
       },
       defaultSortOrder: "ascend", // ตั้งค่าเริ่มต้นเป็น "ascend"
     },

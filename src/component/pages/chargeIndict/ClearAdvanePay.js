@@ -2019,7 +2019,7 @@ const Main = () => {
         ? "red"
         : "blue";
 
-    const formattedDate = record ? convertDateThaiShort(record) : null;
+    const formattedDate = record ? convertDateThaiShort(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

@@ -43,13 +43,12 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   ] = CurrencyFormat();
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [companiesOption, setCompaniesOption] = useState(null);
-  const [companiesSelect, setCompanieSelect] = useState();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState();
   const [isModal, setIsModal] = useState(false);
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
-  const [dataHirePurchase, setDataHirePurchase] = useState();
+  const [dataFormApiJojo, setDataFormApiJojo] = useState(null);
   const { TextArea } = Input;
   const [dataStore, setDataStore] = useState();
   const [dataForm, setDataForm] = useState({
@@ -72,6 +71,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loanType, setLoanType] = useState(
     dataDefault?.LOAN_TYPE_ID ? dataDefault?.LOAN_TYPE_ID : 2
   );
+
+  console.log("dataDefault------>", dataDefault);
+  console.log("dataLoadLawSuit---->", dataLoadLawSuit);
+  console.log("dataLoadLoan----->", dataLoadLoan);
 
   useEffect(() => {
     setIsModal(open);
@@ -116,88 +119,32 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefault.id}`,
-        {
+      const [lawsuitRes, loanRes] = await Promise.all([
+        axios.get(`${baseUrl}${GET_LAWSUIT_DETAIL_BY_LOAN}${dataDefault.id}`, {
           headers: HEADERS_EXPORT,
-        }
-      );
-      const { status, data } = response;
-      if (status === 200 && data) {
-        console.log("lawsuitRes", data);
-        setDataLoadLawSuit(data);
-        setDataStore(data);
+        }),
+        axios.get(`${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefault.CONTNO}`, {
+          headers: HEADERS_EXPORT,
+        }),
+      ]);
+
+      if (lawsuitRes.status === 200) {
+        console.log("lawsuitRes", lawsuitRes.data);
+        setDataLoadLawSuit(lawsuitRes.data);
+        setDataStore(lawsuitRes.data);
       } else {
         message.error("ไม่พบข้อมูลคดี");
+      }
+
+      if (loanRes.status === 200) {
+        console.log("loanRes", loanRes.data);
+        setDataLoadLoan(loanRes.data);
+      } else {
+        message.error("ไม่พบข้อมูลเงิน");
       }
     } catch (error) {
       console.error("Error loading data:", error);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const queryDataHirePurchase = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${baseUrl}${GET_LOAN_BY_CONTNO}${dataDefault.CONTNO}`,
-        {
-          headers: HEADERS_EXPORT,
-        }
-      );
-
-      if (response.status === 200 && response.data) {
-        console.log("ข้อมูลสัญญาเช่าซื้อ:", response.data);
-        setDataHirePurchase(response.data);
-      } else {
-        message.warning("ไม่พบข้อมูลที่ต้องการ");
-      }
-    } catch (error) {
-      console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", error);
-      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const queryDataLoan = async (queryContno, typeValue, date) => {
-    setLoading(true);
-    try {
-      await axios
-        .post(POST_DETAIL_PAYMENT, {
-          contno: queryContno,
-          todate: dayjs(date).format("YYYY-MM-DD"),
-          type: typeValue,
-        })
-        .then(async (resQuery) => {
-          let i = 1;
-          if (resQuery.status === 200) {
-            setDataLoadLoan(resQuery?.data[0]);
-            const newData = resQuery?.data[0]?.resultdata?.map((item) => ({
-              ...item,
-              key: i++,
-            }));
-            console.log("newData", newData);
-            console.log("resQuery", resQuery.data);
-            setLoading(false);
-          } else {
-            setDataLoadLoan();
-            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
-            console.log("ไม่มีเลขที่สัญญาที่ค้นหา");
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.status === 404) {
-            message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
-          }
-        });
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      message.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setLoading(false);
     }
@@ -440,37 +387,81 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
 
+  const onChangeInputCourt = (value) => {
+    console.log(value);
+  };
+
+  const onChangeInputSubject = (value) => {
+    console.log(value);
+  };
+
+  const onChangeInputMemo = (value) => {
+    console.log(value);
+  };
+
   const onChangeCourt = (date, dateString) => {
     console.log(date, dateString);
     setDataForm({ ...dataForm, dateCourt: dateString });
-    // if (!date) {
-    //   form.setFieldsValue({
-    //     intigationFounds: 0,
-    //     lossBenefit: 0,
-    //     dateCourt: null,
-    //     docShipingCost: 0,
-    //     stampDuty: 0,
-    //     feeCourt: 0,
-    //   });
-    //   setDataForm({
-    //     ...dataForm,
-    //     suspensionAmount: 0,
-    //     trackingFee: 0,
-    //     intigationFounds: 0,
-    //     dateCourt: null,
-    //     feeCourt: 0,
-    //     docShipingCost: 0,
-    //     lossBenefit: 0,
-    //   });
-    //   setButtonCal(false);
-    //   setButtonCalFounds(false);
-    // }
-    // handleLossPay(dateString);
+    if (!date) {
+      form.setFieldsValue({
+        intigationFounds: 0,
+        lossBenefit: 0,
+        dateCourt: null,
+        docShipingCost: 0,
+        stampDuty: 0,
+        feeCourt: 0,
+      });
+      setDataForm({
+        ...dataForm,
+        suspensionAmount: 0,
+        trackingFee: 0,
+        intigationFounds: 0,
+        dateCourt: null,
+        feeCourt: 0,
+        docShipingCost: 0,
+        lossBenefit: 0,
+      });
+      setButtonCal(false);
+      setButtonCalFounds(false);
+    }
+    handleLossPay(dateString);
+  };
+
+  const onChangeTrackingFee = (value) => {
+    console.log(value);
+  };
+
+  const onChangeSuspensionAmount = (value) => {
+    console.log(value);
+  };
+
+  const onChangeInpuutLossBenefit = (value) => {
+    console.log(value);
+  };
+
+  const onChangeInputLitigationFunds = (value) => {
+    console.log(value);
   };
 
   const onChangeSelectLoanType = (value) => {
     console.log(`selected ${value} `);
     setLoanType(value);
+  };
+
+  const feeCourt = (value) => {
+    console.log(value);
+  };
+
+  const stampDutyCost = (value) => {
+    console.log(value);
+  };
+
+  const docShipingCost = (value) => {
+    console.log(value);
+  };
+
+  const documentCost = (value) => {
+    console.log(value);
   };
 
   const handleLossPay = (value) => {
@@ -553,7 +544,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
-    setCompanieSelect(value);
   };
 
   const setLawType = () => {
@@ -568,44 +558,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       : null;
     setDataForm((prev) => ({ ...prev, lawTypeTH: result }));
     return result;
-  };
-
-  const preQuery = () => {
-    if (dataDefault.CONTNO) {
-      let typeValue;
-      let subData = dataDefault.CONTNO.substring(0, 1);
-      let subDataLand = dataDefault.CONTNO.substring(0, 3);
-      console.log("subDataLand", subDataLand);
-
-      if (dataDefault?.COMPANY_ID === "3" || companiesSelect === "3") {
-        typeValue = "KSM";
-        queryDataLoan(dataDefault.CONTNO, typeValue);
-        console.log("subData", subData);
-        console.log("typeValue", typeValue);
-        console.log("dataDefault.CONTNO--->", dataDefault.CONTNO);
-      } else {
-        if (subData === "1" || subDataLand === "222") {
-          typeValue = "LSFHP";
-          queryDataLoan(dataDefault.CONTNO, typeValue);
-        } else if (subData === "3") {
-          let checkType = dataDefault.CONTNO.substring(5, 9);
-          console.log("checkType", checkType);
-          if (parseInt(checkType) > 1200) {
-            typeValue = "RPSL";
-            queryDataLoan(dataDefault.CONTNO, typeValue);
-          } else {
-            message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
-          }
-        } else {
-          typeValue = "RPSL";
-          queryDataLoan(dataDefault.CONTNO, typeValue);
-        }
-
-        console.log("subData", subData);
-        console.log("typeValue", typeValue);
-        console.log("dataDefault.CONTNO--->", dataDefault.CONTNO);
-      }
-    }
   };
 
   const formDataSet = () => {
@@ -638,10 +590,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         }}
       >
         <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
-          {/* <p>
+          <p>
             {`${dataDefault?.CONTNO}/${dataDefault?.CUSTOMER_TNAME}
             ${dataDefault?.CUSTOMER_FNAME} ${dataDefault?.CUSTOMER_LNAME}`}
-          </p> */}
+          </p>
         </Form.Item>
         <Form.Item
           label="วันที่ส่งฟ้อง"
@@ -699,7 +651,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             },
           ]}
         >
-          <Input />
+          <Input onChange={(e) => onChangeInputCourt(e.target.value)} />
         </Form.Item>
         <Form.Item
           label="ความ"
@@ -733,31 +685,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             },
           ]}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item label="จ่ายล่าสุด" name="noPay">
-          {/* <p>{convertDateThai(dataLoadLoan?.LOAN?.LPAYD)}</p> */}
-        </Form.Item>
-
-        <Form.Item label="ยอดกู้" name="principle">
-          {/* <p>{currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC)} บาท</p> */}
-        </Form.Item>
-        <Form.Item label="ยอดกู้รวมดอก" name="principle">
-          {/* <p>{currencyFormatComma(dataLoadLoan?.LOAN?.TOTPRC)} บาท</p> */}
-        </Form.Item>
-        <Form.Item label="ยอดที่จ่ายมาทั้งหมด" name="sumaryPay">
-          {/* <p>{currencyFormatComma(dataLoadLoan?.LOAN?.SMPAY) + " บาท"}</p> */}
-        </Form.Item>
-        <Form.Item label="เงินค้างจ่าย" name="balance">
-          {/* <p>
-                {loanType !== 2 || loanType !== 5
-                  ? currencyFormatComma(
-                      dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY
-                    ) + " บาท"
-                  : currencyFormatComma(
-                      dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY
-                    ) + " บาท"}
-              </p> */}
+          <Input onChange={(e) => onChangeInputSubject(e.target.value)} />
         </Form.Item>
         <Form.Item
           label="ค่าติดตามทวงถาม"
@@ -778,6 +706,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             size="large"
             placeholder="กรุณาใส่ค่าติดตาม !"
             style={{ width: "100%", color: "black" }}
+            onChange={(value) => onChangeTrackingFee(value)}
           />
         </Form.Item>
         <Form.Item
@@ -799,23 +728,50 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             size="large"
             placeholder="หากไม่มีให้ใส่ 0 !"
             style={{ width: "100%", color: "black" }}
+            onChange={(value) => onChangeSuspensionAmount(value)}
           />
         </Form.Item>
-        {loanType === 1 || loanType === 4 || loanType === 6 ? (
-          <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
-            <InputNumber
-              suffix="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณาใส่ค่าขาดประโยชน์"
-              style={{ width: "100%", color: "black" }}
-            />
-          </Form.Item>
-        ) : null}
-        {/* <Form.Item label="คำนวณทุนทรัพย์โดยประมาณ">
+        <Form.Item label="จ่ายล่าสุด" name="noPay">
+          <p>{convertDateThai(dataLoadLoan?.LOAN?.LPAYD)}</p>
+        </Form.Item>
+        {dataForm.dateCourt ? (
+          <>
+            <Form.Item label="ยอดกู้" name="principle">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC)} บาท</p>
+            </Form.Item>
+            <Form.Item label="ยอดกู้รวมดอก" name="principle">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.TOTPRC)} บาท</p>
+            </Form.Item>
+            <Form.Item label="ยอดที่จ่ายมาทั้งหมด" name="sumaryPay">
+              <p>{currencyFormatComma(dataLoadLoan?.LOAN?.SMPAY) + " บาท"}</p>
+            </Form.Item>
+            <Form.Item label="เงินค้างจ่าย ≈" name="balance">
+              <p>
+                {loanType !== 2 || loanType !== 5
+                  ? currencyFormatComma(
+                      dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY
+                    ) + " บาท"
+                  : currencyFormatComma(
+                      dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY
+                    ) + " บาท"}
+              </p>
+            </Form.Item>
+            {loanType === 1 || loanType === 4 || loanType === 6 ? (
+              <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="กรุณาใส่ค่าขาดประโยชน์"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => onChangeInpuutLossBenefit(value)}
+                />
+              </Form.Item>
+            ) : null}
+            {/* <Form.Item label="คำนวณทุนทรัพย์โดยประมาณ">
               <Button
                 style={{ color: "blue" }}
                 htmlType="submit"
@@ -824,116 +780,123 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 คำนวณ
               </Button>
             </Form.Item> */}
-        <Form.Item
-          label="จำนวนทุนทรัพย์"
-          name="intigationFounds"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาใส่จำนวนทุนทรัพย์ !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณาใส่จำนวนทุนทรัพย์"
-            style={{ width: "100%", color: "black" }}
-          />
-        </Form.Item>
-        <Form.Item
-          label="ค่าธรรมเนียมศาล"
-          name="feeCourt"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาใส่ค่าธรรมเนียมศาล !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณาใส่ค่าธรรมเนียมศาล"
-            style={{ width: "100%", color: "black" }}
-          />
-        </Form.Item>
-        {loanType === 1 ||
-        loanType === 3 ||
-        loanType === 4 ||
-        loanType === 6 ? (
-          <Form.Item
-            label="ค่าอากรสแตมป์"
-            name="stampDuty"
-            rules={[
-              {
-                required: true,
-                message: "กรุณาใส่ค่าค่าอากรสแตมป์ !",
-              },
-            ]}
-          >
-            <InputNumber
-              suffix="บาท"
-              formatter={(value) =>
-                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-              size="large"
-              placeholder="กรุณาใส่ค่าค่าอากรสแตมป์"
-              style={{ width: "100%", color: "black" }}
-            />
-          </Form.Item>
+            <Form.Item
+              label="จำนวนทุนทรัพย์"
+              name="intigationFounds"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณาใส่จำนวนทุนทรัพย์"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => onChangeInputLitigationFunds(value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าธรรมเนียมศาล"
+              name="feeCourt"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาใส่ค่าธรรมเนียมศาล !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณาใส่ค่าธรรมเนียมศาล"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => feeCourt(value)}
+              />
+            </Form.Item>
+            {loanType === 1 ||
+            loanType === 3 ||
+            loanType === 4 ||
+            loanType === 6 ? (
+              <Form.Item
+                label="ค่าอากรสแตมป์"
+                name="stampDuty"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่ค่าค่าอากรสแตมป์ !",
+                  },
+                ]}
+              >
+                <InputNumber
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="กรุณาใส่ค่าค่าอากรสแตมป์"
+                  style={{ width: "100%", color: "black" }}
+                  onChange={(value) => stampDutyCost(value)}
+                />
+              </Form.Item>
+            ) : null}
+            <Form.Item
+              label="ค่าส่งหมาย"
+              name="docShipingCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าส่งหมาย !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกค่าส่งหมาย"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => docShipingCost(value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าจัดทำเอกสาร"
+              name="documentCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าจัดทำเอกสาร !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => documentCost(value)}
+              />
+            </Form.Item>
+          </>
         ) : null}
-        <Form.Item
-          label="ค่าส่งหมาย"
-          name="docShipingCost"
-          rules={[
-            {
-              required: true,
-              message: "กรุณากรอกค่าส่งหมาย !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณากรอกค่าส่งหมาย"
-            style={{ width: "100%", color: "black" }}
-          />
-        </Form.Item>
-        <Form.Item
-          label="ค่าจัดทำเอกสาร"
-          name="documentCost"
-          rules={[
-            {
-              required: true,
-              message: "กรุณากรอกค่าจัดทำเอกสาร !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
-            style={{ width: "100%", color: "black" }}
-          />
-        </Form.Item>
 
         <Form.Item label="คำนวณค่าธรรมเนียม">
           <Button
@@ -945,7 +908,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           </Button>
         </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
-          <TextArea rows={5} />
+          <TextArea
+            rows={5}
+            onChange={(e) => onChangeInputMemo(e.target.value)}
+          />
         </Form.Item>
         <div style={{ textAlign: "center" }}>
           <Button

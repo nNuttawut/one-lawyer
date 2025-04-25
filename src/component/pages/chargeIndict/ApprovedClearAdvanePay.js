@@ -1500,7 +1500,7 @@ const Main = () => {
 
     color = status === 5 ? "green" : status === 4 ? "blue" : null;
 
-    const formattedDate = record ? convertDateThaiShort(record) : null;
+    const formattedDate = record ? convertDateThaiShort(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

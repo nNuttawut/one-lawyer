@@ -189,7 +189,9 @@ const Main = () => {
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     let color = daysDifference > 30 ? "green" : "red";
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.DATE
+      ? convertDateThai(record.recordDate)
+      : null;
 
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

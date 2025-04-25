@@ -109,7 +109,7 @@ const Main = () => {
       }
 
       const newData = filteredData.filter(
-        (item) => item.estimated_price === null
+        (item) => item.investigation_status === null
       );
 
       setArrayTable(newData);
@@ -258,7 +258,7 @@ const Main = () => {
       color = "green";
     }
     const formattedDate = record.investigation_date
-      ? convertDateThai(record.investigation_date)
+      ? convertDateThai(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

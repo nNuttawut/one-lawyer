@@ -232,7 +232,7 @@ const Main = () => {
       color = daysDifference > 60 ? "red" : "green";
       console.log(`${record.CONTNO}`, record.LOAN_TYPE_ID);
     }
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

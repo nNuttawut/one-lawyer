@@ -355,7 +355,7 @@ const Main = () => {
     color = remainingDays > 30 ? "red" : "green";
 
     const formattedDate = record.date_of_plaint
-      ? convertDateThai(record.date_of_plaint)
+      ? convertDateThai(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

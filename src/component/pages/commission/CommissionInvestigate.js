@@ -192,7 +192,7 @@ const Main = () => {
     const recordDate = dayjs(record.DATE).startOf("day");
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
     return (
       <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

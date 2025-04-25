@@ -321,7 +321,7 @@ const Main = () => {
         ? "red"
         : "blue";
 
-    const formattedDate = date ? convertDateThaiShort(date) : null;
+    const formattedDate = date ? convertDateThaiShort(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

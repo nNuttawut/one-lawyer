@@ -369,7 +369,7 @@ const Main = () => {
     let color;
     color = daysDifference > 30 ? "red" : "green";
     const formattedDate = record.created_date
-      ? convertDateThaiShort(record.created_date)
+      ? convertDateThaiShort(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

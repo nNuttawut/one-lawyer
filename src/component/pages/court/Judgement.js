@@ -222,7 +222,7 @@ const Main = () => {
     console.log("daysDifference", daysDifference);
 
     let color = daysDifference > 0 ? "green" : "red";
-    const formattedDate = record.DATE ? convertDateThai(record.DATE) : null;
+    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
 
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

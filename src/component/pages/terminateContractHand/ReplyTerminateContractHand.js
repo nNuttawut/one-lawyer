@@ -357,9 +357,7 @@ const Main = () => {
       return null;
     }
 
-    const recordDate = dayjs(record.created_date)
-      .subtract(7, "hour")
-      .startOf("day");
+    const recordDate = dayjs(record.created_date).startOf("day");
 
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");

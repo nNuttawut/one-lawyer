@@ -268,7 +268,7 @@ const Main = () => {
     }
 
     const formattedDate = record.investigation_date
-      ? convertDateThai(record.investigation_date)
+      ? convertDateThai(recordDate)
       : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>

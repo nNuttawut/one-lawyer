@@ -271,7 +271,7 @@ const Main = () => {
         <Tag color="orange" style={{ textAlign: "center" }}>
           {convertDateThai(record.DATE)}
           <br />
-          {`เวลา ${dayjs(record.DATE).subtract(7, "hour").format("HH:mm")} น.`}
+          {`เวลา ${dayjs.utc(record.DATE).format("HH:mm")} น.`}
         </Tag>
       ),
     },
