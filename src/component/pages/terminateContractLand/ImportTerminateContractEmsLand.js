@@ -91,8 +91,10 @@ const Main = () => {
           customer_fullname: row["ชื่อลูกค้า"] || "", // ชื่อลูกค้า
           customer_type_id: row["ประเภทลูกค้า"],
           zipcode: row["zipcode"],
-          brand: row["ยี่ห้อ"] || "", // ยี่ห้อ
-          register_no: row["ทะเบียน"] || "", // ทะเบียน
+          brand: row["สถานที่"] || "", // ยี่ห้อ
+          register_no: row["รายละเอียด"] || "", // ทะเบียน
+          overdue_installment_count: row["ค้างดอกเบี้ย"] || "", // ค้างงวด
+          overdue_installment_amount: row["ต้นคงเหลือ"] || "", // เงินค้าง
           parcel_no: row["ems จดหมาย"] || "", // ค่าทวงถาม
           parcel_no_response: row["ems ใบตอบกลับ"] || "", // ค่าทวงถาม
         }));
@@ -320,33 +322,6 @@ const Main = () => {
     message.error("ยกเลิกการนำเข้าข้อมูล");
   };
 
-  const confirmModal = () => {
-    setIsModalFailed(true);
-  };
-
-  const cancelModal = () => {
-    message.error("ไม่ดูข้อมูลที่ค้นหาไม่เจอ");
-  };
-
-  const renderType = (record) => {
-    const options = [
-      { value: 115, label: "จดหมายส่งผู้คนค้ำ(115)" },
-      { value: 116, label: "จดหมายส่งผู้คนค้ำ(116)" },
-      { value: 119, label: "บอกเลิกสัญญา(119)" },
-      { value: 129, label: "ค่าบอกเลิกสัญญา(No ems)(129)" },
-      { value: "vsfhp", label: "สัญญา 2" },
-      { value: "psfhp", label: "สัญญา 3" },
-      { value: "rpsl", label: "สัญญา 3(ใหม่)" },
-      { value: "sfhp", label: "สัญญา 8" },
-    ];
-
-    if (!record) {
-      return null;
-    }
-    const matchedOption = options.find((opt) => opt.value === record);
-    return matchedOption ? matchedOption.label : "-"; // ถ้าไม่เจอ ให้แสดง "-"
-  };
-
   const columns = [
     {
       title: "ลำดับ",
@@ -403,17 +378,40 @@ const Main = () => {
       ),
     },
     {
-      title: "ยี่ห้อ",
+      title: "สถานที่",
       dataIndex: "brand",
       key: "brand", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
       align: "center",
     },
     {
-      title: "ทะเบียน",
+      title: "รายละเอียด",
       dataIndex: "register_no",
       key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
       align: "center",
     },
+    {
+      title: "ต้นคงเหลือ",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.overdue_installment_amount
+            ? currencyFormatPoint(record.overdue_installment_amount)
+            : null}{" "}
+        </>
+      ),
+    },
+    {
+      title: "ค้างดอกเบี้ย",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {record.overdue_installment_count
+            ? currencyFormatPoint(record.overdue_installment_count)
+            : null}{" "}
+        </>
+      ),
+    },
+
     {
       title: "ems จดหมาย",
       dataIndex: "parcel_no",

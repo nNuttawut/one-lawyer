@@ -1,34 +1,23 @@
-import {
-  Button,
-  Form,
-  Modal,
-  Card,
-  Spin,
-  message,
-  Image,
-  Row,
-  Col,
-  Divider,
-} from "antd";
+import { Modal, Card, message, Row, Col, Divider } from "antd";
 import { useEffect, useState } from "react";
-import TokenCheck from "../../../../hook/TokenCheck";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import axios from "axios";
-import { baseUrl, POST_DETAIL_PAYMENT } from "../../../API/apiUrls";
-import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
-import {
-  FileWordOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-} from "@ant-design/icons";
+import { POST_DETAIL_PAYMENT } from "../../../API/apiUrls";
 import dayjs from "dayjs";
 
 import { faMapLocationDot, faCarSide } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import MainLoanPDF from './modalPDF/MainLoanPDF';
+import MainLoanPDF from "./modalPDF/MainLoanPDF";
 
-const PrintCancel = ({ open, close, data, queryContno,dateQuery }) => {
+const PrintCancel = ({
+  open,
+  close,
+  data,
+  queryContno,
+  dateQuery,
+  isDataSynce,
+}) => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [
     currencyFormat,
@@ -37,7 +26,6 @@ const PrintCancel = ({ open, close, data, queryContno,dateQuery }) => {
     currencyFormatNoPoint,
   ] = CurrencyFormat();
   const [loading, setLoading] = useState(false);
-  const [imageList, setImageList] = useState([]);
   const companyId = localStorage.getItem("COMPANY_ID");
   const [arrData, setArrData] = useState();
 
@@ -96,6 +84,7 @@ const PrintCancel = ({ open, close, data, queryContno,dateQuery }) => {
           if (resQuery.status === 200) {
             console.log("resQuery", resQuery.data);
             setArrData(resQuery?.data[0]);
+            isDataSynce(resQuery?.data[0]);
             setLoading(false);
           } else {
             message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
@@ -257,7 +246,11 @@ const PrintCancel = ({ open, close, data, queryContno,dateQuery }) => {
         </Row>
         <Divider />
         <center>
-        <MainLoanPDF dataCus = {data ? data : null} arrData = {arrData ? arrData.loan : null} dateQuery = {dateQuery ? dateQuery : null}/>       
+          <MainLoanPDF
+            dataCus={data ? data : null}
+            arrData={arrData ? arrData.loan : null}
+            dateQuery={dateQuery ? dateQuery : null}
+          />
         </center>
       </Card>
     </Modal>

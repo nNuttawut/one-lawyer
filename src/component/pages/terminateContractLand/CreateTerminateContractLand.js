@@ -7,7 +7,6 @@ import {
   Button,
   message,
   Spin,
-  Upload,
   Popconfirm,
   Tooltip,
   Modal,
@@ -21,17 +20,13 @@ import {
   DeleteOutlined,
   CloseCircleOutlined,
   ImportOutlined,
+  FileExcelOutlined,
   PrinterOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import FailedImport from "./modal/FailedImport";
-import {
-  GET_LOAN_FROM_SERVER_IBM,
-  HEADERS_EXPORT,
-  POST_LOAN_DB2,
-  baseUrl,
-} from "../../API/apiUrls";
+import { POST_LOAN_DB2 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import ExcelJS from "exceljs";
@@ -52,7 +47,6 @@ const Main = () => {
   const [loading, setLoading] = useState(false);
   const [arrayTable, setArrayTable] = useState();
   const [data, setData] = useState(null);
-  const [dataStore, setDataStore] = useState(null);
   const [failedData, setFailedData] = useState([]);
   const [isModalFailed, setIsModalFailed] = useState(false);
   const [isModalPrint, setIsModalPrint] = useState(false);
@@ -63,6 +57,7 @@ const Main = () => {
   const [dataSearch, setDataSearch] = useState(0);
   const [dataCheck, setDataCheck] = useState([]);
   const [dateQuery, setDateQuery] = useState(dayjs());
+  const [dataSync, setDataSynce] = useState(null);
 
   const onQuery = () => {
     if (queryContno) {
@@ -358,8 +353,10 @@ const Main = () => {
         { header: "ประเภทลูกค้า", key: "cusType", width: 10 },
         { header: "ที่อยู่", key: "addr", width: 30 },
         { header: "zipcode", key: "zipcode", width: 10 },
-        { header: "ยี่ห้อ", key: "type", width: 15 },
-        { header: "ทะเบียน", key: "regNo", width: 15 },
+        { header: "สถานที่", key: "type", width: 25 },
+        { header: "รายละเอียด", key: "regNo", width: 15 },
+        { header: "ต้นคงเหลือ", key: "overdue", width: 15 },
+        { header: "ค้างดอกเบี้ย", key: "arrears", width: 20 },
         { header: "ems จดหมาย", key: "emsNo", width: 25 },
         { header: "ems ใบตอบกลับ", key: "emsResponeNo", width: 25 },
       ];
@@ -386,8 +383,12 @@ const Main = () => {
           data.cusType,
           data.ADDRESS.ADDR1,
           data.ADDRESS.ZIP,
-          data.MORTGAGE.TYPE,
-          data.MORTGAGE.REGNO,
+          `${data.MORTGAGE.BAAB},${data.MORTGAGE.MODEL},${data.MORTGAGE.TYPE}`,
+          `${data.MORTGAGE.COLOR},${data.MORTGAGE.STRNO}`,
+          dataSync?.loan?.tonkong ? dataSync?.loan?.tonkong : null,
+          dataSync?.loan?.flag === 1
+            ? dataSync?.loan?.kangdok + dataSync?.loan?.dok
+            : dataSync?.loan?.kangdok,
         ]);
       });
 
@@ -487,29 +488,52 @@ const Main = () => {
         </>
       ),
     },
-
-    // {
-    //   title: "การจัดการ1",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       <Popconfirm
-    //         title="ลบสัญญา"
-    //         description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
-    //         onConfirm={() => {
-    //           confirm(record);
-    //         }}
-    //         onCancel={cancel}
-    //         okText="ยืนยัน"
-    //         cancelText="ยกเลิก"
-    //       >
-    //         <Button style={{ fontSize: "16px", color: "red" }}>
-    //           <DeleteOutlined />
-    //         </Button>
-    //       </Popconfirm>
-    //     </>
-    //   ),
-    // },
+    {
+      title: " ต้นคงเหลือ",
+      dataIndex: "EXP_PRD",
+      key: "EXP_PRD",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {dataSync?.loan?.tonkong
+            ? currencyFormatPoint(dataSync?.loan?.tonkong)
+            : null}
+        </>
+      ),
+    },
+    {
+      title: "ค้างดอกเบี้ย",
+      align: "center",
+      render: (text, record) => (
+        <>
+          {dataSync?.loan?.flag === 1
+            ? currencyFormatPoint(dataSync?.loan?.kangdok + dataSync?.loan?.dok)
+            : dataSync?.loan?.kangdok}
+        </>
+      ),
+    },
+    {
+      title: "การจัดการ",
+      align: "center",
+      render: (text, record) => (
+        <>
+          <Popconfirm
+            title="ลบสัญญา"
+            description="คุณต้องการลบสัญญานี้ใช่หรือไม่ ?"
+            onConfirm={() => {
+              confirm(record);
+            }}
+            onCancel={cancel}
+            okText="ยืนยัน"
+            cancelText="ยกเลิก"
+          >
+            <Button style={{ fontSize: "16px", color: "red" }}>
+              <DeleteOutlined />
+            </Button>
+          </Popconfirm>
+        </>
+      ),
+    },
   ];
 
   return (
@@ -568,16 +592,16 @@ const Main = () => {
                 marginTop: "10px",
               }}
             >
-              <Space direction="vertical" size={12}>
+              <Space direction="horizontal" size={12}>
                 <Tooltip
                   placement="bottom"
-                  title="บันทึกข้อมูล excel"
+                  title="ออกบอกเลิกสัญญา"
                   arrow={mergedArrow}
                 >
                   <PrinterOutlined
                     style={{
                       fontSize: "40px",
-                      color: "green",
+                      color: "blue",
                       cursor: "pointer",
                     }}
                     key="print"
@@ -591,6 +615,21 @@ const Main = () => {
                     }}
                   />
                 </Tooltip>
+                <Tooltip
+                  placement="bottom"
+                  title="บันทึกข้อมูล excel"
+                  arrow={mergedArrow}
+                >
+                  <FileExcelOutlined
+                    style={{
+                      fontSize: "40px",
+                      color: "green",
+                      cursor: "pointer",
+                    }}
+                    key="print"
+                    onClick={onClickDownload}
+                  />
+                </Tooltip>
               </Space>
             </Col>
             <Col span={"24"}>
@@ -599,7 +638,7 @@ const Main = () => {
                 size="small"
                 columns={columns}
                 dataSource={arrayTable}
-                // rowSelection={rowSelection}
+                rowSelection={rowSelection}
                 scroll={{ x: 850 }}
                 footer={() => (
                   <p>
@@ -628,6 +667,7 @@ const Main = () => {
           data={arrayTable}
           queryContno={queryContno}
           dateQuery={dateQuery}
+          isDataSynce={setDataSynce}
         />
       ) : null}
     </>

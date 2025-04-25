@@ -97,7 +97,10 @@ const Main = () => {
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
 
           // ถ้า branch มีค่า → เช็กตามปกติ
-          return !optionsLocat.some((opt) => branch.includes(opt.label));
+          return (
+            !optionsLocat.some((opt) => branch.includes(opt.label)) ||
+            item.CONTNO.includes("UD")
+          );
         });
       } else {
         filteredData = newData.filter((item) => {

@@ -90,7 +90,7 @@ export default function Router() {
       {/* <SessionContextProvider supabaseClient={supabase}> */}
       <AnimatePresence mode="wait">
         <Routes>
-          <Route path="/" element={<DashboardRoute />} />
+          <Route path="/*" element={<DashboardRoute />} />
           <Route path="/final-case" element={<FinalCase />} />
           <Route path="/debt-payment/*" element={<DebtPaymentRoute />} />
           <Route path="/disbursement/" element={<DisbursementRoute />} />
