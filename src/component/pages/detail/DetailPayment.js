@@ -286,7 +286,7 @@ const Main = () => {
       `ค้างดอกเบี้ย: ${
         arrData?.loan?.flag === 1
           ? currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.dok)
-          : arrData?.loan?.kangdok
+          : currencyFormatPoint(arrData?.loan?.kangdok)
       } บาท`,
       120,
       yLine + 25

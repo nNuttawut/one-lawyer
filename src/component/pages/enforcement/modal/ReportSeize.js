@@ -8,7 +8,6 @@ import {
   message,
   Spin,
   Checkbox,
-  Upload,
   Popconfirm,
   List,
   Image,
@@ -18,9 +17,6 @@ import {
   GET_LOAN_BY_CONTNO,
   GET_WORK_LOG_DETAIL_BY_ID,
   HEADERS_EXPORT,
-  POST_AGREEMENTS,
-  POST_JUDGE,
-  POST_JUDGE_DEFENDANTS,
   POST_STATUS,
   PUT_INVESTIGATE_ITEM_BY_ID,
   PUT_STATUS,
@@ -284,6 +280,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       legal_execution_office: values.addrEnforce,
       seize_date: dayjs(values.investigateAssetsDate).format("YYYY-MM-DD"),
       seize_status: 1,
+      lawyer_seize_id: USER_ID,
     };
     console.log("dataDefualt", dataDefualt);
 

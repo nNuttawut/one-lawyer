@@ -78,6 +78,8 @@ import CourtClearAdvanePayment from "../pages/court/CourtClearAdvanePayment";
 import ImportDecideData from "../pages/enforcement/ImportDecideData";
 import MainClosingBalance from "../pages/closingBalance/MainClosingBalance";
 import MainAverage from "../pages/saleAnnouncement/MainAverage";
+import EnforcementAdvanePayment from "../pages/enforcement/EnforcementAdvanePayment";
+import EnforcementClearAdvanePayment from "../pages/enforcement/EnforcementClearAdvanePayment";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -229,6 +231,16 @@ export default function Router() {
             path="enforcement/send-to-enforcement/*"
             element={<EnforcementRoute />}
           />
+
+          <Route
+            path="enforcement/advane-payment/*"
+            element={<EnforcementAdvanePayment />}
+          />
+          <Route
+            path="enforcement/clear-advane-payment/*"
+            element={<EnforcementClearAdvanePayment />}
+          />
+
           <Route
             path="enforcement/import-lawsuit-data/*"
             element={<ImportDecideData />}
