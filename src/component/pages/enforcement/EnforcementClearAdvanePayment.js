@@ -26,6 +26,7 @@ import CurrencyFormat from "../../../hook/CurrencyFormat";
 // import DetailWithdraw from "./modal/DetailWithdraw";
 import ClearAdvanePaymentEnforce from "./modal/ClearAdvanePaymentEnforce";
 import {
+  ENFORCEMENT,
   JUDGEMENT,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
@@ -102,9 +103,9 @@ const Main = () => {
         const isPending = item.withdraw_process_id <= 4;
         const isOwner = item.USER_ID === userId;
         const isAdmin = ROLE_ID === "1";
-        const isJudgement = parseInt(item.reference_no[0]) === JUDGEMENT;
+        const isEnforcement = parseInt(item.reference_no[0]) === ENFORCEMENT;
 
-        return isPending && (isOwner || isAdmin) && isJudgement;
+        return isPending && (isOwner || isAdmin) && isEnforcement;
       });
 
       let filteredData;

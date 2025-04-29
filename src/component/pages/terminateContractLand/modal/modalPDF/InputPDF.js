@@ -16,53 +16,49 @@ const InputPDF = ({ dataCus, arrData, dateQuery }) => {
   const userCompany = localStorage.getItem("COMPANY_ID");
 
   useEffect(() => {
-  
-      setLoadingData(true);
-    
-    }, [setLoadingData]);
+    setLoadingData(true);
+  }, [setLoadingData]);
 
-    useEffect(() => {
- 
-        if (lawyersList) {
-          setOptionLawyer();
-        }
-      }, [lawyersList]);
-  
+  useEffect(() => {
+    if (lawyersList) {
+      setOptionLawyer();
+    }
+  }, [lawyersList]);
 
-    const setOptionLawyer = () => {
-      let companySelect = null;
-  
-      if (userCompany === "3") {
-        console.log('if');
-        companySelect = lawyersList.filter(
-          (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
-        );
-      } else {
-        console.log('else');
-        
-        companySelect = lawyersList.filter(
-          (item) =>
-            (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
-        );
-      }
+  const setOptionLawyer = () => {
+    let companySelect = null;
 
-      console.log('lawyersList',lawyersList);
-      
-      const options = companySelect.map((item) => ({
-        value: item.id,
-        label: item.NNAME,
-        fNmae: item.FNAME,
-        lName: item.LNAME,
-        telp: item.telp
-      }));
-  
-      // options.unshift({
-      //   value: "all", // ค่าที่แทน "ทั้งหมด"
-      //   label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
-      // });
-  
-      setLawyersOption(options);
-    };
+    if (userCompany === "3") {
+      console.log("if");
+      companySelect = lawyersList.filter(
+        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+      );
+    } else {
+      console.log("else");
+
+      companySelect = lawyersList.filter(
+        (item) =>
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+      );
+    }
+
+    console.log("lawyersList", lawyersList);
+
+    const options = companySelect.map((item) => ({
+      value: item.id,
+      label: item.NNAME,
+      fNmae: item.FNAME,
+      lName: item.LNAME,
+      telp: item.telp,
+    }));
+
+    // options.unshift({
+    //   value: "all", // ค่าที่แทน "ทั้งหมด"
+    //   label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
+    // });
+
+    setLawyersOption(options);
+  };
 
   const generatePDF = useReactToPrint({
     content: () => conponentPDF.current,
@@ -78,31 +74,32 @@ const InputPDF = ({ dataCus, arrData, dateQuery }) => {
     //console.log("Success:", values);
     const selectedLawyer = lawyersOption.find(
       (item) => item.value === values.selectNameLawyer
-
     );
     //console.log('lawyersOption',lawyersOption);
     //console.log('selectedLawyer',selectedLawyer);
-      setnameLawyerA1(selectedLawyer);
-      setTriggerPDF(true); // Trigger PDF generation
+    setnameLawyerA1(selectedLawyer);
+    setTriggerPDF(true); // Trigger PDF generation
   };
 
-  console.log('setnameLawyerA1',nameLawyerA1);
-  
+  console.log("setnameLawyerA1", nameLawyerA1);
+
   //นับจำนวนเช็คค่าว่างคนค้ำประกัน
   const resultCusName = dataCus.map((cus, index) => {
     if (cus.cusType === 0) {
       return `${cus.NAME} (ผู้กู้/ผู้จำนอง) `;
-    } else{
-      return `${cus.NAME} (คนค้ำประกัน ${index-1}) `;
+    } else {
+      return `${cus.NAME} (คนค้ำประกัน ${index - 1}) `;
     }
   });
-//.map(item => item.trim()): ตัดช่องว่างซ้าย-ขวา
-//new Set(...): เก็บค่าไม่ซ้ำ
-//[...new Set(...)]: แปลง Set กลับมาเป็น array
+  //.map(item => item.trim()): ตัดช่องว่างซ้าย-ขวา
+  //new Set(...): เก็บค่าไม่ซ้ำ
+  //[...new Set(...)]: แปลง Set กลับมาเป็น array
 
-console.log('resultCusName',resultCusName);
+  console.log("resultCusName", resultCusName);
 
-  const uniqueCusName = [...new Set(resultCusName?.map(item => item?.trim()))];
+  const uniqueCusName = [
+    ...new Set(resultCusName?.map((item) => item?.trim())),
+  ];
 
   useEffect(() => {
     if (triggerPDF) {
@@ -119,6 +116,7 @@ console.log('resultCusName',resultCusName);
         onFinish={onFinish}
         autoComplete="off"
         form={form}
+        initialValues={{ selectNameLawyer: 3 }}
       >
         <Row>
           <Col span={23} style={{ marginLeft: "5px" }}>
@@ -133,6 +131,7 @@ console.log('resultCusName',resultCusName);
                 optionFilterProp="label"
                 options={lawyersOption}
                 style={{ height: "40px" }}
+                defaultValue={3}
               />
             </Form.Item>
           </Col>
@@ -152,7 +151,15 @@ console.log('resultCusName',resultCusName);
         </Row>
       </Form>
       <div className="print-only" ref={conponentPDF}>
-        {arrData ? <PrintPDF dataCus={dataCus} arrData={arrData} nameLawyerA1 = {nameLawyerA1} uniqueCusName = {uniqueCusName} dateQuery = {dateQuery} /> : null}
+        {arrData ? (
+          <PrintPDF
+            dataCus={dataCus}
+            arrData={arrData}
+            nameLawyerA1={nameLawyerA1}
+            uniqueCusName={uniqueCusName}
+            dateQuery={dateQuery}
+          />
+        ) : null}
       </div>
     </>
   );

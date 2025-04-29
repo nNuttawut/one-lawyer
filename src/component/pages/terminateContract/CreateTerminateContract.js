@@ -44,11 +44,14 @@ const Main = () => {
   const [selectedGCode, setSelectedGCode] = useState([]);
   const [datePicker1, setDatePicker1] = useState();
   const [datePicker2, setDatePicker2] = useState();
-  const [selectedContract, setSelectedContract] = useState("vsfhp");
+  const [selectedContract, setSelectedContract] = useState(
+    userCompany === "3" ? "rpsl" : "vsfhp"
+  );
   const [arrow, setArrow] = useState("Show");
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const { RangePicker } = DatePicker;
+  const [optionsDataType, setOptionsDataType] = useState();
   let mockFCode;
 
   const optionsForPay = [
@@ -57,25 +60,21 @@ const Main = () => {
     { value: "129", label: "ค่าบอกเลิกสัญญา(No ems)(129)", disabled: true },
   ];
 
-  const optionsContract = [
-    { value: "vsfhp", label: "สัญญา 2" },
-    { value: "psfhp", label: "สัญญา 3" },
-    { value: "rpsl", label: "สัญญา 3(ใหม่)" },
-    { value: "sfhp", label: "สัญญา 8" },
-  ];
+  useEffect(() => {
+    let optionsContract = [];
+    if (userCompany === "3") {
+      optionsContract = [{ value: "rpsl", label: "ksm" }];
+    } else {
+      optionsContract = [
+        { value: "vsfhp", label: "สัญญา 2" },
+        { value: "psfhp", label: "สัญญา 3" },
+        { value: "rpsl", label: "สัญญา 3(ใหม่)" },
+        { value: "sfhp", label: "สัญญา 8" },
+      ];
+    }
 
-  const optionsCheckData = [
-    { value: "P21", label: "P21" },
-    { value: "P22", label: "P22" },
-    { value: "P23", label: "P23" },
-    { value: "P31", label: "P31" },
-    { value: "P32", label: "P32" },
-    { value: "P33", label: "P33" },
-    { value: "P41", label: "P41" },
-    { value: "P11", label: "P11" },
-    { value: "P12", label: "P12" },
-    { value: "P13", label: "P13" },
-  ];
+    setOptionsDataType(optionsContract);
+  }, []);
 
   useEffect(() => {
     let optionsGCodeData = [];
@@ -581,7 +580,7 @@ const Main = () => {
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
-          data.DATA_TYPE,
+          userCompany === "3" ? "ksm" : data.DATA_TYPE,
           parseInt(data.FORCODE),
           data.GCODE,
           dayjs(data.DOCDT).format("YYYY-MM-DD"), // วันที่ส่ง
@@ -610,7 +609,7 @@ const Main = () => {
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-    let contract = optionsContract.find(
+    let contract = optionsDataType.find(
       (item) => item.value === selectedContract
     );
 
@@ -733,7 +732,7 @@ const Main = () => {
                 }}
                 onChange={handleChangeContract}
                 popupMatchSelectWidth={false}
-                options={optionsContract}
+                options={optionsDataType}
                 value={selectedContract}
                 size="large"
               />

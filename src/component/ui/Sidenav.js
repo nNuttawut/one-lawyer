@@ -426,20 +426,20 @@ function Sidenav({ color, onClick }) {
               path: "investigate-assets/assets-found",
               label: "3. ทรัพย์สินที่พบ",
             },
-            // {
-            //   key: "9.4",
-            //   icon: <CaretRightOutlined />,
-            //   pageName: "assets-found",
-            //   path: "investigate-assets/advane-payment-assets-found",
-            //   label: "4. เบิกทดรองสืบทรัพย์",
-            // },
-            // {
-            //   key: "9.5",
-            //   icon: <CaretRightOutlined />,
-            //   pageName: "assets-found",
-            //   path: "investigate-assets/clear-advane-payment-assets-found",
-            //   label: "5. เคลียร์ทดรองสืบทรัพย์",
-            // },
+            {
+              key: "9.4",
+              icon: <CaretRightOutlined />,
+              pageName: "assets-found",
+              path: "investigate-assets/advane-payment-assets-found",
+              label: "4. เบิกทดรองสืบทรัพย์",
+            },
+            {
+              key: "9.5",
+              icon: <CaretRightOutlined />,
+              pageName: "assets-found",
+              path: "investigate-assets/clear-advane-payment-assets-found",
+              label: "5. เคลียร์ทดรองสืบทรัพย์",
+            },
           ],
         }
       : null,
@@ -451,7 +451,7 @@ function Sidenav({ color, onClick }) {
     ROLE_ID === "9"
       ? {
           key: "10",
-          pageName: "send-to-enforcement",
+          pageName: "enforcement",
           label: "enforcement",
           path: "/enforcement",
           icon: <FontAwesomeIcon icon={faGavel} />,
@@ -460,7 +460,7 @@ function Sidenav({ color, onClick }) {
             {
               key: "10.1",
               icon: <CaretRightOutlined />,
-              pageName: "send-to-enforcement",
+              pageName: "create-enforcement",
               path: "enforcement/send-to-enforcement",
               label: "1. สร้างรายงานการยึด",
             },
@@ -474,12 +474,26 @@ function Sidenav({ color, onClick }) {
             {
               key: "10.3",
               icon: <CaretRightOutlined />,
+              pageName: "enforcement-advane-payment",
+              path: "enforcement/advane-payment",
+              label: "2. เบิกเงินทดรอง",
+            },
+            {
+              key: "10.4",
+              icon: <CaretRightOutlined />,
+              pageName: "enforcement-clear-advane-payment",
+              path: "enforcement/clear-advane-payment",
+              label: "3. เคลียร์เงินทดรอง",
+            },
+            {
+              key: "10.5",
+              icon: <CaretRightOutlined />,
               pageName: "import-lawsuit-data",
               path: "enforcement/import-lawsuit-data",
               label: "นำเข้าคำพิพากษา",
             },
             {
-              key: "10.4",
+              key: "10.6",
               icon: <CaretRightOutlined />,
               pageName: "import-data",
               path: "manage-data/import-data",

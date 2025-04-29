@@ -116,12 +116,11 @@ const Main = () => {
   const filterData = (data) => {
     console.log("data", data);
 
+    console.log("userId", userId);
+
     if (Array.isArray(data)) {
       const preData = data.filter(
-        (item) =>
-          item.trial_money_cleared_status &&
-          (!item.fee || !item.copying_fee) &&
-          item.lawyer_name === userName
+        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
       );
       let filteredData;
 
@@ -304,11 +303,11 @@ const Main = () => {
 
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.judge_date) {
+    if (!record.seize_date) {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.judge_date).startOf("day");
+    const recordDate = dayjs(record.seize_date).startOf("day");
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -330,7 +329,7 @@ const Main = () => {
 
     color = "blue";
 
-    const formattedDate = record.judge_date
+    const formattedDate = record.seize_date
       ? convertDateThai(recordDate)
       : null;
     return (
@@ -390,28 +389,33 @@ const Main = () => {
     {
       title: "ชื่อ-นามสกุล",
       align: "center",
-      render: (text, record) => (
+      render: (text, record) => <>{record.possessor}</>,
+    },
+    {
+      title: "รายละเอียด",
+      align: "center",
+      render: (record) => (
         <>
-          {record.customer_title}
-          {record.customer_name}{" "}
-          {record.customer_lastname ? record.customer_lastname : ""}
+          <p>เลขโฉนด {record.deed_number}</p>
+          <p>{record.dist_desc}</p>
+          <p>จังหวัด {record.prov_desc}</p>
         </>
       ),
     },
     {
-      title: "ประเภทสัญญา",
+      title: "บังคับคดี",
       align: "center",
-      render: (record) => <>{renderLoanType(record.LOAN_TYPE_ID)}</>,
+      render: (record) => <p> {record.legal_execution_office}</p>,
     },
     {
-      title: "วันที่พิพากษา",
+      title: "วันที่ยึด",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
     },
     {
-      title: "ทนาย",
+      title: "หมายเหตุ",
       align: "center",
-      render: (record) => <>{record.lawyer_nickname}</>,
+      render: (record) => <>{record.mark}</>,
     },
   ];
 

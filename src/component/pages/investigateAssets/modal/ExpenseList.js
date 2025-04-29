@@ -14,7 +14,7 @@ import {
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import ExpenseType from "../../../../hook/ExpenseType";
 
-const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
+const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
   const [form] = Form.useForm();
   const [
     currencyFormat,
@@ -31,13 +31,14 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   const USER_ID = localStorage.getItem("USER_ID");
   const [labelSelect, setLabelSelect] = useState();
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [dataExpenseList, setDataExpenseList] = useState();
+  const [dataExpenseList, setDataExpenseList] = useState({
+    setPreExpense: [],
+  });
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
-      setDataExpenseList(editData);
-      console.log(editData);
+      setDataExpenseList(dataDefault);
       console.log("loadData---->", dataDefault);
       setLoadingExpenseType(true);
     }
@@ -53,11 +54,13 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
     const options = expenseList
       .filter(
         (item) =>
-          item.id === 13 ||
-          item.id === 14 ||
-          item.id === 15 ||
-          item.id === 16 ||
-          item.id === 17
+          item.id === 7 ||
+          item.id === 8 ||
+          item.id === 9 ||
+          item.id === 10 ||
+          item.id === 11 ||
+          item.id === 12 ||
+          item.id === 19
       )
       .map((item) => ({
         value: item.id,
@@ -88,7 +91,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const handleOk = () => {
-    if (dataExpenseList?.length > 0) {
+    if (dataExpenseList?.setPreExpense?.length > 0) {
       console.log("Clicked cancel button", dataExpenseList);
       handleEdit(dataExpenseList);
       close(false);
@@ -107,9 +110,9 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const handleDeleteItem = (index) => {
-    const updatedList = [...dataExpenseList];
+    const updatedList = [...dataExpenseList.setPreExpense];
     updatedList.splice(index, 1);
-    setDataExpenseList({ ...dataExpenseList, updatedList });
+    setDataExpenseList({ ...dataExpenseList, setPreExpense: updatedList });
     if (index === currentEditIndex) {
       form.resetFields();
       setCurrentEditIndex(null);
@@ -117,37 +120,56 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const onFinish = (values) => {
+    console.log("values", values);
     if (!values.amount || !values.expenseType) {
-      message.error("กรุณาเลือกรายการและระบุจำนวนมากกว่า 0");
-      return;
-    }
+      message.error("กรุณาเลือกรายการและระบุจำนวนมากกว่า 0 ");
+    } else {
+      const newItem = {
+        LAWSUIT_ID: dataDefault.LAWSUIT_ID,
+        expense_type_id: values.expenseType,
+        withdraw: values.amount,
+        label: labelSelect?.label || "ลบรายการ",
+      };
 
-    const newItem = {
-      LAWSUIT_ID: dataDefault[0]?.LAWSUIT_ID,
-      expense_type_id: values.expenseType,
-      withdraw: values.amount,
-      label: labelSelect?.label || "ลบรายการ",
-    };
-
-    setDataExpenseList((prev = []) => {
-      // prev รับประกันเป็น array จึง iterable ได้
-      const updated = [...prev];
+      const updatedList = [...(dataExpenseList.setPreExpense || [])];
 
       if (currentEditIndex !== null) {
-        updated[currentEditIndex] = newItem;
+        updatedList[currentEditIndex] = newItem;
       } else {
-        if (updated.some((it) => it.expense_type_id === values.expenseType)) {
-          message.warning("มีรายการนี้อยู่แล้ว");
-          return prev; // ส่ง prev คืน ถ้าเจอซ้ำ
+        const isDuplicate = updatedList.some(
+          (item) => item.expense_type_id === values.expenseType
+        );
+        const isDuplicateFee = dataDefault.fee ? true : false;
+        const isDuplicateCopyingFee = dataDefault.copying_fee ? true : false;
+
+        console.log("isDuplicateFee", isDuplicateFee);
+        console.log("isDuplicateCopyingFee", isDuplicateCopyingFee);
+
+        if (isDuplicateFee && values.expenseType === 5) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("1");
+
+          return;
         }
-        updated.push(newItem);
+
+        if (isDuplicateCopyingFee && values.expenseType === 6) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("2");
+          return;
+        }
+
+        if (isDuplicate) {
+          message.warning("มีรายการนี้อยู่แล้ว");
+          return;
+        }
+
+        updatedList.push(newItem);
       }
 
-      return updated; // ส่งกลับเป็น array เสมอ
-    });
-
-    setCurrentEditIndex(null);
-    form.resetFields();
+      setDataExpenseList({ ...dataExpenseList, setPreExpense: updatedList });
+      setCurrentEditIndex(null);
+      form.resetFields();
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -175,14 +197,12 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
 
       content: (
         <div style={{ textAlign: "left", lineHeight: 1.8 }}>
-          <p>1. ค่าธรรมเนียมตั้งเรื่องอายัด 1,000 บาท/สำนวนคดี</p>
-          <p>2. ค่าธรรมเนียมตั้งเรื่องบังคับคดีแทน 1,000 บาท/สำนวนคดี</p>
-          <p>
-            3. ค่าธรรมเนียมตั้งเรื่องยึดอสังหาริมทรัพย์ ณ ที่ทำการ 2,500
-            บาท/สำนวนคดี
-          </p>
-          <p>4. ค่าธรรมเนียมตั้งเรื่องยึดทรัพย์สินอื่น ๆ 1,000 บาท/สำนวนคดี</p>
-          <p>5. ค่าธรรมเนียมตั้งเรื่องขับไล่ 1,000 บาท/สำนวนคดี</p>
+          <p>1. 1 ค่าคำขอ(ทด.9) 5 บาท/ต่อคำขอ</p>
+          <p>2. ค่ามอบอำนาจ 20 บาท</p>
+          <p>3. ค่ารับรองเอกสารที่คัด 10 บาท/ต่อฉบับ</p>
+          <p>4. ค่าพยาน 10 บาท/ต่อฉบับ</p>
+          <p>5. ค่าตรวจสอบหลักทรัพย์ 100 บาท/ต่อราย</p>
+          <p>6. ค่าธรรมเนียม(โฉนดที่ดินปริ้นจากระบบ) 50 บาท/หน้า</p>
         </div>
       ),
       centered: true,
@@ -194,7 +214,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const dataExpense = () => {
-    const expensePreview = dataExpenseList || [];
+    const expensePreview = dataExpenseList?.setPreExpense || [];
 
     return (
       <Form
@@ -209,8 +229,8 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
         <Divider>รายการที่ขอเบิก 🧾</Divider>
 
         {/* แสดงรายการที่เคยเพิ่มไว้ */}
-        {expensePreview?.length > 0 &&
-          expensePreview?.map((item, index) => (
+        {expensePreview.length > 0 &&
+          expensePreview.map((item, index) => (
             <div
               key={index}
               style={{

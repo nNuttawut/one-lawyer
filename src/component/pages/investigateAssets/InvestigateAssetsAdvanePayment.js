@@ -20,6 +20,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
+  GET_INVESTIGATE_LIST,
   GET_INVESTIGATE_LOANS_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -76,44 +77,131 @@ const Main = () => {
   //   }
   // };
 
-  const loadData = async (data) => {
+  // const loadData = async (data) => {
+  //   setLoading(true);
+  //   console.log(data);
+  //   try {
+  //     const response = await axios.get(baseUrl + GET_INVESTIGATE_LOANS_LIST, {
+  //       headers: HEADERS_EXPORT,
+  //     });
+  //     if (response.data) {
+  //       let i = 1;
+  //       if (response.data) {
+  //         const newData = response.data.map((item) => ({
+  //           ...item,
+  //           key: i++,
+  //         }));
+  //         filterData(newData);
+  //         console.log(newData);
+  //         setSearchEdit(newData);
+  //         setLoading(false);
+  //       }
+  //     } else {
+  //       setArrayTable([]);
+  //     }
+  //   } catch (error) {
+  //     console.error(
+  //       "Error posting data:",
+  //       error.response ? error.response.data : error.message
+  //     );
+  //     setLoading(false);
+  //     message.error(`ไม่พบข้อมูล: ${error.message}`);
+  //   }
+  // };
+
+  // const filterData = (data) => {
+  //   if (Array.isArray(data)) {
+  //     let filteredData;
+
+  //     if (userCompany === "3") {
+  //       filteredData = data.filter((item) => {
+  //         const branch = item.LOCAT;
+  //         // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+  //         if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+
+  //         // ถ้า branch มีค่า → เช็กตามปกติ
+  //         return (
+  //           !optionsLocat.some((opt) => branch.includes(opt.label)) ||
+  //           item.CONTNO.includes("UD")
+  //         );
+  //       });
+  //     } else {
+  //       filteredData = data.filter((item) => {
+  //         const branch = item.LOCAT;
+  //         if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+
+  //         return optionsLocat.some((opt) => branch.includes(opt.label));
+  //       });
+  //     }
+
+  //     const newData = filteredData.filter((item) => item.investigation_log_id);
+
+  //     let dataUse;
+  //     if (userCompany === 3) {
+  //       dataUse = newData.filter((item) => item.COMPANY_ID === 3);
+  //       setDataArr(dataUse);
+  //     } else {
+  //       let dataFilter = filteredData.filter((item) => item.COMPANY_ID !== 3);
+  //       dataUse = newData.filter((item) => item.COMPANY_ID === 2);
+  //       setDataArr(dataFilter);
+  //     }
+
+  //     setArrayTable(dataUse);
+  //     setTableLength(dataUse.length);
+  //     console.log("newData", dataUse);
+  //     console.log("Length of filtered data:", dataUse.length);
+  //   } else {
+  //     console.error("data is not an array or is undefined");
+  //     setTableLength(0);
+  //   }
+  // };
+
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
+
     try {
-      const response = await axios.get(baseUrl + GET_INVESTIGATE_LOANS_LIST, {
+      const response = await axios.get(baseUrl + GET_INVESTIGATE_LIST, {
         headers: HEADERS_EXPORT,
       });
-      if (response.data) {
-        let i = 1;
-        if (response.data) {
-          const newData = response.data.map((item) => ({
-            ...item,
-            key: i++,
-          }));
-          filterData(newData);
-          console.log(newData);
-          setSearchEdit(newData);
-          setLoading(false);
-        }
+
+      const responseData = response.data;
+
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        const newData = responseData.map((item, index) => ({
+          ...item,
+          key: index + 1,
+        }));
+
+        filterData(newData);
+        setSearchEdit(newData);
       } else {
         setArrayTable([]);
+        message.info("ไม่พบข้อมูล");
       }
     } catch (error) {
       console.error(
-        "Error posting data:",
+        "Error fetching data:",
         error.response ? error.response.data : error.message
       );
-      setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const filterData = (data) => {
+    console.log("data", data);
+
+    console.log("userId", userId);
+
     if (Array.isArray(data)) {
+      const preData = data.filter(
+        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
+      );
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const branch = item.LOCAT;
           // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
@@ -125,7 +213,7 @@ const Main = () => {
           );
         });
       } else {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const branch = item.LOCAT;
           if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
@@ -133,16 +221,13 @@ const Main = () => {
         });
       }
 
-      const newData = filteredData.filter((item) => item.investigation_log_id);
-
       let dataUse;
       if (userCompany === 3) {
-        dataUse = newData.filter((item) => item.COMPANY_ID === 3);
+        dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
-        let dataFilter = filteredData.filter((item) => item.COMPANY_ID !== 3);
-        dataUse = newData.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(dataFilter);
+        dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
+        setDataArr(filteredData);
       }
 
       setArrayTable(dataUse);
@@ -293,11 +378,11 @@ const Main = () => {
 
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.date_of_plaint) {
+    if (!record.investigation_date) {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.date_of_plaint).startOf("day");
+    const recordDate = dayjs(record.investigation_date).startOf("day");
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -335,7 +420,7 @@ const Main = () => {
 
     color = remainingDays > 30 ? "red" : "green";
 
-    const formattedDate = record.date_of_plaint
+    const formattedDate = record.investigation_date
       ? convertDateThai(recordDate)
       : null;
     return (
@@ -387,23 +472,31 @@ const Main = () => {
       ),
     },
     {
-      title: "ศาล",
+      title: "ชื่อ-นามสกุล",
       align: "center",
-      render: (text, record) => (
-        <>{record.provincial_court ? record.provincial_court : null}</>
-      ),
+      render: (text, record) => <>{record.possessor}</>,
     },
     {
-      title: "ประเภทสัญญา",
+      title: "รายละเอียด",
       align: "center",
       render: (record) => (
-        <>{record.LOAN_TYPE_ID === 1 ? "เช่าซื้อ" : "จำนอง"}</>
+        <>
+          <p>เลขโฉนด {record.deed_number}</p>
+          <p>{record.dist_desc}</p>
+          <p>จังหวัด {record.prov_desc}</p>
+        </>
       ),
     },
+
     {
-      title: "วันประทับฟ้อง",
+      title: "วันที่สืบ",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+    },
+    {
+      title: "หมายเหตุ",
+      align: "center",
+      render: (record) => <>{record.mark}</>,
     },
   ];
 

@@ -54,7 +54,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [dataForm, setDataForm] = useState({
     dateCourt: "",
     trackingFee: 0,
-    lossBenefit: null,
+    lossBenefit: 0,
     suspensionAmount: 0,
     memo: "",
     nopay: 0,
@@ -488,14 +488,16 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       let result;
       if (dataDefault?.LOAN_TYPE_ID === 1) {
         balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
-        result =
-          balance +
-          parseInt(lossBenefitValue) +
-          dataForm.trackingFee -
-          dataForm.suspensionAmount;
+        // result =
+        //   balance +
+        //   parseInt(lossBenefitValue) +
+        //   dataForm.trackingFee -
+        //   dataForm.suspensionAmount;
+        result = balance;
       } else {
         balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
-        result = balance + dataForm.trackingFee - dataForm.suspensionAmount;
+        // result = balance + dataForm.trackingFee - dataForm.suspensionAmount;
+        result = balance;
       }
 
       let calFeeCourt;
@@ -511,9 +513,11 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       let calStampDuty;
 
       if (loanType === 1) {
-        calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000;
+        // calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000;
+        calStampDuty = result / 1000;
       } else {
-        calStampDuty = dataLoadLoan?.LOAN?.NCSHPRC / 2000;
+        // calStampDuty = dataLoadLoan?.LOAN?.NCSHPRC / 2000;
+        calStampDuty = result / 2000;
       }
 
       if (calStampDuty > 10000) {
@@ -525,14 +529,16 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("dataForm.trackingFee", dataForm.trackingFee);
       console.log("dataForm.suspensionAmount", dataForm.suspensionAmount);
       console.log("calFeeCourt", calFeeCourt);
-      console.log("calStampDuty", Math.round(calStampDuty));
+      console.log("calStampDuty", Math.ceil(calStampDuty));
+      console.log("calStampDuty----->", calStampDuty);
 
       form.setFieldsValue({
         intigationFounds: result,
-        lossBenefit: lossBenefitValue,
+        // lossBenefit: lossBenefitValue,  เปลี่ยนไปใช้ แบบ 0 ก่อน
+        lossBenefit: 0,
         feeCourt: Math.round(calFeeCourt),
         stampDuty:
-          loanType !== 2 || loanType !== 5 ? Math.round(calStampDuty) : 0,
+          loanType !== 2 || loanType !== 5 ? Math.ceil(calStampDuty) : 0,
       });
 
       setDataForm((prev) => ({
@@ -584,6 +590,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           stampDuty: 0,
           docShipingCost: 0,
           documentCost: 0,
+          lossBenefit: 0,
           company: dataDefault?.COMPANY_ID,
           loanType: loanType,
           interestRate: dataDefault?.LOAN_TYPE_ID === 3 ? 0.24 : 0.15,
@@ -731,11 +738,12 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             onChange={(value) => onChangeSuspensionAmount(value)}
           />
         </Form.Item>
-        <Form.Item label="จ่ายล่าสุด" name="noPay">
-          <p>{convertDateThai(dataLoadLoan?.LOAN?.LPAYD)}</p>
-        </Form.Item>
+
         {dataForm.dateCourt ? (
           <>
+            <Form.Item label="จ่ายล่าสุด" name="noPay">
+              <p>{convertDateThai(dataLoadLoan?.LOAN?.LPAYD)}</p>
+            </Form.Item>
             <Form.Item label="ยอดกู้" name="principle">
               <p>{currencyFormatComma(dataLoadLoan?.LOAN?.NCSHPRC)} บาท</p>
             </Form.Item>
@@ -895,18 +903,18 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 onChange={(value) => documentCost(value)}
               />
             </Form.Item>
+            <Form.Item label="คำนวณค่าธรรมเนียม">
+              <Button
+                style={{ color: "blue" }}
+                htmlType="submit"
+                onClick={() => setButtonCal(true)}
+              >
+                คำนวณ
+              </Button>
+            </Form.Item>
           </>
         ) : null}
 
-        <Form.Item label="คำนวณค่าธรรมเนียม">
-          <Button
-            style={{ color: "blue" }}
-            htmlType="submit"
-            onClick={() => setButtonCal(true)}
-          >
-            คำนวณ
-          </Button>
-        </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

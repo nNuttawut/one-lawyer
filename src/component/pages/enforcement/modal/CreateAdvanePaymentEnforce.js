@@ -33,7 +33,10 @@ import {
 } from "../../../../utils/constant/ExpenseType";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
-import { JUDGEMENT } from "../../../../utils/constant/StatusConstant";
+import {
+  ENFORCEMENT,
+  JUDGEMENT,
+} from "../../../../utils/constant/StatusConstant";
 
 const CreateAdvanePayment = ({
   open,
@@ -147,8 +150,7 @@ const CreateAdvanePayment = ({
   };
 
   const handleEdit = (item, index) => {
-    console.log("item", item, index);
-    setEditPayment(dataPropertyList[index]);
+    setEditPayment(item);
     setIsEditModal(true);
   };
 
@@ -169,7 +171,7 @@ const CreateAdvanePayment = ({
   const onFinish = (values) => {
     console.log("values", values);
     console.log(dataPropertyList);
-    let setPutJudgement = [];
+    let setPutInvestigate = [];
     let setPreExpenseSend = [];
 
     let defindNo;
@@ -189,66 +191,33 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${JUDGEMENT}${defindNo}${USER_ID}-${dayjs().format(
+      reference_no: `${ENFORCEMENT}${defindNo}${USER_ID}-${dayjs().format(
         "YYYYMMDDHHmmss"
       )}`,
     };
 
-    const uniqueJudgementIds = new Set(); // ใช้เก็บ id ที่เจอแล้ว
     try {
-      dataPropertyList?.forEach((judgement) => {
-        // เก็บข้อมูลไว้ก่อน
-        const feeValue = judgement?.setPreExpense?.find(
-          (v) => v.expense_type_id === 5
-        );
-        const copyingFeeValue = judgement?.setPreExpense?.find(
-          (v) => v.expense_type_id === 6
-        );
-
+      dataPropertyList?.forEach((expense) => {
         // ดันข้อมูลรายการย่อยทั้งหมดเข้า setPreExpenseSend
-        judgement?.setPreExpense.forEach((value) => {
+        expense?.setPreExpense.forEach((value) => {
           setPreExpenseSend.push({
             ...initDataExpense,
             ...value,
           });
         });
-
-        // ป้องกันการซ้ำ ด้วย Set
-        if (!uniqueJudgementIds.has(judgement.LAWSUIT_ID)) {
-          // const { setPreExpense, ...cleanJudgement } = judgement; // ลบ setPreExpense ออก
-
-          setPutJudgement.push({
-            ...judgement,
-            fee_payment_datetime: feeValue
-              ? dayjs().format("YYYY-MM-DD")
-              : judgement.fee_payment_datetime,
-            fee_payment_status: feeValue
-              ? STATUS_WITHDRAW_PROCESS
-              : judgement.fee_payment_status,
-
-            // ✅ ใช้ค่าที่แยกไว้
-            fee: feeValue?.withdraw || judgement.fee,
-            copying_fee: copyingFeeValue?.withdraw || judgement.copying_fee,
-
-            copying_fee_datetime: copyingFeeValue
-              ? dayjs().format("YYYY-MM-DD")
-              : judgement.copying_fee_datetime,
-            copying_fee_status: copyingFeeValue
-              ? STATUS_WITHDRAW_PROCESS
-              : judgement.copying_fee_status,
-          });
-
-          uniqueJudgementIds.add(judgement.LAWSUIT_ID);
-        }
+        setPutInvestigate.push({
+          ...expense,
+          seize_status: 3,
+        });
       });
     } catch (error) {
       console.error("เกิดข้อผิดพลาด:", error.message);
       message.error("กรุณาทำรายการเบิกให้ถูกต้อง");
     }
 
-    console.log("setPutJudgement", setPutJudgement);
+    console.log("setPutInvestigate", setPutInvestigate);
     console.log("setDataExpense---->", setPreExpenseSend);
-    sendData(setPutJudgement, setPreExpenseSend);
+    // sendData(setPutJudgement, setPreExpenseSend);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -256,29 +225,31 @@ const CreateAdvanePayment = ({
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
   };
 
-  const onChangeInputInvestigateDate = (date, dateSting) => {
-    console.log(date);
-    console.log(dateSting);
-  };
-
   const onChangeInputMemo = (value) => {
     console.log(value);
   };
 
   const handleUpdateDataEdit = (data) => {
-    console.log("data---->update", data);
-    if (data) {
-      const result = dataPropertyList.map((item) => {
-        if (item.CONTNO === data.CONTNO) {
-          return { ...data };
-        } else {
-          return { ...item };
-        }
-      });
-      console.log(result);
+    if (!data) return;
 
-      setDataPropertyList(result);
-    }
+    setDataExpense((prev) => {
+      // ดูว่าเจอ index ของ item ที่ต้องการจะอัปเดตหรือยัง
+      const idx = prev.findIndex(
+        (item) => item.expense_type_id === data.expense_type_id
+      );
+
+      if (idx > -1) {
+        // ถ้าเจอแล้ว ให้ map ไปอัปเดตตัวนั้น
+        return prev.map((item) =>
+          item.expense_type_id === data.expense_type_id
+            ? { ...item, ...data }
+            : item
+        );
+      } else {
+        // ยังไม่เจอ → push ตัวใหม่เข้าไป
+        return [...prev, data];
+      }
+    });
   };
 
   const renderLoanType = (value) => {
@@ -312,9 +283,11 @@ const CreateAdvanePayment = ({
           {convertDateThai()}
           {/* <DatePicker onChange={onChangeInputInvestigateDate} /> */}
         </Form.Item>
-
+        <Form.Item label="กรมบังคับคดี" name="dateWithdraw">
+          {dataPropertyList[0]?.legal_execution_office}
+        </Form.Item>
         <Form.Item
-          label="สัญญาที่ต้องการเบิก"
+          label="ทรัพย์ที่ขอเบิก"
           name="contnoWithdraw"
           labelCol={{ span: 6 }} // กำหนดความกว้างของ label
           wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
@@ -325,22 +298,6 @@ const CreateAdvanePayment = ({
             renderItem={(item, index) => (
               <List.Item
                 actions={[
-                  !item?.setPreExpense ? (
-                    <Link
-                      key="list-loadmore-edit"
-                      onClick={() => handleEdit(item, index)}
-                    >
-                      เพิ่ม
-                    </Link>
-                  ) : (
-                    <Link
-                      key="list-loadmore-edit"
-                      style={{ color: "orange" }}
-                      onClick={() => handleEdit(item, index)}
-                    >
-                      แก้ไข
-                    </Link>
-                  ),
                   <Link
                     key="list-loadmore-more"
                     style={{ color: "red" }}
@@ -352,16 +309,57 @@ const CreateAdvanePayment = ({
               >
                 <List.Item.Meta
                   title={
-                    <p>
-                      {item.CONTNO} {item.customer_title}
-                      {item.customer_name} {item.customer_lastname}
-                      {"  "}
-                      {renderLoanType(item.LOAN_TYPE_ID)}
-                    </p>
+                    <>
+                      <p>
+                        {item.CONTNO} {item.possessor}
+                        {item.mark}
+                      </p>
+                      <p style={{ color: "orange" }}>
+                        เลขโฉนด {item.deed_number} {item.dist_desc} จังหวัด
+                        {item.prov_desc}
+                      </p>
+                    </>
                   }
+                />
+              </List.Item>
+            )}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="รายการที่ขอเบิก"
+          name="contnoWithdraw"
+          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
+          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
+        >
+          <Button onClick={handleEdit}>เพิ่ม</Button>
+          <List
+            itemLayout="horizontal"
+            dataSource={dataExpense}
+            renderItem={(item, index) => (
+              <List.Item
+                actions={[
+                  <Link
+                    key="list-loadmore-edit"
+                    style={{ color: "orange" }}
+                    onClick={() => handleEdit(item, index)}
+                  >
+                    แก้ไข
+                  </Link>,
+
+                  <Link
+                    key="list-loadmore-more"
+                    style={{ color: "red" }}
+                    onClick={() => handleDelete(index)} // ส่ง index เข้าไปในฟังก์ชัน
+                  >
+                    ลบ
+                  </Link>,
+                ]}
+              >
+                <List.Item.Meta
                   description={
-                    <div>
-                      {item?.setPreExpense?.map((expense, index) => (
+                    <div style={{ color: "blue" }}>
+                      {item?.map((expense, index) => (
                         <div key={index}>
                           - {expense.label} :{" "}
                           {currencyFormatPoint(expense.withdraw)} บาท
@@ -369,10 +367,16 @@ const CreateAdvanePayment = ({
                       ))}
 
                       {/* รวมยอดทั้งหมด */}
-                      <div style={{ marginTop: 8, fontWeight: "bold" }}>
+                      <div
+                        style={{
+                          marginTop: 8,
+                          fontWeight: "bold",
+                          color: "green",
+                        }}
+                      >
                         รวมทั้งหมด :{" "}
                         {currencyFormatPoint(
-                          item?.setPreExpense?.reduce(
+                          item?.reduce(
                             (total, expense) =>
                               total + Number(expense.withdraw || 0),
                             0
@@ -383,11 +387,6 @@ const CreateAdvanePayment = ({
                     </div>
                   }
                 />
-
-                {/* <div>
-                    {" "}
-                    {item?.initDataExpense?.withdraw ? "ก่อนฟ้อง" : null}
-                  </div> */}
               </List.Item>
             )}
           />
@@ -431,8 +430,9 @@ const CreateAdvanePayment = ({
           <ExpenseList
             open={isEditModal}
             close={setIsEditModal}
-            dataDefault={editPayment}
+            dataDefault={dataPropertyList}
             handleEdit={handleUpdateDataEdit}
+            editData={editPayment}
           />
         ) : null}
       </Modal>
