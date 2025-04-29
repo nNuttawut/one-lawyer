@@ -36,8 +36,11 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
-      setDataExpenseList(editData);
-      console.log(editData);
+      if (editData?.length > 1) {
+        setDataExpenseList(editData);
+      }
+
+      console.log("editData", editData);
       console.log("loadData---->", dataDefault);
       setLoadingExpenseType(true);
     }
@@ -89,8 +92,8 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
 
   const handleOk = () => {
     if (dataExpenseList?.length > 0) {
-      console.log("Clicked cancel button", dataExpenseList);
-      handleEdit(dataExpenseList);
+      console.log("Clicked handleOk button", dataExpenseList);
+      dataExpenseList.forEach((item) => handleEdit(item));
       close(false);
       setIsModal(false);
     } else {
@@ -107,9 +110,14 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const handleDeleteItem = (index) => {
+    console.log("index", index);
+
     const updatedList = [...dataExpenseList];
     updatedList.splice(index, 1);
-    setDataExpenseList({ ...dataExpenseList, updatedList });
+
+    console.log("updatedList", updatedList);
+
+    setDataExpenseList(updatedList);
     if (index === currentEditIndex) {
       form.resetFields();
       setCurrentEditIndex(null);
@@ -121,12 +129,19 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
       message.error("กรุณาเลือกรายการและระบุจำนวนมากกว่า 0");
       return;
     }
+    console.log(values);
+
+    console.log(expenseList);
 
     const newItem = {
       LAWSUIT_ID: dataDefault[0]?.LAWSUIT_ID,
       expense_type_id: values.expenseType,
       withdraw: values.amount,
-      label: labelSelect?.label || "ลบรายการ",
+      label:
+        labelSelect?.label ||
+        expenseList.find((item) => item.id === values.expenseType)
+          ?.description ||
+        "โปรดลบและสร้างใหม่",
     };
 
     setDataExpenseList((prev = []) => {
@@ -192,6 +207,8 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
       },
     });
   };
+
+  console.log("dataExpenseList====>", dataExpenseList);
 
   const dataExpense = () => {
     const expensePreview = dataExpenseList || [];

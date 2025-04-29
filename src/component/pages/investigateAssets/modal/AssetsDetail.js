@@ -91,7 +91,7 @@ const AssetsDetail = ({
   const optionsRalation = [
     { label: "เป็นสามีภรรยา", value: "เป็นสามีภรรยา****" },
     { label: "ไม่เป็นสามีภรรยา", value: "ไม่เป็นสามีภรรยา****" },
-    { label: "เป็นลูก", value: "เป็นลูก****" },
+    { label: "เป็นบุตร", value: "เป็นบุตร****" },
   ];
 
   const optionsInvestigateTime = [
@@ -197,16 +197,16 @@ const AssetsDetail = ({
   const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
-    if (COMPANY === 1) {
+    if (COMPANY === 3) {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.COMPANY_ID === 3 &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          item.COMPANY_ID === 3 &&
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }

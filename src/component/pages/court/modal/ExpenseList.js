@@ -121,7 +121,11 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
         LAWSUIT_ID: dataDefault.LAWSUIT_ID,
         expense_type_id: values.expenseType,
         withdraw: values.amount,
-        label: labelSelect?.label || "ลบรายการ",
+        label:
+          labelSelect?.label ||
+          expenseList.find((item) => item.id === values.expenseType)
+            ?.description ||
+          "โปรดลบและสร้างใหม่",
       };
 
       const updatedList = [...(dataExpenseList.setPreExpense || [])];
