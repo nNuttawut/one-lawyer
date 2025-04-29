@@ -334,6 +334,7 @@ const Main = () => {
       { value: "psfhp", label: "สัญญา 3" },
       { value: "rpsl", label: "สัญญา 3(ใหม่)" },
       { value: "sfhp", label: "สัญญา 8" },
+      { value: "ksm", label: "ksm" },
     ];
 
     if (!record) {
