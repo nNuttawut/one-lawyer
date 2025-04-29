@@ -7,11 +7,14 @@ import { Row, Col } from "antd";
 import "./css/mainPage.css";
 import SubDateThai from "./SubDateThai";
 import THBText from "thai-baht-text";
+import imgJumbo from "../../../../../assets/images/license/lawyerJumbo.png";
+import imgTon from "../../../../../assets/images/license/lawyerTon.png";
+import imgA4 from "./img/a4.png";
 
 function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName, dateQuery }) {
   console.log("PrintPDF/dataCus", dataCus);
   //console.log("PrintPDF/arrData", arrData);
-  //console.log("PrintPDF/nameLawyerA1", nameLawyerA1);
+  console.log("PrintPDF/nameLawyerA1", nameLawyerA1);
   //console.log("PrintPDF/uniqueCusName", uniqueCusName);
   //console.log("PrintPDF/dateQuery", dateQuery);
 
@@ -39,8 +42,15 @@ function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName, dateQuery }) 
   const dataCusCount = dataCus[0]?.NAME ? convertToThaiNumerals(dataCus?.length) : ''; 
   //รวมยอดเงิน
   const sumAAA = arrData?.tonkong + arrData?.dok;
- 
 
+  let imgCheckName = null;
+ if(nameLawyerA1?.label === "ทนายจัมโบ้"){
+  imgCheckName = imgJumbo;
+ }else if(nameLawyerA1?.label === "ทนายต้น"){
+  imgCheckName = imgTon;
+ }else{
+  imgCheckName = imgA4;
+ }
 
   return (
     <div>
@@ -116,18 +126,43 @@ function PrintPDF({ dataCus, arrData, nameLawyerA1, uniqueCusName, dateQuery }) 
 
             <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter">ขอแสดงความนับถือ</Col>
+
             <Col span={6} className="colCenter"></Col>
+            <Col span={18} className="colCenter"><img src={imgCheckName} width="100" alt="imageA4" /></Col>
+            {/* <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>
             <Col span={6} className="colCenter"></Col>
-            <Col span={18} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>
-            <Col span={6} className="colCenter"></Col>
+            <Col span={18} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>*/}
+            <Col span={6} className="colCenter"></Col> 
             <Col span={18} className="colCenter">({nameLawyerA1?.fNmae} {nameLawyerA1?.lName})</Col>
             <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter">ทนายความผู้รับมอบอำนาจ</Col>
             <Col span={6} className="colCenter"></Col>
             <Col span={18} className="colCenter">{nameLawyerA1?.telp}</Col>
           </Row>
-      
+      </div>
+      ))
+      : []}
+
+      {dataCus && dataCus.length > 0
+        ? dataCus.map((dataCus, index) => (
+        <div key={index}>
+            <Row>
+            <Col span={24} className="colCenter" style={{visibility: 'hidden'}}>a1</Col>
+            <Col span={2} className="colCenter"></Col>
+            <Col span={22} className="colLeft">{dataCus?.NAME} {dataCus?.cusType === 0 ? '(ผู้กู้/ผู้จำนอง)' : '(คนค้ำประกัน)'} ({dataCus?.CONTNO}) </Col>
+           
+            <Col span={2} className="colCenter"></Col>
+            <Col span={22} className="colLeft">เลขที่ {dataCus?.ADDRESS.ADDR1}&nbsp;&nbsp; 
+            {dataCus?.ADDRESS.PROVDES === 'กรุงเทพมหานคร' ? 'แขวง':'ตำบล'}{dataCus?.ADDRESS.TUMB}</Col>
+
+            <Col span={2} className="colCenter"></Col>
+            <Col span={22} className="colLeft">{dataCus?.ADDRESS.PROVDES === 'กรุงเทพมหานคร' ? 'เขต':'อำเภอ'}{dataCus[0]?.ADDRESS.AUMPDES}&nbsp;&nbsp; 
+            จังหวัด{dataCus?.ADDRESS.PROVDES}</Col>
+            
+            <Col span={2} className="colCenter"></Col>
+            <Col span={22} className="colLeft">{dataCus?.ADDRESS.ZIP}</Col>
+          </Row>
       </div>
       ))
       : []}
