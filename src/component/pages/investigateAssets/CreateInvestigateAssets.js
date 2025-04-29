@@ -111,9 +111,7 @@ const Main = () => {
         });
       }
 
-      const newData = filteredData.filter(
-        (item) => item.investigation_status === null
-      );
+      const newData = filteredData.filter((item) => !item.investigation_status);
 
       setArrayTable(newData);
       setDataArr(filteredData);

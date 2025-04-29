@@ -120,7 +120,9 @@ const Main = () => {
 
     if (Array.isArray(data)) {
       const preData = data.filter(
-        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
+        (item) =>
+          (item.seize_status === 1 || !item.sequestrate_status) &&
+          item.lawyer_seize_id === userId
       );
       let filteredData;
 

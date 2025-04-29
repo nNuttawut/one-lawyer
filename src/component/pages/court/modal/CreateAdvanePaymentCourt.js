@@ -362,14 +362,20 @@ const CreateAdvanePayment = ({
                   description={
                     <div>
                       {item?.setPreExpense?.map((expense, index) => (
-                        <div key={index}>
+                        <div key={index} style={{ color: "blue" }}>
                           - {expense.label} :{" "}
                           {currencyFormatPoint(expense.withdraw)} บาท
                         </div>
                       ))}
 
                       {/* รวมยอดทั้งหมด */}
-                      <div style={{ marginTop: 8, fontWeight: "bold" }}>
+                      <div
+                        style={{
+                          marginTop: 8,
+                          fontWeight: "bold",
+                          color: "green",
+                        }}
+                      >
                         รวมทั้งหมด :{" "}
                         {currencyFormatPoint(
                           item?.setPreExpense?.reduce(

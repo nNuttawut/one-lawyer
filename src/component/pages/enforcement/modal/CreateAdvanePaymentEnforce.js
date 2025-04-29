@@ -150,7 +150,7 @@ const CreateAdvanePayment = ({
   };
 
   const handleEdit = (item, index) => {
-    setEditPayment(item);
+    setEditPayment(dataExpense);
     setIsEditModal(true);
   };
 
@@ -164,6 +164,18 @@ const CreateAdvanePayment = ({
         setDataPropertyList((prevData) =>
           prevData.filter((_, i) => i !== index)
         );
+      },
+    });
+  };
+
+  const handleDeleteExpense = (index) => {
+    Modal.confirm({
+      title: "ต้องการลบรายการเบิกนี้ใช่หรือไม่​?",
+      okText: "ยืนยัน",
+      cancelText: "ปิด",
+      onOk: () => {
+        console.log("delete--->", index);
+        setDataExpense((prevData) => prevData.filter((_, i) => i !== index));
       },
     });
   };
@@ -259,6 +271,8 @@ const CreateAdvanePayment = ({
     );
   };
 
+  console.log("dataExpense", dataExpense);
+
   console.log("prop--->", dataPropertyList);
   console.log("company,", company);
 
@@ -281,16 +295,15 @@ const CreateAdvanePayment = ({
       >
         <Form.Item label="วันที่ทำรายการ" name="dateWithdraw">
           {convertDateThai()}
-          {/* <DatePicker onChange={onChangeInputInvestigateDate} /> */}
         </Form.Item>
         <Form.Item label="กรมบังคับคดี" name="dateWithdraw">
           {dataPropertyList[0]?.legal_execution_office}
         </Form.Item>
         <Form.Item
-          label="ทรัพย์ที่ขอเบิก"
+          label="แปลงที่เบิก"
           name="contnoWithdraw"
-          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 16 }}
         >
           <List
             itemLayout="horizontal"
@@ -301,7 +314,7 @@ const CreateAdvanePayment = ({
                   <Link
                     key="list-loadmore-more"
                     style={{ color: "red" }}
-                    onClick={() => handleDelete(index)} // ส่ง index เข้าไปในฟังก์ชัน
+                    onClick={() => handleDelete(index)}
                   >
                     ลบ
                   </Link>,
@@ -329,67 +342,77 @@ const CreateAdvanePayment = ({
         <Form.Item
           label="รายการที่ขอเบิก"
           name="contnoWithdraw"
-          labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-          wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 16 }}
         >
-          <Button onClick={handleEdit}>เพิ่ม</Button>
-          <List
-            itemLayout="horizontal"
-            dataSource={dataExpense}
-            renderItem={(item, index) => (
-              <List.Item
-                actions={[
-                  <Link
-                    key="list-loadmore-edit"
-                    style={{ color: "orange" }}
-                    onClick={() => handleEdit(item, index)}
-                  >
-                    แก้ไข
-                  </Link>,
-
-                  <Link
-                    key="list-loadmore-more"
-                    style={{ color: "red" }}
-                    onClick={() => handleDelete(index)} // ส่ง index เข้าไปในฟังก์ชัน
-                  >
-                    ลบ
-                  </Link>,
-                ]}
-              >
-                <List.Item.Meta
-                  description={
-                    <div style={{ color: "blue" }}>
-                      {item?.map((expense, index) => (
-                        <div key={index}>
-                          - {expense.label} :{" "}
-                          {currencyFormatPoint(expense.withdraw)} บาท
-                        </div>
-                      ))}
-
-                      {/* รวมยอดทั้งหมด */}
-                      <div
-                        style={{
-                          marginTop: 8,
-                          fontWeight: "bold",
-                          color: "green",
-                        }}
+          {!dataExpense?.length ? (
+            <>
+              <Button onClick={handleEdit} style={{ color: "blue" }}>
+                เพิ่ม ➕
+              </Button>
+            </>
+          ) : (
+            <>
+              <List
+                itemLayout="horizontal"
+                dataSource={dataExpense}
+                renderItem={(item, index) => (
+                  <List.Item
+                    actions={[
+                      <Link
+                        key="list-loadmore-edit"
+                        style={{ color: "orange" }}
+                        onClick={() => handleEdit(item, index)}
                       >
-                        รวมทั้งหมด :{" "}
-                        {currencyFormatPoint(
-                          item?.reduce(
-                            (total, expense) =>
-                              total + Number(expense.withdraw || 0),
-                            0
-                          )
-                        )}{" "}
-                        บาท
-                      </div>
-                    </div>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+                        แก้ไข
+                      </Link>,
+
+                      <Link
+                        key="list-loadmore-more"
+                        style={{ color: "red" }}
+                        onClick={() => handleDeleteExpense(index)}
+                      >
+                        ลบ
+                      </Link>,
+                    ]}
+                  >
+                    <List.Item.Meta
+                      description={
+                        <>
+                          <div style={{ color: "blue" }}>
+                            <div key={index}>
+                              - {item.label} :{" "}
+                              {currencyFormatPoint(item.withdraw)} บาท
+                            </div>
+                          </div>
+
+                          {index === dataExpense.length - 1 && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                fontWeight: "bold",
+                                color: "green",
+                              }}
+                            >
+                              รวมทั้งหมด :{" "}
+                              {currencyFormatPoint(
+                                dataExpense?.reduce(
+                                  (total, expense) =>
+                                    total + Number(expense.withdraw || 0),
+                                  0
+                                )
+                              )}{" "}
+                              บาท
+                            </div>
+                          )}
+                        </>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </>
+          )}
         </Form.Item>
 
         <Form.Item label="หมายเหตุ" name="memo">
