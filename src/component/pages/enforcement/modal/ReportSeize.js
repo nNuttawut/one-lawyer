@@ -277,7 +277,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     let preData = [];
     let initData = {
-      legal_execution_office: values.addrEnforce,
+      // legal_execution_office: values.addrEnforce,
       seize_date: dayjs(values.investigateAssetsDate).format("YYYY-MM-DD"),
       seize_status: 1,
       lawyer_seize_id: USER_ID,
@@ -454,6 +454,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const confirm = () => {
     form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
   };
+
   const cancel = () => {
     message.success("ยกเลิกทำรายการ");
   };
@@ -505,7 +506,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         >
           <DatePicker onChange={onChangeSeizeDate} />
         </Form.Item>
-        <Form.Item
+        {/* <Form.Item
           label="สำนักงานบังคับคดี"
           name="addrEnforce"
           rules={[
@@ -516,7 +517,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ]}
         >
           <Input name="addrEnforce" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           label="ทรัพย์ที่สืบพบผู้เช่าซื้อ"

@@ -21,6 +21,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
+  GET_EXPENSES_REFERENCE,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   GET_JUDGE_LIST,
   HEADERS_EXPORT,
@@ -34,6 +35,10 @@ import CreateAdvanePaymentCourt from "./modal/CreateAdvanePaymentCourt";
 import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 import { blue } from "@mui/material/colors";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import {
+  PAYADVANCE_STATUS_NOT_APPROVED,
+  PAYADVANCE_STATUS_SUCCESS,
+} from "../../../utils/constant/ExpenseType";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -59,6 +64,7 @@ const Main = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
+  const [checkClearAdvance, setCheckClearAdvance] = useState(null);
 
   useEffect(() => {
     setLoadingDataCompany(true);
@@ -104,6 +110,22 @@ const Main = () => {
       } else {
         setArrayTable([]);
         message.info("ไม่พบข้อมูล");
+      }
+
+      const checkResponse = await axios.get(baseUrl + GET_EXPENSES_REFERENCE, {
+        headers: HEADERS_EXPORT,
+      });
+      if (checkResponse.data) {
+        console.log("checkResponse.data", checkResponse.data);
+        const userJob = checkResponse.data.filter(
+          (item) => item.user_id === userId
+        );
+        console.log("userJob", userJob, userId);
+
+        setCheckClearAdvance(userJob);
+        setLoading(false);
+      } else {
+        setCheckClearAdvance(null);
       }
     } catch (error) {
       console.error(
@@ -154,8 +176,9 @@ const Main = () => {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
+        let dataCheck = filteredData.filter((item) => item.COMPANY_ID !== 3);
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(filteredData);
+        setDataArr(dataCheck);
       }
 
       setArrayTable(dataUse);
@@ -205,6 +228,7 @@ const Main = () => {
     );
     setSelectedRowKeys([]);
     setSelectedRows([]);
+    setDataModal([]);
     setArrayTable(dataUse);
     setTableLength(dataUse.length);
   };
@@ -231,8 +255,7 @@ const Main = () => {
     if (value) {
       setArrayTable(result);
     } else {
-      // setArrayTable(dataArr);
-      loadData();
+      setArrayTable(dataArr);
     }
   };
 
@@ -287,22 +310,13 @@ const Main = () => {
     }
   };
 
-  const onSelectChange = (selectedRowKeys, selectedRows) => {
-    console.log("selectedRowKeys changed: ", selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys);
-    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
-    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
-    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-    setDataModal(selectedRows);
-    if (selectedRowKeys?.length > 4) {
-      message.warning("กรุณาเลือกทำรายการไม่เกิน 4 สัญญา");
-    }
-  };
-
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      onSelectChange(selectedRowKeys, selectedRows);
-    },
+  const onSelectChange = (selectedRowKeysData, selectedRowsData) => {
+    // อัปเดต key ที่ถูกเลือกไว้ทั้งหมด
+    setSelectedRowKeys(selectedRowKeysData);
+    console.log("selectedRowKeysData", selectedRowKeysData);
+    setSelectedRows(selectedRowsData);
+    console.log("selectedRowsData", selectedRowsData);
+    setDataModal(selectedRowsData);
   };
 
   const renderDate = (record) => {
@@ -359,6 +373,21 @@ const Main = () => {
     return (
       optionsLone.find((item) => item.value === value)?.label || "ไม่พบชื่อ"
     );
+  };
+
+  const renderCheckClearAdvance = () => {
+    const checkUserClearAdvance = checkClearAdvance?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    console.log("checkData", checkUserClearAdvance);
+    if (checkUserClearAdvance) {
+      setIsModalCreateAdvanePaymentCourt(true);
+    } else {
+      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+    }
   };
 
   const columns = [
@@ -446,16 +475,17 @@ const Main = () => {
               <Flex align="center" gap="middle">
                 <Tooltip
                   placement="bottom"
-                  title="เลือกทำรายการได้ไม่เกิน 3 สัญญา !"
+                  title="เลือกทำรายการได้ไม่เกิน 10 สัญญา !"
                   arrow={mergedArrow}
                 >
                   <Button
                     type="primary"
                     icon={<PlusOutlined />} // ไอคอน
                     size="small" // ขนาดเล็ก
-                    onClick={() => setIsModalCreateAdvanePaymentCourt(true)}
+                    onClick={() => renderCheckClearAdvance()}
                     disabled={
-                      selectedRowKeys.length === 0 || selectedRowKeys.length > 3
+                      selectedRowKeys.length === 0 ||
+                      selectedRowKeys.length > 10
                     }
                     loading={loading}
                   >
@@ -503,7 +533,11 @@ const Main = () => {
                     <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
                   </div>
                 )}
-                rowSelection={rowSelection}
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: onSelectChange,
+                  preserveSelectedRowKeys: true,
+                }}
               />
             </Col>
           </Row>

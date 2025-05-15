@@ -48,8 +48,8 @@ const EditAdvancePaymentDetail = ({ open, close, dataDefault, handleEdit }) => {
               ...dataDefault,
               fee: data?.fee,
               stamp_cost: data?.stamp_cost,
-              attorney_fees: data?.attorney_fees,
               document_cost: data?.document_cost,
+              delivery_of_summons: data?.delivery_of_summons,
             });
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
@@ -157,7 +157,13 @@ const EditAdvancePaymentDetail = ({ open, close, dataDefault, handleEdit }) => {
         >
           <Form.Item label="เลขสัญญา/เจ้าของสัญญา" name="ownerSign">
             <p>
-              {`${dataDefault?.CONTNO}/${dataDefault?.customer_title}${dataDefault?.customer_name} ${dataDefault?.customer_lastname}`}
+              {`${dataDefault?.CONTNO}/${dataDefault?.customer_title}${
+                dataDefault?.customer_name
+              } ${
+                dataDefault?.customer_lastname
+                  ? dataDefault?.customer_lastname
+                  : ""
+              }`}
             </p>
           </Form.Item>
           <Form.Item

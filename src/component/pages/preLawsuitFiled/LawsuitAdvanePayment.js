@@ -19,18 +19,23 @@ import DetailModal from "../detail/DetailModal";
 import { PlusOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import { baseUrl, GET_LAWSUIT_LIST, HEADERS_EXPORT } from "../../API/apiUrls";
-import axios from "axios";
 import {
-  INDICT,
-  STATUS_PROCESS_SUCCESSFUL,
-} from "../../../utils/constant/StatusConstant";
+  baseUrl,
+  GET_EXPENSES_REFERENCE,
+  GET_LAWSUIT_LIST,
+  HEADERS_EXPORT,
+} from "../../API/apiUrls";
+import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
 import CreateAdvanePayment from "./modal/CreateAdvanePayment";
 import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import {
+  PAYADVANCE_STATUS_NOT_APPROVED,
+  PAYADVANCE_STATUS_SUCCESS,
+} from "../../../utils/constant/ExpenseType";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -55,6 +60,7 @@ const Main = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
+  const [checkClearAdvance, setCheckClearAdvance] = useState(null);
 
   useEffect(() => {
     setLoadingDataCompany(true);
@@ -111,6 +117,24 @@ const Main = () => {
       } else {
         setArrayTable([]);
       }
+      const checkResponse = await axios.get(baseUrl + GET_EXPENSES_REFERENCE, {
+        headers: HEADERS_EXPORT,
+      });
+      console.log("checkResponse.data", checkResponse);
+      if (checkResponse.data) {
+        console.log("checkResponse.data", checkResponse.data);
+        const userJob = checkResponse.data.filter(
+          (item) => item.user_id === userId
+          // &&  typeof item.reference_no === "string" &&
+          //   item.reference_no.substring(0, 1) === "2"
+        );
+        console.log("userJob", userJob, userId);
+
+        setCheckClearAdvance(userJob);
+        setLoading(false);
+      } else {
+        setCheckClearAdvance(null);
+      }
     } catch (error) {
       console.error(
         "Error posting data:",
@@ -164,10 +188,15 @@ const Main = () => {
         setDataArr(dataFilter);
       }
 
-      setArrayTable(dataUse);
-      setTableLength(dataUse.length);
-      console.log("newData", dataUse);
-      console.log("Length of filtered data:", dataUse.length);
+      const dataSort = dataUse.sort(
+        (a, b) =>
+          dayjs(b.date_of_plaint).valueOf() - dayjs(a.date_of_plaint).valueOf()
+      );
+
+      setArrayTable(dataSort);
+      setTableLength(dataSort.length);
+      console.log("newData", dataSort);
+      console.log("Length of filtered data:", dataSort.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -211,6 +240,7 @@ const Main = () => {
     );
     setSelectedRowKeys([]);
     setSelectedRows([]);
+    setDataModal([]);
     setArrayTable(dataUse);
     setTableLength(dataUse.length);
   };
@@ -239,8 +269,7 @@ const Main = () => {
     if (value) {
       setArrayTable(result);
     } else {
-      // setArrayTable(dataArr);
-      loadData();
+      setArrayTable(dataArr);
     }
   };
 
@@ -295,22 +324,13 @@ const Main = () => {
     }
   };
 
-  const onSelectChange = (selectedRowKeys, selectedRows) => {
-    console.log("selectedRowKeys changed: ", selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys);
-    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
-    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
-    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-    setDataModal(selectedRows);
-    if (selectedRowKeys?.length > 4) {
-      message.warning("กรุณาเลือกทำรายการไม่เกิน 4 สัญญา");
-    }
-  };
-
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      onSelectChange(selectedRowKeys, selectedRows);
-    },
+  const onSelectChange = (selectedRowKeysData, selectedRowsData) => {
+    // อัปเดต key ที่ถูกเลือกไว้ทั้งหมด
+    setSelectedRowKeys(selectedRowKeysData);
+    console.log("selectedRowKeysData", selectedRowKeysData);
+    setSelectedRows(selectedRowsData);
+    console.log("selectedRowsData", selectedRowsData);
+    setDataModal(selectedRowsData);
   };
 
   const renderDate = (record) => {
@@ -319,7 +339,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.date_of_plaint).startOf("day");
+    const recordDate = dayjs(record.date_of_plaint);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -385,6 +405,44 @@ const Main = () => {
     );
   };
 
+  const renderCheckClearAdvance = () => {
+    const checkUserClearAdvance = checkClearAdvance?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    // // รวม LAWSUIT_ID ทั้งหมดจากทุก expenseList
+    // const allLawsuitIds = checkClearAdvance?.flatMap((item) =>
+    //   item.expenseList.map((data) => data.LAWSUIT_ID)
+    // );
+
+    // // นับว่าค่าไหนซ้ำ
+    // const duplicateCounts = allLawsuitIds.reduce((acc, id) => {
+    //   acc[id] = (acc[id] || 0) + 1;
+    //   return acc;
+    // }, {});
+
+    // // คัดเอาเฉพาะ LAWSUIT_ID ที่ซ้ำ (count > 1)
+    // const duplicates = Object.entries(duplicateCounts)
+    //   .filter(([_, count]) => count > 1)
+    //   .map(([id]) => Number(id));
+
+    // console.log("LAWSUIT_ID ที่ซ้ำ:", duplicates);
+    // console.log("จำนวน LAWSUIT_ID ที่ซ้ำ:", duplicates.length);
+    // console.log("duplicates.length", selectedRows.length);
+    // console.log(
+    //   "selectedRows.length - duplicates.length",
+    //   selectedRows.length - duplicates.length
+    // );
+
+    if (checkUserClearAdvance) {
+      setIsModalCreateAdvanePayment(true);
+    } else {
+      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+    }
+  };
+
   const columns = [
     {
       title: "ลำดับ",
@@ -393,10 +451,6 @@ const Main = () => {
       align: "center",
       width: "10%",
       render: (text, object, key) => key + 1,
-      sorter: {
-        compare: (a, b) => a.key - b.key,
-        multiple: 5,
-      },
     },
     {
       title: "เลขที่สัญญา",
@@ -429,6 +483,7 @@ const Main = () => {
     {
       title: "วันประทับฟ้อง",
       align: "center",
+      sorter: (a, b) => new Date(b.date_of_plaint) - new Date(a.date_of_plaint),
       render: (record) => <>{renderDate(record)}</>,
     },
   ];
@@ -461,16 +516,16 @@ const Main = () => {
               <Flex align="center" gap="middle">
                 <Tooltip
                   placement="bottom"
-                  title="เลือกทำรายการได้ไม่เกิน 3 สัญญา !"
+                  title="เลือกทำรายการได้ไม่เกิน 10 สัญญา !"
                   arrow={mergedArrow}
                 >
                   <Button
                     type="primary"
                     icon={<PlusOutlined />} // ไอคอน
                     size="small" // ขนาดเล็ก
-                    onClick={() => setIsModalCreateAdvanePayment(true)}
+                    onClick={() => renderCheckClearAdvance()}
                     disabled={
-                      selectedRowKeys.length <= 0 || selectedRowKeys.length > 3
+                      selectedRowKeys.length <= 0 || selectedRowKeys.length > 10
                     }
                     loading={loading}
                   >
@@ -506,8 +561,8 @@ const Main = () => {
                 footer={() => (
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                      // display: "flex",
+                      // justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
                       alignItems: "center",
                     }}
                   >
@@ -518,94 +573,11 @@ const Main = () => {
                     <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
                   </div>
                 )}
-                rowSelection={rowSelection}
-                // expandable={{
-                //   expandedRowRender: (record) => (
-                //     <p style={{ margin: 0 }}>
-                //       {record.PROCESS_ID !== 3 &&
-                //       record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <Button
-                //           name="create"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalCreate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <FormOutlined
-                //             style={{ color: "blue", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : record.PROCESS_ID === 3 &&
-                //         record.MAIN_STATUS_ID === record.STATUS_ID ? (
-                //         <>
-                //           {/* <Button
-                //           name="formPrint"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalDocument(true);
-                //           }}
-                //         >
-                //           <FileDoneOutlined
-                //             style={{ color: "green", fontSize: "16px" }}
-                //           />
-                //         </Button> */}
-                //           <Button
-                //             name="edit"
-                //             style={{
-                //               boxShadow: "0 4px 3px",
-                //               marginRight: "10px",
-                //             }}
-                //             onClick={() => {
-                //               setIsModalEdit(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <EditOutlined
-                //               style={{ color: "orange", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //           <Button
-                //             name="updateStatus"
-                //             style={{ boxShadow: "0 4px 3px" }}
-                //             onClick={() => {
-                //               setIsModalUpdate(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <SyncOutlined
-                //               style={{ color: "green", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //         </>
-                //       ) : null}
-                //       {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
-                //         <Button
-                //           name="EditupdateStatus"
-                //           style={{ boxShadow: "0 4px 3px" }}
-                //           onClick={() => {
-                //             setIsModalEditUpdate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <SyncOutlined
-                //             style={{ color: "orange", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : null}
-                //     </p>
-                //   ),
-                //   rowExpandable: (record) => userId === record.LAWYER_ID,
-                //   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
-                //   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
-                // }}
-                // rowKey="key"
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: onSelectChange,
+                  preserveSelectedRowKeys: true,
+                }}
               />
             </Col>
           </Row>

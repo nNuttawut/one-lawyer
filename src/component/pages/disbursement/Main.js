@@ -3,7 +3,6 @@ import Search from "antd/es/input/Search";
 import React, { useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import AddDisbursement from "./modal/AddDisbursement";
 import { Link } from "react-router-dom";
 
 const Main = () => {
@@ -136,9 +135,6 @@ const Main = () => {
       </Card>
       {isModalDetail ? (
         <DetailModal open={isModalDetail} close={setIsModalDetail} />
-      ) : null}
-      {isModalAdd ? (
-        <AddDisbursement open={isModalAdd} close={setIsModalAdd} />
       ) : null}
     </>
   );

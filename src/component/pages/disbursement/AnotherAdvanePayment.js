@@ -21,21 +21,17 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_EXPENSES_REFERENCE,
   GET_INVESTIGATE_LIST,
+  GET_INVESTIGATE_LOANS_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
-import CreateAdvanePaymentEnforce from "./modal/CreateAdvanePaymentEnforce";
+import CreateAdvanePaymentAnother from "./modal/CreateAdvanePaymentAnother";
 import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
-import {
-  PAYADVANCE_STATUS_NOT_APPROVED,
-  PAYADVANCE_STATUS_SUCCESS,
-} from "../../../utils/constant/ExpenseType";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -61,7 +57,6 @@ const Main = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
-  const [checkClearAdvance, setCheckClearAdvance] = useState(null);
 
   useEffect(() => {
     setLoadingDataCompany(true);
@@ -90,7 +85,7 @@ const Main = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(baseUrl + GET_INVESTIGATE_LIST, {
+      const response = await axios.get(baseUrl + GET_INVESTIGATE_LOANS_LIST, {
         headers: HEADERS_EXPORT,
       });
 
@@ -107,21 +102,6 @@ const Main = () => {
       } else {
         setArrayTable([]);
         message.info("ไม่พบข้อมูล");
-      }
-      const checkResponse = await axios.get(baseUrl + GET_EXPENSES_REFERENCE, {
-        headers: HEADERS_EXPORT,
-      });
-      if (checkResponse.data) {
-        console.log("checkResponse.data", checkResponse.data);
-        const userJob = checkResponse.data.filter(
-          (item) => item.user_id === userId
-        );
-        console.log("userJob", userJob, userId);
-
-        setCheckClearAdvance(userJob);
-        setLoading(false);
-      } else {
-        setCheckClearAdvance(null);
       }
     } catch (error) {
       console.error(
@@ -140,13 +120,10 @@ const Main = () => {
     console.log("userId", userId);
 
     if (Array.isArray(data)) {
-      const preData = data.filter(
-        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
-      );
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = preData.filter((item) => {
+        filteredData = data.filter((item) => {
           const branch = item.LOCAT;
           // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
@@ -158,7 +135,7 @@ const Main = () => {
           );
         });
       } else {
-        filteredData = preData.filter((item) => {
+        filteredData = data.filter((item) => {
           const branch = item.LOCAT;
           if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
@@ -171,9 +148,8 @@ const Main = () => {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
-        let dataCheck = filteredData.filter((item) => item.COMPANY_ID !== 3);
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(dataCheck);
+        setDataArr(filteredData);
       }
 
       setArrayTable(dataUse);
@@ -233,17 +209,12 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    console.log(companieSelect);
-
     let result = arrayTable.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
-          (item.NAME1 && item.NAME1.includes(value)) ||
-          (item.NAME2 && item.NAME2.includes(value)) ||
-          (item.possessor && item.possessor.includes(value))) &&
-        item.COMPANY_ID === companieSelect.value &&
-        item.seize_status === 1 &&
-        item.lawyer_seize_id === userId
+          (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
+          (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))) &&
+        item.LAWYER_ID === userId
     );
 
     console.log("result", result);
@@ -252,6 +223,7 @@ const Main = () => {
       setArrayTable(result);
     } else {
       setArrayTable(dataArr);
+      // loadData();
     }
   };
 
@@ -281,7 +253,7 @@ const Main = () => {
     }
   };
 
-  const handleUpdateData = (data, company) => {
+  const handleUpdateData = (data) => {
     console.log("data---->update", data);
 
     if (data && data.id) {
@@ -293,10 +265,7 @@ const Main = () => {
       setDataArr(updatedDataArr);
 
       const arr = updatedDataArr.filter(
-        (item) =>
-          item.seize_status === 1 &&
-          item.lawyer_seize_id === userId &&
-          item.COMPANY_ID === company
+        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
       );
       console.log("arr", arr);
       setArrayTable(arr);
@@ -306,13 +275,22 @@ const Main = () => {
     }
   };
 
-  const onSelectChange = (selectedRowKeysData, selectedRowsData) => {
-    // อัปเดต key ที่ถูกเลือกไว้ทั้งหมด
-    setSelectedRowKeys(selectedRowKeysData);
-    console.log("selectedRowKeysData", selectedRowKeysData);
-    setSelectedRows(selectedRowsData);
-    console.log("selectedRowsData", selectedRowsData);
-    setDataModal(selectedRowsData);
+  const onSelectChange = (selectedRowKeys, selectedRows) => {
+    console.log("selectedRowKeys changed: ", selectedRowKeys);
+    setSelectedRowKeys(selectedRowKeys);
+    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
+    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
+    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
+    setDataModal(selectedRows);
+    if (selectedRowKeys?.length > 4) {
+      message.warning("กรุณาเลือกทำรายการไม่เกิน 4 สัญญา");
+    }
+  };
+
+  const rowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      onSelectChange(selectedRowKeys, selectedRows);
+    },
   };
 
   const renderDate = (record) => {
@@ -365,27 +343,6 @@ const Main = () => {
     );
   };
 
-  const renderCheckClearAdvance = () => {
-    const checkBill = checkClearAdvance?.filter((item) => {
-      return item.reference_no?.substring(0, 1) !== "3";
-    });
-
-    console.log(checkBill);
-
-    const checkUserClearAdvance = checkBill?.every(
-      (item) =>
-        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
-        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
-    );
-
-    console.log("checkData", checkUserClearAdvance);
-    if (checkUserClearAdvance) {
-      setIsModalCreateAdvanePaymentCourt(true);
-    } else {
-      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
-    }
-  };
-
   const handleCheckContno = () => {
     let checkContno = selectedRows.every(
       (item) =>
@@ -394,7 +351,7 @@ const Main = () => {
     );
 
     if (checkContno) {
-      renderCheckClearAdvance();
+      setIsModalCreateAdvanePaymentCourt(true);
     } else {
       message.error("กรุณาเลือกเลขสัญญาและกรมบังคับคดีให้เหมือนกัน");
     }
@@ -492,7 +449,7 @@ const Main = () => {
               <Flex align="center" gap="middle">
                 <Tooltip
                   placement="bottom"
-                  title="เลือกทำรายการได้ไม่เกิน 10 สัญญา !"
+                  title="เลือกทำรายการได้ไม่เกิน 3 สัญญา !"
                   arrow={mergedArrow}
                 >
                   <Button
@@ -547,11 +504,7 @@ const Main = () => {
                     <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
                   </div>
                 )}
-                rowSelection={{
-                  selectedRowKeys,
-                  onChange: onSelectChange,
-                  preserveSelectedRowKeys: true,
-                }}
+                rowSelection={rowSelection}
               />
             </Col>
           </Row>
@@ -561,7 +514,7 @@ const Main = () => {
         <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
       ) : null}
       {isModalCreateAdvanePaymentCourt ? (
-        <CreateAdvanePaymentEnforce
+        <CreateAdvanePaymentAnother
           open={isModalCreateAdvanePaymentCourt}
           close={setIsModalCreateAdvanePaymentCourt}
           dataDefault={dataModal}
@@ -573,5 +526,5 @@ const Main = () => {
   );
 };
 
-const EnforcementAdvanePayment = MotionHoc(Main);
-export default EnforcementAdvanePayment;
+const AnotherAdvanePayment = MotionHoc(Main);
+export default AnotherAdvanePayment;

@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
+import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const ClearAdvanePaymentCourt = ({
   open,
@@ -31,6 +32,7 @@ const ClearAdvanePaymentCourt = ({
   dataDefault,
   funcUpdateStatus,
 }) => {
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [loading, setLoading] = useState(false);
   const [dataRender, setDataRender] = useState([]);
   const [inputValues, setInputValues] = useState({});
@@ -42,6 +44,8 @@ const ClearAdvanePaymentCourt = ({
   const [fileTranferMoney, setFileTranferMoney] = useState([]);
   const [fileListLoad, setFileListLoad] = useState([]);
   const [fileTranferMoneyLoad, setFileTranferMoneyLoad] = useState([]);
+  const [companieSelect, setCompanieSelect] = useState();
+  const [companiesOption, setCompaniesOption] = useState(null);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -50,6 +54,7 @@ const ClearAdvanePaymentCourt = ({
 
   useEffect(() => {
     if (dataDefault) {
+      setLoadingDataCompany(true);
       renderDataDetail(dataDefault);
       loadImagesProduct();
       loadImagesProductTranferMoney();
@@ -60,6 +65,40 @@ const ClearAdvanePaymentCourt = ({
       });
     }
   }, [form]);
+  useEffect(() => {
+    if (companiesListCompany) {
+      setOptionCompany();
+    }
+  }, [companiesListCompany]);
+
+  const loadSelectCompany = (value) => {
+    const checkCompanie = dataDefault.reference_no.substring(1, 2);
+    let checkValue;
+    if (checkCompanie === "L") {
+      checkValue = 1;
+    } else if (checkCompanie === "M") {
+      checkValue = 2;
+    } else {
+      checkValue = 3;
+    }
+    const selectedOption = value.find((option) => option.value === checkValue);
+    console.log("selectedOption", selectedOption);
+
+    if (selectedOption) {
+      setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
+    }
+  };
+
+  const setOptionCompany = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+      bank: item.bank,
+    }));
+    setCompaniesOption(options);
+    loadSelectCompany(options);
+  };
 
   const renderDataDetail = (record) => {
     console.log("recordxxxx", record);
@@ -471,6 +510,7 @@ const ClearAdvanePaymentCourt = ({
                         marginBottom: "20px",
                         border: "1px solid #ccc",
                         padding: "10px",
+
                         background:
                           index % 2 === 0
                             ? "linear-gradient(135deg, #f5f7fa 0%, #FFEBB7 100%)"
@@ -482,9 +522,25 @@ const ClearAdvanePaymentCourt = ({
                       <Form.Item label="สัญญา">{`${data.CONTNO}`}</Form.Item>
 
                       {data.expenses?.map((item, expenseIndex) => (
-                        <div key={expenseIndex} style={{ paddingLeft: "20px" }}>
+                        <div
+                          key={expenseIndex}
+                          style={{
+                            paddingLeft: "20px",
+                            wordBreak: "break-word",
+                          }}
+                        >
                           <Form.Item
-                            label={item.expense_description}
+                            label={
+                              <div
+                                style={{
+                                  whiteSpace: "normal",
+                                  wordBreak: "break-word",
+                                  width: "200px",
+                                }}
+                              >
+                                {item.expense_description}
+                              </div>
+                            }
                             name={item.id}
                           >
                             <InputNumber
@@ -696,6 +752,19 @@ const ClearAdvanePaymentCourt = ({
                     </div>
                   </Form.Item>
                 ) : null}
+                <Form.Item
+                  label="บัญชีบริษัท"
+                  name="memo"
+                  style={{ width: "95%" }}
+                >
+                  <p style={{ color: "blue", fontSize: "16px" }}>
+                    {companieSelect?.bank}
+                  </p>
+
+                  <p style={{ color: "red" }}>
+                    กรุณาตรวจสอบโดยละเอียดก่อนทำรายการ !
+                  </p>
+                </Form.Item>
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"

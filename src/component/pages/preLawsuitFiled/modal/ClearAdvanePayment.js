@@ -22,11 +22,16 @@ import {
   FileExcelOutlined,
   FileWordOutlined,
 } from "@ant-design/icons";
-import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import {
+  PARAM_PUBLIC,
+  STATUS_PROCESS_PROCESS,
+} from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
+import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [loading, setLoading] = useState(false);
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const [dataRender, setDataRender] = useState([]);
   const [inputValues, setInputValues] = useState({});
   const [btnOn, setBtnOn] = useState(false);
@@ -37,6 +42,8 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [fileTranferMoney, setFileTranferMoney] = useState([]);
   const [fileListLoad, setFileListLoad] = useState([]);
   const [fileTranferMoneyLoad, setFileTranferMoneyLoad] = useState([]);
+  const [companieSelect, setCompanieSelect] = useState();
+  const [companiesOption, setCompaniesOption] = useState(null);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -45,7 +52,9 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
   useEffect(() => {
     if (dataDefault) {
+      setLoadingDataCompany(true);
       renderDataDetail(dataDefault);
+
       loadImagesProduct();
       loadImagesProductTranferMoney();
       console.log(dataDefault);
@@ -55,6 +64,41 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
       });
     }
   }, [form]);
+
+  useEffect(() => {
+    if (companiesListCompany) {
+      setOptionCompany();
+    }
+  }, [companiesListCompany]);
+
+  const loadSelectCompany = (value) => {
+    const checkCompanie = dataDefault.reference_no.substring(1, 2);
+    let checkValue;
+    if (checkCompanie === "L") {
+      checkValue = 1;
+    } else if (checkCompanie === "M") {
+      checkValue = 2;
+    } else {
+      checkValue = 3;
+    }
+    const selectedOption = value.find((option) => option.value === checkValue);
+    console.log("selectedOption", selectedOption);
+
+    if (selectedOption) {
+      setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
+    }
+  };
+
+  const setOptionCompany = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+      bank: item.bank,
+    }));
+    setCompaniesOption(options);
+    loadSelectCompany(options);
+  };
 
   const renderDataDetail = (record) => {
     console.log("recordxxxx", record);
@@ -272,7 +316,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
           withdraw_mark: values.memo || null,
           // file_path: values.imageReplyFile,
-          pay_type_id: 4,
+          pay_type_id: STATUS_PROCESS_PROCESS,
           pay_datetime: dayjs().format("YYYY-MM-DD"),
         };
       }
@@ -333,7 +377,6 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const handleInputChange = (value, contno, description, LAWSUIT_ID) => {
     console.log(value, contno, description, LAWSUIT_ID);
     checkItem(value);
-
     // ✅ อัปเดตค่าที่ผู้ใช้กรอก
     setInputValues((prev) => {
       const updatedValues = {
@@ -355,6 +398,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
               (updatedValues[contno]?.[item.expense_name] ?? item.pay ?? 0),
             0
           );
+        console.log("newTotal---->", newTotal);
 
         return {
           ...prevTotal,
@@ -429,7 +473,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     return (
       <>
         <Modal
-          title="เคลียร์เงินทดลองจ่าย"
+          title={`เคลียร์เงินทดลองจ่าย ${dataDefault.reference_no}`}
           open={open}
           onCancel={handleCancel}
           width={650}
@@ -525,6 +569,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     </div>
                   );
                 })}
+
                 <Form.Item label="อัปโหลดใบเสร็จ" name="imageUrlFile">
                   <Dragger
                     {...props}
@@ -691,6 +736,19 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     </div>
                   </Form.Item>
                 ) : null}
+                <Form.Item
+                  label="บัญชีบริษัท"
+                  name="memo"
+                  style={{ width: "95%" }}
+                >
+                  <p style={{ color: "blue", fontSize: "16px" }}>
+                    {companieSelect?.bank}
+                  </p>
+
+                  <p style={{ color: "red" }}>
+                    กรุณาตรวจสอบโดยละเอียดก่อนทำรายการ !
+                  </p>
+                </Form.Item>
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"

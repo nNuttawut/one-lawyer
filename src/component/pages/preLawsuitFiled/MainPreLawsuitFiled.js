@@ -275,9 +275,6 @@ const Main = () => {
           ? "blue"
           : "red";
     }
-    console.log("recordDate----->", recordDate);
-    console.log("record.DATE", record.DATE);
-    console.log("con", record.CONTNO);
 
     const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
     return (

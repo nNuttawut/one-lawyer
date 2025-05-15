@@ -231,7 +231,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.investigation_date).startOf("day");
+    const recordDate = dayjs(record.investigation_date);
     const today = dayjs().startOf("day");
 
     const checkData = record.property_list.map((item) => !item.estimated_price); // ได้ array ของ true, false

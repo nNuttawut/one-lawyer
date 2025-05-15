@@ -84,7 +84,8 @@ const EditAssetsSuccess = ({
 
   const optionsSeizeStatus = [
     { label: "ถอนยึด", value: 0 },
-    { label: "ยึด", value: 1 },
+    { label: "ตั้งเรื่องยึด", value: 1 },
+    { label: "ยึดสำเร็จ", value: 3, disabled: true },
   ];
 
   useEffect(() => {
@@ -140,6 +141,9 @@ const EditAssetsSuccess = ({
       seizeStatus: !dataIndex.seize_status ? 0 : 1,
       estimatedEnforcePrice: dataIndex.estimated_enforce_price,
       AddrEnforce: dataIndex.legal_execution_office,
+      judgmentCreditorDate: dataIndex.seize_date
+        ? dayjs(dataIndex.seize_date)
+        : null,
     });
   }, [isModal]);
   console.log(dataIndex);
@@ -228,16 +232,16 @@ const EditAssetsSuccess = ({
   const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
-    if (COMPANY === 1) {
+    if (COMPANY === 3) {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.COMPANY_ID === 3 &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          item.COMPANY_ID === 3 &&
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }
@@ -335,9 +339,10 @@ const EditAssetsSuccess = ({
       mark: values.memo,
       investigate_filepath: values.urlFile,
       seize_status: values.seizeStatus,
-      seize_date: dayjs().format("YYYY-MM-DD"),
-      legal_execution_office:
-        values.seizeStatus === 1 ? values.AddrEnforce : null,
+      seize_date: values.judgmentCreditorDate
+        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+        : null,
+      legal_execution_office: values.AddrEnforce,
       estimated_enforce_price: values.estimatedEnforcePrice
         ? values.estimatedEnforcePrice
         : null,
@@ -550,6 +555,22 @@ const EditAssetsSuccess = ({
             />
           </Form.Item>
         </Tooltip>
+        {/* {seizeStatus ? ( */}
+        <>
+          <Form.Item
+            label="สำนักงานบังคับคดี"
+            name="AddrEnforce"
+            // rules={[
+            //   {
+            //     required: true,
+            //     message: "กรุณากรอกสำนักงานบังคับคดี",
+            //   },
+            // ]}
+          >
+            <Input name="AddrEnforce" />
+          </Form.Item>
+        </>
+        {/* ) : null} */}
         <Form.Item
           label="สถานะการยึด"
           name="seizeStatus"
@@ -568,22 +589,7 @@ const EditAssetsSuccess = ({
             defaultValue={seizeStatus}
           />
         </Form.Item>
-        {seizeStatus ? (
-          <>
-            <Form.Item
-              label="สำนักงานบังคับคดี"
-              name="AddrEnforce"
-              // rules={[
-              //   {
-              //     required: true,
-              //     message: "กรุณากรอกสำนักงานบังคับคดี",
-              //   },
-              // ]}
-            >
-              <Input name="AddrEnforce" />
-            </Form.Item>
-          </>
-        ) : null}
+
         <Form.Item
           label="ติดภาระจำนอง"
           name="mortgageStatus"
@@ -707,7 +713,19 @@ const EditAssetsSuccess = ({
               ]}
             >
               <Input name="ownerAsset" />
-            </Form.Item>{" "}
+            </Form.Item>
+            <Form.Item
+              label="วันที่โดนอายัด"
+              name="judgmentCreditorDate"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาเลือกวันที่สืบทรัพย์",
+                },
+              ]}
+            >
+              <DatePicker name="judgmentCreditorDate" />
+            </Form.Item>
           </>
         ) : null}
         <Form.Item
@@ -720,7 +738,10 @@ const EditAssetsSuccess = ({
             },
           ]}
         >
-          <Select
+          {assistantOption?.find(
+            (item) => item.value === dataIndex.investigator_user_id
+          )?.label || "ไม่พบชื่อ"}
+          {/* <Select
             placeholder="เลือกผู้สืบทรัพย์"
             showSearch
             optionFilterProp="label"
@@ -728,7 +749,7 @@ const EditAssetsSuccess = ({
             onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}
             style={{ width: "100%" }}
-          />
+          /> */}
         </Form.Item>
         {imageList.length > 0 ? (
           <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>

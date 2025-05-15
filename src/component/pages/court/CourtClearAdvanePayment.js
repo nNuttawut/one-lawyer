@@ -116,10 +116,7 @@ const Main = () => {
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
 
           // ถ้า branch มีค่า → เช็กตามปกติ
-          return (
-            !optionsLocat.some((opt) => branch.includes(opt.label)) ||
-            item.CONTNO.includes("UD")
-          );
+          return !optionsLocat.some((opt) => branch.includes(opt.label));
         });
       } else {
         filteredData = newData.filter((item) => {
@@ -386,7 +383,7 @@ const Main = () => {
 
   const renderStatusPay = (record) => {
     let i = 0;
-    const allMatch = record.expenseList.every((expense) => expense.pay);
+    const allMatch = record.expenseList.every((expense) => expense.pay_type_id);
     let status;
     let color;
     let totalPay = 0;

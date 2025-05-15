@@ -361,8 +361,8 @@ const AssetsDetail = ({
           : values?.sequestrateStatus === 0
           ? values?.sequestrateStatus
           : null,
-      preference_creditor: values?.preferenceCreditor
-        ? values?.preferenceCreditor
+      preference_creditor: values?.JudgmentCreditor
+        ? values?.JudgmentCreditor
         : null,
       mortgage_balance:
         values?.mortgageBalance &&
@@ -381,8 +381,13 @@ const AssetsDetail = ({
       lawyer_seize_id: null,
       seize_status: null,
       seize_status_mark: null,
-      seize_date: null,
-      legal_execution_office: null,
+      seize_date: values.judgmentCreditorDate
+        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+        : null,
+      legal_execution_office: values.AddrEnforce ? values.AddrEnforce : null,
+      estimated_enforce_price: values.estimatedEnforcePrice
+        ? values.estimatedEnforcePrice
+        : null,
       sale_announcement_mark: null,
       investigation_fees: null,
       investigation_fees_payment_status: null,
@@ -891,7 +896,7 @@ const AssetsDetail = ({
           <>
             <Form.Item
               label="เจ้าหนี้คำพิพากษา"
-              name="preferenceCreditor"
+              name="JudgmentCreditor"
               rules={[
                 {
                   required: true,
@@ -899,7 +904,7 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <Input name="preferenceCreditor" />
+              <Input name="JudgmentCreditor" />
             </Form.Item>
             <Form.Item
               label="เลขคดีแดง"
@@ -912,7 +917,45 @@ const AssetsDetail = ({
               ]}
             >
               <Input name="ownerAsset" />
-            </Form.Item>{" "}
+            </Form.Item>
+            <Form.Item
+              label="วันที่โดนอายัด"
+              name="judgmentCreditorDate"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาเลือกวันที่สืบทรัพย์",
+                },
+              ]}
+            >
+              <DatePicker name="judgmentCreditorDate" />
+            </Form.Item>
+            <Tooltip
+              placement="bottom"
+              title="ราคาประเมินจากกรมบังคับคดี"
+              arrow={mergedArrow}
+            >
+              <Form.Item
+                label="ราคาประเมิน(จพค.)"
+                name="estimatedEnforcePrice"
+                style={{ color: "red" }}
+              >
+                <InputNumber
+                  name="estimatedEnforcePrice"
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                  style={{ width: "100%", color: "black" }}
+                />
+              </Form.Item>
+            </Tooltip>
+            <Form.Item label="สำนักงานบังคับคดี" name="AddrEnforce">
+              <Input name="AddrEnforce" />
+            </Form.Item>
           </>
         ) : null}
 

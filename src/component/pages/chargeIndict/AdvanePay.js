@@ -30,6 +30,7 @@ import {
   GET_LAWSUIT_LIST,
   HEADERS_EXPORT,
   PUT_EXPENSES,
+  PUT_EXPENSES_REFERENCE,
 } from "../../API/apiUrls";
 
 import axios from "axios";
@@ -48,6 +49,8 @@ import logoMoney from "../../../assets/images/money.png";
 import logoKSM from "../../../assets/images/ksm.png";
 import LoadCompanies from "../../../hook/LoadCompanies";
 import {
+  PAYADVANCE_STATUS_APPROVED,
+  PAYADVANCE_STATUS_NOT_APPROVED,
   STATUS_WITHDRAW_SUCCESSFUL,
   STATUS_WITHDRAW_UNSUCCESSFUL,
 } from "../../../utils/constant/ExpenseType";
@@ -56,9 +59,6 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
-import lawyerJumbo from "../../../assets/images/license/lawyerJumbo.png";
-import lawyerYut from "../../../assets/images/license/lawyerYut.png";
-import lawyerTon from "../../../assets/images/license/lawyerTon.png";
 import oneTome from "../../../assets/images/license/oneTome.png";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
 
@@ -92,11 +92,12 @@ const Main = () => {
   const [printOption, setPrintOption] = useState(false);
   const [dataExport, setDataExport] = useState([]);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-  const [lawsuitsData, setLawsuitsData] = useState([]);
   const [selectedDate, setSelectedDate] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
+  const [imageList, setImageList] = useState([]);
+  const [imageLawyer, setImageLawyer] = useState();
 
   const onExpand = (expanded, record) => {
     if (expanded) {
@@ -128,6 +129,12 @@ const Main = () => {
       setDataExportPrint();
     }
   }, [selectedRows]);
+
+  useEffect(() => {
+    if (imageList?.length > 0) {
+      renderLawyer(lawyerId);
+    }
+  }, [imageList]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -166,12 +173,14 @@ const Main = () => {
 
     if (dataArr.COMPANY_ID === 3) {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 && (item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelect = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }
     const options = companySelect.map((item) => ({
@@ -215,24 +224,6 @@ const Main = () => {
       setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
     }
-    try {
-      const response = await axios.get(baseUrl + GET_LAWSUIT_LIST, {
-        headers: HEADERS_EXPORT,
-      });
-      if (response.data) {
-        if (response.data) {
-          console.log(response.data);
-          setLawsuitsData(response.data);
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Error posting data:",
-        error.response ? error.response.data : error.message
-      );
-      setLoading(false);
-      message.error(`ไม่พบข้อมูล: ${error.message}`);
-    }
   };
 
   const filterData = (data) => {
@@ -241,7 +232,7 @@ const Main = () => {
         (item) =>
           item.withdraw_process_id <= 4 &&
           item.reference_no &&
-          (ROLE_ID === "1" || ROLE_ID === "6")
+          (ROLE_ID === "1" || ROLE_ID === "6" || userId === 4)
       );
 
       console.log("newData-->", newData);
@@ -277,7 +268,7 @@ const Main = () => {
           lawyerId === item.USER_ID &&
           item.COMPANY_ID === 2
       );
-
+      loadImagesProduct();
       setArrayTable(useData);
       setDataArr(preData);
       setTableLength(useData.length);
@@ -349,7 +340,51 @@ const Main = () => {
     }));
   };
 
-  const sendData = async (data) => {
+  const loadImagesProduct = async (value) => {
+    console.log(value);
+
+    await axios
+      .get(baseUrl + `/files/lawyer/user/license_lawyer/public`)
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const renderLawyer = async (value) => {
+    console.log("value", value);
+    console.log("imageList", imageList);
+    const expectedName = `lawyer/user/license_lawyer/public/${value}.png`;
+    const lawyerLicense = imageList?.find((item) => item.name === expectedName);
+
+    if (!lawyerLicense) {
+      console.warn("ไม่พบไฟล์ลายเซ็นสำหรับ", value);
+      return;
+    }
+
+    const base64 = await toBase64(lawyerLicense.url);
+
+    setImageLawyer(base64);
+  };
+
+  const toBase64 = async (url) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // result เป็น base64
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const sendData = async (data, dataRef) => {
     setLoading(true);
 
     try {
@@ -360,8 +395,16 @@ const Main = () => {
         })
       );
 
+      const promisesExpensRef = axios.put(
+        `${baseUrl}${PUT_EXPENSES_REFERENCE}`,
+        dataRef,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesExpense];
+      const allPromises = [...promisesExpense, promisesExpensRef];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -385,9 +428,9 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 500);
     }
   };
 
@@ -635,9 +678,9 @@ const Main = () => {
     console.log("onChangeSelectLawyer-->", value, label);
     let lawyerSet = lawyersList.find((item) => item.NNAME === label.label);
     setLawyerName(lawyerSet);
-
     onSearchLawyers(value);
     setLawyerId(value);
+    renderLawyer(value);
   };
 
   const onChangeSelectStatus = (value) => {
@@ -738,12 +781,22 @@ const Main = () => {
       withdraw_datetime: dayjs().format("YYYY-MM-DD"),
       withdraw_process_id: STATUS_WITHDRAW_SUCCESSFUL,
     };
+
+    console.log("data--->", data);
+
+    const putRef = {
+      reference_no: data.reference_no,
+      user_id: data.USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_APPROVED,
+    };
     const putExpense = preData.expenseList.forEach((expense) => {
       expense.withdraw_process_id = STATUS_WITHDRAW_SUCCESSFUL;
       expense.withdraw_datetime = dayjs().format("YYYY-MM-DD");
     });
     console.log(preData);
-    sendData(preData);
+    console.log(putRef);
+
+    sendData(preData, putRef);
   };
 
   const cancel = (data) => {
@@ -753,13 +806,18 @@ const Main = () => {
       withdraw_datetime: dayjs().format("YYYY-MM-DD"),
       withdraw_process_id: STATUS_WITHDRAW_UNSUCCESSFUL,
     };
+    const putRef = {
+      reference_no: data.reference_no,
+      user_id: data.USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_NOT_APPROVED,
+    };
     const putExpense = preData.expenseList.forEach((expense) => {
       expense.withdraw_process_id = STATUS_WITHDRAW_UNSUCCESSFUL;
       expense.withdraw_datetime = dayjs().format("YYYY-MM-DD");
     });
-    console.log("preData-->", preData);
+    console.log("preData-->", preData, putRef);
 
-    sendData(preData);
+    sendData(preData, putRef);
   };
 
   const createAndDownloadExcel = async () => {
@@ -839,7 +897,7 @@ const Main = () => {
     console.log("handleUpdate", data);
 
     const result = dataArr.map((item) => {
-      if (item.id === data.id) {
+      if (item.key === data.key) {
         return { ...data };
       } else {
         return { ...item };
@@ -1482,43 +1540,51 @@ const Main = () => {
       const finalY = pdf.lastAutoTable.finalY;
       pdf.setTextColor(0, 0, 0);
       // เพิ่มข้อความด้านล่างตาราง
-      // เพิ่มข้อความด้านล่างตาราง
-      if (lawyerName.id === 2) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerYut; // Replace with your image URL or base64
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      } else if (lawyerName.id === 3) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerJumbo; // Replace with your image URL or base64
-        pdfPositionY += 40;
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      } else if (lawyerName.id === 11) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerTon; // Replace with your image URL or base64
-        pdfPositionY += 40;
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      }
+      pdf.addImage(
+        imageLawyer,
+        "PNG",
+        63,
+        finalY + 7,
+        imageWidthImg,
+        imageHeightImg
+      );
+      // if (lawyerName.id === 1) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = imageLawyer; // Replace with your image URL or base64
+      //   pdf.addImage(
+      //     imageLawyer,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // } else if (lawyerName.id === 2) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = imageLawyer; // Replace with your image URL or base64
+      //   pdfPositionY += 40;
+      //   pdf.addImage(
+      //     imageLawyer,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // } else if (lawyerName.id === 11) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = lawyerTon; // Replace with your image URL or base64
+      //   pdfPositionY += 40;
+      //   pdf.addImage(
+      //     imageLawyer,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // }
+
       pdf.text(
         `ลงชื่อผู้เคลียร์...................................`,
         40,
@@ -1536,7 +1602,12 @@ const Main = () => {
         45,
         finalY + 32
       ); // (x, y)
-      pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
+      pdf.text(
+        `${lawyerName.book_bank ? lawyerName?.book_bank : ""}`,
+        45,
+        finalY + 37
+      ); // (x, y)
+      pdf.text(`${lawyerName.telp ? lawyerName?.telp : ""}`, 45, finalY + 42); // (x, y)
 
       pdfPositionY += 40;
       if (selectedRows[index]?.withdraw_process_id === 3) {
@@ -1778,11 +1849,24 @@ const Main = () => {
                           borderRadius: "8px",
                         }}
                       >
-                        <div style={{ color: "#333", fontSize: "14px" }}>
+                        <div
+                          style={{
+                            color: "#333",
+                            fontSize: "14px",
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            maxWidth: "60%",
+                          }}
+                        >
                           {expense.expense_description}:
                         </div>
                         <div style={{ textAlign: "right" }}>
-                          <p style={{ color: "#1a73e8", fontSize: "14px" }}>
+                          <p
+                            style={{
+                              color: "#1a73e8",
+                              fontSize: "14px",
+                            }}
+                          >
                             {`เบิก: ${expense.withdraw}`}
                           </p>
                         </div>
@@ -1924,7 +2008,9 @@ const Main = () => {
       align: "center",
       render: (record) => (
         <>
-          {record.pay || record.withdraw_process_id === 4 ? (
+          {record.pay ||
+          record.withdraw_process_id === 4 ||
+          record.withdraw_process_id === 2 ? (
             <Popconfirm
               placement="topLeft"
               title="อัพเดทสถานะ"

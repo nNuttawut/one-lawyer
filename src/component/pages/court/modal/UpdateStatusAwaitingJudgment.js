@@ -600,7 +600,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           mark: values.memo,
           judge_date: dayjs(values.enforceCaseDate).format("YYYY-MM-DD"),
           trial_money_cleared_status:
-            radioDecide === "enfroce"
+            radioDecide === "enforce"
               ? STATUS_JUDGEMENT
               : STATUS_JUDGEMENT_AND_AGREEMENT,
         };
@@ -1013,7 +1013,11 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             {tabsKey === "1" ? (
               <Checkbox value={governmentOfficers}>
                 {governmentOfficers
-                  ? `จำเลยที่ 1 ${governmentOfficers?.SNAM} ${governmentOfficers?.NAME1} ${governmentOfficers?.NAME2}`
+                  ? `จำเลยที่ 1 ${governmentOfficers?.SNAM} ${
+                      governmentOfficers?.NAME1
+                    } ${
+                      governmentOfficers?.NAME2 ? governmentOfficers?.NAME2 : ""
+                    }`
                   : "-"}
               </Checkbox>
             ) : null}

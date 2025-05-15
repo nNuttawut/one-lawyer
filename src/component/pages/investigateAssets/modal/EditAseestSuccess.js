@@ -13,6 +13,7 @@ import {
   Tooltip,
   DatePicker,
   Image,
+  InputNumber,
 } from "antd";
 import {
   baseUrl,
@@ -129,6 +130,15 @@ const EditAssetsSuccess = ({
       estimatedPrice: currencyFormatComma(dataIndex.estimated_price),
       averageStatus:
         dataIndex.estimated_price > dataIndex.mortgage_balance ? 1 : 0,
+      estimatedEnforcePrice: dataIndex?.estimated_enforce_price
+        ? dataIndex?.estimated_enforce_price
+        : null,
+      AddrEnforce: dataIndex?.legal_execution_office
+        ? dataIndex?.legal_execution_office
+        : null,
+      judgmentCreditorDate: dataIndex?.seize_date
+        ? dayjs(dataIndex?.seize_date)
+        : null,
     });
   }, [isModal]);
 
@@ -218,19 +228,20 @@ const EditAssetsSuccess = ({
 
     setDataLandDetailList(result);
   };
+
   const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
-    if (COMPANY === 1) {
+    if (COMPANY === 3) {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.COMPANY_ID === 3 &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
-          item.COMPANY_ID === 3 &&
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
           (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }
@@ -369,6 +380,13 @@ const EditAssetsSuccess = ({
           : null,
       mark: values.memo,
       investigate_filepath: values.urlFile,
+      estimated_enforce_price: values?.estimatedEnforcePrice
+        ? values?.estimatedEnforcePrice
+        : null,
+      legal_execution_office: values?.AddrEnforce ? values?.AddrEnforce : null,
+      seize_date: values.judgmentCreditorDate
+        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+        : null,
     };
 
     console.log("postDataInvestigate---->", putDataInvestigate);
@@ -650,7 +668,45 @@ const EditAssetsSuccess = ({
               ]}
             >
               <Input name="ownerAsset" />
-            </Form.Item>{" "}
+            </Form.Item>
+            <Form.Item
+              label="วันที่โดนอายัด"
+              name="judgmentCreditorDate"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาเลือกวันที่สืบทรัพย์",
+                },
+              ]}
+            >
+              <DatePicker name="judgmentCreditorDate" />
+            </Form.Item>
+            <Tooltip
+              placement="bottom"
+              title="ราคาประเมินจากกรมบังคับคดี"
+              arrow={mergedArrow}
+            >
+              <Form.Item
+                label="ราคาประเมิน(จพค.)"
+                name="estimatedEnforcePrice"
+                style={{ color: "red" }}
+              >
+                <InputNumber
+                  name="estimatedEnforcePrice"
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                  style={{ width: "100%", color: "black" }}
+                />
+              </Form.Item>
+            </Tooltip>
+            <Form.Item label="สำนักงานบังคับคดี" name="AddrEnforce">
+              <Input name="AddrEnforce" />
+            </Form.Item>
           </>
         ) : null}
         <Form.Item
@@ -663,7 +719,10 @@ const EditAssetsSuccess = ({
             },
           ]}
         >
-          <Select
+          {assistantOption?.find(
+            (item) => item.value === dataIndex.investigator_user_id
+          )?.label || "ไม่พบชื่อ"}
+          {/* <Select
             placeholder="เลือกผู้สืบทรัพย์"
             showSearch
             optionFilterProp="label"
@@ -671,7 +730,8 @@ const EditAssetsSuccess = ({
             onChange={(value) => onChangeSelectInvestigatorAsset(value)}
             options={assistantOption}
             style={{ width: "100%" }}
-          />
+            
+          /> */}
         </Form.Item>
         {imageList.length > 0 ? (
           <Form.Item label="ไฟล์/ภาพที่บันทึก" name={"imageFile"}>

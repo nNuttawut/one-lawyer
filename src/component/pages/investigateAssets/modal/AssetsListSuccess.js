@@ -573,8 +573,56 @@ const InvestigateAssets = ({
                     )}  บาท `
                   : "ยังไม่ประเมินจากคุณหนุ่ม"}
               </p>
+              <p
+                style={{
+                  color: item.estimated_enforce_price ? "green" : "red",
+                }}
+              >
+                {item.estimated_enforce_price
+                  ? `ยอดประเมินจาก(จพค.) ${currencyFormatComma(
+                      item.estimated_enforce_price
+                    )}  บาท `
+                  : "กรุณาอัพเดทราคาประเมินจากกรมบังคับคดี"}
+              </p>
+
               <p>{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
-              <p>{`หมายเหตุ ${item.mark}`}</p>
+              <p>หมายเหตุ {item.mark}</p>
+              <p
+                style={{
+                  color: item.mortgagee ? "red" : "lightgreen",
+                }}
+              >
+                {item.mortgagee
+                  ? `เจ้าหนี้จำนอง ${
+                      item.mortgagee
+                    } จำนวน ${currencyFormatComma(item.mortgage_balance)} บาท`
+                  : null}
+              </p>
+              <p
+                style={{
+                  color: item.sequestrate_status ? "red" : "lightgreen",
+                }}
+              >
+                {item.sequestrate_status
+                  ? `ติดอายัดกับ ${item.preference_creditor}`
+                  : null}
+              </p>
+              <p
+                style={{
+                  color:
+                    item.estimated_enforce_price > item.mortgage_balance
+                      ? "green"
+                      : "red",
+                }}
+              >
+                {item.sequestrate_status && item.mortgage_balance
+                  ? item.estimated_enforce_price
+                    ? item.estimated_enforce_price > item.mortgage_balance
+                      ? "พอเฉลี่ย"
+                      : "ไม่พอเฉลี่ย"
+                    : null
+                  : null}
+              </p>
             </>
           }
         />

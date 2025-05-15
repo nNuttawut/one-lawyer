@@ -254,6 +254,7 @@ const Main = () => {
               optionFilterProp="value"
               options={companiesOption}
               onChange={(value) => onChangeSelect(value)}
+              disabled
             />
           </Form.Item>
 

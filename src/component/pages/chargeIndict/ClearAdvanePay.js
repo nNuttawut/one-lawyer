@@ -29,6 +29,7 @@ import {
   GET_LAWSUIT_LIST,
   HEADERS_EXPORT,
   PUT_EXPENSES,
+  PUT_EXPENSES_REFERENCE,
 } from "../../API/apiUrls";
 
 import axios from "axios";
@@ -51,12 +52,10 @@ import {
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
 } from "../../../utils/constant/StatusConstant";
-import lawyerJumbo from "../../../assets/images/license/lawyerJumbo.png";
-import lawyerYut from "../../../assets/images/license/lawyerYut.png";
-import lawyerTon from "../../../assets/images/license/lawyerTon.png";
 import oneTome from "../../../assets/images/license/oneTome.png";
 import BillTranfer from "./modal/BillTranfer";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import { PAYADVANCE_STATUS_SUCCESS } from "../../../utils/constant/ExpenseType";
 
 const Main = () => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
@@ -94,6 +93,8 @@ const Main = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [isModalFile, setIsModalFile] = useState(false);
+  const [imageList, setImageList] = useState([]);
+  const [imageLawyer, setImageLawyer] = useState();
 
   const onExpand = (expanded, record) => {
     if (expanded) {
@@ -125,6 +126,12 @@ const Main = () => {
       setDataExportPrint();
     }
   }, [selectedRows]);
+
+  useEffect(() => {
+    if (imageList?.length > 0) {
+      renderLawyer(lawyerId);
+    }
+  }, [imageList]);
 
   const loadSelectCompany = (value) => {
     const selectedOption = value.find((option) => option.value === 2);
@@ -160,12 +167,14 @@ const Main = () => {
 
     if (dataArr.COMPANY_ID === 3) {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 && (item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
       companySelect = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     }
     const options = companySelect.map((item) => ({
@@ -237,7 +246,8 @@ const Main = () => {
     if (Array.isArray(data)) {
       const newData = data.filter(
         (item) =>
-          item.withdraw_process_id === 3 && (ROLE_ID === "1" || ROLE_ID === "6")
+          item.withdraw_process_id === 3 &&
+          (ROLE_ID === "1" || ROLE_ID === "6" || userId === 4)
       );
 
       let filteredData;
@@ -272,7 +282,7 @@ const Main = () => {
           item.COMPANY_ID === 2 &&
           item.pay_type_id === 4
       );
-
+      loadImagesProduct();
       setArrayTable(useData);
       setTableLength(useData.length);
       console.log("newData", useData);
@@ -351,7 +361,51 @@ const Main = () => {
     }));
   };
 
-  const sendData = async (data) => {
+  const loadImagesProduct = async (value) => {
+    console.log(value);
+
+    await axios
+      .get(baseUrl + `/files/lawyer/user/license_lawyer/public`)
+      .then((response) => {
+        console.log("ImageList", response.data);
+        setImageList(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err);
+      });
+  };
+
+  const renderLawyer = async (value) => {
+    console.log("value", value);
+    console.log("imageList", imageList);
+    const expectedName = `lawyer/user/license_lawyer/public/${value}.png`;
+    const lawyerLicense = imageList?.find((item) => item.name === expectedName);
+
+    if (!lawyerLicense) {
+      console.warn("ไม่พบไฟล์ลายเซ็นสำหรับ", value);
+      return;
+    }
+
+    const base64 = await toBase64(lawyerLicense.url);
+
+    setImageLawyer(base64);
+  };
+
+  const toBase64 = async (url) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result); // result เป็น base64
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const sendData = async (data, dataRef) => {
     setLoading(true);
 
     try {
@@ -362,8 +416,16 @@ const Main = () => {
         })
       );
 
+      const promisesExpensRef = axios.put(
+        `${baseUrl}${PUT_EXPENSES_REFERENCE}`,
+        dataRef,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesExpense];
+      const allPromises = [...promisesExpense, promisesExpensRef];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -387,9 +449,9 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     }
   };
 
@@ -636,6 +698,7 @@ const Main = () => {
     let lawyerSet = lawyersList.find((item) => item.NNAME === label.label);
     console.log(lawyerSet);
     setLawyerName(lawyerSet);
+    renderLawyer(value);
   };
 
   const onChangeSelectStatus = (value) => {
@@ -736,12 +799,19 @@ const Main = () => {
       // pay_datetime: dayjs().format("YYYY-MM-DD"),
       pay_type_id: 1,
     };
+
+    const putRef = {
+      reference_no: data.reference_no,
+      user_id: data.USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_SUCCESS,
+    };
+
     const putExpense = preData.expenseList.forEach((expense) => {
       expense.pay_type_id = 1;
       // expense.pay_datetime = dayjs().format("YYYY-MM-DD");
     });
-    console.log(preData);
-    sendData(preData);
+    console.log(preData, putRef);
+    sendData(preData, putRef);
   };
 
   const createAndDownloadExcel = async () => {
@@ -821,7 +891,7 @@ const Main = () => {
     console.log("handleUpdate", data);
 
     const result = dataArr.map((item) => {
-      if (item.id === data.id) {
+      if (item.key === data.key) {
         return { ...data };
       } else {
         return { ...item };
@@ -1535,61 +1605,78 @@ const Main = () => {
       const finalY = pdf.lastAutoTable.finalY;
       pdf.setTextColor(0, 0, 0);
       // เพิ่มข้อความด้านล่างตาราง
-      // เพิ่มข้อความด้านล่างตาราง
-      if (lawyerName.id === 2) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerYut; // Replace with your image URL or base64
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      } else if (lawyerName.id === 3) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerJumbo; // Replace with your image URL or base64
-        pdfPositionY += 40;
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      } else if (lawyerName.id === 11) {
-        //ลายเซ็นต์ ทนาย
-        const imageUrl = lawyerTon; // Replace with your image URL or base64
-        pdfPositionY += 40;
-        pdf.addImage(
-          imageUrl,
-          "PNG",
-          60,
-          finalY + 7,
-          imageWidthImg,
-          imageHeightImg
-        );
-      }
+      pdf.addImage(
+        imageLawyer,
+        "PNG",
+        63,
+        finalY + 2,
+        imageWidthImg,
+        imageHeightImg
+      );
+
+      // if (lawyerName.id === 2) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = lawyerYut; // Replace with your image URL or base64
+      //   pdf.addImage(
+      //     imageUrl,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // } else if (lawyerName.id === 3) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = lawyerJumbo; // Replace with your image URL or base64
+      //   pdfPositionY += 40;
+      //   pdf.addImage(
+      //     imageUrl,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // } else if (lawyerName.id === 11) {
+      //   //ลายเซ็นต์ ทนาย
+      //   const imageUrl = lawyerTon; // Replace with your image URL or base64
+      //   pdfPositionY += 40;
+      //   pdf.addImage(
+      //     imageUrl,
+      //     "PNG",
+      //     60,
+      //     finalY + 7,
+      //     imageWidthImg,
+      //     imageHeightImg
+      //   );
+      // }
       pdf.text(
         `ลงชื่อผู้เคลียร์...................................`,
         40,
-        finalY + 20
+        finalY + 15
       ); // (x, y)
       pdf.text(
-        `(${lawyerName ? lawyerName?.NNAME : "                         "})`,
+        `(${
+          lawyerName?.NNAME ? lawyerName?.NNAME : "                         "
+        })`,
         50,
+        finalY + 22
+      ); // (x, y)
+      pdf.text(
+        `${
+          lawyerName?.FNAME ? lawyerName?.FNAME : "                        "
+        }  ${
+          lawyerName?.LNAME ? lawyerName?.LNAME : "                         "
+        }`,
+        45,
         finalY + 27
       ); // (x, y)
       pdf.text(
-        `${lawyerName ? lawyerName?.FNAME : "                        "}  ${
-          lawyerName ? lawyerName?.LNAME : "                         "
-        }`,
+        `${lawyerName.book_bank ? lawyerName?.book_bank : ""}`,
         45,
         finalY + 32
       ); // (x, y)
-      pdf.text(`${lawyerName ? lawyerName?.book_bank : ""}`, 45, finalY + 37); // (x, y)
+      pdf.text(`${lawyerName.telp ? lawyerName?.telp : ""}`, 45, finalY + 37);
 
       pdfPositionY += 40;
       if (selectedRows[index]?.pay_type_id === 1) {
@@ -1597,7 +1684,7 @@ const Main = () => {
           oneTome,
           "PNG",
           143,
-          finalY + 7,
+          finalY + 2,
           imageWidthImg,
           imageHeightImg
         );
@@ -1605,7 +1692,7 @@ const Main = () => {
       pdf.text(
         `ลงชื่อผู้อนุมัติ..................................`,
         120,
-        finalY + 20
+        finalY + 15
       ); // (x, y)
       if (selectedRows[index]?.pay_type_id === 1) {
         pdf.text(
@@ -1613,15 +1700,15 @@ const Main = () => {
             selectedRows[index]?.updated_date
           )})`,
           125,
-          finalY + 28
+          finalY + 23
         ); // (x, y)
       } else {
-        pdf.text(`(                                     )`, 125, finalY + 28); // (x, y)
+        pdf.text(`(                                     )`, 125, finalY + 23); // (x, y)
       }
       pdf.text(
         `ลงชื่อผู้ตรวจ..................................`,
         120,
-        finalY + 50
+        finalY + 45
       ); // (x, y)
     });
 
@@ -2092,8 +2179,6 @@ const Main = () => {
     console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
     setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
   };
-
-  console.log("setSelectedRows", selectedRows);
 
   const rowSelection = {
     selectedRowKeys,

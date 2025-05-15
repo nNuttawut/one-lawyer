@@ -30,7 +30,7 @@ import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
-  const [convertDateThai] = DateCustom();
+  const [convertDateThai, convertDateThaiShort] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [isModal, setIsModal] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -48,9 +48,8 @@ const Main = () => {
     loadData();
   }, []);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
 
     try {
       await axios
@@ -218,7 +217,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.investigation_date).startOf("day");
+    const recordDate = dayjs(record.investigation_date);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี

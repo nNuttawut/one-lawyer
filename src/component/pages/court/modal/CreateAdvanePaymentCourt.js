@@ -14,6 +14,7 @@ import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
+  POST_EXPENSES_REFERENCE,
   PUT_JUDGE,
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
@@ -27,6 +28,7 @@ import {
   DELIVERY_OF_SUMMONS,
   DOCUMENT_COST,
   FEE_COURT,
+  PAYADVANCE_STATUS_PROCESS,
   STAMP_COST,
   STATUS_WITHDRAW_PROCESS,
   STATUS_WITHDRAW_SUCCESSFUL,
@@ -86,7 +88,7 @@ const CreateAdvanePayment = ({
     setIsModal(false);
   };
 
-  const sendData = async (setPutJudgement, setPreExpenseSend) => {
+  const sendData = async (setPutJudgement, setPreExpenseSend, setReference) => {
     setLoading(true);
 
     try {
@@ -114,8 +116,20 @@ const CreateAdvanePayment = ({
         })
       );
 
+      const promissReference = axios.post(
+        `${baseUrl}${POST_EXPENSES_REFERENCE}`,
+        setReference,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesJudgement, ...promisesExpense];
+      const allPromises = [
+        ...promisesJudgement,
+        ...promisesExpense,
+        promissReference,
+      ];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -171,15 +185,27 @@ const CreateAdvanePayment = ({
     console.log(dataPropertyList);
     let setPutJudgement = [];
     let setPreExpenseSend = [];
-
     let defindNo;
+    const formatTwoDigit = (num) => (num < 10 ? "0" + num : num);
     if (company.value === 1 || company.value === 4) {
-      defindNo = "LBN";
+      defindNo = `${JUDGEMENT}LBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else if (company.value === 2 || company.value === 5) {
-      defindNo = "MBN";
+      defindNo = `${JUDGEMENT}MBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else {
-      defindNo = "KBN";
+      defindNo = `${JUDGEMENT}KBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     }
+
+    const dataReference = {
+      reference_no: defindNo,
+      user_id: USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_PROCESS,
+    };
 
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
@@ -189,9 +215,7 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${JUDGEMENT}${defindNo}${USER_ID}-${dayjs().format(
-        "YYYYMMDDHHmmss"
-      )}`,
+      reference_no: defindNo,
     };
 
     const uniqueJudgementIds = new Set(); // ใช้เก็บ id ที่เจอแล้ว
@@ -225,11 +249,9 @@ const CreateAdvanePayment = ({
             fee_payment_status: feeValue
               ? STATUS_WITHDRAW_PROCESS
               : judgement.fee_payment_status,
-
             // ✅ ใช้ค่าที่แยกไว้
             fee: feeValue?.withdraw || judgement.fee,
             copying_fee: copyingFeeValue?.withdraw || judgement.copying_fee,
-
             copying_fee_datetime: copyingFeeValue
               ? dayjs().format("YYYY-MM-DD")
               : judgement.copying_fee_datetime,
@@ -248,17 +270,14 @@ const CreateAdvanePayment = ({
 
     console.log("setPutJudgement", setPutJudgement);
     console.log("setDataExpense---->", setPreExpenseSend);
-    sendData(setPutJudgement, setPreExpenseSend);
+    console.log("dataReference--->", dataReference);
+
+    sendData(setPutJudgement, setPreExpenseSend, dataReference);
   };
 
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
     message.error("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครับ");
-  };
-
-  const onChangeInputInvestigateDate = (date, dateSting) => {
-    console.log(date);
-    console.log(dateSting);
   };
 
   const onChangeInputMemo = (value) => {

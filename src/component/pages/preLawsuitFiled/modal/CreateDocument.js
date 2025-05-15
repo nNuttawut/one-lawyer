@@ -16,7 +16,6 @@ import {
   GET_LAWSUIT_DETAIL_BY_LOAN,
   GET_LOAN_BY_CONTNO,
   HEADERS_EXPORT,
-  POST_DETAIL_PAYMENT,
   PUT_LAWSUIT_DETAIL,
   PUT_STATUS,
 } from "../../../API/apiUrls";
@@ -27,10 +26,6 @@ import { STATUS_PROCESS_SUCCESSFUL } from "../../../../utils/constant/StatusCons
 import dayjs from "dayjs";
 import LoadCompanies from "../../../../hook/LoadCompanies";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
-import {
-  interest,
-  optionsInterest,
-} from "../../../../utils/constant/ Interest";
 import DateCustom from "../../../../hook/DateCustom";
 
 const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
@@ -234,7 +229,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         calStampDuty = 10000;
       }
 
-      console.log("calFeeCourt", Math.round(calFeeCourt));
+      console.log("calFeeCourt", Math.ceil(calFeeCourt));
 
       if (dataForm.dateCourt) {
         form.setFieldsValue({
@@ -242,7 +237,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
           stampDuty:
             (loanType !== 2 && loanType !== 5) ||
             (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
-              ? Math.round(calStampDuty)
+              ? Math.ceil(calStampDuty)
               : 0,
         });
       }
@@ -289,7 +284,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             ? parseInt(values.stampDuty.replace(/,/g, ""))
             : parseInt(values.stampDuty)
             ? parseInt(values.stampDuty)
-            : 0,
+            : null,
         date_of_plaint: dataForm.dateCourt,
         lack_of_benefits:
           values?.lossBenefit &&
@@ -314,7 +309,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             ? parseInt(values.docShipingCost.replace(/,/g, ""))
             : parseInt(values.docShipingCost)
             ? parseInt(values.docShipingCost)
-            : 0,
+            : null,
         document_cost:
           values?.documentCost &&
           typeof values.documentCost === "string" &&
@@ -322,7 +317,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             ? parseInt(values.documentCost.replace(/,/g, ""))
             : parseInt(values.documentCost)
             ? parseInt(values.documentCost)
-            : 0,
+            : null,
         LOAN_TYPE_ID: values.loanType,
       };
 

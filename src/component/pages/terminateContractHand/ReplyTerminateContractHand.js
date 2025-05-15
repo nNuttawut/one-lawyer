@@ -12,6 +12,7 @@ import {
   Select,
   Tooltip,
   Switch,
+  Radio,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
@@ -65,6 +66,7 @@ const Main = () => {
     current: 1,
     pageSize: 15,
   });
+  const [postOfficeTypeSelect, setPostOfficeTypeSelect] = useState(1);
 
   const optionSelectCallback = [
     { value: "all", label: "ทั้งหมด" },
@@ -694,14 +696,20 @@ const Main = () => {
         horizontal: "center",
         vertical: "middle",
       };
+      let positionCell;
+      if (postOfficeTypeSelect === 1) {
+        positionCell = "E10";
+      } else {
+        positionCell = "F10";
+      }
 
-      worksheet.getCell("F10").value = "เลขที่บริการ (13 หลัก)";
-      worksheet.getCell("F10").font = {
+      worksheet.getCell(positionCell).value = "เลขที่บริการ (13 หลัก)";
+      worksheet.getCell(positionCell).font = {
         bold: true,
         size: 14,
         name: "Angsana New",
       };
-      worksheet.getCell("F10").alignment = { horizontal: "center" };
+      worksheet.getCell(positionCell).alignment = { horizontal: "center" };
 
       worksheet.getColumn(4).width = 6;
       worksheet.getCell("D11").value = "ธรรมดา";
@@ -712,7 +720,13 @@ const Main = () => {
       };
       worksheet.getCell("D11").alignment = { horizontal: "center" };
 
-      worksheet.getColumn(5).width = 10;
+      let sizeCell = [];
+      if (postOfficeTypeSelect === 1) {
+        sizeCell = [15, 10];
+      } else {
+        sizeCell = [10, 15];
+      }
+      worksheet.getColumn(5).width = sizeCell[0];
       worksheet.getCell("E11").value = "ลงทะเบียน";
       worksheet.getCell("E11").font = {
         bold: true,
@@ -721,7 +735,7 @@ const Main = () => {
       };
       worksheet.getCell("E11").alignment = { horizontal: "center" };
 
-      worksheet.getColumn(6).width = 15;
+      worksheet.getColumn(6).width = sizeCell[1];
       worksheet.getCell("F11").value = "EMS";
       worksheet.getCell("F11").font = {
         bold: true,
@@ -867,8 +881,8 @@ const Main = () => {
         row.customer_fullname ? row.customer_fullname : "",
         row.zipcode ? row.zipcode : "",
         row.customer_type_id === 0 ? "ผชซ." : `คค ${row.customer_type_id}.`,
-        row.contract_no ? row.contract_no : "",
-        row.parcel_no ? row.parcel_no : "",
+        postOfficeTypeSelect === 1 ? row.parcel_no : row.contract_no,
+        postOfficeTypeSelect === 2 ? row.parcel_no : row.contract_no,
         "",
         "",
       ]);
@@ -1082,6 +1096,11 @@ const Main = () => {
     saveAs(zipBlob, `${record.contract_no}_${record.parcel_no_response}.zip`);
   };
 
+  const handleChangeRadio = (value) => {
+    console.log("value", value);
+    setPostOfficeTypeSelect(value);
+  };
+
   const rowSelection = {
     selectedRowKeys,
     onChange: (rowKeys, selectedRows) => {
@@ -1109,17 +1128,7 @@ const Main = () => {
         </>
       ),
     },
-    // {
-    //   title: "รายละเอียด",
-    //   dataIndex: "contract_no",
-    //   key: "contract_no",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {convertDateThaiShort(record.datetime)} <br />
-    //     </>
-    //   ),
-    // },
+
     {
       title: "ชื่อ-นามสกุล",
       dataIndex: "customer_fullname",
@@ -1140,51 +1149,7 @@ const Main = () => {
         </>
       ),
     },
-    // {
-    //   title: "ยี่ห้อ",
-    //   dataIndex: "brand",
-    //   key: "brand", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-    //   align: "center",
-    // },
-    // {
-    //   title: "ทะเบียน",
-    //   dataIndex: "register_no",
-    //   key: "register_no", // ใช้ key แทน dataIndex เพราะเราไม่ต้องการใช้ข้อมูลจาก data
-    //   align: "center",
-    // },
-    // {
-    //   title: "ค้างงวด",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.overdue_installment_count
-    //         ? record.overdue_installment_count
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "เงินค้าง",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.overdue_installment_amount
-    //         ? currencyFormatPoint(record.overdue_installment_amount)
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
-    // {
-    //   title: "ค่าทวงถาม",
-    //   align: "center",
-    //   render: (text, record) => (
-    //     <>
-    //       {record.dept_collection_fees
-    //         ? currencyFormatComma(record.dept_collection_fees)
-    //         : null}{" "}
-    //     </>
-    //   ),
-    // },
+
     {
       title: "วันที่นำข้อมูลเข้า",
       align: "center",
@@ -1261,6 +1226,17 @@ const Main = () => {
                 marginBottom: "10px",
               }}
             >
+              <Radio.Group
+                name="postOfficeType"
+                defaultValue={postOfficeTypeSelect}
+                options={[
+                  { value: 1, label: "ลงทะเบียน" },
+                  { value: 2, label: "EMS" },
+                ]}
+                onChange={(e) => {
+                  handleChangeRadio(e.target.value);
+                }}
+              />
               <Switch
                 checkedChildren="รายงาน"
                 unCheckedChildren="ส่งไปรษณีย์"

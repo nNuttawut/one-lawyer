@@ -387,7 +387,7 @@ const Main = () => {
 
   const renderStatusPay = (record) => {
     let i = 0;
-    const allMatch = record.expenseList.every((expense) => expense.pay);
+    const allMatch = record.expenseList.every((expense) => expense.pay_type_id);
     let status;
     let color;
     let totalPay = 0;

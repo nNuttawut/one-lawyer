@@ -9,12 +9,12 @@ import {
   message,
   Spin,
   List,
+  Select,
 } from "antd";
 import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
-  POST_EXPENSES_REFERENCE,
   PUT_JUDGE,
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
@@ -28,18 +28,14 @@ import {
   DELIVERY_OF_SUMMONS,
   DOCUMENT_COST,
   FEE_COURT,
-  PAYADVANCE_STATUS_PROCESS,
   STAMP_COST,
   STATUS_WITHDRAW_PROCESS,
   STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
-import {
-  ENFORCEMENT,
-  INVESTIGATE,
-  JUDGEMENT,
-} from "../../../../utils/constant/StatusConstant";
+import { JUDGEMENT } from "../../../../utils/constant/StatusConstant";
+import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const CreateAdvanePayment = ({
   open,
@@ -65,6 +61,13 @@ const CreateAdvanePayment = ({
   const [dataPropertyList, setDataPropertyList] = useState([]);
   const [editPayment, setEditPayment] = useState();
   const [dataExpense, setDataExpense] = useState([]);
+  const [companiesOption, setCompaniesOption] = useState(null);
+  const [companieSelect, setCompanieSelect] = useState();
+  const userCompany = localStorage.getItem("COMPANY_ID");
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
+  const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userName = localStorage.getItem("FNAME");
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
 
   useEffect(() => {
     setIsModal(open);
@@ -73,6 +76,49 @@ const CreateAdvanePayment = ({
       console.log("loadData---->", dataDefault);
     }
   }, [isModal]);
+
+  useEffect(() => {
+    setLoadingDataCompany(true);
+  }, [setLoadingDataCompany]);
+
+  useEffect(() => {
+    if (companiesListCompany) {
+      setOptionCompany();
+    }
+  }, [companiesListCompany]);
+
+  const setOptionCompany = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+    }));
+
+    console.log("options", options);
+    setCompaniesOption(options);
+    loadSelectCompany(options);
+  };
+
+  const loadSelectCompany = (value) => {
+    const selectedOption = value.find((option) => option.value === 2);
+    if (selectedOption) {
+      console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
+      setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
+    }
+  };
+
+  const onChangeSelect = (value) => {
+    console.log(`selected ${value} `);
+
+    // const selectedOption = companiesOption.find(
+    //   (option) => option.value === value
+    // );
+
+    // if (selectedOption) {
+    //   console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
+    //   setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
+    // }
+  };
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -92,17 +138,26 @@ const CreateAdvanePayment = ({
     setIsModal(false);
   };
 
-  const sendData = async (setPreExpenseSend, setReference) => {
+  const sendData = async (setPutJudgement, setPreExpenseSend) => {
     setLoading(true);
 
     try {
+      // ตรวจสอบข้อมูลก่อนส่ง
+      const hasInvalidLawsuit = setPutJudgement.some((item) => !item);
       const hasInvalidExpense = setPreExpenseSend.some((item) => !item);
 
-      if (hasInvalidExpense) {
+      if (hasInvalidLawsuit || hasInvalidExpense) {
         message.warning("พบค่าที่ไม่ถูกต้อง");
         setLoading(false);
         return;
       }
+
+      // สร้างคำสั่ง Promise สำหรับ `setPutJudgement`
+      const promisesJudgement = setPutJudgement.map((item) =>
+        axios.put(`${baseUrl}${PUT_JUDGE}`, item, {
+          headers: HEADERS_EXPORT,
+        })
+      );
 
       // สร้างคำสั่ง Promise สำหรับ `setPreExpenseSend`
       const promisesExpense = setPreExpenseSend.map((item) =>
@@ -111,16 +166,8 @@ const CreateAdvanePayment = ({
         })
       );
 
-      const promissReference = axios.post(
-        `${baseUrl}${POST_EXPENSES_REFERENCE}`,
-        setReference,
-        {
-          headers: HEADERS_EXPORT,
-        }
-      );
-
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesExpense, promissReference];
+      const allPromises = [...promisesJudgement, ...promisesExpense];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -138,16 +185,16 @@ const CreateAdvanePayment = ({
         message.error("มีข้อมูลบางรายการที่อัพเดทไม่สำเร็จ");
       }
       // หากสำเร็จทั้งหมดให้ปรับสถานะ
-      // funcUpdateStatus([...setPutJudgement]);
+      funcUpdateStatus([...setPutJudgement]);
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
       handleCancel();
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     }
   };
 
@@ -174,30 +221,17 @@ const CreateAdvanePayment = ({
   const onFinish = (values) => {
     console.log("values", values);
     console.log(dataPropertyList);
-
+    let setPutJudgement = [];
     let setPreExpenseSend = [];
 
     let defindNo;
-    const formatTwoDigit = (num) => (num < 10 ? "0" + num : num);
     if (company.value === 1 || company.value === 4) {
-      defindNo = `${INVESTIGATE}LBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
-        dataDefault.length
-      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
+      defindNo = "LBN";
     } else if (company.value === 2 || company.value === 5) {
-      defindNo = `${INVESTIGATE}MBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
-        dataDefault.length
-      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
+      defindNo = "MBN";
     } else {
-      defindNo = `${INVESTIGATE}KBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
-        dataDefault.length
-      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
+      defindNo = "KBN";
     }
-
-    const dataReference = {
-      reference_no: defindNo,
-      user_id: USER_ID,
-      pay_status_id: PAYADVANCE_STATUS_PROCESS,
-    };
 
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
@@ -207,28 +241,66 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: defindNo,
+      reference_no: `${JUDGEMENT}${defindNo}${USER_ID}-${dayjs().format(
+        "YYYYMMDDHHmmss"
+      )}`,
     };
 
+    const uniqueJudgementIds = new Set(); // ใช้เก็บ id ที่เจอแล้ว
     try {
-      dataPropertyList?.forEach((expense) => {
+      dataPropertyList?.forEach((judgement) => {
+        // เก็บข้อมูลไว้ก่อน
+        const feeValue = judgement?.setPreExpense?.find(
+          (v) => v.expense_type_id === 5
+        );
+        const copyingFeeValue = judgement?.setPreExpense?.find(
+          (v) => v.expense_type_id === 6
+        );
+
         // ดันข้อมูลรายการย่อยทั้งหมดเข้า setPreExpenseSend
-        expense?.setPreExpense.forEach((value) => {
+        judgement?.setPreExpense.forEach((value) => {
           setPreExpenseSend.push({
             ...initDataExpense,
             ...value,
           });
         });
+
+        // ป้องกันการซ้ำ ด้วย Set
+        if (!uniqueJudgementIds.has(judgement.LAWSUIT_ID)) {
+          // const { setPreExpense, ...cleanJudgement } = judgement; // ลบ setPreExpense ออก
+
+          setPutJudgement.push({
+            ...judgement,
+            fee_payment_datetime: feeValue
+              ? dayjs().format("YYYY-MM-DD")
+              : judgement.fee_payment_datetime,
+            fee_payment_status: feeValue
+              ? STATUS_WITHDRAW_PROCESS
+              : judgement.fee_payment_status,
+
+            // ✅ ใช้ค่าที่แยกไว้
+            fee: feeValue?.withdraw || judgement.fee,
+            copying_fee: copyingFeeValue?.withdraw || judgement.copying_fee,
+
+            copying_fee_datetime: copyingFeeValue
+              ? dayjs().format("YYYY-MM-DD")
+              : judgement.copying_fee_datetime,
+            copying_fee_status: copyingFeeValue
+              ? STATUS_WITHDRAW_PROCESS
+              : judgement.copying_fee_status,
+          });
+
+          uniqueJudgementIds.add(judgement.LAWSUIT_ID);
+        }
       });
     } catch (error) {
       console.error("เกิดข้อผิดพลาด:", error.message);
       message.error("กรุณาทำรายการเบิกให้ถูกต้อง");
     }
 
+    console.log("setPutJudgement", setPutJudgement);
     console.log("setDataExpense---->", setPreExpenseSend);
-    console.log("dataReference---->", dataReference);
-
-    sendData(setPreExpenseSend, dataReference);
+    sendData(setPutJudgement, setPreExpenseSend);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -249,7 +321,7 @@ const CreateAdvanePayment = ({
     console.log("data---->update", data);
     if (data) {
       const result = dataPropertyList.map((item) => {
-        if (item.id === data.id) {
+        if (item.CONTNO === data.CONTNO) {
           return { ...data };
         } else {
           return { ...item };
@@ -292,9 +364,24 @@ const CreateAdvanePayment = ({
           {convertDateThai()}
           {/* <DatePicker onChange={onChangeInputInvestigateDate} /> */}
         </Form.Item>
-
+        <Form.Item label="วันที่ทำรายการ" name="dateWithdraw">
+          <Select
+            placeholder="เลือกบริษัท"
+            showSearch
+            optionFilterProp="label"
+            options={companiesOption}
+            onChange={(value) => onChangeSelect(value)}
+            defaultValue={userCompany === "3" ? 3 : 2}
+            popupMatchSelectWidth={false}
+            style={{
+              width: "auto", // ทำให้ Select ขยายตามเนื้อหา
+              // maxWidth: 200, // จำกัดความกว้างสูงสุด
+            }}
+            size="large"
+          />
+        </Form.Item>
         <Form.Item
-          label="รายการที่เบิก"
+          label="สัญญาที่ต้องการเบิก"
           name="contnoWithdraw"
           labelCol={{ span: 6 }} // กำหนดความกว้างของ label
           wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
@@ -332,21 +419,17 @@ const CreateAdvanePayment = ({
               >
                 <List.Item.Meta
                   title={
-                    <>
-                      <p>
-                        {item.CONTNO} {item.possessor}
-                        {item.mark}
-                      </p>
-                      <p style={{ color: "orange" }}>
-                        เลขโฉนด {item.deed_number} {item.dist_desc} จังหวัด
-                        {item.prov_desc}
-                      </p>
-                    </>
+                    <p>
+                      {item.CONTNO} {item.customer_title}
+                      {item.customer_name} {item.customer_lastname}
+                      {"  "}
+                      {renderLoanType(item.LOAN_TYPE_ID)}
+                    </p>
                   }
                   description={
-                    <div style={{ color: "blue" }}>
+                    <div>
                       {item?.setPreExpense?.map((expense, index) => (
-                        <div key={index}>
+                        <div key={index} style={{ color: "blue" }}>
                           - {expense.label} :{" "}
                           {currencyFormatPoint(expense.withdraw)} บาท
                         </div>

@@ -376,7 +376,7 @@ const Main = () => {
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
-          dayjs().format("YYYY-MM-DD"), // วันที่ส่ง
+          dateQuery, // วันที่ส่ง
           "cancelLand",
           data.CONTNO,
           data.NAME,

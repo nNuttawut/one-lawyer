@@ -232,7 +232,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE).startOf("day");
+    const recordDate = dayjs(record.DATE);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
     const formattedDate = record.DATE ? convertDateThai(recordDate) : null;

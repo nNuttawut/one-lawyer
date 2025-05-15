@@ -23,10 +23,11 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
-import DetailWithdraw from "./modal/DetailWithdraw";
-import ClearAdvanePayment from "./modal/ClearAdvanePayment";
+// import DetailWithdraw from "./modal/DetailWithdraw";
+import ClearAdvanePaymentAnother from "./modal/ClearAdvanePaymentAnother";
 import {
-  INDICT,
+  ENFORCEMENT,
+  JUDGEMENT,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
@@ -44,6 +45,7 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userName = localStorage.getItem("NNAME");
   const [isModal, setIsModal] = useState(false);
   const [isModalCreate, setIsModalCreate] = useState(false);
   const [arrayTable, setArrayTable] = useState();
@@ -78,6 +80,7 @@ const Main = () => {
       });
       if (response.data) {
         if (response.data) {
+          setSearchEdit(response.data);
           setLoading(false);
           filterData(response.data);
         }
@@ -96,11 +99,19 @@ const Main = () => {
 
   const filterData = (data) => {
     if (Array.isArray(data)) {
-      console.log(data);
+      const newData = data.filter((item) => {
+        const isPending = item.withdraw_process_id <= 4;
+        const isOwner = item.USER_ID === userId;
+        const isAdmin = ROLE_ID === "1";
+        const isEnforcement = parseInt(item.reference_no[0]) === ENFORCEMENT;
+
+        return isPending && (isOwner || isAdmin) && isEnforcement;
+      });
+
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = data.filter((item) => {
+        filteredData = newData.filter((item) => {
           const branch = item.LOCAT;
           // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
@@ -112,7 +123,7 @@ const Main = () => {
           );
         });
       } else {
-        filteredData = data.filter((item) => {
+        filteredData = newData.filter((item) => {
           const branch = item.LOCAT;
           if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
@@ -120,18 +131,7 @@ const Main = () => {
         });
       }
 
-      setSearchEdit(filteredData);
-
-      const newData = filteredData.filter((item, index) => {
-        const isPending = item.withdraw_process_id <= 4;
-        const isOwner = item.USER_ID === userId;
-        const isAdmin = ROLE_ID === "1";
-        const isIndect = parseInt(item.reference_no[0]) === INDICT;
-
-        return isPending && (isOwner || isAdmin) && isIndect;
-      });
-
-      const preData = groupByCreatedDateWithContno(newData);
+      const preData = groupByCreatedDateWithContno(filteredData);
 
       const useData = preData.filter((item) => item.reference_no);
 
@@ -224,8 +224,7 @@ const Main = () => {
     let result = dataArr.filter(
       (item) =>
         (item.contnoList && item.contnoList.includes(value)) ||
-        item.LAWYER_ID === userId ||
-        item.reference_no.includes(value)
+        item.LAWYER_ID === userId
     );
 
     if (value) {
@@ -409,7 +408,7 @@ const Main = () => {
           : record.pay_type_id === 2 || record.pay_type_id === 3
           ? "รอการเงินตรวจสอบ"
           : record.pay_type_id === 4
-          ? "รอการเงินตรวจสอบ"
+          ? "รอบัญชีตรวจสอบ"
           : null;
       color =
         record.pay_type_id === 1
@@ -687,15 +686,15 @@ const Main = () => {
           </Row>
         </Spin>
       </Card>
-      {isModal ? (
+      {/* {isModal ? (
         <DetailWithdraw
           open={isModal}
           close={setIsModal}
           dataDefault={dataRecord}
         />
-      ) : null}
+      ) : null} */}
       {isModalCreate ? (
-        <ClearAdvanePayment
+        <ClearAdvanePaymentAnother
           open={isModalCreate}
           close={setIsModalCreate}
           dataDefault={dataModal}
@@ -706,5 +705,5 @@ const Main = () => {
   );
 };
 
-const LawsuitClearAdvanePayment = MotionHoc(Main);
-export default LawsuitClearAdvanePayment;
+const AnotherClearAdvanePayment = MotionHoc(Main);
+export default AnotherClearAdvanePayment;

@@ -14,6 +14,7 @@ import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
+  POST_EXPENSES_REFERENCE,
   PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
 import axios from "axios";
@@ -26,8 +27,10 @@ import {
   DELIVERY_OF_SUMMONS,
   DOCUMENT_COST,
   FEE_COURT,
+  PAYADVANCE_STATUS_PROCESS,
   STAMP_COST,
   STATUS_WITHDRAW_PROCESS,
+  STATUS_WITHDRAW_PROGRESS,
   STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
 import { INDICT } from "../../../../utils/constant/StatusConstant";
@@ -82,8 +85,10 @@ const CreateAdvanePayment = ({
     setIsModal(false);
   };
 
-  const sendData = async (setPutLawsuit, setPreExpense) => {
+  const sendData = async (setPutLawsuit, setPreExpense, setReference) => {
     setLoading(true);
+    console.log("setPreExpense", setPreExpense);
+    console.log("setReference", setReference);
 
     try {
       // ตรวจสอบข้อมูลก่อนส่ง
@@ -110,8 +115,20 @@ const CreateAdvanePayment = ({
         })
       );
 
+      const promissReference = axios.post(
+        `${baseUrl}${POST_EXPENSES_REFERENCE}`,
+        setReference,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesLawsuit, ...promisesExpense];
+      const allPromises = [
+        ...promisesLawsuit,
+        ...promisesExpense,
+        promissReference,
+      ];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -136,9 +153,9 @@ const CreateAdvanePayment = ({
     } finally {
       setLoading(false);
       handleCancel();
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     }
   };
 
@@ -168,13 +185,26 @@ const CreateAdvanePayment = ({
     let setPutLawsuit = [];
     let setPreExpense = [];
     let defindNo;
+    const formatTwoDigit = (num) => (num < 10 ? "0" + num : num);
     if (company.value === 1 || company.value === 4) {
-      defindNo = "LBN";
+      defindNo = `${INDICT}LBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataPropertyList?.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else if (company.value === 2 || company.value === 5) {
-      defindNo = "MBN";
+      defindNo = `${INDICT}MBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataPropertyList?.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else {
-      defindNo = "KBN";
+      defindNo = `${INDICT}KBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataPropertyList?.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     }
+
+    const dataReference = {
+      reference_no: defindNo,
+      user_id: USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_PROCESS,
+    };
 
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
@@ -184,9 +214,7 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${INDICT}${defindNo}${USER_ID}-${dayjs().format(
-        "YYYYMMDDHHmmss"
-      )}`,
+      reference_no: defindNo,
     };
 
     dataPropertyList?.forEach((lawsuit, index) => {
@@ -196,38 +224,50 @@ const CreateAdvanePayment = ({
         fee_payment_status: STATUS_WITHDRAW_SUCCESSFUL,
       });
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: FEE_COURT,
-        withdraw: lawsuit.fee ? lawsuit.fee : 0,
-      });
+      if (lawsuit.fee) {
+        setPreExpense.push({
+          ...initDataExpense,
+          LAWSUIT_ID: lawsuit.id,
+          expense_type_id: FEE_COURT,
+          withdraw: lawsuit.fee ? lawsuit.fee : 0,
+        });
+      }
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: STAMP_COST,
-        withdraw: lawsuit.stamp_cost ? lawsuit.stamp_cost : 0,
-      });
+      if (lawsuit?.stamp_cost) {
+        setPreExpense.push({
+          ...initDataExpense,
+          LAWSUIT_ID: lawsuit.id,
+          expense_type_id: STAMP_COST,
+          withdraw: lawsuit.stamp_cost ? lawsuit.stamp_cost : 0,
+        });
+      }
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: DOCUMENT_COST,
-        withdraw: lawsuit.document_cost ? lawsuit.document_cost : 0,
-      });
+      if (lawsuit?.document_cost) {
+        setPreExpense.push({
+          ...initDataExpense,
+          LAWSUIT_ID: lawsuit.id,
+          expense_type_id: DOCUMENT_COST,
+          withdraw: lawsuit.document_cost ? lawsuit.document_cost : 0,
+        });
+      }
 
-      setPreExpense.push({
-        ...initDataExpense,
-        LAWSUIT_ID: lawsuit.id,
-        expense_type_id: DELIVERY_OF_SUMMONS,
-        withdraw: lawsuit.delivery_of_summons ? lawsuit.delivery_of_summons : 0,
-      });
+      if (lawsuit?.delivery_of_summons) {
+        setPreExpense.push({
+          ...initDataExpense,
+          LAWSUIT_ID: lawsuit.id,
+          expense_type_id: DELIVERY_OF_SUMMONS,
+          withdraw: lawsuit.delivery_of_summons
+            ? lawsuit.delivery_of_summons
+            : 0,
+        });
+      }
     });
 
     console.log("putLawsuit---->", setPutLawsuit);
     console.log("setDataExpense---->", setPreExpense);
-    sendData(setPutLawsuit, setPreExpense);
+    console.log("dataReference", dataReference);
+
+    sendData(setPutLawsuit, setPreExpense, dataReference);
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -321,34 +361,38 @@ const CreateAdvanePayment = ({
                   <List.Item.Meta
                     title={
                       <Link onClick={() => handleEdit(item, index)}>
-                        {item.CONTNO}
-                        {` ${item.customer_title}${item.customer_name} ${item.customer_lastname}`}
+                        {`(${index + 1}). `}
+                        {item?.CONTNO}
+                        {` ${item?.customer_title}${item?.customer_name} ${
+                          item?.customer_lastname ? item?.customer_lastname : ""
+                        }`}
                       </Link>
                     }
                     description={
                       <>
                         <p>
-                          ค่าธรรมเนียมศาล {currencyFormatPoint(item.fee)} บาท
+                          ค่าธรรมเนียมศาล {currencyFormatPoint(item?.fee)} บาท
                         </p>
                         <p>
-                          ค่าอากรณ์สแตมป์ {currencyFormatPoint(item.stamp_cost)}{" "}
-                          บาท
-                        </p>
-                        <p>
-                          ค่าจัดทำเอกสาร{" "}
-                          {currencyFormatPoint(item.document_cost)} บาท
+                          ค่าอากรณ์สแตมป์{" "}
+                          {currencyFormatPoint(item?.stamp_cost)} บาท
                         </p>
                         <p>
                           ค่าส่งจดหมาย{" "}
-                          {currencyFormatPoint(item.delivery_of_summons)} บาท
+                          {currencyFormatPoint(item?.delivery_of_summons)} บาท
                         </p>
+                        <p>
+                          ค่าจัดทำเอกสาร{" "}
+                          {currencyFormatPoint(item?.document_cost)} บาท
+                        </p>
+
                         <p>
                           รวม{" "}
                           {currencyFormatPoint(
-                            item.fee +
-                              item.stamp_cost +
-                              item.document_cost +
-                              item.delivery_of_summons
+                            item?.fee +
+                              item?.stamp_cost +
+                              item?.document_cost +
+                              item?.delivery_of_summons
                           )}{" "}
                           บาท
                         </p>
@@ -357,9 +401,9 @@ const CreateAdvanePayment = ({
                   />
                   <div>
                     {" "}
-                    {item.investigation_type_id === 1
+                    {item?.investigation_type_id === 1
                       ? "ก่อนฟ้อง"
-                      : item.investigation_type_id === 2
+                      : item?.investigation_type_id === 2
                       ? "หลังฟ้อง"
                       : null}
                   </div>

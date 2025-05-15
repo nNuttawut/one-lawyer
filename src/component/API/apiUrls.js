@@ -85,8 +85,12 @@ const GET_EXPENSES_LOAN_ID = `/lawyer/dev/api/expenses/loan/`;
 const GET_EXPENSES_CONTNO = `/lawyer/dev/api/expenses/contract/`;
 const POST_DELETE_ID = `/lawyer/dev/api/expenses/`;
 const GET_EXPENSE_REF_GROUP = `/lawyer/dev/api/expenses/reference-list`;
-
 const GET_EXPENSE_TYPE_LIST = "/lawyer/dev/api/expenses/types";
+
+//expenses status
+const POST_EXPENSES_REFERENCE = `/lawyer/dev/api/expenses-reference`;
+const PUT_EXPENSES_REFERENCE = `/lawyer/dev/api/expenses-reference`;
+const GET_EXPENSES_REFERENCE = `/lawyer/dev/api/expenses/reference-list`;
 
 //execute
 const POST_EXECUTE_CASE = "/lawyer/dev/api/execute-case";
@@ -242,6 +246,9 @@ export {
   DELETE_JUDGEMENT_DEFENDANTS,
   DELETE_INVESTIGATE_PROPERTIES,
   DELETE_EXPENSES,
+  POST_EXPENSES_REFERENCE,
+  PUT_EXPENSES_REFERENCE,
+  GET_EXPENSES_REFERENCE,
 };
 
 // // ----production-----
@@ -333,6 +340,11 @@ export {
 // const GET_EXPENSE_REF_GROUP = `/lawyer/api/expenses/reference-list`;
 
 // const GET_EXPENSE_TYPE_LIST = "/lawyer/api/expenses/types";
+
+// // expenses status
+// const POST_EXPENSES_REFERENCE = `/lawyer/api/expenses-reference`;
+// const PUT_EXPENSES_REFERENCE = `/lawyer/api/expenses-reference`;
+// const GET_EXPENSES_REFERENCE = `/lawyer/api/expenses/reference-list`;
 
 // // execute;
 // const POST_EXECUTE_CASE = "/lawyer/api/execute-case";
@@ -486,4 +498,7 @@ export {
 //   DELETE_JUDGEMENT_DEFENDANTS,
 //   DELETE_INVESTIGATE_PROPERTIES,
 //   DELETE_EXPENSES,
+//   POST_EXPENSES_REFERENCE,
+//   PUT_EXPENSES_REFERENCE,
+//   GET_EXPENSES_REFERENCE,
 // };

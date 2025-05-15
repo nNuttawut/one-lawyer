@@ -11,10 +11,12 @@ import {
   InputNumber,
   Divider,
 } from "antd";
+import dayjs from "dayjs";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import ExpenseType from "../../../../hook/ExpenseType";
+import { STATUS_WITHDRAW_PROCESS } from "../../../../utils/constant/ExpenseType";
 
-const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
+const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
   const [form] = Form.useForm();
   const [
     currencyFormat,
@@ -31,16 +33,14 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   const USER_ID = localStorage.getItem("USER_ID");
   const [labelSelect, setLabelSelect] = useState();
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
-  const [dataExpenseList, setDataExpenseList] = useState();
+  const [dataExpenseList, setDataExpenseList] = useState({
+    setPreExpense: [],
+  });
 
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
-      if (editData?.length > 1) {
-        setDataExpenseList(editData);
-      }
-
-      console.log("editData", editData);
+      setDataExpenseList(dataDefault);
       console.log("loadData---->", dataDefault);
       setLoadingExpenseType(true);
     }
@@ -54,14 +54,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
 
   const setOptionExpenseType = () => {
     const options = expenseList
-      .filter(
-        (item) =>
-          item.id === 17 ||
-          item.id === 18 ||
-          item.id === 19 ||
-          item.id === 20 ||
-          item.id === 21
-      )
+      .filter((item) => item.id === 5 || item.id === 6)
       .map((item) => ({
         value: item.id,
         name: item.name,
@@ -91,9 +84,9 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const handleOk = () => {
-    if (dataExpenseList?.length > 0) {
-      console.log("Clicked handleOk button", dataExpenseList);
-      dataExpenseList.forEach((item) => handleEdit(item));
+    if (dataExpenseList?.setPreExpense?.length > 0) {
+      console.log("Clicked cancel button", dataExpenseList);
+      handleEdit(dataExpenseList);
       close(false);
       setIsModal(false);
     } else {
@@ -110,14 +103,9 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const handleDeleteItem = (index) => {
-    console.log("index", index);
-
-    const updatedList = [...dataExpenseList];
+    const updatedList = [...dataExpenseList.setPreExpense];
     updatedList.splice(index, 1);
-
-    console.log("updatedList", updatedList);
-
-    setDataExpenseList(updatedList);
+    setDataExpenseList({ ...dataExpenseList, setPreExpense: updatedList });
     if (index === currentEditIndex) {
       form.resetFields();
       setCurrentEditIndex(null);
@@ -125,44 +113,60 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   };
 
   const onFinish = (values) => {
+    console.log("values", values);
     if (!values.amount || !values.expenseType) {
-      message.error("กรุณาเลือกรายการและระบุจำนวนมากกว่า 0");
-      return;
-    }
-    console.log(values);
+      message.error("กรุณาเลือกรายการและระบุจำนวนมากกว่า 0 ");
+    } else {
+      const newItem = {
+        LAWSUIT_ID: dataDefault.LAWSUIT_ID,
+        expense_type_id: values.expenseType,
+        withdraw: values.amount,
+        label:
+          labelSelect?.label ||
+          expenseList.find((item) => item.id === values.expenseType)
+            ?.description ||
+          "โปรดลบและสร้างใหม่",
+      };
 
-    console.log(expenseList);
-
-    const newItem = {
-      LAWSUIT_ID: dataDefault[0]?.LAWSUIT_ID,
-      expense_type_id: values.expenseType,
-      withdraw: values.amount,
-      label:
-        labelSelect?.label ||
-        expenseList.find((item) => item.id === values.expenseType)
-          ?.description ||
-        "โปรดลบและสร้างใหม่",
-    };
-
-    setDataExpenseList((prev = []) => {
-      // prev รับประกันเป็น array จึง iterable ได้
-      const updated = [...prev];
+      const updatedList = [...(dataExpenseList.setPreExpense || [])];
 
       if (currentEditIndex !== null) {
-        updated[currentEditIndex] = newItem;
+        updatedList[currentEditIndex] = newItem;
       } else {
-        if (updated.some((it) => it.expense_type_id === values.expenseType)) {
-          message.warning("มีรายการนี้อยู่แล้ว");
-          return prev; // ส่ง prev คืน ถ้าเจอซ้ำ
+        const isDuplicate = updatedList.some(
+          (item) => item.expense_type_id === values.expenseType
+        );
+        const isDuplicateFee = dataDefault.fee ? true : false;
+        const isDuplicateCopyingFee = dataDefault.copying_fee ? true : false;
+
+        console.log("isDuplicateFee", isDuplicateFee);
+        console.log("isDuplicateCopyingFee", isDuplicateCopyingFee);
+
+        if (isDuplicateFee && values.expenseType === 5) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("1");
+
+          return;
         }
-        updated.push(newItem);
+
+        if (isDuplicateCopyingFee && values.expenseType === 6) {
+          message.warning("เคยทำรายการไปแล้ว");
+          console.log("2");
+          return;
+        }
+
+        if (isDuplicate) {
+          message.warning("มีรายการนี้อยู่แล้ว");
+          return;
+        }
+
+        updatedList.push(newItem);
       }
 
-      return updated; // ส่งกลับเป็น array เสมอ
-    });
-
-    setCurrentEditIndex(null);
-    form.resetFields();
+      setDataExpenseList({ ...dataExpenseList, setPreExpense: updatedList });
+      setCurrentEditIndex(null);
+      form.resetFields();
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -175,59 +179,23 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
     setLabelSelect(value);
   };
 
-  const infoList = () => {
-    Modal.confirm({
-      title: "ค่าธรรมเนียมในชั้นบังคับคดี",
-      width: "30%",
-
-      style: {
-        top: 20,
-      },
-      bodyStyle: {
-        padding: "16px 24px",
-        maxWidth: "650px", // ถ้าจะจำกัดไม่ให้เนื้อหายืดเกิน
-      },
-
-      content: (
-        <div style={{ textAlign: "left", lineHeight: 1.8 }}>
-          <p>1. ค่าธรรมเนียมตั้งเรื่องอายัด 1,000 บาท/สำนวนคดี</p>
-          <p>2. ค่าธรรมเนียมตั้งเรื่องบังคับคดีแทน 1,000 บาท/สำนวนคดี</p>
-          <p>
-            3. ค่าธรรมเนียมตั้งเรื่องยึดอสังหาริมทรัพย์ ณ ที่ทำการ 2,500
-            บาท/สำนวนคดี
-          </p>
-          <p>4. ค่าธรรมเนียมตั้งเรื่องยึดทรัพย์สินอื่น ๆ 1,000 บาท/สำนวนคดี</p>
-          <p>5. ค่าธรรมเนียมตั้งเรื่องขับไล่ 1,000 บาท/สำนวนคดี</p>
-        </div>
-      ),
-      centered: true,
-      cancelText: "ปิด",
-      onCancel() {
-        console.log("Cancel");
-      },
-    });
-  };
-
-  console.log("dataExpenseList====>", dataExpenseList);
-
   const dataExpense = () => {
-    const expensePreview = dataExpenseList || [];
+    const expensePreview = dataExpenseList?.setPreExpense || [];
 
     return (
       <Form
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 18 }}
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 14 }}
         form={form}
         layout="horizontal"
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
-        <span onClick={infoList}>ℹ️</span>
         <Divider>รายการที่ขอเบิก 🧾</Divider>
 
         {/* แสดงรายการที่เคยเพิ่มไว้ */}
-        {expensePreview?.length > 0 &&
-          expensePreview?.map((item, index) => (
+        {expensePreview.length > 0 &&
+          expensePreview.map((item, index) => (
             <div
               key={index}
               style={{
@@ -235,7 +203,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
                 justifyContent: "space-between",
                 alignItems: "center",
                 marginBottom: 8,
-                marginLeft: "25%",
+                marginLeft: "30%",
                 marginRight: "10%",
                 background: "#fafafa",
                 padding: 8,
@@ -314,7 +282,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit, editData }) => {
   return (
     <>
       <Modal
-        title={"รายการที่ต้องการเบิก"}
+        title={`รายการที่ต้องการเบิก`}
         open={open}
         onCancel={handleCancel}
         width={850}

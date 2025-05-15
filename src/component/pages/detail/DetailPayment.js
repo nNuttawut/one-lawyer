@@ -44,6 +44,14 @@ const Main = () => {
   const [queryContno, setQueryContno] = useState();
   const [date, setDate] = useState();
   const [result, setResult] = useState();
+  const [checkContno, setCheckContno] = useState(false);
+
+  // const optionsContract = [
+  //   { value: "LSFHP", label: "สัญญา 1" },
+  //   { value: "PSFHP", label: "สัญญา 3(เก่า)" },
+  //   { value: "RPSL", label: "สัญญา 3(ใหม่)" },
+  //   { value: "KSM", label: "KSM" },
+  // ];
 
   const onQuery = () => {
     if (queryContno) {
@@ -61,15 +69,19 @@ const Main = () => {
       } else {
         if (subData === "1" || subDataLand === "222") {
           typeValue = "LSFHP";
+          setCheckContno(false);
           queryData(queryContno, typeValue);
         } else if (subData === "3") {
+          setCheckContno(true);
           let checkType = queryContno.substring(5, 9);
           console.log("checkType", checkType);
           if (parseInt(checkType) > 1200) {
             typeValue = "RPSL";
             queryData(queryContno, typeValue);
           } else {
-            message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
+            // message.error("ไม่สามารถดูข้อมูล บัญชี 3(เก่า) ได้ ❌");
+            typeValue = "PSFHP";
+            queryData(queryContno, typeValue);
           }
         } else {
           typeValue = "RPSL";
@@ -242,10 +254,42 @@ const Main = () => {
     }
     yLine += 5;
     doc.text(`เลขที่สัญญา: ${arrData?.chqtran[0]?.contno}`, 50, yLine + 5);
-    doc.text(`ประเภท: ${arrData?.invtran?.baabdes}`, 50, yLine + 10);
-    doc.text(`อำเภอ: ${arrData?.invtran?.modeldes}`, 50, yLine + 15);
-    doc.text(`โฉนด: ${arrData?.invtran?.color}`, 50, yLine + 20);
-    doc.text(`เลขโฉนด: ${arrData?.invtran?.strno}`, 50, yLine + 25);
+    doc.text(
+      `${
+        queryContno.substring(0, 1) === "3"
+          ? ""
+          : `จัวหวัด: ${arrData?.invtran?.baabdes}`
+      }`,
+      50,
+      yLine + 10
+    );
+    doc.text(
+      `${
+        queryContno.substring(0, 1) === "3"
+          ? ""
+          : `อำเภอ: ${arrData?.invtran?.modeldes}`
+      }`,
+      50,
+      yLine + 15
+    );
+    doc.text(
+      `${
+        queryContno.substring(0, 1) === "3"
+          ? ""
+          : `ประเภท: ${arrData?.invtran?.color}`
+      }`,
+      50,
+      yLine + 20
+    );
+    doc.text(
+      `${
+        queryContno.substring(0, 1) === "3"
+          ? ""
+          : `เลขโฉนด: ${arrData?.invtran?.strno}`
+      }`,
+      50,
+      yLine + 25
+    );
 
     doc.text(
       `วันเริ่มทำสัญญา: ${
@@ -272,27 +316,7 @@ const Main = () => {
       120,
       yLine + 15
     );
-    doc.setTextColor(255, 0, 0);
-    doc.text(
-      `ต้นคงเหลือ: ${
-        arrData?.loan?.tonkong
-          ? currencyFormatPoint(arrData?.loan?.tonkong)
-          : "-"
-      } บาท`,
-      120,
-      yLine + 20
-    );
-    doc.text(
-      `ค้างดอกเบี้ย: ${
-        arrData?.loan?.flag === 1
-          ? currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.dok)
-          : currencyFormatPoint(arrData?.loan?.kangdok)
-      } บาท`,
-      120,
-      yLine + 25
-    );
 
-    doc.setTextColor(0, 0, 0);
     doc.text(
       `วันที่คิดดอกเบี้ย: ${
         arrData?.loan?.startdate
@@ -302,22 +326,55 @@ const Main = () => {
           : "-"
       }`,
       120,
+      yLine + 20
+    );
+    doc.setTextColor(255, 0, 0);
+    doc.text(
+      `ต้นคงเหลือ: ${
+        arrData?.loan?.tonkong
+          ? currencyFormatPoint(arrData?.loan?.tonkong)
+          : "-"
+      } บาท`,
+      120,
+      yLine + 25
+    );
+    doc.text(
+      `ค้างดอกเบี้ย: ${
+        arrData?.loan?.flag === 1
+          ? currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.dok)
+          : currencyFormatPoint(arrData?.loan?.kangdok)
+      } บาท`,
+      120,
       yLine + 30
     );
     doc.text(
-      `ผ่อน: ${
-        arrData?.loan?.tnopay ? currencyFormatPoint(arrData?.loan?.tnopay) : 0
-      } งวด`,
+      `รวมทุนฟ้อง: ${
+        arrData?.loan?.flag === 1
+          ? currencyFormatPoint(
+              arrData?.loan?.kangdok +
+                arrData?.loan?.dok +
+                arrData?.loan?.tonkong
+            )
+          : currencyFormatPoint(arrData?.loan?.kangdok + arrData?.loan?.tonkong)
+      } บาท`,
       120,
       yLine + 35
     );
-    doc.text(
-      `งวดละ: ${
-        arrData?.loan?.totUpay ? currencyFormatPoint(arrData?.loan?.totUpay) : 0
-      } บาท`,
-      145,
-      yLine + 35
-    );
+
+    // doc.text(
+    //   `ผ่อน: ${
+    //     arrData?.loan?.tnopay ? currencyFormatPoint(arrData?.loan?.tnopay) : 0
+    //   } งวด`,
+    //   120,
+    //   yLine + 35
+    // );
+    // doc.text(
+    //   `งวดละ: ${
+    //     arrData?.loan?.totUpay ? currencyFormatPoint(arrData?.loan?.totUpay) : 0
+    //   } บาท`,
+    //   145,
+    //   yLine + 35
+    // );
 
     // สร้างตาราง
     const tableColumn = [
@@ -338,6 +395,11 @@ const Main = () => {
     } else {
       data = arrayTable;
     }
+    let totalDays = 0;
+    let totalPayment = 0;
+    let totalDUEINTEFF = 0;
+    let totalDUETONEFF = 0;
+    let totalKangDok = 0;
     data.forEach((item, index) => {
       const rowData = [
         index + 1,
@@ -350,7 +412,24 @@ const Main = () => {
         item.Ton ? currencyFormatPoint(item.Ton) : 0,
       ];
       tableRows.push(rowData);
+
+      totalDays += Number(item.Days || 0);
+      totalPayment += Number(item.Payment || 0);
+      totalDUEINTEFF += Number(item.DUEINTEFF || 0);
+      totalDUETONEFF += Number(item.DUETONEFF || 0);
+      totalKangDok += Number(item.KangDok || 0);
     });
+
+    tableRows.push([
+      "",
+      "รวมทั้งหมด",
+      totalDays,
+      currencyFormatPoint(totalPayment),
+      currencyFormatPoint(totalDUEINTEFF),
+      currencyFormatPoint(totalDUETONEFF),
+      currencyFormatPoint(totalKangDok),
+      "",
+    ]);
 
     doc.autoTable({
       head: [tableColumn],
@@ -468,6 +547,18 @@ const Main = () => {
         <Card style={{ marginBottom: "10px" }}>
           <Row>
             <Col span={"24"} style={{ textAlign: "end" }}>
+              {/* <Select
+                style={{
+                  width: "auto",
+                  marginRight: "10px",
+                  marginBottom: "10px",
+                }}
+                // onChange={handleChangeContract}
+                popupMatchSelectWidth={false}
+                options={optionsContract}
+                placeholder="โปรดเลือกสัญญา"
+                size="large"
+              /> */}
               <Space direction="vertical" size={12}>
                 <Tooltip
                   placement="bottom"
@@ -498,7 +589,7 @@ const Main = () => {
             </Col>
             <Col span={"24"} style={{ textAlign: "end" }}>
               <b style={{ color: "red" }}>
-                ***หมายเหตุ: ค้นหาได้เฉพาะบัญชี 1,3(ใหม่)
+                ***หมายเหตุ: ค้นหาได้เฉพาะบัญชี 1,3
               </b>
             </Col>
           </Row>
@@ -576,33 +667,44 @@ const Main = () => {
                 <p>
                   <b>เลขที่สัญญา : </b> {arrData?.customer[0]?.CONTNO}
                 </p>
-                <p>
-                  <b>ประเภท : </b> {arrData?.invtran?.baabdes}
-                </p>
-                <p>
-                  <b>
-                    {queryContno.substring(0, 1) === "3" ? "รุ่น" : "อำเภอ"} :{" "}
-                  </b>{" "}
-                  {arrData?.invtran?.modeldes}
-                </p>
-                <p>
-                  <b>
-                    {queryContno.substring(0, 1) === "3" ? "สี" : "โฉนด"} :{" "}
-                  </b>{" "}
-                  {arrData?.invtran?.color}
-                </p>
-                <p>
-                  <b>
-                    {queryContno.substring(0, 1) === "3"
-                      ? "เลขตัวถัง"
-                      : queryContno.substring(0, 1) === "1"
-                      ? "เลขโฉนด"
-                      : null}{" "}
-                    :{" "}
-                  </b>{" "}
-                  {arrData?.invtran?.strno}
-                </p>
+                {/* {!checkContno ? ( */}
+                <>
+                  <p>
+                    <b>
+                      {queryContno.substring(0, 1) === "3"
+                        ? "ประเภท "
+                        : "จังหวัด "}
+                      :{" "}
+                    </b>{" "}
+                    {arrData?.invtran?.baabdes}
+                  </p>
+                  <p>
+                    <b>
+                      {queryContno.substring(0, 1) === "3" ? "รุ่น" : "อำเภอ"} :{" "}
+                    </b>{" "}
+                    {arrData?.invtran?.modeldes}
+                  </p>
+                  <p>
+                    <b>
+                      {queryContno.substring(0, 1) === "3" ? "สี" : "ประเภท"} :{" "}
+                    </b>{" "}
+                    {arrData?.invtran?.color}
+                  </p>
+                  <p>
+                    <b>
+                      {queryContno.substring(0, 1) === "3"
+                        ? "เลขตัวถัง"
+                        : queryContno.substring(0, 1) === "1"
+                        ? "เลขโฉนด"
+                        : null}{" "}
+                      :{" "}
+                    </b>{" "}
+                    {arrData?.invtran?.strno}
+                  </p>
+                </>
+                {/* ) : null} */}
               </Col>
+
               <Col span={12} style={{ textAlign: "center" }}>
                 <p>
                   <b>วันเริ่มทำสัญญา : </b>
@@ -623,6 +725,13 @@ const Main = () => {
                     : 0}{" "}
                   บาท
                 </p>
+                <p>
+                  <b>วันที่คิดดอกเบี้ย : </b>
+                  {arrData?.loan?.startdate
+                    ? `${convertDateThaiShort(arrData?.loan?.startdate)} -
+                        ${convertDateThaiShort(arrData?.loan?.enddate)}`
+                    : "-"}
+                </p>
                 <p style={{ color: "red" }}>
                   <b>ต้นคงเหลือ : </b>{" "}
                   {arrData?.loan?.tonkong
@@ -639,23 +748,15 @@ const Main = () => {
                     : arrData?.loan?.kangdok}{" "}
                   บาท
                 </p>
-
-                <p>
-                  <b>วันที่คิดดอกเบี้ย : </b>
-                  {arrData?.loan?.startdate
-                    ? `${convertDateThaiShort(arrData?.loan?.startdate)} -
-                        ${convertDateThaiShort(arrData?.loan?.enddate)}`
-                    : "-"}
-                </p>
-                <p>
-                  <b>ผ่อน : </b>
-                  {arrData?.loan?.tnopay
-                    ? currencyFormatPoint(arrData?.loan?.tnopay)
-                    : 0}{" "}
-                  งวด <b>งวดละ : </b>{" "}
-                  {arrData?.loan?.totUpay
-                    ? currencyFormatComma(arrData?.loan?.totUpay)
-                    : 0}{" "}
+                <p style={{ color: "red" }}>
+                  <b>รวมทุนฟ้อง : </b>{" "}
+                  {arrData?.loan?.flag === 1
+                    ? currencyFormatPoint(
+                        arrData?.loan?.kangdok +
+                          arrData?.loan?.dok +
+                          arrData?.loan?.tonkong
+                      )
+                    : arrData?.loan?.kangdok + arrData?.loan?.tonkong}{" "}
                   บาท
                 </p>
               </Col>

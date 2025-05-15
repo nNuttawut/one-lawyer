@@ -22,6 +22,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
+  GET_INVESTIGATE_LIST,
   GET_JOB_IN_PROGRESS_BY_STATUS,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -52,47 +53,53 @@ const Main = () => {
     loadData();
   }, []);
 
-  const loadData = async (data) => {
+  const loadData = async () => {
     setLoading(true);
-    console.log(data);
-    try {
-      const response = await axios.get(
-        baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + SELL_ASSETS,
-        {
-          headers: HEADERS_EXPORT,
-        }
-      );
-      if (response.data) {
-        let i = 1;
-        if (response.data) {
-          const newData = response.data.map((item) => ({
-            ...item,
-            key: i++,
-          }));
-          filterDataLawyer(newData);
-          console.log(newData);
 
-          setLoading(false);
-        }
+    try {
+      const response = await axios.get(baseUrl + GET_INVESTIGATE_LIST, {
+        headers: HEADERS_EXPORT,
+      });
+
+      const responseData = response.data;
+
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        const newData = responseData.map((item, index) => ({
+          ...item,
+          key: index + 1,
+        }));
+
+        filterData(newData);
       } else {
         setArrayTable([]);
+        message.info("ไม่พบข้อมูล");
       }
     } catch (error) {
       console.error(
-        "Error posting data:",
+        "Error fetching data:",
         error.response ? error.response.data : error.message
       );
-      setLoading(false);
       message.error(`ไม่พบข้อมูล: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filterDataLawyer = (data) => {
+  const filterData = (data) => {
+    console.log("data", data);
+
+    console.log("userId", userId);
+
     if (Array.isArray(data)) {
+      const preData = data.filter(
+        (item) =>
+          (item.seize_status === 1 || item.seize_status === 3) &&
+          item.lawyer_seize_id === userId
+      );
       let filteredData;
 
       if (userCompany === "3") {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const branch = item.LOCAT;
           // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
           if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
@@ -104,24 +111,18 @@ const Main = () => {
           );
         });
       } else {
-        filteredData = data.filter((item) => {
+        filteredData = preData.filter((item) => {
           const branch = item.LOCAT;
           if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
           return optionsLocat.some((opt) => branch.includes(opt.label));
         });
       }
-
-      const newData = filteredData.filter(
-        (item) =>
-          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
-      );
-
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log("newData", newData);
-      console.log("Length of filtered data:", newData.length);
+      setDataArr(filteredData);
+      setArrayTable(filteredData);
+      setTableLength(filteredData.length);
+      console.log("newData", filteredData);
+      console.log("Length of filtered data:", filteredData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -214,10 +215,10 @@ const Main = () => {
       align: "center",
       width: "10%",
       render: (text, object, key) => key + 1,
-      sorter: {
-        compare: (a, b) => a.key - b.key,
-        multiple: 5,
-      },
+      // sorter: {
+      //   compare: (a, b) => a.key - b.key,
+      //   multiple: 5,
+      // },
     },
     {
       title: "เลขที่สัญญา",
@@ -237,21 +238,34 @@ const Main = () => {
     },
     {
       title: "ชื่อ-นามสกุล",
-      dataIndex: "CUSTOMER_TNAM",
-      key: "CUSTOMER_TNAM",
       align: "center",
-      render: (text, record) => (
+      render: (text, record) => <>{record.possessor}</>,
+    },
+    {
+      title: "รายละเอียด",
+      align: "center",
+      render: (record) => (
         <>
-          {record.CUSTOMER_TNAME ? record.CUSTOMER_TNAME : null}{" "}
-          {record.CUSTOMER_FNAME ? record.CUSTOMER_FNAME : null}{" "}
-          {record.CUSTOMER_LNAME ? record.CUSTOMER_LNAME : null}
+          <p>เลขโฉนด {record.deed_number}</p>
+          <p>{record.dist_desc}</p>
+          <p>จังหวัด {record.prov_desc}</p>
         </>
       ),
     },
     {
-      title: "วันส่งฟ้องคดี",
+      title: "บังคับคดี",
+      align: "center",
+      render: (record) => <p> {record.legal_execution_office}</p>,
+    },
+    {
+      title: "วันที่ยึด",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
+    },
+    {
+      title: "หมายเหตุ",
+      align: "center",
+      render: (record) => <>{record.mark}</>,
     },
   ];
 

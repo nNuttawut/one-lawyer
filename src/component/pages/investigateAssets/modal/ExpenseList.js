@@ -60,7 +60,10 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
           item.id === 10 ||
           item.id === 11 ||
           item.id === 12 ||
-          item.id === 19
+          item.id === 13 ||
+          item.id === 14 ||
+          item.id === 15 ||
+          item.id === 16
       )
       .map((item) => ({
         value: item.id,
@@ -184,7 +187,7 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
 
   const infoList = () => {
     Modal.confirm({
-      title: "ค่าธรรมเนียมในชั้นบังคับคดี",
+      title: "ค่าธรรมเนียมตรวจทรัพย์/คัดโฉนด",
       width: "30%",
 
       style: {

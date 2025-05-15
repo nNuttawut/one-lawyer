@@ -20,7 +20,7 @@ import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
   baseUrl,
-  GET_INVESTIGATE_LIST,
+  GET_EXPENSES_REFERENCE,
   GET_INVESTIGATE_LOANS_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -30,6 +30,10 @@ import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
 import CreateAdvanePaymentAssets from "./modal/CreateAdvanePaymentAssets";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import {
+  PAYADVANCE_STATUS_NOT_APPROVED,
+  PAYADVANCE_STATUS_SUCCESS,
+} from "../../../utils/constant/ExpenseType";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
@@ -55,6 +59,10 @@ const Main = () => {
   const [companieSelect, setCompanieSelect] = useState();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [checkClearAdvance, setCheckClearAdvance] = useState(null);
+  const [companyCheck, setCompanyCheck] = useState(
+    userCompany === 1 || userCompany === 1 ? 2 : 3
+  );
 
   useEffect(() => {
     setLoadingDataCompany(true);
@@ -160,7 +168,7 @@ const Main = () => {
     setLoading(true);
 
     try {
-      const response = await axios.get(baseUrl + GET_INVESTIGATE_LIST, {
+      const response = await axios.get(baseUrl + GET_INVESTIGATE_LOANS_LIST, {
         headers: HEADERS_EXPORT,
       });
 
@@ -178,6 +186,20 @@ const Main = () => {
         setArrayTable([]);
         message.info("ไม่พบข้อมูล");
       }
+      const checkResponse = await axios.get(baseUrl + GET_EXPENSES_REFERENCE, {
+        headers: HEADERS_EXPORT,
+      });
+      console.log("checkResponse", checkResponse);
+
+      if (checkResponse.data) {
+        console.log("checkResponse.data", checkResponse.data);
+        const userJob = checkResponse?.data?.filter(
+          (item) => item.user_id === userId
+        );
+        console.log("userJob", userJob);
+
+        setCheckClearAdvance(userJob);
+      }
     } catch (error) {
       console.error(
         "Error fetching data:",
@@ -192,12 +214,8 @@ const Main = () => {
   const filterData = (data) => {
     console.log("data", data);
 
-    console.log("userId", userId);
-
     if (Array.isArray(data)) {
-      const preData = data.filter(
-        (item) => item.seize_status === 1 && item.lawyer_seize_id === userId
-      );
+      const preData = data.filter((item) => item.COMPANY_ID);
       let filteredData;
 
       if (userCompany === "3") {
@@ -226,8 +244,9 @@ const Main = () => {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
+        let dataCheck = filteredData.filter((item) => item.COMPANY_ID !== 3);
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(filteredData);
+        setDataArr(dataCheck);
       }
 
       setArrayTable(dataUse);
@@ -266,7 +285,7 @@ const Main = () => {
     const selectedOption = companiesOption.find(
       (option) => option.value === value
     );
-
+    setCompanyCheck(value);
     if (selectedOption) {
       console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
       setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
@@ -277,6 +296,7 @@ const Main = () => {
     );
     setSelectedRowKeys([]);
     setSelectedRows([]);
+    setDataModal([]);
     setArrayTable(dataUse);
     setTableLength(dataUse.length);
   };
@@ -289,24 +309,21 @@ const Main = () => {
   const onSearch = (value) => {
     console.log(companieSelect);
 
-    let result = arrayTable.filter(
+    let result = dataArr.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
           (item.customer_name && item.customer_name.includes(value)) ||
-          (item.customer_lastname && item.customer_lastname.includes(value)) ||
-          (item.provincial_court && item.provincial_court.includes(value))) &&
-        item.USER_ID === userId &&
-        !item.fee_payment_status &&
+          (item.customer_lastname && item.customer_lastname.includes(value))) &&
         item.COMPANY_ID === companieSelect.value
     );
 
     console.log("result", result);
+    console.log("selectedRows====>", selectedRows);
 
     if (value) {
       setArrayTable(result);
     } else {
-      // setArrayTable(dataArr);
-      loadData();
+      setArrayTable(dataArr);
     }
   };
 
@@ -361,19 +378,79 @@ const Main = () => {
     }
   };
 
-  const onSelectChange = (selectedRowKeys, selectedRows) => {
-    console.log("selectedRowKeys changed: ", selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys);
-    console.log("Selected Row Keys:", selectedRowKeys); // คีย์ของแถวที่เลือก
-    console.log("Selected Rows Data:", selectedRows); // ข้อมูลของแถวที่เลือก
-    setSelectedRows(selectedRows); // เก็บข้อมูลแถวที่เลือกใน state;
-    setDataModal(selectedRows);
+  const onSelectChange = (selectedRowKeysData, selectedRowsData) => {
+    // อัปเดต key ที่ถูกเลือกไว้ทั้งหมด
+    setSelectedRowKeys(selectedRowKeysData);
+    console.log("selectedRowKeysData", selectedRowKeysData);
+    setSelectedRows(selectedRowsData);
+    console.log("selectedRowsData", selectedRowsData);
+    setDataModal(selectedRowsData);
   };
 
-  const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      onSelectChange(selectedRowKeys, selectedRows);
-    },
+  const renderCheckClearAdvance = () => {
+    const checkBill = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(0, 1) !== "7";
+    });
+
+    const checkBillAesset = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(0, 1) === "7";
+    });
+
+    const checkBillClearMonney = checkBillAesset?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "M";
+    });
+
+    const checkBillClearLeassing = checkBillAesset?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "L";
+    });
+
+    console.log("checkBillAesset", checkBillAesset);
+    console.log("checkBillClear", checkBillClearMonney);
+    console.log("checkBillClearLeassing", checkBillClearLeassing);
+
+    const checkUserClearAdvance = checkBill?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    const checkUserClearAdvanceMoney = checkBillClearMonney?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    const checkUserClearAdvanceLeasing = checkBillClearLeassing?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    console.log(
+      "checkData",
+      checkUserClearAdvance,
+      checkUserClearAdvanceMoney,
+      checkUserClearAdvanceLeasing
+    );
+    if (companyCheck === 1 || companyCheck === 4) {
+      if (checkUserClearAdvance && checkUserClearAdvanceLeasing) {
+        setIsModalCreateAdvanePaymentAssets(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
+    } else if (companyCheck === 2 || companyCheck === 5) {
+      if (checkUserClearAdvance && checkUserClearAdvanceMoney) {
+        setIsModalCreateAdvanePaymentAssets(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
+    } else {
+      if (checkUserClearAdvance) {
+        setIsModalCreateAdvanePaymentAssets(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
+    }
   };
 
   const renderDate = (record) => {
@@ -474,29 +551,22 @@ const Main = () => {
     {
       title: "ชื่อ-นามสกุล",
       align: "center",
-      render: (text, record) => <>{record.possessor}</>,
-    },
-    {
-      title: "รายละเอียด",
-      align: "center",
-      render: (record) => (
+      render: (text, record) => (
         <>
-          <p>เลขโฉนด {record.deed_number}</p>
-          <p>{record.dist_desc}</p>
-          <p>จังหวัด {record.prov_desc}</p>
+          {record.CUSTOMER_TNAME}
+          {record.CUSTOMER_FNAME} {record.CUSTOMER_LNAME}
         </>
       ),
     },
-
     {
-      title: "วันที่สืบ",
+      title: "ผู้รับผิดชอบ",
       align: "center",
-      render: (record) => <>{renderDate(record)}</>,
+      render: (record) => <>{record.LAWYER_NNAME}</>,
     },
     {
       title: "หมายเหตุ",
       align: "center",
-      render: (record) => <>{record.mark}</>,
+      render: (record) => <>{record.MEMO}</>,
     },
   ];
 
@@ -530,8 +600,10 @@ const Main = () => {
                   type="primary"
                   icon={<PlusOutlined />} // ไอคอน
                   size="small" // ขนาดเล็ก
-                  onClick={() => setIsModalCreateAdvanePaymentAssets(true)}
-                  disabled={selectedRowKeys.length <= 0}
+                  onClick={() => renderCheckClearAdvance()}
+                  disabled={
+                    selectedRowKeys.length <= 0 || selectedRowKeys.length > 10
+                  }
                   loading={loading}
                 >
                   สร้างรายการ
@@ -565,8 +637,8 @@ const Main = () => {
                 footer={() => (
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                      // display: "flex",
+                      // justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
                       alignItems: "center",
                     }}
                   >
@@ -577,7 +649,11 @@ const Main = () => {
                     <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
                   </div>
                 )}
-                rowSelection={rowSelection}
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: onSelectChange,
+                  preserveSelectedRowKeys: true,
+                }}
                 // expandable={{
                 //   expandedRowRender: (record) => (
                 //     <p style={{ margin: 0 }}>
@@ -679,6 +755,7 @@ const Main = () => {
           close={setIsModalCreateAdvanePaymentAssets}
           dataDefault={dataModal}
           funcUpdateStatus={handleUpdateData}
+          company={companieSelect}
         />
       ) : null}
     </>

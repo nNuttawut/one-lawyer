@@ -13,6 +13,7 @@ import {
   Tooltip,
   DatePicker,
   Image,
+  InputNumber,
 } from "antd";
 import { HEADERS_EXPORT, POST_CALCULATE_LAND } from "../../../API/apiUrls";
 import axios from "axios";
@@ -153,6 +154,7 @@ const EditAssetsDetail = ({
       investigatorAsset: dataIndex.investigator_user_id,
       memo: dataIndex.mark,
       // urlFile: dataIndex.investigate_filepath,
+      judgmentCreditorDate: dayjs(dataIndex.seize_date),
       mortgagee: dataIndex.mortgagee,
       mortgageBalance: currencyFormatComma(dataIndex.mortgage_balance),
       investigateAssetsTime: dataIndex.investigation_type_id,
@@ -160,7 +162,24 @@ const EditAssetsDetail = ({
       ngan: dataIndex.ngan,
       wa: dataWa,
       preferenceCreditor: dataIndex.preference_creditor,
+      estimatedEnforce: null,
+      estimatedEnforcePrice: dataIndex?.estimated_enforce_price
+        ? dataIndex?.estimated_enforce_price
+        : null,
+      AddrEnforce: dataIndex?.legal_execution_office
+        ? dataIndex?.legal_execution_office
+        : null,
     });
+
+    let ralationDataIndex = optionsRalation.filter(
+      (item) => item.value === dataIndex.mark
+    );
+
+    console.log(ralationDataIndex);
+
+    setRalationSelect(ralationDataIndex.value);
+    setMortgageStatus(dataIndex?.mortgagee);
+    setSequestrateStatus(dataIndex?.sequestrate_status);
     setFileList(dataIndex?.fileList);
     setCapturedImages(dataIndex?.capturedImages);
   }, [isModal]);
@@ -285,10 +304,6 @@ const EditAssetsDetail = ({
   };
 
   const onChangeInputpossessorAsset = (value) => {
-    console.log(value);
-  };
-
-  const onChangeUrlFile = (value) => {
     console.log(value);
   };
 
@@ -519,8 +534,10 @@ const EditAssetsDetail = ({
       lawyer_seize_id: null,
       seize_status: null,
       seize_status_mark: null,
-      seize_date: null,
-      legal_execution_office: null,
+      seize_date: values.judgmentCreditorDate
+        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+        : null,
+
       sale_announcement_mark: null,
       investigation_fees: null,
       investigation_fees_payment_status: null,
@@ -539,6 +556,10 @@ const EditAssetsDetail = ({
       lon: values.latlon ? parseFloat(valueLon) : null,
       fileList: fileList,
       capturedImages: capturedImages,
+      estimated_enforce_price: values?.estimatedEnforcePrice
+        ? values?.estimatedEnforcePrice
+        : null,
+      legal_execution_office: values?.AddrEnforce ? values?.AddrEnforce : null,
     };
 
     console.log("postDataInvestigate---->", postDataInvestigate);
@@ -864,16 +885,7 @@ const EditAssetsDetail = ({
             />
           </Form.Item>
         </Tooltip>
-        {/* {assetTypeSelect ? (
-          <>
-            <Form.Item label="เลขระหว่าง" name="utm">
-              <Input onChange={(e) => onChangeInputUtm(e.target.value)} />
-            </Form.Item>
-            <Form.Item label="ตำแหน่ง" name="latlon">
-              <Input onChange={(e) => onChangeInputLatLon(e.target.value)} />
-            </Form.Item>
-          </>
-        ) : null} */}
+
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
           <Input
             name="estimatedPrice"
@@ -905,7 +917,7 @@ const EditAssetsDetail = ({
           />
         </Form.Item>
 
-        {dataIndex.mortgagee ? (
+        {mortgageStatus ? (
           <>
             <Form.Item
               label="เจ้าหนี้จำนอง"
@@ -955,21 +967,75 @@ const EditAssetsDetail = ({
             value={sequestrateStatus}
           />
         </Form.Item>
-        {dataIndex.sequestrate_status === 1 ? (
-          <Form.Item
-            label="เจ้าหนี้คำพิพากษา"
-            name="preferenceCreditor"
-            rules={[
-              {
-                required: true,
-                message: "กรณากรอกข้อมูล !",
-              },
-            ]}
-          >
-            <Input
-              onChange={(e) => onChangeInputPreferenceCreditor(e.target.value)}
-            />
-          </Form.Item>
+        {sequestrateStatus === 1 ? (
+          <>
+            <Form.Item
+              label="เจ้าหนี้คำพิพากษา"
+              name="preferenceCreditor"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input
+                onChange={(e) =>
+                  onChangeInputPreferenceCreditor(e.target.value)
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              label="เลขคดีแดง"
+              name="ownerAsset"
+              rules={[
+                {
+                  required: true,
+                  message: "กรณากรอกข้อมูล !",
+                },
+              ]}
+            >
+              <Input name="ownerAsset" />
+            </Form.Item>
+            <Form.Item
+              label="วันที่โดนอายัด"
+              name="judgmentCreditorDate"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาเลือกวันที่สืบทรัพย์",
+                },
+              ]}
+            >
+              <DatePicker name="judgmentCreditorDate" />
+            </Form.Item>
+            <Tooltip
+              placement="bottom"
+              title="ราคาประเมินจากกรมบังคับคดี"
+              arrow={mergedArrow}
+            >
+              <Form.Item
+                label="ราคาประเมิน(จพค.)"
+                name="estimatedEnforcePrice"
+                style={{ color: "red" }}
+              >
+                <InputNumber
+                  name="estimatedEnforcePrice"
+                  suffix="บาท"
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                  style={{ width: "100%", color: "black" }}
+                />
+              </Form.Item>
+            </Tooltip>
+            <Form.Item label="สำนักงานบังคับคดี" name="AddrEnforce">
+              <Input name="AddrEnforce" />
+            </Form.Item>
+          </>
         ) : null}
         <Form.Item
           label="เลือกผู้สืบทรัพย์"

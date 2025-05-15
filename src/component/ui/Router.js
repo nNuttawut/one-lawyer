@@ -41,6 +41,7 @@ import ClearAdvanePay from "../pages/chargeIndict/ClearAdvanePay";
 import LawsuitAdvanePayment from "../pages/preLawsuitFiled/LawsuitAdvanePayment";
 import LawsuitClearAdvanePayment from "../pages/preLawsuitFiled/LawsuitClearAdvanePayment";
 import MainPreLawsuitFiled from "../pages/preLawsuitFiled/MainPreLawsuitFiled";
+import AppointmentLawsuit from "../pages/preLawsuitFiled/AppointmentLawsuit";
 import CreateScanNoticeMain from "../pages/notice/CreateScanNoticeMain";
 import ReplyNoticeEms from "../pages/notice/ReplyNoticeEms";
 import CreateTerminateContract from "../pages/terminateContract/CreateTerminateContract";
@@ -80,6 +81,8 @@ import MainClosingBalance from "../pages/closingBalance/MainClosingBalance";
 import MainAverage from "../pages/saleAnnouncement/MainAverage";
 import EnforcementAdvanePayment from "../pages/enforcement/EnforcementAdvanePayment";
 import EnforcementClearAdvanePayment from "../pages/enforcement/EnforcementClearAdvanePayment";
+import AnotherAdvanePayment from "../pages/disbursement/AnotherAdvanePayment";
+import AnotherClearAdvanePayment from "../pages/disbursement/AnotherClearAdvanePayment";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -204,6 +207,10 @@ export default function Router() {
             element={<MainPreLawsuitFiled />}
           />
           <Route
+            path="/lawsuit/appointmen-lawsuit"
+            element={<AppointmentLawsuit />}
+          />
+          <Route
             path="/lawsuit/advane-payment"
             element={<LawsuitAdvanePayment />}
           />
@@ -220,7 +227,7 @@ export default function Router() {
             element={<ReportTerminateHand />}
           />
           <Route
-            path="sale-announcement/report-sale"
+            path="sale-announcement/report-sale/*"
             element={<SaleAnnouncementRoute />}
           />
           <Route
@@ -271,6 +278,7 @@ export default function Router() {
             path="/manage-data/change-lawyers-jobs"
             element={<ChangeLawyersJob />}
           />
+
           <Route path="/manage-data/import-data" element={<ImportData />} />
           <Route path="/chang-password" element={<ChangePassword />} />
           <Route path="/setting-system" element={<SettingSystem />} />
@@ -296,6 +304,16 @@ export default function Router() {
           <Route
             path="/contract-detail/detail-payment"
             element={<DetailPayment />}
+          />
+
+          {/* เบิกอื่น ๆ */}
+          <Route
+            path="/disbursement/advane-payment"
+            element={<AnotherAdvanePayment />}
+          />
+          <Route
+            path="/disbursement/clear-advane-payment"
+            element={<AnotherClearAdvanePayment />}
           />
           <Route path="/withdraw-case" element={<MainWithdrawCase />} />
           <Route path="/timeout-case" element={<MainTimeoutCase />} />

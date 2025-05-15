@@ -114,7 +114,7 @@ export default function LogIn() {
           >
             <Card
               title={<h4>เข้าสู่ระบบ</h4>}
-              bordered="false"
+              variant="false"
               style={{ marginTop: "20%", width: "100%" }}
             >
               <Form

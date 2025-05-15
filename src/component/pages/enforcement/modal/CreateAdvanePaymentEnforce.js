@@ -14,8 +14,9 @@ import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
+  POST_EXPENSES_REFERENCE,
+  PUT_INVESTIGATE_ITEM_BY_ID,
   PUT_JUDGE,
-  PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -24,18 +25,14 @@ import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 // import EditAdvancePaymentDetail from "./EditAdvancePaymentDetail";
 import {
-  DELIVERY_OF_SUMMONS,
-  DOCUMENT_COST,
-  FEE_COURT,
-  STAMP_COST,
+  PAYADVANCE_STATUS_PROCESS,
   STATUS_WITHDRAW_PROCESS,
-  STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
 import {
   ENFORCEMENT,
-  JUDGEMENT,
+  STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 
 const CreateAdvanePayment = ({
@@ -89,23 +86,29 @@ const CreateAdvanePayment = ({
     setIsModal(false);
   };
 
-  const sendData = async (setPutJudgement, setPreExpenseSend) => {
+  const sendData = async (
+    setPutInvestigateSeize,
+    setPreExpenseSend,
+    setReference
+  ) => {
     setLoading(true);
 
     try {
       // ตรวจสอบข้อมูลก่อนส่ง
-      const hasInvalidLawsuit = setPutJudgement.some((item) => !item);
+      const hasInvalidInvestigateSeize = setPutInvestigateSeize.some(
+        (item) => !item
+      );
       const hasInvalidExpense = setPreExpenseSend.some((item) => !item);
 
-      if (hasInvalidLawsuit || hasInvalidExpense) {
+      if (hasInvalidInvestigateSeize || hasInvalidExpense) {
         message.warning("พบค่าที่ไม่ถูกต้อง");
         setLoading(false);
         return;
       }
 
       // สร้างคำสั่ง Promise สำหรับ `setPutJudgement`
-      const promisesJudgement = setPutJudgement.map((item) =>
-        axios.put(`${baseUrl}${PUT_JUDGE}`, item, {
+      const promisesInvestigateSeize = setPutInvestigateSeize.map((item) =>
+        axios.put(`${baseUrl}${PUT_INVESTIGATE_ITEM_BY_ID}`, item, {
           headers: HEADERS_EXPORT,
         })
       );
@@ -117,8 +120,20 @@ const CreateAdvanePayment = ({
         })
       );
 
+      const promissReference = axios.post(
+        `${baseUrl}${POST_EXPENSES_REFERENCE}`,
+        setReference,
+        {
+          headers: HEADERS_EXPORT,
+        }
+      );
+
       // รวม Promise ทั้งหมด
-      const allPromises = [...promisesJudgement, ...promisesExpense];
+      const allPromises = [
+        ...promisesInvestigateSeize,
+        ...promisesExpense,
+        promissReference,
+      ];
 
       // รอให้ทุกคำสั่งสำเร็จ
       const results = await Promise.all(allPromises);
@@ -136,7 +151,7 @@ const CreateAdvanePayment = ({
         message.error("มีข้อมูลบางรายการที่อัพเดทไม่สำเร็จ");
       }
       // หากสำเร็จทั้งหมดให้ปรับสถานะ
-      funcUpdateStatus([...setPutJudgement]);
+      funcUpdateStatus([...setPutInvestigateSeize, company]);
     } catch (error) {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
@@ -183,17 +198,30 @@ const CreateAdvanePayment = ({
   const onFinish = (values) => {
     console.log("values", values);
     console.log(dataPropertyList);
-    let setPutInvestigate = [];
+    let setPutInvestigateSeize = [];
     let setPreExpenseSend = [];
 
     let defindNo;
+    const formatTwoDigit = (num) => (num < 10 ? "0" + num : num);
     if (company.value === 1 || company.value === 4) {
-      defindNo = "LBN";
+      defindNo = `${ENFORCEMENT}LBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else if (company.value === 2 || company.value === 5) {
-      defindNo = "MBN";
+      defindNo = `${ENFORCEMENT}MBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     } else {
-      defindNo = "KBN";
+      defindNo = `${ENFORCEMENT}KBN${formatTwoDigit(USER_ID)}${formatTwoDigit(
+        dataDefault.length
+      )}-${dayjs().format("YYYYMMDDHHmmss")}`;
     }
+
+    const dataReference = {
+      reference_no: defindNo,
+      user_id: USER_ID,
+      pay_status_id: PAYADVANCE_STATUS_PROCESS,
+    };
 
     const initDataExpense = {
       withdraw_process_id: STATUS_WITHDRAW_PROCESS,
@@ -203,23 +231,32 @@ const CreateAdvanePayment = ({
       pay_datetime: null,
       pay_mark: null,
       file_path: null,
-      reference_no: `${ENFORCEMENT}${defindNo}${USER_ID}-${dayjs().format(
-        "YYYYMMDDHHmmss"
-      )}`,
+      reference_no: defindNo,
     };
 
     try {
-      dataPropertyList?.forEach((expense) => {
+      dataExpense?.forEach((expense) => {
         // ดันข้อมูลรายการย่อยทั้งหมดเข้า setPreExpenseSend
-        expense?.setPreExpense.forEach((value) => {
-          setPreExpenseSend.push({
-            ...initDataExpense,
-            ...value,
-          });
-        });
-        setPutInvestigate.push({
+
+        const idInvestigate = dataDefault.map((item) => ({
+          INVESTIGATE_PROPERTY_ID: item.id,
+        }));
+
+        setPreExpenseSend.push({
+          ...initDataExpense,
           ...expense,
-          seize_status: 3,
+          investigate_list: idInvestigate,
+        });
+
+        console.log(expense);
+      });
+
+      dataDefault?.forEach((item) => {
+        // ดันข้อมูลรายการย่อยทั้งหมดเข้า setPreExpenseSend
+
+        setPutInvestigateSeize.push({
+          ...item,
+          seize_status: STATUS_PROCESS_SUCCESSFUL,
         });
       });
     } catch (error) {
@@ -227,9 +264,9 @@ const CreateAdvanePayment = ({
       message.error("กรุณาทำรายการเบิกให้ถูกต้อง");
     }
 
-    console.log("setPutInvestigate", setPutInvestigate);
+    console.log("setPutInvestigate", setPutInvestigateSeize);
     console.log("setDataExpense---->", setPreExpenseSend);
-    // sendData(setPutJudgement, setPreExpenseSend);
+    sendData(setPutInvestigateSeize, setPreExpenseSend, dataReference);
   };
 
   const onFinishFailed = (errorInfo) => {

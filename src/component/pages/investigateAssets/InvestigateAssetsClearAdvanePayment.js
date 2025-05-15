@@ -26,6 +26,7 @@ import CurrencyFormat from "../../../hook/CurrencyFormat";
 // import DetailWithdraw from "./modal/DetailWithdraw";
 import ClearAdvanePayment from "./modal/ClearAdvanePaymentAssets";
 import {
+  INVESTIGATE,
   STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
   STATUS_PROCESS_UNSUCCESSFUL,
@@ -95,12 +96,14 @@ const Main = () => {
 
   const filterData = (data) => {
     if (Array.isArray(data)) {
-      const newData = data.filter(
-        (item) =>
-          (item.withdraw_process_id <= 4 && item.USER_ID === userId) ||
-          ROLE_ID === "1"
-      );
-      console.log("newData", newData);
+      const newData = data.filter((item) => {
+        const isPending = item.withdraw_process_id <= 4;
+        const isOwner = item.USER_ID === userId;
+        const isAdmin = ROLE_ID === "1";
+        const isEnforcement = parseInt(item.reference_no[0]) === INVESTIGATE;
+
+        return isPending && (isOwner || isAdmin) && isEnforcement;
+      });
 
       let filteredData;
 
@@ -381,7 +384,7 @@ const Main = () => {
 
   const renderStatusPay = (record) => {
     let i = 0;
-    const allMatch = record.expenseList.every((expense) => expense.pay);
+    const allMatch = record.expenseList.every((expense) => expense.pay_type_id);
     let status;
     let color;
     let totalPay = 0;
@@ -670,7 +673,7 @@ const Main = () => {
                   ),
                   rowExpandable: (record) =>
                     record.withdraw_process_id === STATUS_PROCESS_SUCCESSFUL &&
-                    !record.pay_datetime,
+                    (record.pay_type_id === 4 || record.pay_type_id === null),
                   expandedRowKeys, // เก็บ state ของ row ที่ขยาย
                   onExpand, // ฟังก์ชันที่ควบคุมการขยาย
                 }}

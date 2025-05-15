@@ -404,9 +404,9 @@ const Main = () => {
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     }
   };
 
@@ -844,7 +844,7 @@ const Main = () => {
     console.log("handleUpdate", data);
 
     const result = dataArr.map((item) => {
-      if (item.id === data.id) {
+      if (item.key === data.key) {
         return { ...data };
       } else {
         return { ...item };

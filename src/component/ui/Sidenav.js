@@ -40,14 +40,24 @@ function Sidenav({ color, onClick }) {
   const page = pathname.replace("/", "");
 
   const menuList = [
-    {
-      key: "1",
-      pageName: "dashboard",
-      label: "dashboard",
-      path: "/",
-      icon: <HomeOutlined />,
-      title: "หน้าแรก",
-    },
+    ROLE_ID !== "3"
+      ? {
+          key: "1",
+          pageName: "dashboard",
+          label: "dashboard",
+          path: "/",
+          icon: <HomeOutlined />,
+          title: "หน้าแรก",
+        }
+      : {
+          key: "1.1",
+          icon: <HomeOutlined />,
+          pageName: "appointmen-lawsuit",
+          path: "lawsuit/appointmen-lawsuit",
+          label: "ตารางนัดศาล",
+          title: "ตารางนัดศาล",
+        },
+
     // {
     //   key: "2",
     //   pageName: "calendar",
@@ -341,6 +351,13 @@ function Sidenav({ color, onClick }) {
               path: "lawsuit/import-old-data",
               label: "นำเข้าสัญญาส่วนฟ้อง",
             },
+            {
+              key: "7.5",
+              icon: <CaretRightOutlined />,
+              pageName: "appointmen-lawsuit",
+              path: "lawsuit/appointmen-lawsuit",
+              label: "ตารางนัดศาล",
+            },
           ],
         }
       : null,
@@ -590,23 +607,7 @@ function Sidenav({ color, onClick }) {
           title: "ลูกหนี้สูญ",
         }
       : null,
-    // {
-    //   key: "16",
-    //   pageName: "disbursement",
-    //   label: "disbursement",
-    //   path: "/disbursement",
-    //   icon: <WalletOutlined />,
-    //   title: "งบเบิกจ่าย",
-    //   children: [
-    //     {
-    //       key: "161",
-    //       icon: <CaretRightOutlined />,
-    //       pageName: "disbursement",
-    //       path: "disbursement/indict-charge",
-    //       label: "ค่าฤชาส่วนฟ้อง",
-    //     },
-    //   ],
-    // },
+
     ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "2" || ROLE_ID === "8"
       ? {
           key: "18",
@@ -626,6 +627,32 @@ function Sidenav({ color, onClick }) {
           ],
         }
       : null,
+    // ROLE_ID === "1" || ROLE_ID === "3" || ROLE_ID === "4"
+    //   ? {
+    //       key: "25",
+    //       pageName: "disbursement",
+    //       label: "disbursement",
+    //       path: "/disbursement",
+    //       icon: <WalletOutlined />,
+    //       title: "เบิกอื่น ๆ",
+    //       children: [
+    //         {
+    //           key: "25.2",
+    //           icon: <CaretRightOutlined />,
+    //           pageName: "disbursement-advane-payment",
+    //           path: "disbursement/advane-payment",
+    //           label: "1. เบิกเงินทดรอง",
+    //         },
+    //         {
+    //           key: "25.3",
+    //           icon: <CaretRightOutlined />,
+    //           pageName: "disbursement-clear-advane-payment",
+    //           path: "disbursement/clear-advane-payment",
+    //           label: "2. เคลียร์เงินทดรอง",
+    //         },
+    //       ],
+    //     }
+    //   : null,
 
     ROLE_ID === "1" || ROLE_ID === "2"
       ? {
@@ -648,7 +675,7 @@ function Sidenav({ color, onClick }) {
             //   icon: <CaretRightOutlined />,
             //   pageName: "assign-lawyers",
             //   path: "manage-data/assign-lawyers",
-            //   label: "มอบหมายงาน",
+            //   label: "มอบหมายงานทนาย",
             // },
             {
               key: "19.3",
@@ -657,6 +684,13 @@ function Sidenav({ color, onClick }) {
               path: "manage-data/change-lawyers-jobs",
               label: "เปลี่ยนทนาย",
             },
+            // {
+            //   key: "19.4",
+            //   icon: <CaretRightOutlined />,
+            //   pageName: "assign-asset",
+            //   path: "manage-data/assign-asset",
+            //   label: "มอบหมายงานสืบ",
+            // },
           ],
         }
       : null,
@@ -689,7 +723,7 @@ function Sidenav({ color, onClick }) {
         }
       : null,
 
-    ROLE_ID === "1" || ROLE_ID === "6"
+    ROLE_ID === "1" || ROLE_ID === "6" || userId === 4
       ? {
           key: "21",
           pageName: "charge-indict",
@@ -819,7 +853,7 @@ function Sidenav({ color, onClick }) {
   ].filter(Boolean);
 
   const handleClick = (value) => {
-    // console.log(value);
+    console.log("value===========>", value);
     loadData();
     onClick(value);
   };
