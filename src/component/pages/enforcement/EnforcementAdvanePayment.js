@@ -365,24 +365,81 @@ const Main = () => {
     );
   };
 
+  // const renderCheckClearAdvance = () => {
+  //   const checkBill = checkClearAdvance?.filter((item) => {
+  //     return item.reference_no?.substring(0, 1) !== "3";
+  //   });
+
+  //   console.log(checkBill);
+
+  //   const checkUserClearAdvance = checkBill?.every(
+  //     (item) =>
+  //       item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+  //       item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+  //   );
+
+  //   console.log("checkData", checkUserClearAdvance);
+  //   if (checkUserClearAdvance) {
+  //     setIsModalCreateAdvanePaymentCourt(true);
+  //   } else {
+  //     message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+  //   }
+  // };
+
   const renderCheckClearAdvance = () => {
-    const checkBill = checkClearAdvance?.filter((item) => {
-      return item.reference_no?.substring(0, 1) !== "3";
+    const checkBillClearMonney = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "M";
     });
 
-    console.log(checkBill);
+    const checkBillClearLeassing = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "L";
+    });
 
-    const checkUserClearAdvance = checkBill?.every(
+    const checkBillClearKSM = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "K";
+    });
+
+    const checkUserClearAdvanceMoney = checkBillClearMonney?.every(
       (item) =>
         item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
         item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
     );
 
-    console.log("checkData", checkUserClearAdvance);
-    if (checkUserClearAdvance) {
-      setIsModalCreateAdvanePaymentCourt(true);
+    const checkUserClearAdvanceLeasing = checkBillClearLeassing?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    const checkUserClearAdvanceKSM = checkBillClearKSM?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
+
+    console.log(
+      "checkData",
+      checkUserClearAdvanceMoney,
+      checkUserClearAdvanceLeasing
+    );
+    if (companieSelect === 1) {
+      if (checkUserClearAdvanceLeasing) {
+        setIsModalCreateAdvanePaymentCourt(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
+    } else if (companieSelect === 2) {
+      if (checkUserClearAdvanceMoney) {
+        setIsModalCreateAdvanePaymentCourt(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
     } else {
-      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      if (checkUserClearAdvanceKSM) {
+        setIsModalCreateAdvanePaymentCourt(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
     }
   };
 
@@ -535,8 +592,8 @@ const Main = () => {
                 footer={() => (
                   <div
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                      // display: "flex",
+                      // justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
                       alignItems: "center",
                     }}
                   >

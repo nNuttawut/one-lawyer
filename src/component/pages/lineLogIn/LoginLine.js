@@ -22,8 +22,6 @@ export default function Loginline() {
   const lineName = localStorage.getItem("userNameLine");
 
   const sendData = async () => {
-    console.log("ssssss");
-
     const dataComfirm = {
       USERNAME: username,
       TNAME: tName,
@@ -77,7 +75,13 @@ export default function Loginline() {
         console.log("sendData");
         sendData();
       }
-      navigate("/");
+
+      if (roleId !== 3) {
+        navigate("/lawsuit/appointment-lawsuit");
+      } else {
+        navigate("/");
+      }
+
       window.location.reload();
     }
   };

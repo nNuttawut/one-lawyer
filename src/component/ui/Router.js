@@ -70,6 +70,8 @@ import ReplyTerminateContractLand from "../pages/terminateContractLand/ReplyTerm
 import ContractToLawuitLand from "../pages/terminateContractLand/ContractToLawuitLand";
 import ChartCancel from "../pages/terminateContract/ChartCancel";
 import ChartCancelHand from "../pages/terminateContractHand/ChartCancelHand";
+import ChartCancelRepurchase from "../pages/terminateContractRepurchase/ChartCancelRepurchase";
+import ChartCancelLand from "../pages/terminateContractLand/ChartCancelLand";
 import SettingSystem from "../pages/userManage/SettingSystem";
 import MainWithdrawCase from "../pages/withdrawCase/MainWithdrawCase";
 import MainTimeoutCase from "../pages/timeoutCase/MainTimeoutCase";
@@ -163,6 +165,10 @@ export default function Router() {
             element={<ContractToLawuitRepurchase />}
           />
           <Route
+            path="terminate-contract-Repurchase/terminate-Contract-chart"
+            element={<ChartCancelRepurchase />}
+          />
+          <Route
             path="/terminate-contract-land/create-terminate-contract"
             element={<CreateTerminateContractLand />}
           />
@@ -177,6 +183,10 @@ export default function Router() {
           <Route
             path="/terminate-contract-land/terminate-contract-to-lawsuit"
             element={<ContractToLawuitLand />}
+          />
+          <Route
+            path="terminate-contract-land/terminate-Contract-chart"
+            element={<ChartCancelLand />}
           />
           <Route
             path="/investigate-assets"
@@ -207,7 +217,7 @@ export default function Router() {
             element={<MainPreLawsuitFiled />}
           />
           <Route
-            path="/lawsuit/appointmen-lawsuit"
+            path="/lawsuit/appointment-lawsuit"
             element={<AppointmentLawsuit />}
           />
           <Route

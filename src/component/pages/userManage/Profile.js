@@ -254,7 +254,9 @@ const Main = () => {
               optionFilterProp="value"
               options={companiesOption}
               onChange={(value) => onChangeSelect(value)}
-              disabled
+              disabled={
+                userData.ROLE_ID === 1 || userData.ROLE_ID === 2 ? false : true
+              }
             />
           </Form.Item>
 

@@ -329,6 +329,15 @@ const Main = () => {
       yLine + 20
     );
     doc.setTextColor(255, 0, 0);
+    // doc.text(
+    //   `ต้นคงเหลือ: ${
+    //     arrData?.loan?.tonkong
+    //       ? currencyFormatPoint(arrData?.loan?.tonkong)
+    //       : "-"
+    //   } บาท`,
+    //   120,
+    //   yLine + 25
+    // );
     doc.text(
       `ต้นคงเหลือ: ${
         arrData?.loan?.tonkong

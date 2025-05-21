@@ -9,7 +9,7 @@ import { baseUrl, LOG_IN, HEADERS_EXPORT } from "../../API/apiUrls";
 
 export default function LogIn() {
   const navigate = useNavigate();
-
+  const roleId = parseInt(localStorage.getItem("ROLE_ID"));
   const [loading, setLoading] = useState(false);
 
   const postLogin = async (postData) => {
@@ -83,7 +83,12 @@ export default function LogIn() {
       window.location.reload();
     } else {
       console.log("not null");
-      navigate("/");
+      if (roleId !== 3) {
+        navigate("/lawsuit/appointment-lawsuit");
+      } else {
+        navigate("/");
+      }
+
       window.location.reload();
     }
   };

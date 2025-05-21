@@ -504,9 +504,9 @@ const Main = () => {
         {totalPay !== 0 && (
           <>
             {totalPay > totalWithdraw
-              ? `เบิกขาด ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              ? `เบิกขาด ${currencyFormatPoint(totalWithdraw - totalPay)} บาท`
               : totalPay < totalWithdraw
-              ? `เบิกเกิน ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              ? `เบิกเกิน ${currencyFormatPoint(totalWithdraw - totalPay)} บาท`
               : null}
           </>
         )}

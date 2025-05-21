@@ -18,9 +18,16 @@ import {
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
-import DataCheck from "../terminateContract/modal/DataCheck";
+import CurrencyFormat from "../../../hook/CurrencyFormat";
+import DataCheck from "./modal/DataCheck";
 
 const Main = () => {
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [loading, setLoading] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -28,7 +35,6 @@ const Main = () => {
   const userCompany = localStorage.getItem("COMPANY_ID");
   const [arrow, setArrow] = useState("Show");
   const [cancelData, setCancelData] = useState([]);
-  const [cancelDataHand, setCancelDataHand] = useState([]);
   const [arrData, setArrData] = useState();
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedData, setSelectedData] = useState(null);
@@ -53,8 +59,8 @@ const Main = () => {
   }, []);
 
   useEffect(() => {
-    BarChartHand();
-  }, [cancelDataHand]);
+    BarChart();
+  }, [cancelData]);
 
   const loadData = async () => {
     setLoading(true);
@@ -126,7 +132,12 @@ const Main = () => {
         filteredData = newData.filter((item) => {
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          // if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          //   return item;
+          // } else {
+          //   return false;
+          // }
+          if (item.contract_schema === "ksm") {
             return item;
           } else {
             return false;
@@ -140,10 +151,15 @@ const Main = () => {
           ); // ตรวจสอบว่า 1 ตัวแรกมีเป็น eng
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if ((containsNo || containsEngFirst) && !containsEng) {
-            return item; // เก็บ item นี้ไว้
+          // if ((containsNo || containsEngFirst) && !containsEng) {
+          //   return item; // เก็บ item นี้ไว้
+          // } else {
+          //   return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          // }
+          if (item.contract_schema !== "ksm") {
+            return item;
           } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+            return false;
           }
         });
       }
@@ -160,13 +176,13 @@ const Main = () => {
           dayjs(a.datetime).isBefore(dayjs(b.datetime)) ? -1 : 1
         );
 
-      let groupedByMonthHand = {};
+      let groupedByMonth = {};
 
       dataThisYear.forEach((item) => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
-        if (!item.account_type || item.account_type === "cancelHand") {
-          if (!groupedByMonthHand[month]) {
-            groupedByMonthHand[month] = {
+        if (item.account_type === "repurchase") {
+          if (!groupedByMonth[month]) {
+            groupedByMonth[month] = {
               total: 0,
               withDateResponse: 0,
               normalResponse: 0,
@@ -175,31 +191,40 @@ const Main = () => {
               items: [],
             }; // เริ่มต้นที่ 0
           }
-          groupedByMonthHand[month].total++; // เพิ่มจำนวนข้อมูลทั้งหมดในเดือนนั้น
-          groupedByMonthHand[month].items.push(item); // เพิ่มข้อมูลของเดือนนั้นลงไปใน items array
+
+          groupedByMonth[month].total++; // เพิ่มจำนวนข้อมูลทั้งหมดในเดือนนั้น
+          groupedByMonth[month].items.push(item); // เพิ่มข้อมูลของเดือนนั้นลงไปใน items array
 
           if (item.date_response) {
-            groupedByMonthHand[month].withDateResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].withDateResponse++; // เพิ่มจำนวนถ้ามี date_response
           }
+
           if (item.status === 1) {
-            groupedByMonthHand[month].normalResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].normalResponse++;
           } else if (item.status === 2) {
-            groupedByMonthHand[month].postResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].postResponse++;
           } else if (item.status === 3) {
-            groupedByMonthHand[month].abnormalResponse++; // เพิ่มจำนวนถ้ามี date_response
+            groupedByMonth[month].abnormalResponse++;
           }
         }
       });
-      setCancelDataHand(groupedByMonthHand);
+      setCancelData(groupedByMonth);
     } else {
       console.error("data is not an array or is undefined");
     }
   };
 
-  const BarChartHand = () => {
+  const BarChart = () => {
     const chartData = [
-      ["เดือน", "ทั้งหมด", "ยังไม่ตอบกลับ", "ไปรษณีย์", "ตีกลับ", "ใบตอบกลับ"], // Header
-      ...Object.entries(cancelDataHand).map(([month, data]) => [
+      [
+        "เดือน",
+        "ทั้งหมด",
+        "ยังไม่ตอบกลับ",
+        "เว็บไปรษณีย์",
+        "ตีกลับ",
+        "ใบตอบกลับ",
+      ], // Header
+      ...Object.entries(cancelData).map(([month, data]) => [
         month,
         data.total, // ข้อมูลทั้งหมด
         data.total - data.withDateResponse, // คำนวณ "ยังไม่ตอบกลับ"
@@ -211,6 +236,7 @@ const Main = () => {
 
     const option = {
       legend: {},
+
       toolbox: {
         show: true,
         feature: {
@@ -248,7 +274,7 @@ const Main = () => {
         },
         {
           type: "bar",
-          name: "ไปรษณีย์",
+          name: "เว็บไปรษณีย์",
           stack: "response",
           itemStyle: {
             color: "yellow",
@@ -273,7 +299,6 @@ const Main = () => {
         },
       ],
     };
-
     return (
       <ReactECharts
         option={option}
@@ -284,24 +309,20 @@ const Main = () => {
   };
 
   const onChartClick = (params) => {
-    console.log("v");
-
     const month = params.name; // เช่น "มี.ค."
-    const data = cancelDataHand[month]; // ดึงข้อมูลของเดือนนั้น
+    const data = cancelData[month]; // ดึงข้อมูลของเดือนนั้น
 
     setSelectedMonth(month);
     setSelectedData(data);
   };
 
-  const onChangeHand = (date, dateString) => {
+  const onChange = (date, dateString) => {
     console.log(date, dateString);
-
-    renderData(null, dateString);
+    renderData(dateString, null);
   };
 
-  const renderData = (cancelData, cancelHandData) => {
+  const renderData = (cancelData) => {
     let dataThisYear = [];
-    let dataThisYearHand = [];
     if (cancelData) {
       dataThisYear = arrData
         .filter((item) => {
@@ -316,11 +337,17 @@ const Main = () => {
 
       dataThisYear.forEach((item) => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
-        if (item.account_type) {
+        if (
+          item.account_type !== "cancelHand" &&
+          item.account_type !== "repurchase"
+        ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
               total: 0,
               withDateResponse: 0,
+              normalResponse: 0,
+              postResponse: 0,
+              abnormalResponse: 0,
               items: [],
             }; // เริ่มต้นที่ 0
           }
@@ -332,38 +359,6 @@ const Main = () => {
         }
       });
       setCancelData(groupedByMonth);
-    } else if (cancelHandData) {
-      dataThisYearHand = arrData
-        .filter((item) => {
-          // ตรวจสอบว่าปีของ `item.datetime` ตรงกับปีปัจจุบัน
-          return dayjs(item.datetime).format("YYYY") === cancelHandData;
-        })
-        .sort((a, b) =>
-          dayjs(a.datetime).isBefore(dayjs(b.datetime)) ? -1 : 1
-        );
-
-      let groupedByMonthHand = {};
-
-      dataThisYearHand.forEach((item) => {
-        let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
-        if (!item.account_type) {
-          console.log(item.account_type);
-
-          if (!groupedByMonthHand[month]) {
-            groupedByMonthHand[month] = {
-              total: 0,
-              withDateResponse: 0,
-              items: [],
-            }; // เริ่มต้นที่ 0
-          }
-          groupedByMonthHand[month].total++; // เพิ่มจำนวนข้อมูลทั้งหมดในเดือนนั้น
-          groupedByMonthHand[month].items.push(item); // เพิ่มข้อมูลของเดือนนั้นลงไปใน items array
-          if (item.date_response) {
-            groupedByMonthHand[month].withDateResponse++; // เพิ่มจำนวนถ้ามี date_response
-          }
-        }
-      });
-      setCancelDataHand(groupedByMonthHand);
     }
   };
 
@@ -385,11 +380,11 @@ const Main = () => {
     }
   };
 
-  const createAndDownloadExcelHand = async () => {
-    if (cancelDataHand) {
+  const createAndDownloadExcel = async () => {
+    if (cancelData) {
       const workbook = new ExcelJS.Workbook(); // สร้าง Workbook
       // วนลูปสร้าง Sheet สำหรับแต่ละเดือน
-      Object.entries(cancelDataHand).forEach(([month, data]) => {
+      Object.entries(cancelData).forEach(([month, data]) => {
         const worksheet = workbook.addWorksheet(`เดือน ${month}`); // ใช้ชื่อเดือนเป็นชื่อ Sheet
 
         // กำหนดคอลัมน์ของ Worksheet
@@ -410,7 +405,7 @@ const Main = () => {
 
         // เพิ่มข้อมูลจาก items ของเดือนนั้น ๆ
         data.items.forEach((item, index) => {
-          worksheet.addRow({
+          const row = worksheet.addRow({
             no: index + 1,
             datetime: convertDateThaiShort(item.datetime),
             contno: item.contract_no,
@@ -429,13 +424,26 @@ const Main = () => {
             createDate: renderDateProcess(item),
             status:
               item.status === 1
-                ? "ตอบกลับแล้ว"
+                ? "ใบตอบกลับ"
                 : item.status === 2
-                ? "ไปรษณีย์"
+                ? "เว็บไปรษณีย์"
                 : item.status === 3
                 ? "ตีกลับ"
                 : "รอดำเนินการ",
           });
+          // หาตำแหน่งคอลัมน์ของ `status`
+          const statusCell = row.getCell("status");
+
+          // กำหนดสีตัวหนังสือตาม `status`
+          if (item.status === 1) {
+            statusCell.font = { color: { argb: "008000" } }; // เขียว
+          } else if (item.status === 2) {
+            statusCell.font = { color: { argb: "0000FF" } }; // น้ำเงิน
+          } else if (item.status === 3) {
+            statusCell.font = { color: { argb: "FFA500" } }; // ส้ม
+          } else {
+            statusCell.font = { color: { argb: "FF0000" } }; // แดง
+          }
         });
 
         // เพิ่มแถวว่างเพื่อเว้นระยะ
@@ -486,7 +494,52 @@ const Main = () => {
           emsNo: "",
           emsNoResponse: "",
           date_response: "",
-          createDate: "ตอบกลับแล้ว:",
+          createDate: "ใบตอบกลับ:",
+          status: data.normalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true, color: { argb: "008000" } };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "ตีกลับ:",
+          status: data.abnormalResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true, color: { argb: "FFA500" } };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "เว็บไปรษณีย์:",
+          status: data.postResponse, // แสดงจำนวนที่ตอบกลับแล้ว
+        }).font = { bold: true, color: { argb: "0000FF" } };
+
+        worksheet.addRow({
+          no: "",
+          datetime: "",
+          contno: "",
+          cusName: "",
+          customer_Type: "",
+          brand: "",
+          register_no: "",
+          emsNo: "",
+          emsNoResponse: "",
+          date_response: "",
+          createDate: "ตอบกลับทั้งหมด:",
           status: data.withDateResponse, // แสดงจำนวนที่ตอบกลับแล้ว
         }).font = { bold: true };
 
@@ -503,7 +556,7 @@ const Main = () => {
           date_response: "",
           createDate: "ยังไม่ตอบกลับแล้ว:",
           status: data.total - data.withDateResponse, // แสดงจำนวนที่ตอบกลับแล้ว
-        }).font = { bold: true };
+        }).font = { bold: true, color: { argb: "FF0000" } };
         console.log("data------>", data);
 
         // จัดรูปแบบเซลล์ใน Worksheet
@@ -551,10 +604,10 @@ const Main = () => {
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
             <Col span={12} style={{ textAlign: "start" }}>
-              <b>บอกเลิกสัญญา(มือ)</b>
+              <b>บอกเลิกสัญญา</b>
               <DatePicker
                 style={{ marginTop: "5px", marginLeft: "5px" }}
-                onChange={onChangeHand}
+                onChange={onChange}
                 picker="year"
                 defaultValue={dayjs().startOf("year")}
                 placeholder="โปรดเลือกปี"
@@ -574,13 +627,13 @@ const Main = () => {
                   }}
                   key="print"
                   onClick={() => {
-                    createAndDownloadExcelHand();
+                    createAndDownloadExcel();
                   }}
                 />
               </Tooltip>
             </Col>
           </Row>
-          {BarChartHand()}
+          {BarChart()}
           {selectedMonth && selectedData && (
             <div
               style={{
@@ -706,5 +759,5 @@ const Main = () => {
   );
 };
 
-const ChartCancelHand = MotionHoc(Main);
-export default ChartCancelHand;
+const ChartCancelRepurchase = MotionHoc(Main);
+export default ChartCancelRepurchase;

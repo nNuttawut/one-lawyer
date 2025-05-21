@@ -9,14 +9,17 @@ import {
   Button,
   message,
   Spin,
+  Flex,
+  Tooltip,
 } from "antd";
 import Search from "antd/es/input/Search";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DetailModal from "../detail/DetailModal";
 import {
   FileDoneOutlined,
   EditOutlined,
   SyncOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
@@ -31,9 +34,16 @@ import DateCustom from "../../../hook/DateCustom";
 import { SELL_ASSETS } from "../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
+import CurrencyFormat from "../../../hook/CurrencyFormat";
 
 const Main = () => {
   const [convertDateThai] = DateCustom();
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [isModal, setIsModal] = useState(false);
@@ -48,9 +58,26 @@ const Main = () => {
   const [tableLength, setTableLength] = useState(0);
   const [dataRecord, setDataRecord] = useState();
   const userCompany = localStorage.getItem("COMPANY_ID");
+  const [arrow, setArrow] = useState("Show");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [checkClearAdvance, setCheckClearAdvance] = useState(null);
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  const mergedArrow = useMemo(() => {
+    if (arrow === "Hide") {
+      return false;
+    }
+    if (arrow === "Show") {
+      return true;
+    }
+    return {
+      pointAtCenter: true,
+    };
   }, []);
 
   const loadData = async () => {
@@ -118,11 +145,31 @@ const Main = () => {
           return optionsLocat.some((opt) => branch.includes(opt.label));
         });
       }
-      setDataArr(filteredData);
-      setArrayTable(filteredData);
-      setTableLength(filteredData.length);
-      console.log("newData", filteredData);
-      console.log("Length of filtered data:", filteredData.length);
+
+      const sortData = filteredData.sort((a, b) => {
+        const officeComparison = a.legal_execution_office?.localeCompare(
+          b.legal_execution_office || "",
+          undefined,
+          {
+            sensitivity: "base",
+          }
+        );
+        if (officeComparison !== 0) return officeComparison;
+
+        const dateComparison = dayjs(b.seize_date).diff(dayjs(a.seize_date));
+        if (dateComparison !== 0) return dateComparison;
+
+        return a.CONTNO.localeCompare(b.CONTNO, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
+      });
+
+      setDataArr(sortData);
+      setArrayTable(sortData);
+      setTableLength(sortData.length);
+      console.log("newData", sortData);
+      console.log("Length of filtered data:", sortData.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -135,7 +182,10 @@ const Main = () => {
   };
 
   const onSearch = (value) => {
-    let result = dataArr.filter((item) => item.CONTNO.includes(value));
+    let result = dataArr.filter(
+      (item) =>
+        item.CONTNO.includes(value) || item.red_case_number.includes(value)
+    );
     setArrayTable(result);
   };
 
@@ -190,21 +240,56 @@ const Main = () => {
     }
   };
 
-  //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
+    if (!record.seize_date) {
       return null;
     }
-    const recordDate = dayjs(record.DATE).startOf("day");
+    const recordDate = dayjs(record.seize_date);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
+    const formattedDate = record.seize_date
+      ? convertDateThai(recordDate)
+      : null;
     return (
       <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
       </Tag>
     );
+  };
+
+  const onSelectChange = (selectedRowKeysData, selectedRowsData) => {
+    // อัปเดต key ที่ถูกเลือกไว้ทั้งหมด
+    setSelectedRowKeys(selectedRowKeysData);
+    console.log("selectedRowKeysData", selectedRowKeysData);
+    setSelectedRows(selectedRowsData);
+    console.log("selectedRowsData", selectedRowsData);
+    setDataModal(selectedRowsData);
+  };
+
+  const handleCheckContno = () => {
+    let checkContno = selectedRows.every(
+      (item) =>
+        selectedRows[0]?.CONTNO === item.CONTNO &&
+        selectedRows[0]?.legal_execution_office === item.legal_execution_office
+    );
+
+    if (checkContno) {
+    } else {
+      message.error("กรุณาเลือกเลขสัญญาและกรมบังคับคดีให้เหมือนกัน");
+    }
+
+    console.log("checkContno", checkContno);
+  };
+
+  const onExpand = (expanded, record) => {
+    if (expanded) {
+      // เมื่อแถวถูกขยาย, ให้เพิ่ม key ของแถวนั้นลงใน expandedRowKeys
+      setExpandedRowKeys([record.key]);
+    } else {
+      // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
+      setExpandedRowKeys([]);
+    }
   };
 
   const columns = [
@@ -237,25 +322,45 @@ const Main = () => {
       ),
     },
     {
-      title: "ชื่อ-นามสกุล",
+      title: "เลขคดีแดง",
       align: "center",
-      render: (text, record) => <>{record.possessor}</>,
+      render: (text, record) => (
+        <>{record.red_case_number ? record.red_case_number : null}</>
+      ),
     },
     {
       title: "รายละเอียด",
       align: "center",
       render: (record) => (
         <>
-          <p>เลขโฉนด {record.deed_number}</p>
-          <p>{record.dist_desc}</p>
-          <p>จังหวัด {record.prov_desc}</p>
+          <p style={{ color: "black" }}>{record.possessor}</p>
+          <p style={{ color: "black" }}>เลขโฉนด {record.deed_number}</p>
+          <p style={{ color: "black" }}>{record.dist_desc}</p>
+          <p style={{ color: "black" }}>จังหวัด {record.prov_desc}</p>
         </>
       ),
     },
     {
       title: "บังคับคดี",
       align: "center",
-      render: (record) => <p> {record.legal_execution_office}</p>,
+      render: (record) => (
+        <>
+          {" "}
+          <p style={{ color: "black" }}> {record.legal_execution_office}</p>
+          {record.estimated_enforce_price ? (
+            <p style={{ color: "black" }}>
+              {" "}
+              ประเมิน{" "}
+              {currencyFormatComma(
+                parseInt(record.estimated_enforce_price)
+              )}{" "}
+              บาท
+            </p>
+          ) : (
+            "ยังไม่ถูกประเมิน"
+          )}
+        </>
+      ),
     },
     {
       title: "วันที่ยึด",
@@ -282,6 +387,29 @@ const Main = () => {
                   onChange={onSearchByDate}
                 />
               </Space>
+              <Col
+                span={"6"}
+                style={{ textAlign: "start", marginBottom: "10px" }}
+              >
+                <Flex align="center" gap="middle">
+                  <Tooltip
+                    placement="bottom"
+                    title="เลือกข้อมูลในตารางและคลิกสร้างรายการขาย !"
+                    arrow={mergedArrow}
+                  >
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />} // ไอคอน
+                      size="small" // ขนาดเล็ก
+                      onClick={handleCheckContno}
+                      disabled={selectedRowKeys.length === 0}
+                      loading={loading}
+                    >
+                      สร้างรายการ
+                    </Button>
+                  </Tooltip>
+                </Flex>
+              </Col>
               <Search
                 placeholder="ค้นหาสัญญา"
                 onChange={search}
@@ -298,61 +426,84 @@ const Main = () => {
                 columns={columns}
                 dataSource={arrayTable}
                 scroll={{ x: 850 }}
-                footer={() => <p>จำนวนสัญญาทั้งหมด {tableLength}</p>}
-                // expandable={{
-                //   expandedRowRender: (record) => (
-                //     <p style={{ margin: 0 }}>
-                //       {!record.DATE ? (
-                //         <Button
-                //           name="create"
-                //           style={{
-                //             boxShadow: "0 4px 3px",
-                //             marginRight: "10px",
-                //           }}
-                //           onClick={() => {
-                //             setIsModalCreate(true);
-                //             setDataModal(record);
-                //           }}
-                //         >
-                //           <EditOutlined
-                //             style={{ color: "orange", fontSize: "16px" }}
-                //           />
-                //         </Button>
-                //       ) : null}
-                //       {record.DATE ? (
-                //         <>
-                //           <Button
-                //             name="formPrint"
-                //             style={{
-                //               boxShadow: "0 4px 3px",
-                //               marginRight: "10px",
-                //             }}
-                //             onClick={() => {
-                //               setIsModalDocument(true);
-                //             }}
-                //           >
-                //             <FileDoneOutlined
-                //               style={{ color: "green", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //           <Button
-                //             name="updateStatus"
-                //             style={{ boxShadow: "0 4px 3px" }}
-                //             onClick={() => {
-                //               setIsModalUpdate(true);
-                //               setDataModal(record);
-                //             }}
-                //           >
-                //             <SyncOutlined
-                //               style={{ color: "green", fontSize: "16px" }}
-                //             />
-                //           </Button>
-                //         </>
-                //       ) : null}
-                //     </p>
-                //   ),
-                //   rowExpandable: (record) => record.name !== "Not Expandable",
-                // }}
+                footer={() => (
+                  <div
+                    style={{
+                      // display: "flex",
+                      // justifyContent: "space-between", // จัดข้อความให้อยู่ซ้ายและขวา
+                      alignItems: "center",
+                    }}
+                  >
+                    <p style={{ margin: 0 }}>
+                      เลือก {selectedRowKeys.length} สัญญา
+                    </p>
+
+                    <p style={{ margin: 0 }}>จำนวนสัญญาทั้งหมด {tableLength}</p>
+                  </div>
+                )}
+                rowSelection={{
+                  selectedRowKeys,
+                  onChange: onSelectChange,
+                  preserveSelectedRowKeys: true,
+                }}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <p style={{ margin: 0 }}>
+                      {!record.DATE ? (
+                        <Button
+                          name="create"
+                          style={{
+                            boxShadow: "0 4px 3px",
+                            marginRight: "10px",
+                          }}
+                          onClick={() => {
+                            setIsModalCreate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <EditOutlined
+                            style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : null}
+                      {record.DATE ? (
+                        <>
+                          <Button
+                            name="formPrint"
+                            style={{
+                              boxShadow: "0 4px 3px",
+                              marginRight: "10px",
+                            }}
+                            onClick={() => {
+                              setIsModalDocument(true);
+                            }}
+                          >
+                            <FileDoneOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                          <Button
+                            name="updateStatus"
+                            style={{ boxShadow: "0 4px 3px" }}
+                            onClick={() => {
+                              setIsModalUpdate(true);
+                              setDataModal(record);
+                            }}
+                          >
+                            <SyncOutlined
+                              style={{ color: "green", fontSize: "16px" }}
+                            />
+                          </Button>
+                        </>
+                      ) : null}
+                    </p>
+                  ),
+                  rowExpandable: (record) => record,
+                  // userId === record.LAWYER_ID,
+                  expandedRowKeys, // เก็บ state ของ row ที่ขยาย
+                  onExpand, // ฟังก์ชันที่ควบคุมการขยาย
+                }}
+                rowKey="key"
               />
             </Col>
           </Row>

@@ -1,19 +1,33 @@
-import { Col, Row, DatePicker, Card, message, Spin, Tooltip } from "antd";
+import { Col, Row, DatePicker, Card, message, Spin, Tooltip, Tag } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
-import { PrinterOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { baseUrl, GET_CANCEL, HEADERS_EXPORT } from "../../API/apiUrls";
 import ReactECharts from "echarts-for-react";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
+import {
+  BarChartOutlined,
+  MailOutlined,
+  CheckCircleOutlined,
+  WarningOutlined,
+  InboxOutlined,
+  PrinterOutlined,
+} from "@ant-design/icons";
 
 //use redux
 import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
+import DataCheck from "./modal/DataCheck";
 
 const Main = () => {
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [loading, setLoading] = useState();
   const ROLE_ID = localStorage.getItem("ROLE_ID");
@@ -22,6 +36,12 @@ const Main = () => {
   const [arrow, setArrow] = useState("Show");
   const [cancelData, setCancelData] = useState([]);
   const [arrData, setArrData] = useState();
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [selectedData, setSelectedData] = useState(null);
+  const [isModalCheckData, setIsModalCheckData] = useState(false);
+  const [statusData, setStatusData] = useState();
+  const [isActive, setIsActive] = useState(false);
+
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
       return false;
@@ -112,7 +132,12 @@ const Main = () => {
         filteredData = newData.filter((item) => {
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          // if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          //   return item;
+          // } else {
+          //   return false;
+          // }
+          if (item.contract_schema === "ksm") {
             return item;
           } else {
             return false;
@@ -126,10 +151,15 @@ const Main = () => {
           ); // ตรวจสอบว่า 1 ตัวแรกมีเป็น eng
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if ((containsNo || containsEngFirst) && !containsEng) {
-            return item; // เก็บ item นี้ไว้
+          // if ((containsNo || containsEngFirst) && !containsEng) {
+          //   return item; // เก็บ item นี้ไว้
+          // } else {
+          //   return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          // }
+          if (item.contract_schema !== "ksm") {
+            return item;
           } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+            return false;
           }
         });
       }
@@ -152,7 +182,8 @@ const Main = () => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
         if (
           item.account_type !== "cancelHand" &&
-          item.account_type !== "repurchase"
+          item.account_type !== "repurchase" &&
+          item.account_type !== "cancelLand"
         ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
@@ -189,7 +220,14 @@ const Main = () => {
 
   const BarChart = () => {
     const chartData = [
-      ["เดือน", "ทั้งหมด", "ยังไม่ตอบกลับ", "ไปรษณีย์", "ตีกลับ", "ใบตอบกลับ"], // Header
+      [
+        "เดือน",
+        "ทั้งหมด",
+        "ยังไม่ตอบกลับ",
+        "เว็บไปรษณีย์",
+        "ตีกลับ",
+        "ใบตอบกลับ",
+      ], // Header
       ...Object.entries(cancelData).map(([month, data]) => [
         month,
         data.total, // ข้อมูลทั้งหมด
@@ -240,7 +278,7 @@ const Main = () => {
         },
         {
           type: "bar",
-          name: "ไปรษณีย์",
+          name: "เว็บไปรษณีย์",
           stack: "response",
           itemStyle: {
             color: "yellow",
@@ -266,8 +304,20 @@ const Main = () => {
       ],
     };
     return (
-      <ReactECharts option={option} style={{ height: 400, width: "100%" }} />
+      <ReactECharts
+        option={option}
+        style={{ height: 400, width: "100%" }}
+        onEvents={{ click: onChartClick }}
+      />
     );
+  };
+
+  const onChartClick = (params) => {
+    const month = params.name; // เช่น "มี.ค."
+    const data = cancelData[month]; // ดึงข้อมูลของเดือนนั้น
+
+    setSelectedMonth(month);
+    setSelectedData(data);
   };
 
   const onChange = (date, dateString) => {
@@ -293,7 +343,8 @@ const Main = () => {
         let month = dayjs(item.datetime).format("MMM"); // ดึงค่าเดือน
         if (
           item.account_type !== "cancelHand" &&
-          item.account_type !== "repurchase"
+          item.account_type !== "repurchase" &&
+          item.account_type !== "cancelLand"
         ) {
           if (!groupedByMonth[month]) {
             groupedByMonth[month] = {
@@ -315,7 +366,6 @@ const Main = () => {
       setCancelData(groupedByMonth);
     }
   };
-  console.log("cancelData", cancelData);
 
   const renderDateProcess = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
@@ -381,7 +431,7 @@ const Main = () => {
               item.status === 1
                 ? "ใบตอบกลับ"
                 : item.status === 2
-                ? "ไปรษณีย์"
+                ? "เว็บไปรษณีย์"
                 : item.status === 3
                 ? "ตีกลับ"
                 : "รอดำเนินการ",
@@ -479,7 +529,7 @@ const Main = () => {
           emsNo: "",
           emsNoResponse: "",
           date_response: "",
-          createDate: "ไปรษณีย์:",
+          createDate: "เว็บไปรษณีย์:",
           status: data.postResponse, // แสดงจำนวนที่ตอบกลับแล้ว
         }).font = { bold: true, color: { argb: "0000FF" } };
 
@@ -534,6 +584,25 @@ const Main = () => {
     }
   };
 
+  const handleData = (status) => {
+    setStatusData(status);
+    setIsModalCheckData(true);
+  };
+
+  const tagStyle = {
+    fontSize: "16px",
+    padding: "10px 16px",
+    borderRadius: "10px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    transform: isActive ? "scale(0.96)" : "scale(1)",
+    boxShadow: isActive ? "inset 0 2px 5px rgba(0,0,0,0.2)" : "none",
+    transition: "transform 0.1s ease, box-shadow 0.1s ease",
+  };
+
   return (
     <>
       <Card>
@@ -570,8 +639,127 @@ const Main = () => {
             </Col>
           </Row>
           {BarChart()}
+          {selectedMonth && selectedData && (
+            <div
+              style={{
+                marginTop: 24,
+                padding: "20px",
+                border: "1px solid #e0e0e0",
+                borderRadius: "16px",
+                background: "#f9f9f9",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+              }}
+            >
+              <h3
+                style={{
+                  marginBottom: 20,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <BarChartOutlined
+                  style={{ color: "#1890ff", fontSize: "20px" }}
+                />
+                ข้อมูลสำหรับเดือน: <b>{selectedMonth}</b>
+              </h3>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                <Tag
+                  color="#3357FF"
+                  style={{ ...tagStyle, color: "#fff" }}
+                  onClick={() => handleData("all")}
+                  className="clickable-tag"
+                  onMouseDown={() => setIsActive(true)}
+                  onMouseUp={() => setIsActive(false)}
+                  onMouseLeave={() => setIsActive(false)}
+                >
+                  <InboxOutlined /> ทั้งหมด: {selectedData.total}
+                </Tag>
+
+                <Tag
+                  color="#FF4D4F"
+                  style={{ ...tagStyle }}
+                  onClick={() => handleData(null)}
+                  className="clickable-tag"
+                  onMouseDown={() => setIsActive(true)}
+                  onMouseUp={() => setIsActive(false)}
+                  onMouseLeave={() => setIsActive(false)}
+                >
+                  <WarningOutlined /> ยังไม่ตอบกลับ:{" "}
+                  {selectedData.total - selectedData.withDateResponse} (
+                  {(
+                    ((selectedData.total - selectedData.withDateResponse) /
+                      selectedData.total) *
+                    100
+                  ).toFixed(2)}
+                  %)
+                </Tag>
+
+                <Tag
+                  color="#FFFF99"
+                  style={{ ...tagStyle, color: "#000" }}
+                  onClick={() => handleData(2)}
+                  className="clickable-tag"
+                  onMouseDown={() => setIsActive(true)}
+                  onMouseUp={() => setIsActive(false)}
+                  onMouseLeave={() => setIsActive(false)}
+                >
+                  <MailOutlined /> เว็บไปรษณีย์: {selectedData.postResponse} (
+                  {(
+                    (selectedData.postResponse / selectedData.total) *
+                    100
+                  ).toFixed(2)}
+                  %)
+                </Tag>
+
+                <Tag
+                  color="#FFD699"
+                  style={{ ...tagStyle, color: "#000" }}
+                  onClick={() => handleData(3)}
+                  className="clickable-tag"
+                  onMouseDown={() => setIsActive(true)}
+                  onMouseUp={() => setIsActive(false)}
+                  onMouseLeave={() => setIsActive(false)}
+                >
+                  <WarningOutlined /> ตีกลับ: {selectedData.abnormalResponse} (
+                  {(
+                    (selectedData.abnormalResponse / selectedData.total) *
+                    100
+                  ).toFixed(2)}
+                  %)
+                </Tag>
+
+                <Tag
+                  color="#4DFF88"
+                  style={{ ...tagStyle, color: "#000" }}
+                  onClick={() => handleData(1)}
+                  className="clickable-tag"
+                  onMouseDown={() => setIsActive(true)}
+                  onMouseUp={() => setIsActive(false)}
+                  onMouseLeave={() => setIsActive(false)}
+                >
+                  <CheckCircleOutlined /> ใบตอบกลับ:{" "}
+                  {selectedData.normalResponse} (
+                  {(
+                    (selectedData.normalResponse / selectedData.total) *
+                    100
+                  ).toFixed(2)}
+                  %)
+                </Tag>
+              </div>
+            </div>
+          )}
         </Spin>
       </Card>
+      {isModalCheckData ? (
+        <DataCheck
+          open={isModalCheckData}
+          close={setIsModalCheckData}
+          data={selectedData.items}
+          status={statusData}
+        />
+      ) : null}
     </>
   );
 };

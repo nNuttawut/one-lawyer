@@ -51,6 +51,7 @@ const EditInvestigateAssets = ({
   const [radioStatus, setRadioStatus] = useState(
     dataDefualt.investigation_status
   );
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [checked, setChecked] = useState(false);
   const [checkedGuarantors, setCheckedGuarantors] = useState([]);
@@ -329,6 +330,7 @@ const EditInvestigateAssets = ({
 
     putDataInvestigate = {
       id: dataDefualt.investigation_log_id,
+      investigator_id: userId,
       investigation_status: radioStatus,
       investigation_date: dayjs(values.investigateAssetsDate).format(
         "YYYY-MM-DD"

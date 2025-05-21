@@ -85,6 +85,7 @@ const Main = () => {
         const sheetData = XLSX.utils.sheet_to_json(sheet);
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
+          contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
           datetime: row["วันออกจดหมาย"] || "",
           account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา

@@ -8,7 +8,6 @@ import {
   Spin,
   Select,
   Checkbox,
-  Radio,
   Popconfirm,
   Space,
   DatePicker,
@@ -27,7 +26,6 @@ import {
 } from "../../../utils/constant/LoanTypeConstant";
 import {
   INDICT,
-  NOTICE,
   STATUS_PROCESS_PROGRESS,
 } from "../../../utils/constant/StatusConstant";
 import {
@@ -154,7 +152,8 @@ const Main = () => {
     const preData = value.filter((item) =>
       item.parcel_list.every(
         (parcel) =>
-          (parcel.status === 1 || parcel.status === 2) && !parcel.status_process
+          parcel.account_type === "cancelLand" &&
+          (parcel.status === 1 || parcel.status === 2 || parcel.status === 3)
       )
     );
     console.log("preData--->", preData);
@@ -163,38 +162,44 @@ const Main = () => {
 
     if (companyId === "3") {
       filteredData = preData.filter((item) => {
+        const containsEng = item.contract_no.substring(0, 1) === "4";
         // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-        if (
-          isEnglishOnly(item.contract_no.substring(0, 2)) ||
-          item.contract_no.substring(0, 1) === "4"
-        ) {
+        // if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+        //   return item;
+        // } else {
+        //   return false;
+        // }
+        if (item.contract_schema === "ksm") {
           return item;
         } else {
           return false;
         }
       });
-
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
     } else {
       filteredData = preData.filter((item) => {
         const containsNo = containsNumber(item.contract_no.substring(0, 2)); // ตรวจสอบว่า 2 ตัวแรกมีตัวเลขไหม
+        const containsEngFirst = isEnglishOnly(
+          item.contract_no.substring(0, 1)
+        ); // ตรวจสอบว่า 1 ตัวแรกมีเป็น eng
         const containsEng = item.contract_no.substring(0, 1) === "4";
         // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-        if (containsNo && !containsEng) {
-          return item; // เก็บ item นี้ไว้
+        // if ((containsNo || containsEngFirst) && !containsEng) {
+        //   return item; // เก็บ item นี้ไว้
+        // } else {
+        //   return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+        // }
+        if (item.contract_schema !== "ksm") {
+          return item;
         } else {
-          return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          return false;
         }
       });
-
-      console.log("filteredData3", filteredData);
-      setArrayTable(filteredData);
-      setDataArr(filteredData);
-      setTableLength(filteredData.length);
     }
+
+    console.log("filteredData3", filteredData);
+    setArrayTable(filteredData);
+    setDataArr(filteredData);
+    setTableLength(filteredData.length);
   };
 
   //   const insertDataAll = async () => {

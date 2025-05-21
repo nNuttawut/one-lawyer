@@ -17,6 +17,7 @@ import {
   FileExcelOutlined,
   CloseOutlined,
   FieldTimeOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 // import drawerHeader from "../../assets/images/logo.png";
 import drawerHeader from "../../assets/images/logoLogin.png";
@@ -51,9 +52,9 @@ function Sidenav({ color, onClick }) {
         }
       : {
           key: "1.1",
-          icon: <HomeOutlined />,
-          pageName: "appointmen-lawsuit",
-          path: "lawsuit/appointmen-lawsuit",
+          icon: <CalendarOutlined />,
+          pageName: "appointment-lawsuit",
+          path: "lawsuit/appointment-lawsuit",
           label: "ตารางนัดศาล",
           title: "ตารางนัดศาล",
         },
@@ -75,7 +76,7 @@ function Sidenav({ color, onClick }) {
           path: "/terminate-contract",
           icon: <FileExcelOutlined />,
           title: "บอกเลิกสัญญา",
-          children: [
+          items: [
             {
               key: "2.1",
               icon: <CaretRightOutlined />,
@@ -123,7 +124,7 @@ function Sidenav({ color, onClick }) {
           path: "/terminate-contract-hand",
           icon: <FileExcelOutlined />,
           title: "บอกเลิกสัญญา(มือ)",
-          children: [
+          items: [
             {
               key: "3.1",
               icon: <CaretRightOutlined />,
@@ -171,7 +172,7 @@ function Sidenav({ color, onClick }) {
           path: "/terminate-contract-repurchase",
           icon: <FileExcelOutlined />,
           title: "หนังสือแจ้งสิทธ์ซื้อรถคืน",
-          children: [
+          items: [
             {
               key: "4.1",
               icon: <CaretRightOutlined />,
@@ -200,6 +201,13 @@ function Sidenav({ color, onClick }) {
               path: "terminate-contract-repurchase/terminate-Contract-to-lawsuit",
               label: "4. สัญญาเตรียมส่งฟ้อง",
             },
+            {
+              key: "4.5",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-chart",
+              path: "terminate-contract-repurchase/terminate-Contract-chart",
+              label: "5. รายงาน",
+            },
           ],
         }
       : null,
@@ -212,7 +220,7 @@ function Sidenav({ color, onClick }) {
           path: "/terminate-contract-land",
           icon: <FileExcelOutlined />,
           title: "หนังสือบอกเลิกที่ดิน",
-          children: [
+          items: [
             {
               key: "44.1",
               icon: <CaretRightOutlined />,
@@ -234,13 +242,20 @@ function Sidenav({ color, onClick }) {
               path: "terminate-contract-land/reply-terminate-Contract",
               label: "3. ตอบกลับบอกเลิก",
             },
-            // {
-            //   key: "44.4",
-            //   icon: <CaretRightOutlined />,
-            //   pageName: "terminate-Contract-to-lawsuit",
-            //   path: "terminate-contract-land/terminate-Contract-to-lawsuit",
-            //   label: "4. สัญญาเตรียมส่งฟ้อง",
-            // },
+            {
+              key: "44.4",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-to-lawsuit",
+              path: "terminate-contract-land/terminate-Contract-to-lawsuit",
+              label: "4. สัญญาเตรียมส่งฟ้อง",
+            },
+            {
+              key: "44.5",
+              icon: <CaretRightOutlined />,
+              pageName: "terminate-Contract-chart",
+              path: "terminate-contract-land/terminate-Contract-chart",
+              label: "5. รายงาน",
+            },
           ],
         }
       : null,
@@ -253,7 +268,7 @@ function Sidenav({ color, onClick }) {
           path: "/terminate-contract",
           icon: <FileExcelOutlined />,
           title: "บอกเลิกสัญญา",
-          children: [
+          items: [
             {
               key: "5.1",
               icon: <CaretRightOutlined />,
@@ -273,7 +288,7 @@ function Sidenav({ color, onClick }) {
           path: "/notice",
           icon: <FileExcelOutlined />,
           title: "ออก notice",
-          children: [
+          items: [
             {
               key: "6.1",
               icon: <CaretRightOutlined />,
@@ -322,7 +337,7 @@ function Sidenav({ color, onClick }) {
           path: "/lawsuit",
           icon: <FormOutlined />,
           title: "ส่วนฟ้อง",
-          children: [
+          items: [
             {
               key: "7.1",
               icon: <CaretRightOutlined />,
@@ -354,8 +369,8 @@ function Sidenav({ color, onClick }) {
             {
               key: "7.5",
               icon: <CaretRightOutlined />,
-              pageName: "appointmen-lawsuit",
-              path: "lawsuit/appointmen-lawsuit",
+              pageName: "appointment-lawsuit",
+              path: "lawsuit/appointment-lawsuit",
               label: "ตารางนัดศาล",
             },
           ],
@@ -370,7 +385,7 @@ function Sidenav({ color, onClick }) {
           path: "/awaiting-judgment",
           icon: <FontAwesomeIcon icon={faScaleBalanced} />,
           title: "ชั้นศาล",
-          children: [
+          items: [
             {
               key: "8.1",
               icon: <CaretRightOutlined />,
@@ -421,7 +436,7 @@ function Sidenav({ color, onClick }) {
           path: "/investigate-assets",
           icon: <SearchOutlined />,
           title: "สืบทรัพย์ลูกหนี้",
-          children: [
+          items: [
             {
               key: "9.1",
               icon: <CaretRightOutlined />,
@@ -473,7 +488,7 @@ function Sidenav({ color, onClick }) {
           path: "/enforcement",
           icon: <FontAwesomeIcon icon={faGavel} />,
           title: "ส่วนบังคับคดี",
-          children: [
+          items: [
             {
               key: "10.1",
               icon: <CaretRightOutlined />,
@@ -537,7 +552,7 @@ function Sidenav({ color, onClick }) {
           path: "/sale-announcement",
           icon: <NotificationOutlined />,
           title: "ประกาศขายทรัพย์",
-          children: [
+          items: [
             {
               key: "12.1",
               icon: <CaretRightOutlined />,
@@ -616,7 +631,7 @@ function Sidenav({ color, onClick }) {
           path: "/contract-detail",
           icon: <FileSearchOutlined />,
           title: "ข้อมูลสัญญา",
-          children: [
+          items: [
             {
               key: "18.1",
               icon: <CaretRightOutlined />,
@@ -635,7 +650,7 @@ function Sidenav({ color, onClick }) {
     //       path: "/disbursement",
     //       icon: <WalletOutlined />,
     //       title: "เบิกอื่น ๆ",
-    //       children: [
+    //       items: [
     //         {
     //           key: "25.2",
     //           icon: <CaretRightOutlined />,
@@ -662,7 +677,7 @@ function Sidenav({ color, onClick }) {
           path: "/manage-data",
           icon: <ImportOutlined />,
           title: "จัดการข้อมูล",
-          children: [
+          items: [
             {
               key: "19.1",
               icon: <CaretRightOutlined />,
@@ -704,7 +719,7 @@ function Sidenav({ color, onClick }) {
           path: "/commission",
           icon: <DollarOutlined />,
           title: "คอมมิชชั่นทนาย",
-          children: [
+          items: [
             {
               key: "20.1",
               icon: <CaretRightOutlined />,
@@ -731,7 +746,7 @@ function Sidenav({ color, onClick }) {
           path: "/charge-indict",
           icon: <WalletOutlined />,
           title: "เบิกเงินทดรองจ่าย",
-          children: [
+          items: [
             {
               key: "21.1",
               icon: <CaretRightOutlined />,
@@ -766,7 +781,7 @@ function Sidenav({ color, onClick }) {
           path: "/closing-balance",
           icon: <DollarOutlined />,
           title: "การเงิน",
-          children: [
+          items: [
             {
               key: "22.1",
               icon: <CaretRightOutlined />,
@@ -786,7 +801,7 @@ function Sidenav({ color, onClick }) {
           path: "/report",
           icon: <FileTextOutlined />,
           title: "รายงาน",
-          children: [
+          items: [
             {
               key: "23.1",
               icon: <CaretRightOutlined />,
@@ -826,7 +841,7 @@ function Sidenav({ color, onClick }) {
       path: "/guidbook",
       icon: <BookOutlined />,
       title: "คู่มือ",
-      children: [
+      items: [
         {
           key: "24.1",
           icon: <CaretRightOutlined />,
@@ -853,7 +868,6 @@ function Sidenav({ color, onClick }) {
   ].filter(Boolean);
 
   const handleClick = (value) => {
-    console.log("value===========>", value);
     loadData();
     onClick(value);
   };
@@ -864,7 +878,7 @@ function Sidenav({ color, onClick }) {
   };
 
   const renderMenuItem = (item) => {
-    return item.children ? (
+    return item.items ? (
       <Menu.SubMenu
         key={item.key}
         title={<span className="label">{item.title}</span>}
@@ -874,7 +888,7 @@ function Sidenav({ color, onClick }) {
           </div>
         }
       >
-        {item.children.map((child) => (
+        {item.items.map((child) => (
           <Menu.Item
             key={child.key}
             onClick={() => {

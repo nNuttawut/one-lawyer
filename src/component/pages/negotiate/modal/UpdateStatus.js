@@ -527,7 +527,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           </Form.Item>
 
           <Form.Item
-            label="ไฟล์คำพิพากษา"
+            label="ไฟล์เอกสาร"
             name="file"
             rules={[
               {
@@ -542,7 +542,7 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               </p>
               <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
               <p className="ant-upload-hint">
-                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม
               </p>
             </Dragger>
           </Form.Item>

@@ -16,6 +16,7 @@ const Main = () => {
   const [dataModal, setDataModal] = useState([]);
   const [dateSelect, setDateSelect] = useState("");
   const [loading, setLoading] = useState(false);
+  const [panelMode, setPanelMode] = useState("month");
 
   useEffect(() => {
     loadData();
@@ -171,16 +172,30 @@ const Main = () => {
   const handleDateSelect = (date) => {
     console.log("วันที่ถูกเลือก:", date.format("YYYY-MM-DD"));
 
-    const selectedList = dataArr.filter((item) =>
+    const selectedListDay = dataArr.filter((item) =>
       dayjs(item.consideration_date).isSame(date, "day")
     );
-    console.log("selectedList", selectedList);
 
-    if (selectedList.length > 0) {
+    const selectedListMonth = dataArr.filter((item) =>
+      dayjs(item.consideration_date).isSame(date, "month")
+    );
+    console.log("selectedListDay", selectedListDay);
+    console.log("selectedListMonth", selectedListMonth);
+
+    if (selectedListDay.length > 0 && panelMode === "month") {
       setDateSelect(date.format("YYYY-MM-DD"));
-      setDataModal(selectedList);
+      setDataModal(selectedListDay);
+      setIsModal(true);
+    } else {
+      setDateSelect(date.format("YYYY-MM-DD"));
+      setDataModal(selectedListMonth);
       setIsModal(true);
     }
+  };
+
+  const handlePanelChange = (value, mode) => {
+    setPanelMode(mode);
+    console.log(mode);
   };
 
   return (
@@ -189,7 +204,11 @@ const Main = () => {
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
             <Col span={"24"}>
-              <Calendar cellRender={cellRender} onSelect={handleDateSelect} />
+              <Calendar
+                cellRender={cellRender}
+                onSelect={handleDateSelect}
+                onPanelChange={handlePanelChange}
+              />
             </Col>
           </Row>
         </Spin>
@@ -200,6 +219,7 @@ const Main = () => {
           close={setIsModal}
           dataRec={dataModal}
           date={dateSelect}
+          panel={panelMode}
         />
       ) : null}
     </>

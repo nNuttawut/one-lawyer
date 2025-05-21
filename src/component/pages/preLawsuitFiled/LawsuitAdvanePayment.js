@@ -184,7 +184,9 @@ const Main = () => {
         setDataArr(dataUse);
       } else {
         let dataFilter = newData.filter((item) => item.COMPANY_ID !== 3);
-        dataUse = newData.filter((item) => item.COMPANY_ID === 2);
+        dataUse = newData.filter(
+          (item) => item.COMPANY_ID === 2 || item.COMPANY_ID === 5
+        );
         setDataArr(dataFilter);
       }
 
@@ -204,11 +206,13 @@ const Main = () => {
   };
 
   const setOptionCompany = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
+    const options = companiesListCompany
+      .filter((item) => item.id === 1 || item.id === 2 || item.id === 3)
+      .map((item) => ({
+        value: item.id,
+        label: item.company_name,
+        address: item.address,
+      }));
 
     console.log("options", options);
     setCompaniesOption(options);
@@ -226,6 +230,14 @@ const Main = () => {
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
 
+    let companyValue;
+
+    if (value === 1) {
+      companyValue = 4;
+    } else if (value === 2) {
+      companyValue = 5;
+    }
+
     const selectedOption = companiesOption.find(
       (option) => option.value === value
     );
@@ -236,7 +248,9 @@ const Main = () => {
     }
 
     const dataUse = dataArr.filter(
-      (item) => item.COMPANY_ID === selectedOption.value
+      (item) =>
+        item.COMPANY_ID === selectedOption.value ||
+        item.COMPANY_ID === companyValue
     );
     setSelectedRowKeys([]);
     setSelectedRows([]);
@@ -253,6 +267,14 @@ const Main = () => {
   const onSearch = (value) => {
     console.log(companieSelect);
 
+    let companyValue;
+
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     let result = arrayTable.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
@@ -261,7 +283,8 @@ const Main = () => {
           (item.provincial_court && item.provincial_court.includes(value))) &&
         item.USER_ID === userId &&
         !item.fee_payment_status &&
-        item.COMPANY_ID === companieSelect.value
+        (item.COMPANY_ID === companieSelect.value ||
+          item.COMPANY_ID === companyValue)
     );
 
     console.log("result", result);
@@ -269,7 +292,19 @@ const Main = () => {
     if (value) {
       setArrayTable(result);
     } else {
-      setArrayTable(dataArr);
+      let data = dataArr.filter(
+        (item) =>
+          ((item.CONTNO && item.CONTNO.includes(value)) ||
+            (item.customer_name && item.customer_name.includes(value)) ||
+            (item.customer_lastname &&
+              item.customer_lastname.includes(value)) ||
+            (item.provincial_court && item.provincial_court.includes(value))) &&
+          item.USER_ID === userId &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue)
+      );
+      setArrayTable(data);
     }
   };
 
@@ -283,11 +318,26 @@ const Main = () => {
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
 
+    let companyValue;
+
+    if (companieSelect === 1) {
+      companyValue = 4;
+    } else if (companieSelect === 2) {
+      companyValue = 5;
+    }
+
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
         const date = dayjs(item.date_of_plaint, "YYYY-MM-DD");
         const itemDate = date.valueOf();
-        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
+        if (
+          itemDate >= timestampStart &&
+          itemDate <= timestampEnd &&
+          item.USER_ID === userId &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue)
+        ) {
           return item;
         } else {
           return null;
@@ -302,7 +352,7 @@ const Main = () => {
   const handleUpdateData = (data) => {
     console.log("data---->update", data);
 
-    if (data && data.id) {
+    if (data) {
       // ตรวจสอบว่า data มีค่าและมี id
       const updatedDataArr = dataArr.map((item) =>
         item.id === data.id ? { ...data } : { ...item }
@@ -313,7 +363,6 @@ const Main = () => {
       const arr = updatedDataArr.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1") &&
-          item.black_case_number &&
           !item.fee_payment_status
       );
       console.log("arr", arr);
@@ -405,41 +454,104 @@ const Main = () => {
     );
   };
 
+  // const renderCheckClearAdvance = () => {
+  //   const checkUserClearAdvance = checkClearAdvance?.every(
+  //     (item) =>
+  //       item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+  //       item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+  //   );
+
+  //   // // รวม LAWSUIT_ID ทั้งหมดจากทุก expenseList
+  //   // const allLawsuitIds = checkClearAdvance?.flatMap((item) =>
+  //   //   item.expenseList.map((data) => data.LAWSUIT_ID)
+  //   // );
+
+  //   // // นับว่าค่าไหนซ้ำ
+  //   // const duplicateCounts = allLawsuitIds.reduce((acc, id) => {
+  //   //   acc[id] = (acc[id] || 0) + 1;
+  //   //   return acc;
+  //   // }, {});
+
+  //   // // คัดเอาเฉพาะ LAWSUIT_ID ที่ซ้ำ (count > 1)
+  //   // const duplicates = Object.entries(duplicateCounts)
+  //   //   .filter(([_, count]) => count > 1)
+  //   //   .map(([id]) => Number(id));
+
+  //   // console.log("LAWSUIT_ID ที่ซ้ำ:", duplicates);
+  //   // console.log("จำนวน LAWSUIT_ID ที่ซ้ำ:", duplicates.length);
+  //   // console.log("duplicates.length", selectedRows.length);
+  //   // console.log(
+  //   //   "selectedRows.length - duplicates.length",
+  //   //   selectedRows.length - duplicates.length
+  //   // );
+
+  //   if (checkUserClearAdvance) {
+  //     setIsModalCreateAdvanePayment(true);
+  //   } else {
+  //     message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+  //   }
+  // };
+
   const renderCheckClearAdvance = () => {
-    const checkUserClearAdvance = checkClearAdvance?.every(
+    console.log("checkClearAdvance-----=>", checkClearAdvance);
+
+    const checkBillClearMonney = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "M";
+    });
+
+    const checkBillClearLeassing = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "L";
+    });
+
+    const checkBillClearKSM = checkClearAdvance?.filter((item) => {
+      return item.reference_no?.substring(1, 2) === "K";
+    });
+
+    const checkUserClearAdvanceMoney = checkBillClearMonney?.every(
       (item) =>
         item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
         item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
     );
 
-    // // รวม LAWSUIT_ID ทั้งหมดจากทุก expenseList
-    // const allLawsuitIds = checkClearAdvance?.flatMap((item) =>
-    //   item.expenseList.map((data) => data.LAWSUIT_ID)
-    // );
+    const checkUserClearAdvanceLeasing = checkBillClearLeassing?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
 
-    // // นับว่าค่าไหนซ้ำ
-    // const duplicateCounts = allLawsuitIds.reduce((acc, id) => {
-    //   acc[id] = (acc[id] || 0) + 1;
-    //   return acc;
-    // }, {});
+    const checkUserClearAdvanceKSM = checkBillClearKSM?.every(
+      (item) =>
+        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    );
 
-    // // คัดเอาเฉพาะ LAWSUIT_ID ที่ซ้ำ (count > 1)
-    // const duplicates = Object.entries(duplicateCounts)
-    //   .filter(([_, count]) => count > 1)
-    //   .map(([id]) => Number(id));
+    console.log(
+      "checkData",
+      checkUserClearAdvanceMoney,
+      checkUserClearAdvanceLeasing
+    );
+    console.log(companieSelect);
 
-    // console.log("LAWSUIT_ID ที่ซ้ำ:", duplicates);
-    // console.log("จำนวน LAWSUIT_ID ที่ซ้ำ:", duplicates.length);
-    // console.log("duplicates.length", selectedRows.length);
-    // console.log(
-    //   "selectedRows.length - duplicates.length",
-    //   selectedRows.length - duplicates.length
-    // );
+    if (companieSelect.value === 1) {
+      if (checkUserClearAdvanceLeasing) {
+        console.log(checkUserClearAdvanceLeasing);
 
-    if (checkUserClearAdvance) {
-      setIsModalCreateAdvanePayment(true);
+        setIsModalCreateAdvanePayment(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
+    } else if (companieSelect.value === 2) {
+      if (checkUserClearAdvanceMoney) {
+        setIsModalCreateAdvanePayment(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
     } else {
-      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      if (checkUserClearAdvanceKSM) {
+        setIsModalCreateAdvanePayment(true);
+      } else {
+        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+      }
     }
   };
 

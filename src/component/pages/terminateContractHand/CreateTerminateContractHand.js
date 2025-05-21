@@ -45,6 +45,7 @@ const Main = () => {
     currencyFormatPoint,
     currencyFormatNoPoint,
   ] = CurrencyFormat();
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const [isModal, setIsModal] = useState(false);
   const [queryContno, setQueryContno] = useState();
   const [loading, setLoading] = useState(false);
@@ -346,6 +347,7 @@ const Main = () => {
       // กำหนดคอลัมน์ของ Worksheet
       worksheet.columns = [
         { header: "ลำดับ", key: "no", width: 10 },
+        { header: "สัญญา", key: "data_type", width: 10 },
         { header: "วันออกจดหมาย", key: "date", width: 15 },
         { header: "ประเภทบัญชี", key: "accType", width: 15 },
         { header: "เลขที่สัญญา", key: "contno", width: 20 },
@@ -374,6 +376,7 @@ const Main = () => {
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
+          userCompany === "3" ? "ksm" : data.DATA_TYPE,
           dayjs().format("YYYY-MM-DD"), // วันที่ส่ง
           "cancelHand",
           data.CONTNO,

@@ -128,7 +128,11 @@ const Main = () => {
             ROLE_ID === "1" ||
             ROLE_ID === "2" ||
             ROLE_ID === "9") &&
-          item.PROCESS_ID === STATUS_PROCESS_PROGRESS
+          item.PROCESS_ID === STATUS_PROCESS_PROGRESS &&
+          // &&
+          // (item?.customer_property_list?.length > 0 ||
+          //   item?.guarantor_property_list?.length > 0)
+          item.judge_date
       );
 
       let filteredData;
@@ -229,13 +233,15 @@ const Main = () => {
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
   const renderDate = (record) => {
     //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
-    if (!record.DATE) {
+    if (!record.judge_date) {
       return null;
     }
-    const recordDate = dayjs(record.DATE);
+    const recordDate = dayjs(record.judge_date);
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
-    const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
+    const formattedDate = record.judge_date
+      ? convertDateThai(recordDate)
+      : null;
     return (
       <Tag color="orange" key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}

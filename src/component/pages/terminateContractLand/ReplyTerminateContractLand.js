@@ -167,7 +167,12 @@ const Main = () => {
         filteredData = newData.filter((item) => {
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 เป็นภาษาอังกฤษทั้งหมด
-          if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          // if (isEnglishOnly(item.contract_no.substring(0, 2)) || containsEng) {
+          //   return item;
+          // } else {
+          //   return false;
+          // }
+          if (item.contract_schema === "ksm") {
             return item;
           } else {
             return false;
@@ -181,10 +186,15 @@ const Main = () => {
           ); // ตรวจสอบว่า 1 ตัวแรกมีเป็น eng
           const containsEng = item.contract_no.substring(0, 1) === "4";
           // ถ้า 2 ตัวแรกไม่ใช่ตัวเลข และไม่ได้เป็นภาษาอังกฤษทั้งหมด
-          if ((containsNo || containsEngFirst) && !containsEng) {
-            return item; // เก็บ item นี้ไว้
+          // if ((containsNo || containsEngFirst) && !containsEng) {
+          //   return item; // เก็บ item นี้ไว้
+          // } else {
+          //   return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+          // }
+          if (item.contract_schema !== "ksm") {
+            return item;
           } else {
-            return false; // ไม่เก็บ item นี้ (กรณีเป็นภาษาอังกฤษทั้งหมด หรือมีตัวเลขใน 2 ตัวแรก)
+            return false;
           }
         });
       }
@@ -359,7 +369,7 @@ const Main = () => {
       return null;
     }
 
-    const recordDate = dayjs(record.created_date).startOf("day");
+    const recordDate = dayjs(record.created_date);
 
     const today = dayjs().startOf("day");
     const daysDifference = today.diff(recordDate, "days");
@@ -409,6 +419,7 @@ const Main = () => {
       { value: "psfhp", label: "สัญญา 3" },
       { value: "rpsl", label: "สัญญา 3(ใหม่)" },
       { value: "sfhp", label: "สัญญา 8" },
+      { value: "ksm", label: "ksm" },
     ];
 
     if (!record) {
@@ -1208,7 +1219,7 @@ const Main = () => {
       title: "วันที่นำข้อมูลเข้า",
       align: "center",
       render: (text, record) => (
-        <>{record.datetime ? renderDate(record) : null}</>
+        <>{record.created_date ? renderDate(record) : null}</>
       ),
     },
     {

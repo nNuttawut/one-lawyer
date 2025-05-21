@@ -9,11 +9,16 @@ import {
   Button,
   message,
   Spin,
+  Select,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import { FormOutlined } from "@ant-design/icons";
+import {
+  FormOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -31,6 +36,7 @@ import EditInvestigateAssets from "./modal/EditInvestigateAssets";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
 
 const Main = () => {
+  const { Option } = Select;
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const [convertDateThai] = DateCustom();
   const userCompany = localStorage.getItem("COMPANY_ID");
@@ -48,6 +54,7 @@ const Main = () => {
   const [isModalEditInvestigateAssets, setIsModalEditInvestigateAssets] =
     useState(false);
   const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+  const [statusId, setStatusId] = useState();
 
   useEffect(() => {
     loadData();
@@ -113,11 +120,23 @@ const Main = () => {
 
       const newData = filteredData.filter((item) => !item.investigation_status);
 
-      setArrayTable(newData);
-      setDataArr(filteredData);
-      setTableLength(newData?.length);
-      console.log("newData", newData);
-      console.log("Length of filtered data:", newData?.length);
+      const sortedData = newData.sort((a, b) => {
+        // ถ้า a ไม่มี judge_date ให้เอาไว้ล่าง
+        if (!a.judge_date && b.judge_date) return 1;
+        // ถ้า b ไม่มี judge_date ให้เอาไว้ล่าง
+        if (a.judge_date && !b.judge_date) return -1;
+        // ถ้าทั้งคู่มี judge_date ให้เปรียบเทียบปกติ (ล่าสุดก่อน)
+        if (a.judge_date && b.judge_date) {
+          return new Date(b.judge_date) - new Date(a.judge_date);
+        }
+        return 0; // ถ้าทั้งคู่เป็น null
+      });
+
+      setArrayTable(sortedData);
+      setDataArr(newData);
+      setTableLength(sortedData?.length);
+      console.log("newData", sortedData);
+      console.log("Length of filtered data:", sortedData?.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -217,8 +236,48 @@ const Main = () => {
           : record.investigation_status === 2
           ? "เจอทรัพย์"
           : null}
+        <p style={{ color: "red" }}>
+          สืบครั้งที่ {record.investigation_log_count}
+        </p>
       </Tag>
     );
+  };
+
+  const renderOpteionStatus = () => {
+    return (
+      <>
+        <Option value={4}>
+          <span style={{ marginRight: 8 }}>🕒</span>
+          ทั้งหมด
+        </Option>
+        <Option value={1}>
+          <CloseCircleOutlined style={{ color: "red", marginRight: 8 }} />
+          ไม่เจอทรัพย์
+        </Option>
+        <Option value={2}>⚡ มีคำพิพากษาแล้ว</Option>
+      </>
+    );
+  };
+
+  const onSearchStatus = (value) => {
+    console.log(value);
+    let dataUse;
+    if (value === 1) {
+      dataUse = dataArr.filter((item) => item.investigation_status === 0);
+    } else if (value === 2) {
+      console.log("onSearchStatus 4 ------->");
+      dataUse = dataArr.filter((item) => item.judge_date);
+    } else {
+      dataUse = dataArr;
+    }
+    setArrayTable(dataUse);
+    setTableLength(dataUse.length);
+  };
+
+  const onChangeSelectStatus = (value) => {
+    console.log("onChangeSelectStatus-->", value);
+    onSearchStatus(value);
+    setStatusId(value);
   };
 
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
@@ -228,7 +287,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.investigation_date).startOf("day");
+    const recordDate = dayjs(record.investigation_date);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -259,6 +318,59 @@ const Main = () => {
       color = "green";
     }
     const formattedDate = record.investigation_date
+      ? convertDateThai(recordDate)
+      : null;
+    return (
+      <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
+        {formattedDate}
+        <br />
+        {
+          <span>
+            {yearsDifference} ปี {remainingMonths} เดือน {remainingDays} วัน
+          </span>
+        }
+      </Tag>
+    );
+  };
+
+  const renderDateJudge = (record) => {
+    //ส่งค่า null ออกไปถ้า record นี่ยังไม่มี
+    if (!record.judge_date) {
+      return null;
+    }
+    let color;
+    const recordDate = dayjs(record.judge_date);
+    const today = dayjs().startOf("day");
+
+    // คำนวณความแตกต่างในหน่วยปี
+    const yearsDifference = today.diff(recordDate, "year");
+
+    // คำนวณความแตกต่างในหน่วยเดือน
+    const monthsDifference = today.diff(recordDate, "month");
+
+    // คำนวณความแตกต่างในหน่วยวัน
+    const daysDifference = today.diff(recordDate, "day");
+
+    // คำนวณส่วนที่เหลือหลังจากคำนวณปีแล้ว (คำนวณเดือนที่เหลือ)
+    const remainingMonths = today
+      .subtract(yearsDifference, "year")
+      .diff(recordDate, "month");
+
+    // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
+    const remainingDays = today
+      .subtract(yearsDifference, "year")
+      .subtract(remainingMonths, "month")
+      .diff(recordDate, "day");
+
+    if (remainingMonths >= 1) {
+      color = "orange";
+    } else if (remainingMonths < 1) {
+      color = "blue";
+    } else if (remainingMonths > 12) {
+      color = "red";
+    }
+
+    const formattedDate = record.judge_date
       ? convertDateThai(recordDate)
       : null;
     return (
@@ -317,6 +429,11 @@ const Main = () => {
       ),
     },
     {
+      title: "วันที่พิพากษา",
+      align: "center",
+      render: (record) => <>{renderDateJudge(record)}</>,
+    },
+    {
       title: "สถานะ",
       align: "center",
       render: (record) => <>{renderDataAssetBefor(record)}</>,
@@ -325,21 +442,21 @@ const Main = () => {
       title: "วันที่สืบทรัพย์",
       align: "center",
       render: (record) => <>{renderDate(record)}</>,
-      sorter: (a, b) => {
-        // กรณีถ้า a.investigation_date เป็น null ให้ขึ้นก่อน
-        if (a.investigation_date === null) return -1;
-        if (b.investigation_date === null) return 1;
+      // sorter: (a, b) => {
+      //   // กรณีถ้า a.investigation_date เป็น null ให้ขึ้นก่อน
+      //   if (a.investigation_date === null) return -1;
+      //   if (b.investigation_date === null) return 1;
 
-        // เปรียบเทียบวันที่ระหว่าง a.investigation_date และ b.investigation_date
-        const dateA = dayjs(a.investigation_date);
-        const dateB = dayjs(b.investigation_date);
+      //   // เปรียบเทียบวันที่ระหว่าง a.investigation_date และ b.investigation_date
+      //   const dateA = dayjs(a.investigation_date);
+      //   const dateB = dayjs(b.investigation_date);
 
-        if (dateA.isBefore(dateB)) return -1;
-        if (dateA.isAfter(dateB)) return 1;
-        return 0; // ถ้าเท่ากัน
-      },
-      defaultSortOrder: "ascend", // กำหนดการเรียงลำดับเริ่มต้น
-      sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
+      //   if (dateA.isBefore(dateB)) return -1;
+      //   if (dateA.isAfter(dateB)) return 1;
+      //   return 0; // ถ้าเท่ากัน
+      // },
+      // defaultSortOrder: "ascend", // กำหนดการเรียงลำดับเริ่มต้น
+      // sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
     },
   ];
 
@@ -348,7 +465,23 @@ const Main = () => {
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"24"} style={{ textAlign: "end", marginBottom: "10px" }}>
+            <Col
+              span={"8"}
+              style={{ textAlign: "start", marginBottom: "10px" }}
+            >
+              <Select
+                placeholder="เลือกสถานะ"
+                optionFilterProp="value"
+                onChange={(value) => onChangeSelectStatus(value)}
+                style={{
+                  width: 200,
+                }}
+                size="large"
+              >
+                {renderOpteionStatus()}
+              </Select>
+            </Col>
+            <Col span={"16"} style={{ textAlign: "end", marginBottom: "10px" }}>
               <Space direction="vertical" size={12}>
                 <RangePicker
                   size="large"
@@ -376,24 +509,24 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {!record.investigation_date ? (
-                        <Button
-                          style={{
-                            boxShadow: "0 4px 3px",
-                            marginRight: "10px",
-                          }}
-                          onClick={() => {
-                            setIsModalInvestigateAssets(true);
-                            setDataModal(record);
-                          }}
-                        >
-                          <FormOutlined
-                            style={{ color: "blue", fontSize: "16px" }}
-                          />
-                        </Button>
-                      ) : null}
+                      {/* {!record.investigation_date ? ( */}
+                      <Button
+                        style={{
+                          boxShadow: "0 4px 3px",
+                          marginRight: "10px",
+                        }}
+                        onClick={() => {
+                          setIsModalInvestigateAssets(true);
+                          setDataModal(record);
+                        }}
+                      >
+                        <FormOutlined
+                          style={{ color: "blue", fontSize: "16px" }}
+                        />
+                      </Button>
+                      {/* ) : null} */}
 
-                      {record.investigation_date ? (
+                      {/* {record.investigation_date ? (
                         <Button
                           style={{
                             boxShadow: "0 4px 3px",
@@ -408,7 +541,7 @@ const Main = () => {
                             style={{ color: "orange", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : null}
+                      ) : null} */}
                     </p>
                   ),
                   rowExpandable: (record) =>

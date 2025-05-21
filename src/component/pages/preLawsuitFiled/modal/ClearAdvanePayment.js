@@ -9,6 +9,7 @@ import {
   Input,
   List,
   Image,
+  Radio,
 } from "antd";
 
 import { useEffect, useState } from "react";
@@ -759,6 +760,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     onChange={(e) => onChangeInputMemo(e.target.value)}
                   />
                 </Form.Item>
+
                 <div style={{ textAlign: "center" }}>
                   <Button
                     onClick={handleCancel}

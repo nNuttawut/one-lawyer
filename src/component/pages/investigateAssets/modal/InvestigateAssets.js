@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useId, useMemo, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -34,6 +34,7 @@ import DateCustom from "../../../../hook/DateCustom";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 
 const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+  const userId = parseInt(localStorage.getItem("USER_ID"));
   const [form] = Form.useForm();
   const [convertDateThai] = DateCustom();
   const [setupGovernmentOfficerList, governmentOfficers] =
@@ -330,12 +331,13 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
     postDataInvestigate = {
       LAWSUIT_ID: dataDefualt.LAWSUIT_ID,
+      investigator_id: userId,
       investigation_status: radioStatus,
       investigation_date: dayjs(values.investigateAssetsDate).format(
         "YYYY-MM-DD"
       ),
       mark: values.memo,
-      commission: 500,
+      commission: null,
       property_list: dataPropertyList,
     };
 
@@ -698,6 +700,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             </Form.Item>
           </>
         ) : null}
+
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

@@ -61,7 +61,7 @@ const Main = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [checkClearAdvance, setCheckClearAdvance] = useState(null);
   const [companyCheck, setCompanyCheck] = useState(
-    userCompany === 1 || userCompany === 1 ? 2 : 3
+    userCompany === 1 || userCompany === 2 ? 2 : 3
   );
 
   useEffect(() => {
@@ -309,6 +309,13 @@ const Main = () => {
   const onSearch = (value) => {
     console.log(companieSelect);
 
+    let companyValue;
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     let result = dataArr.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
@@ -323,7 +330,19 @@ const Main = () => {
     if (value) {
       setArrayTable(result);
     } else {
-      setArrayTable(dataArr);
+      let data = dataArr.filter(
+        (item) =>
+          ((item.CONTNO && item.CONTNO.includes(value)) ||
+            (item.customer_name && item.customer_name.includes(value)) ||
+            (item.customer_lastname &&
+              item.customer_lastname.includes(value)) ||
+            (item.provincial_court && item.provincial_court.includes(value))) &&
+          item.USER_ID === userId &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue)
+      );
+      setArrayTable(data);
     }
   };
 

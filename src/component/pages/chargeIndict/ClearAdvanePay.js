@@ -77,8 +77,8 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
-  const [lawyerId, setLawyerId] = useState(2);
-  const [lawyerName, setLawyerName] = useState(2);
+  const [lawyerId, setLawyerId] = useState(3);
+  const [lawyerName, setLawyerName] = useState(3);
   const [lawyersOption, setLawyersOption] = useState();
   const [statusId, setStatusId] = useState(4);
   const [companiesOption, setCompaniesOption] = useState(2);
@@ -92,9 +92,11 @@ const Main = () => {
   const [arrow, setArrow] = useState("Show");
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRecord, setSelectedRecord] = useState([]);
   const [isModalFile, setIsModalFile] = useState(false);
   const [imageList, setImageList] = useState([]);
   const [imageLawyer, setImageLawyer] = useState();
+  const [finalResult, setFinalResult] = useState();
 
   const onExpand = (expanded, record) => {
     if (expanded) {
@@ -113,15 +115,17 @@ const Main = () => {
   }, [setLoadingData, setLoadingDataCompany]);
 
   useEffect(() => {
-    if (lawyersList && dataArr) {
+    if (lawyersList) {
       setOptionLawyer();
     }
     if (companiesListCompany) {
       setOptionCompany();
     }
-  }, [lawyersList, dataArr, companiesListCompany]);
+  }, [lawyersList, companiesListCompany]);
 
   useEffect(() => {
+    console.log("setDataExportPrint");
+
     if (selectedRows?.length > 0) {
       setDataExportPrint();
     }
@@ -153,11 +157,14 @@ const Main = () => {
   }, [arrow]);
 
   const setOptionCompany = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
+    const options = companiesListCompany
+      .filter((item) => item.id === 1 || item.id === 2 || item.id === 3)
+      .map((item) => ({
+        value: item.id,
+        label: item.company_name,
+        address: item.address,
+      }));
+
     setCompaniesOption(options);
     loadSelectCompany(options);
   };
@@ -165,13 +172,13 @@ const Main = () => {
   const setOptionLawyer = () => {
     let companySelect = null;
 
-    if (dataArr.COMPANY_ID === 3) {
-      companySelect = lawyersList.filter(
+    if (dataArr?.COMPANY_ID === 3) {
+      companySelect = lawyersList?.filter(
         (item) =>
           item.COMPANY_ID === 3 && (item.ROLE_ID === 3 || item.ROLE_ID === 4)
       );
     } else {
-      companySelect = lawyersList.filter(
+      companySelect = lawyersList?.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
           (item.ROLE_ID === 3 || item.ROLE_ID === 4)
@@ -189,7 +196,7 @@ const Main = () => {
     //   label: "ทั้งหมด", // ข้อความที่แสดงใน dropdown
     // });
 
-    let lawyerSet = lawyersList.find((item) => item.id === 2);
+    let lawyerSet = lawyersList.find((item) => item.id === 3);
     setLawyerName(lawyerSet);
 
     setLawyersOption(options);
@@ -279,7 +286,7 @@ const Main = () => {
       const useData = preData?.filter(
         (item) =>
           item.USER_ID === lawyerId &&
-          item.COMPANY_ID === 2 &&
+          (item.COMPANY_ID === 2 || item.COMPANY_ID === 5) &&
           item.pay_type_id === 4
       );
       loadImagesProduct();
@@ -312,6 +319,7 @@ const Main = () => {
         withdraw_mark,
         pay_type_id,
         pay_datetime,
+        pay_mark,
       } = current;
 
       // ถ้ายังไม่มี reference_no นี้ใน acc ให้สร้าง object ใหม่
@@ -331,6 +339,7 @@ const Main = () => {
           withdraw_mark,
           pay_type_id,
           pay_datetime,
+          pay_mark,
         };
       }
 
@@ -358,6 +367,7 @@ const Main = () => {
       withdraw_mark: group.withdraw_mark,
       pay_type_id: group.pay_type_id,
       pay_datetime: group.pay_datetime,
+      pay_mark: group.pay_mark,
     }));
   };
 
@@ -465,21 +475,49 @@ const Main = () => {
       (item) => item.contnoList && item.contnoList.includes(value)
     );
 
+    let companyValue;
+
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     if (value) {
       setArrayTable(result);
     } else {
-      setArrayTable(dataArr);
+      let data = dataArr.filter(
+        (item) =>
+          ((item.CONTNO && item.CONTNO.includes(value)) ||
+            (item.customer_name && item.customer_name.includes(value)) ||
+            (item.customer_lastname &&
+              item.customer_lastname.includes(value)) ||
+            (item.provincial_court && item.provincial_court.includes(value))) &&
+          item.USER_ID === userId &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue)
+      );
+      setArrayTable(data);
     }
   };
 
   const onSearchLawyers = (value) => {
     let dataUse;
+    let companyValue;
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     if (value && !selectedDate.timestampEnd && !selectedDate.timestampStart) {
       console.log("onSearchLawyers 1  ----->");
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           item.USER_ID === value
       );
@@ -497,7 +535,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -516,7 +555,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           item.USER_ID === value &&
           itemDate >= selectedDate.timestampStart &&
@@ -528,7 +568,8 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId
       );
     }
@@ -541,6 +582,14 @@ const Main = () => {
     console.log("companieSelect.value", companieSelect.value);
     console.log("lawyerId", lawyerId);
 
+    let companyValue;
+
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     if (
       lawyerId &&
       !selectedDate.timestampEnd &&
@@ -550,7 +599,8 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === value &&
           item.USER_ID === lawyerId
       );
@@ -568,7 +618,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === value &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -587,7 +638,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === companieSelect.value &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === value &&
           item.USER_ID === lawyerId &&
           itemDate >= selectedDate.timestampStart &&
@@ -599,7 +651,9 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === companieSelect.value && item.pay_type_id === value
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue) &&
+          item.pay_type_id === value
       );
     }
 
@@ -613,6 +667,14 @@ const Main = () => {
     const selectedOption = companiesOption.find(
       (option) => option.value === value
     );
+
+    let companyValue;
+
+    if (value === 1) {
+      companyValue = 4;
+    } else if (value === 2) {
+      companyValue = 5;
+    }
 
     if (selectedOption) {
       console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
@@ -630,7 +692,8 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === selectedOption.value &&
+          (item.COMPANY_ID === selectedOption.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           item.USER_ID === lawyerId
       );
@@ -648,7 +711,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === selectedOption.value &&
+          (item.COMPANY_ID === selectedOption.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -667,7 +731,8 @@ const Main = () => {
 
         // เงื่อนไขการกรอง
         return (
-          item.COMPANY_ID === selectedOption.value &&
+          (item.COMPANY_ID === selectedOption.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId &&
           item.USER_ID === lawyerId &&
           itemDate >= selectedDate.timestampStart &&
@@ -679,7 +744,8 @@ const Main = () => {
 
       dataUse = dataArr.filter(
         (item) =>
-          item.COMPANY_ID === selectedOption.value &&
+          (item.COMPANY_ID === selectedOption.value ||
+            item.COMPANY_ID === companyValue) &&
           item.pay_type_id === statusId
       );
     }
@@ -798,6 +864,7 @@ const Main = () => {
       ...data,
       // pay_datetime: dayjs().format("YYYY-MM-DD"),
       pay_type_id: 1,
+      updated_date: dayjs(),
     };
 
     const putRef = {
@@ -890,6 +957,10 @@ const Main = () => {
   const handleUpdate = (data) => {
     console.log("handleUpdate", data);
 
+    let approved = data.pay_type_id;
+    console.log("approved", approved);
+    setStatusId(approved);
+
     const result = dataArr.map((item) => {
       if (item.key === data.key) {
         return { ...data };
@@ -909,7 +980,7 @@ const Main = () => {
       newData = result.filter(
         (item) =>
           item.COMPANY_ID === companieSelect.value &&
-          item.pay_type_id === statusId &&
+          item.pay_type_id === approved &&
           item.USER_ID === lawyerId
       );
     } else if (
@@ -926,7 +997,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.pay_type_id === statusId &&
+          item.pay_type_id === approved &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
         );
@@ -945,7 +1016,7 @@ const Main = () => {
         // เงื่อนไขการกรอง
         return (
           item.COMPANY_ID === companieSelect.value &&
-          item.pay_type_id === statusId &&
+          item.pay_type_id === approved &&
           item.USER_ID === lawyerId &&
           itemDate >= selectedDate.timestampStart &&
           itemDate <= selectedDate.timestampEnd
@@ -957,7 +1028,7 @@ const Main = () => {
       newData = result.filter(
         (item) =>
           item.COMPANY_ID === companieSelect.value &&
-          item.pay_type_id === statusId
+          item.pay_type_id === approved
       );
     }
 
@@ -1127,14 +1198,23 @@ const Main = () => {
           currencyFormatPoint(totalResultByRef[refKey]),
           currencyFormatPoint(totalResultPayByRef[refKey]),
         ]);
+        let wording;
+        if (totalResultByRef[refKey] > totalResultPayByRef[refKey]) {
+          wording = "เบิกเกิน";
+        } else if (totalResultByRef[refKey] < totalResultPayByRef[refKey]) {
+          wording = "เบิกขาด";
+        } else {
+          wording = null;
+        }
+        setFinalResult(wording);
         preData.push([
           "",
           "",
           "",
           "",
-          "ส่วนต่าง",
+          wording,
           currencyFormatPoint(
-            totalResultPayByRef[refKey] - totalResultByRef[refKey]
+            totalResultByRef[refKey] - totalResultPayByRef[refKey]
           ),
         ]);
 
@@ -1578,8 +1658,8 @@ const Main = () => {
             "เลขที่สัญญา",
             "วันที่เคลียร์เงิน",
             "รายการ",
-            "จำนวนเบิก",
-            "จ่ายจริง",
+            "จำนวนเบิก(บาท)",
+            "จ่ายจริง(บาท)",
           ],
         ],
         body: dataExport[refNo],
@@ -1600,6 +1680,19 @@ const Main = () => {
           5: { halign: "center" },
         },
         margin: { top: 10, left: 10, right: 10 },
+
+        didParseCell: function (data) {
+          const isLastRow = data.row.index === data.table.body.length - 1;
+          if (isLastRow && data.section === "body") {
+            data.cell.styles.textColor =
+              finalResult === "เบิกเกิน"
+                ? [255, 0, 0]
+                : finalResult === "เบิกขาด"
+                ? [0, 0, 255]
+                : [0, 0, 0];
+            data.cell.styles.fontStyle = "bold"; // ตัวหนา
+          }
+        },
       });
 
       const finalY = pdf.lastAutoTable.finalY;
@@ -1918,16 +2011,18 @@ const Main = () => {
             totalPay === totalWithdraw
               ? null
               : totalPay > totalWithdraw
-              ? "green"
+              ? "blue"
               : "red",
         }}
       >
         {totalPay !== 0 && (
           <>
             {totalPay > totalWithdraw
-              ? `เบิกขาด ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              ? ` เบิกขาด    ${currencyFormatPoint(
+                  totalWithdraw - totalPay
+                )} บาท`
               : totalPay < totalWithdraw
-              ? `เบิกเกิน ${currencyFormatPoint(totalPay - totalWithdraw)} บาท`
+              ? `เบิกเกิน ${currencyFormatPoint(totalWithdraw - totalPay)} บาท`
               : " 0 บาท"}
           </>
         )}
@@ -2078,7 +2173,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record).startOf("day");
+    const recordDate = dayjs(record);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -2123,6 +2218,13 @@ const Main = () => {
     );
   };
 
+  const printRecord = () => {
+    if (selectedRowKeys?.length > 0) {
+      createPdf();
+      clearSelectedRows();
+    }
+  };
+
   const renderManage = (record) => {
     if (!record.pay_type_id) {
       return null;
@@ -2136,7 +2238,7 @@ const Main = () => {
           arrow={mergedArrow}
         >
           <Button
-            style={{ fontSize: "20px", marginRight: "5px", color: "blue" }}
+            style={{ fontSize: "14px", marginRight: "5px", color: "orange" }}
             onClick={() => {
               setDataRecord(record);
               console.log(record);
@@ -2144,7 +2246,7 @@ const Main = () => {
               setIsModalFile(true);
             }}
           >
-            <FileImageOutlined />
+            ดูข้อมูล
           </Button>
         </Tooltip>
         {record.pay_type_id === 1 ? null : (
@@ -2162,12 +2264,38 @@ const Main = () => {
               okText="ยืนยัน"
               cancelText="ปิด"
             >
-              <Button style={{ fontSize: "20px", color: "green" }}>
-                <CheckOutlined />
+              <Button
+                style={{ fontSize: "14px", marginRight: "5px", color: "green" }}
+              >
+                อนุมัติ
               </Button>
             </Popconfirm>
           </Tooltip>
         )}
+        <Tooltip
+          placement="bottom"
+          title="พิมพ์ข้อมูลแถวนี้"
+          arrow={mergedArrow}
+        >
+          <Popconfirm
+            placement="topLeft"
+            title="พิมพ์เอกสาร"
+            description="คุณต้องการพิมพ์เอกสาร ?"
+            onConfirm={() => printRecord()}
+            // onCancel={() => cancel(record)}
+            okText="พิมพ์"
+            cancelText="ยกเลิก"
+          >
+            <Button
+              style={{ fontSize: "14px", marginRight: "5px", color: "blue" }}
+              onClick={() => {
+                onSelectChange([record.key], [record]);
+              }}
+            >
+              พิมพ์
+            </Button>
+          </Popconfirm>
+        </Tooltip>
       </>
     );
   };
@@ -2272,6 +2400,16 @@ const Main = () => {
       align: "center",
       render: (record) => <> {renderManage(record)}</>,
     },
+
+    {
+      title: "หมายเหตุ",
+      align: "center",
+      render: (record) => (
+        <p color="black" style={{ fontSize: "13px" }}>
+          {record.pay_mark}
+        </p>
+      ),
+    },
   ];
 
   return (
@@ -2330,7 +2468,7 @@ const Main = () => {
                   onChange={(value, label) =>
                     onChangeSelectLawyer(value, label)
                   }
-                  defaultValue={2}
+                  defaultValue={3}
                   options={lawyersOption}
                   style={{
                     width: 150,
@@ -2343,7 +2481,7 @@ const Main = () => {
                 placeholder="เลือกสถานะ"
                 optionFilterProp="value"
                 onChange={(value) => onChangeSelectStatus(value)}
-                defaultValue={4}
+                value={statusId}
                 style={{
                   width: 200,
                 }}
@@ -2390,7 +2528,7 @@ const Main = () => {
               ) : (
                 <Tooltip
                   placement="bottom"
-                  title="คลิกเพื่อปริ้น PDF !"
+                  title="คลิกเพื่อพิมพ์ PDF !"
                   arrow={mergedArrow}
                 >
                   <PrinterOutlined
@@ -2401,7 +2539,7 @@ const Main = () => {
                     }}
                     key="print"
                     onClick={() => {
-                      if (selectedRowKeys.length > 0) {
+                      if (selectedRowKeys?.length > 0) {
                         createPdf();
                         clearSelectedRows();
                         // loadImagesProductTranferMoney();
