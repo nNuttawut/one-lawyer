@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/one-lawyer/static/css/main.528bf31b.css",
-    "main.js": "/one-lawyer/static/js/main.3a7d6d64.js",
+    "main.js": "/one-lawyer/static/js/main.2f7e3ba3.js",
     "static/js/239.7fcd82bd.chunk.js": "/one-lawyer/static/js/239.7fcd82bd.chunk.js",
     "static/js/213.88682730.chunk.js": "/one-lawyer/static/js/213.88682730.chunk.js",
     "static/js/667.6a997192.chunk.js": "/one-lawyer/static/js/667.6a997192.chunk.js",
@@ -27,7 +27,7 @@
     "static/media/logoLogin.png": "/one-lawyer/static/media/logoLogin.ad65fa22c0db802bbf27.png",
     "index.html": "/one-lawyer/index.html",
     "main.528bf31b.css.map": "/one-lawyer/static/css/main.528bf31b.css.map",
-    "main.3a7d6d64.js.map": "/one-lawyer/static/js/main.3a7d6d64.js.map",
+    "main.2f7e3ba3.js.map": "/one-lawyer/static/js/main.2f7e3ba3.js.map",
     "239.7fcd82bd.chunk.js.map": "/one-lawyer/static/js/239.7fcd82bd.chunk.js.map",
     "213.88682730.chunk.js.map": "/one-lawyer/static/js/213.88682730.chunk.js.map",
     "667.6a997192.chunk.js.map": "/one-lawyer/static/js/667.6a997192.chunk.js.map",
@@ -35,6 +35,6 @@
   },
   "entrypoints": [
     "static/css/main.528bf31b.css",
-    "static/js/main.3a7d6d64.js"
+    "static/js/main.2f7e3ba3.js"
   ]
 }
