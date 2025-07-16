@@ -20,7 +20,6 @@ import {
   POST_INVESTIGATE_ITEM,
 } from "../../../API/apiUrls";
 import axios from "axios";
-import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import GeoLand from "../../../../hook/GeoLand";
 import TextArea from "antd/es/input/TextArea";
 import LoadLawyers from "../../../../hook/LoadLawyers";
@@ -34,6 +33,7 @@ import {
 } from "@ant-design/icons";
 import Dragger from "antd/es/upload/Dragger";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import DateInput from "../../../../hook/DateInput";
 
 const AssetsDetail = ({
   open,
@@ -48,10 +48,17 @@ const AssetsDetail = ({
   const [lawyersList, setLoadingData] = LoadLawyers();
   const [loadLandDetailList, setLoadingLandDetailData] = LoadLandDetail();
   const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
-  const [currencyFormatComma] = CurrencyFormat();
   const [assistantOption, setAssistantOption] = useState();
-  const [setLoadingDataProvice, dataProvice, dataDistrict, setDataSearch] =
-    GeoLand();
+  const [
+    setLoadingDataProvice,
+    dataProvice,
+    dataDistrict,
+    setDataSearch,
+    dataSubDistrict,
+    setDataSearchSubDistrict,
+  ] = GeoLand();
+  const [subDistrict, setSubDistrict] = useState(null);
+  const [dataSubDistrictList, setDataSubDistrictList] = useState(null);
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sequestrateStatus, setSequestrateStatus] = useState(null);
@@ -72,10 +79,12 @@ const AssetsDetail = ({
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [capturedImages, setCapturedImages] = useState([]);
+  const [inputType, setInputType] = useState("manual"); // หรือ "manual"
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
-    { label: "ติดภาระ", value: 1 },
+    { label: "ติดจำนอง", value: "จำนอง" },
+    { label: "ติดขายฝาก", value: "ขายฝาก" },
   ];
 
   const optionsSequestrateStatus = [
@@ -123,7 +132,10 @@ const AssetsDetail = ({
   }, [loadLandDetailList]);
 
   useEffect(() => {
+    console.log("dataProvice1");
     if (dataProvice) {
+      console.log("dataProvice2");
+
       setOptionProvice();
     }
   }, [dataProvice]);
@@ -133,6 +145,14 @@ const AssetsDetail = ({
       setOptionDistrict();
     }
   }, [dataDistrict]);
+
+  useEffect(() => {
+    if (dataSubDistrict) {
+      console.log("dataSubDistrict", dataSubDistrict);
+
+      setOptionSubDistrict();
+    }
+  }, [dataSubDistrict]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -201,13 +221,15 @@ const AssetsDetail = ({
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -221,8 +243,8 @@ const AssetsDetail = ({
     console.log(dataProvice);
 
     const optionsProvice = dataProvice.map((item) => ({
-      value: item.pvcode,
-      label: item.pvnamethai,
+      value: item.prov_code,
+      label: item.prov_desc,
     }));
     setDataProviceList(optionsProvice);
   };
@@ -230,10 +252,20 @@ const AssetsDetail = ({
   const setOptionDistrict = () => {
     console.log("dataDistrict", dataDistrict);
     const optionsDistrict = dataDistrict.map((item) => ({
-      value: item.amcode,
-      label: item.amnamethai,
+      value: item.dist_code,
+      label: item.dist_desc,
     }));
     setDataDistrictList(optionsDistrict);
+  };
+
+  const setOptionSubDistrict = () => {
+    console.log("dataSubDistrict", dataSubDistrict);
+    const optionsSubDistrict = dataSubDistrict.map((item) => ({
+      value: item.sub_dist_code,
+      label: item.sub_dist_desc,
+      code: item.code,
+    }));
+    setDataSubDistrictList(optionsSubDistrict);
   };
 
   const handleCancel = () => {
@@ -296,15 +328,28 @@ const AssetsDetail = ({
   const onChangeSelectProviceAsset = (value) => {
     console.log(`selected provice ${value}`);
     setDataSearch(value);
-    setResultData({ ...resultData, pvcode: value });
+    setResultData({ ...resultData, prov_code: value });
     form.setFieldsValue({
       assetDistrict: null,
+      assetSubDistrict: null,
     });
+    setSubDistrict(null);
   };
 
   const onChangeSelectDistrictAsset = (value) => {
     console.log(`selected District ${value}`);
-    setResultData({ ...resultData, amcode: value });
+    setDataSearchSubDistrict(value);
+    setResultData({ ...resultData, dist_code: value });
+    form.setFieldsValue({
+      assetSubDistrict: null,
+    });
+    setSubDistrict(null);
+  };
+
+  const onChangeSelectSubDistrictAsset = (value, data) => {
+    console.log(`selected District ${value}`);
+    console.log("data", data);
+    setSubDistrict(data);
   };
 
   const onChangeInvestiGateTimeType = ({ target: { value } }) => {
@@ -334,9 +379,9 @@ const AssetsDetail = ({
         ? dataDefualt?.investigation_log_id
         : null,
       CUSTOMER_ID: values.refAsset,
-      investigation_date: dayjs(values.investigateAssetsDate).format(
-        "YYYY-MM-DD"
-      ),
+      investigation_date: values.investigateAssetsDateManual
+        ? values.investigateAssetsDateManual
+        : dayjs(values.investigateAssetsDatePicker).format("YYYY-MM-DD"),
       owner: values?.ownerAsset ? values?.ownerAsset : null,
       possessor: values.possessorAsset,
       estimated_price:
@@ -350,17 +395,13 @@ const AssetsDetail = ({
       property_type_id: values.assetPropotyType,
       investigator_user_id: values.investigatorAsset,
       deed_number: values.deed,
-      sub_district: null,
+      sub_district: subDistrict.value,
       district: values.assetDistrict,
       province: values.assetProvince,
-      zipcode: null,
+      zipcode: subDistrict?.code,
       mortgagee: values?.mortgagee ? values?.mortgagee : null,
       sequestrate_status:
-        values?.sequestrateStatus === 1
-          ? values?.sequestrateStatus
-          : values?.sequestrateStatus === 0
-          ? values?.sequestrateStatus
-          : null,
+        values?.sequestrateStatus === 1 ? values?.sequestrateStatus : null,
       preference_creditor: values?.JudgmentCreditor
         ? values?.JudgmentCreditor
         : null,
@@ -381,8 +422,10 @@ const AssetsDetail = ({
       lawyer_seize_id: null,
       seize_status: null,
       seize_status_mark: null,
-      seize_date: values.judgmentCreditorDate
-        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+      seize_date: values.sequestrateStatus
+        ? values.judgmentCreditorDateManual
+          ? values.judgmentCreditorDateManual
+          : dayjs(values.judgmentCreditorDatePicker).format("YYYY-MM-DD")
         : null,
       legal_execution_office: values.AddrEnforce ? values.AddrEnforce : null,
       estimated_enforce_price: values.estimatedEnforcePrice
@@ -402,10 +445,21 @@ const AssetsDetail = ({
       wa: valueWa ? parseInt(valueWa) : null,
       subwa: valueSubWa ? parseInt(valueSubWa) : null,
       utm: values.utm ? values.utm : null,
-      lat: values.latlon ? parseFloat(valueLat) : null,
-      lon: values.latlon ? parseFloat(valueLon) : null,
+      latitude: values.latlon ? parseFloat(valueLat) : null,
+      longitude: values.latlon ? parseFloat(valueLon) : null,
       fileList: fileList,
       capturedImages: capturedImages,
+      mortgage_type: values.mortgageStatus === 0 ? null : values.mortgageStatus,
+      mortgage_start_date: values.mortgageStatus
+        ? values.contractDateManual
+          ? values.contractDateManual
+          : dayjs(values.contractDatePicker).format("YYYY-MM-DD")
+        : null,
+      mortgage_end_date: values.mortgageStatus
+        ? values.dueDateManual
+          ? values.dueDateManual
+          : dayjs(values.dueDatePicker).format("YYYY-MM-DD")
+        : null,
     };
 
     if (flag === "add") {
@@ -595,7 +649,6 @@ const AssetsDetail = ({
       >
         <Form.Item
           label="วันที่สืบทรัพย์"
-          name="investigateAssetsDate"
           rules={[
             {
               required: true,
@@ -603,8 +656,30 @@ const AssetsDetail = ({
             },
           ]}
         >
-          <DatePicker name="investigateAssetsDate" />
+          <Radio.Group
+            value={inputType}
+            onChange={(e) => setInputType(e.target.value)}
+            style={{ marginBottom: 8 }}
+          >
+            <Radio value="picker">เลือกจากปฏิทิน</Radio>
+            <Radio value="manual">กรอกเอง</Radio>
+          </Radio.Group>
+
+          {inputType === "picker" ? (
+            <Form.Item name="investigateAssetsDatePicker" noStyle>
+              <DatePicker
+                format="DD/MM/YYYY"
+                style={{ width: "100%" }}
+                placeholder="เลือกวันที่"
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item name="investigateAssetsDateManual" noStyle>
+              <DateInput />
+            </Form.Item>
+          )}
         </Form.Item>
+
         <Form.Item
           label="ห้วงเวลาการฟ้อง"
           name="investigateAssetsTime"
@@ -774,6 +849,30 @@ const AssetsDetail = ({
             style={{ width: "100%" }}
           />
         </Form.Item>
+        <Form.Item
+          label="ตำบล"
+          name="assetSubDistrict"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาระบุตำบล !",
+            },
+          ]}
+        >
+          <Select
+            showSearch
+            placeholder="เลือกตำบล"
+            optionFilterProp="label"
+            onChange={(value, data) =>
+              onChangeSelectSubDistrictAsset(value, data)
+            }
+            options={dataSubDistrictList}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+        <Form.Item label="รหัสไปษณีย์" name="zipcode">
+          {subDistrict?.code || "-"}
+        </Form.Item>
         <Form.Item label="ไร่" name="rai">
           <Input
             min={1} // กำหนดค่าต่ำสุด
@@ -806,18 +905,29 @@ const AssetsDetail = ({
             <Input
               type="number"
               placeholder="กรุณากรอกเลข`ตารางวา`ไม่เกิน 99.99 "
-              min={0.01} // ป้องกันการกรอกค่าต่ำกว่า 0
+              min={0.0} // ป้องกันการกรอกค่าต่ำกว่า 0
               max={99.99} // ขีดจำกัดไม่เกิน 99.99
               step="0.01" // กำหนดให้สามารถกรอกค่าทศนิยม 2 ตำแหน่ง
             />
           </Form.Item>
         </Tooltip>
+        <>
+          <Form.Item label="เลขระหว่าง" name="utm">
+            <Input
+              placeholder="กรุณากรอกเลขระหว่าง"
+              style={{ width: "100%" }}
+            />
+          </Form.Item>
+          <Form.Item label="ตำแหน่ง" name="latlon">
+            <Input placeholder="ตัวอย่าง : 8.17240819, 99.03230145" />
+          </Form.Item>
+        </>
 
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
           <Input name="estimatedPrice" placeholder="รอประเมินราคา" disabled />
         </Form.Item>
         <Form.Item
-          label="ติดภาระจำนอง"
+          label="ติดภาระจำนอง/ขายฝาก"
           name="mortgageStatus"
           rules={[
             {
@@ -827,17 +937,17 @@ const AssetsDetail = ({
           ]}
         >
           <Radio.Group
-            label="ติดภาระจำนอง"
+            label="ติดภาระจำนอง/ขายฝาก"
             name="mortgageStatus"
             options={optionsMortgageStatus}
             onChange={onChangeMortgageStatus}
             value={mortgageStatus}
           />
         </Form.Item>
-        {mortgageStatus === 1 ? (
+        {mortgageStatus ? (
           <>
             <Form.Item
-              label="เจ้าหนี้จำนอง"
+              label="เจ้าหนี้จำนอง/ขายฝาก"
               name="mortgagee"
               rules={[
                 {
@@ -850,7 +960,7 @@ const AssetsDetail = ({
             </Form.Item>
 
             <Form.Item
-              label="ยอดหนี้จำนอง"
+              label="ยอดหนี้จำนอง/ขายฝาก"
               name="mortgageBalance"
               rules={[
                 {
@@ -870,6 +980,54 @@ const AssetsDetail = ({
                 placeholder="จำนวนเงินที่จำเลยต้องชำระ"
                 style={{ width: "100%", color: "black" }}
               />
+            </Form.Item>
+            <Form.Item label="วันที่ทำสัญญา">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="contractDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="contractDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
+            </Form.Item>
+            <Form.Item label="กำหนดไถ่ถอน">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="dueDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="dueDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
             </Form.Item>
           </>
         ) : null}
@@ -920,7 +1078,6 @@ const AssetsDetail = ({
             </Form.Item>
             <Form.Item
               label="วันที่โดนอายัด"
-              name="judgmentCreditorDate"
               rules={[
                 {
                   required: true,
@@ -928,8 +1085,30 @@ const AssetsDetail = ({
                 },
               ]}
             >
-              <DatePicker name="judgmentCreditorDate" />
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="judgmentCreditorDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="judgmentCreditorDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
             </Form.Item>
+
             <Tooltip
               placement="bottom"
               title="ราคาประเมินจากกรมบังคับคดี"
@@ -1133,7 +1312,7 @@ const AssetsDetail = ({
         title={`รายละเอียดข้อมูลที่ดิน`}
         open={open}
         onCancel={handleCancel}
-        width={650}
+        width={750}
         footer={null}
       >
         <Spin spinning={loading} size="large" tip=" Loading... ">

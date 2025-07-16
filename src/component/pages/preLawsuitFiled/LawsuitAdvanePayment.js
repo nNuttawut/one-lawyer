@@ -12,6 +12,7 @@ import {
   Select,
   Flex,
   Tooltip,
+  notification,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
@@ -56,7 +57,9 @@ const Main = () => {
   const [searchEdit, setSearchEdit] = useState(null);
   // const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [companiesOption, setCompaniesOption] = useState(null);
-  const [companieSelect, setCompanieSelect] = useState();
+  const [companieSelect, setCompanieSelect] = useState(
+    userCompany === "3" ? 3 : 2
+  );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
@@ -169,7 +172,6 @@ const Main = () => {
           return optionsLocat.some((opt) => branch.includes(opt.label));
         });
       }
-
       setSearchEdit(filteredData);
       const newData = filteredData.filter(
         (item) =>
@@ -177,9 +179,10 @@ const Main = () => {
           !item.fee_payment_status &&
           item.provincial_court
       );
+      console.log("newData", newData);
 
       let dataUse;
-      if (userCompany === 3) {
+      if (userCompany === "3") {
         dataUse = newData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
@@ -206,13 +209,24 @@ const Main = () => {
   };
 
   const setOptionCompany = () => {
-    const options = companiesListCompany
-      .filter((item) => item.id === 1 || item.id === 2 || item.id === 3)
-      .map((item) => ({
-        value: item.id,
-        label: item.company_name,
-        address: item.address,
-      }));
+    let options;
+    if (userCompany === "3") {
+      options = companiesListCompany
+        .filter((item) => item.id === 3)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    } else {
+      options = companiesListCompany
+        .filter((item) => item.id === 1 || item.id === 2)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    }
 
     console.log("options", options);
     setCompaniesOption(options);
@@ -273,6 +287,8 @@ const Main = () => {
       companyValue = 4;
     } else if (companieSelect.value === 2) {
       companyValue = 5;
+    } else {
+      companyValue = 3;
     }
 
     let result = arrayTable.filter(
@@ -350,23 +366,36 @@ const Main = () => {
   };
 
   const handleUpdateData = (data) => {
-    console.log("data---->update", data);
+    console.log("data", data);
+    let companies;
+    if (companieSelect.value === 1) {
+      companies = 4;
+    } else {
+      companies = 5;
+    }
 
     if (data) {
       // ตรวจสอบว่า data มีค่าและมี id
-      const updatedDataArr = dataArr.map((item) =>
-        item.id === data.id ? { ...data } : { ...item }
-      );
-      console.log("updatedDataArr", updatedDataArr);
-      setDataArr(updatedDataArr);
+      const updatedDataArr = dataArr.map((item) => {
+        const matched = data.find((d) => d.id === item.id);
+        return matched ? { ...item, ...matched } : item;
+      });
 
       const arr = updatedDataArr.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1") &&
           !item.fee_payment_status
       );
-      console.log("arr", arr);
-      setArrayTable(arr);
+
+      const arrTable = updatedDataArr.filter(
+        (item) =>
+          (item.LAWYER_ID === userId || ROLE_ID === "1") &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companies)
+      );
+      setDataArr(arr);
+      setArrayTable(arrTable);
     } else {
       loadData();
       console.log("handleUpdateData loadData");
@@ -525,12 +554,11 @@ const Main = () => {
         item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
     );
 
-    console.log(
-      "checkData",
-      checkUserClearAdvanceMoney,
-      checkUserClearAdvanceLeasing
+    const checkUserBill = checkClearAdvance?.filter(
+      (item) =>
+        item.pay_status_id !== PAYADVANCE_STATUS_SUCCESS &&
+        item.pay_status_id !== PAYADVANCE_STATUS_NOT_APPROVED
     );
-    console.log(companieSelect);
 
     if (companieSelect.value === 1) {
       if (checkUserClearAdvanceLeasing) {
@@ -538,19 +566,64 @@ const Main = () => {
 
         setIsModalCreateAdvanePayment(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
     } else if (companieSelect.value === 2) {
       if (checkUserClearAdvanceMoney) {
         setIsModalCreateAdvanePayment(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
     } else {
       if (checkUserClearAdvanceKSM) {
         setIsModalCreateAdvanePayment(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
     }
   };
@@ -593,7 +666,7 @@ const Main = () => {
       render: (record) => <>{renderLoanType(record.LOAN_TYPE_ID)} </>,
     },
     {
-      title: "วันประทับฟ้อง",
+      title: "วันเสนอฟ้อง",
       align: "center",
       sorter: (a, b) => new Date(b.date_of_plaint) - new Date(a.date_of_plaint),
       render: (record) => <>{renderDate(record)}</>,

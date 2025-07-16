@@ -85,6 +85,15 @@ import EnforcementAdvanePayment from "../pages/enforcement/EnforcementAdvanePaym
 import EnforcementClearAdvanePayment from "../pages/enforcement/EnforcementClearAdvanePayment";
 import AnotherAdvanePayment from "../pages/disbursement/AnotherAdvanePayment";
 import AnotherClearAdvanePayment from "../pages/disbursement/AnotherClearAdvanePayment";
+import ReportAdvanePay from "../pages/chargeIndict/ReportAdvanePay";
+import ChooseContract from "../pages/preInvestigateAssets/ChooseContract";
+import CreatePreInvestigateAssets from "../pages/preInvestigateAssets/CreatePreInvestigateAssets";
+import ReportReceiveMoney from "../pages/receiveCustomerMoney/ReportReceiveMoney";
+import ReportLawsuit from "../pages/preLawsuitFiled/ReportLawsuit";
+import ReceiveMoney from "../pages/receiveCustomerMoney/ReceiveMoney";
+import ChangeStatusContract from "../pages/manageData/ChangeStatusContract";
+import CreateCancelContract from "../pages/preInvestigateAssets/CreateCancelContract";
+import LawyersJob from "../pages/preInvestigateAssets/LawyersJob";
 
 // const supabase = createClient(
 //   "https://btjqmddnrozkizntpzkg.supabase.co",
@@ -220,6 +229,8 @@ export default function Router() {
             path="/lawsuit/appointment-lawsuit"
             element={<AppointmentLawsuit />}
           />
+          <Route path="/lawsuit/report-lawsuit" element={<ReportLawsuit />} />
+
           <Route
             path="/lawsuit/advane-payment"
             element={<LawsuitAdvanePayment />}
@@ -288,6 +299,10 @@ export default function Router() {
             path="/manage-data/change-lawyers-jobs"
             element={<ChangeLawyersJob />}
           />
+          <Route
+            path="manage-data/change-status-contract"
+            element={<ChangeStatusContract />}
+          />
 
           <Route path="/manage-data/import-data" element={<ImportData />} />
           <Route path="/chang-password" element={<ChangePassword />} />
@@ -312,8 +327,47 @@ export default function Router() {
             element={<ApprovedClearAdvanePay />}
           />
           <Route
+            path="/charge-indict/report-advane-pay"
+            element={<ReportAdvanePay />}
+          />
+          <Route
             path="/contract-detail/detail-payment"
             element={<DetailPayment />}
+          />
+
+          {/* การรับเงินลูกค้า */}
+          <Route
+            path="receive-customer-money/receive-money"
+            element={<ReceiveMoney />}
+          />
+          <Route
+            path="receive-customer-money/report-receive-money"
+            element={<ReportReceiveMoney />}
+          />
+
+          {/* สืบทรัพย์ก่อนบังคับคดี */}
+          <Route
+            path="pre-investigate-assets/choose-contract"
+            element={<ChooseContract />}
+          />
+          <Route
+            path="pre-investigate-assets/investigate-assets-search"
+            element={<CreatePreInvestigateAssets />}
+          />
+
+          <Route
+            path="pre-investigate-assets/export-cancel-contract"
+            element={<CreateCancelContract />}
+          />
+
+          <Route
+            path="pre-investigate-assets/send-to-lawsuit"
+            element={<LawyersJob />}
+          />
+
+          <Route
+            path="pre-investigate-assets/sumary-report"
+            element={<null />}
           />
 
           {/* เบิกอื่น ๆ */}

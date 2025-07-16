@@ -60,6 +60,12 @@ const EstimateAssetsResult = ({
   const [radioTimeType, setRadioTimeType] = useState(null);
   const [dataLoan, setDataLoan] = useState();
   const [imageList, setImageList] = useState([]);
+  const [landData, setLandData] = useState({
+    raiArea: 0,
+    nganArea: 0,
+    waArea: 0,
+  });
+
   const optionsAssetsType = [
     { label: "น.ส.4 จ", value: 1 },
     { label: "น.ส.3 ก.", value: 2 },
@@ -120,7 +126,18 @@ const EstimateAssetsResult = ({
         wa: dataWa,
         investigateAssetsTime: dataDefualt.investigation_type_id,
         utm: dataDefualt.utm,
-        estimatedPrice: dataDefualt.estimated_price,
+        latlon:
+          dataDefualt.latitude && dataDefualt.longitude
+            ? `${dataDefualt.latitude},${dataDefualt.longitude}`
+            : null,
+      });
+
+      setLandData({
+        raiArea: dataDefualt.rai,
+        nganArea: dataDefualt.ngan,
+        waArea: parseFloat(
+          `${dataDefualt?.wa || 0}.${dataDefualt?.subwa || 0}`
+        ),
       });
     }
   }, [isModal]);
@@ -178,7 +195,7 @@ const EstimateAssetsResult = ({
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/asset_${dataDefualt?.CONTNO}_${dataDefualt?.CUSTOMER_ID}_${dataDefualt?.deed_number}_${dataDefualt?.province}_${dataDefualt?.district}`
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataDefualt?.CUSTOMER_ID}_${dataDefualt?.deed_number}_${dataDefualt?.province}_${dataDefualt?.district}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -210,13 +227,15 @@ const EstimateAssetsResult = ({
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -264,14 +283,22 @@ const EstimateAssetsResult = ({
 
   const onChangeInputRai = (value) => {
     console.log(value);
+    setLandData({ ...landData, raiArea: value });
   };
 
   const onChangeInputNgan = (value) => {
     console.log(value);
+    setLandData({ ...landData, nganArea: value });
   };
 
   const onChangeInputWa = (value) => {
     console.log(value);
+    setLandData({ ...landData, waArea: value });
+  };
+
+  const onChangeLandAmont = (value) => {
+    console.log(value);
+    setLandData({ ...landData, landAmont: value });
   };
 
   const onChangeInputLatLon = (value) => {
@@ -279,48 +306,49 @@ const EstimateAssetsResult = ({
   };
 
   const checkLandPrice = async () => {
-    var result = {
-      pvcode: dataDefualt.province,
-      amcode: dataDefualt.district,
-      landNo: dataDefualt.deed_number,
-    };
-    if (
-      dataDefualt.deed_number &&
-      dataDefualt.district &&
-      dataDefualt.province
-    ) {
-      setLoading(true);
-      try {
-        await axios
-          .post(POST_CALCULATE_LAND, result, {
-            HEADERS_EXPORT,
-          })
-          .then(async (resQuery) => {
-            if (resQuery.status === 200) {
-              console.log("POST_CALCULATE_LAND", resQuery?.data?.result);
-              calLandPrice(resQuery?.data?.result[0]);
-              if (
-                Number.isNaN(resQuery?.data?.result[0].landprice) ||
-                !resQuery?.data?.result[0].landprice
-              ) {
-                message.error("ไม่มีข้อมูลประเมินจากกรมที่ดิน ");
-              }
-            } else {
-              message.error("ไม่พบข้อมูล");
-            }
-          })
-          .catch((err) => console.log("ไม่มีข้อมูล", err));
-      } catch (error) {
-        console.error("Error loading data:", error);
-        message.error(`ไม่พบข้อมูล: ${error.message}`);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      message.error(
-        "กรอกข้อมูลไม่ครบโปรดตรวจสอบอีกที เลขโฉนด, ประเภททรัพย์, จังหวัด, อำเภอ"
-      );
-    }
+    return message.error("ใช้ไม่ได้แล้วครับ");
+    // var result = {
+    //   pvcode: dataDefualt.province,
+    //   amcode: dataDefualt.district,
+    //   landNo: dataDefualt.deed_number,
+    // };
+    // if (
+    //   dataDefualt.deed_number &&
+    //   dataDefualt.district &&
+    //   dataDefualt.province
+    // ) {
+    //   setLoading(true);
+    //   try {
+    //     await axios
+    //       .post(POST_CALCULATE_LAND, result, {
+    //         HEADERS_EXPORT,
+    //       })
+    //       .then(async (resQuery) => {
+    //         if (resQuery.status === 200) {
+    //           console.log("POST_CALCULATE_LAND", resQuery?.data?.result);
+    //           calLandPrice(resQuery?.data?.result[0]);
+    //           if (
+    //             Number.isNaN(resQuery?.data?.result[0].landprice) ||
+    //             !resQuery?.data?.result[0].landprice
+    //           ) {
+    //             message.error("ไม่มีข้อมูลประเมินจากกรมที่ดิน ");
+    //           }
+    //         } else {
+    //           message.error("ไม่พบข้อมูล");
+    //         }
+    //       })
+    //       .catch((err) => console.log("ไม่มีข้อมูล", err));
+    //   } catch (error) {
+    //     console.error("Error loading data:", error);
+    //     message.error(`ไม่พบข้อมูล: ${error.message}`);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // } else {
+    //   message.error(
+    //     "กรอกข้อมูลไม่ครบโปรดตรวจสอบอีกที เลขโฉนด, ประเภททรัพย์, จังหวัด, อำเภอ"
+    //   );
+    // }
   };
 
   const onChangeInvestiGateTimeType = ({ target: { value } }) => {
@@ -328,31 +356,21 @@ const EstimateAssetsResult = ({
     setRadioTimeType(value);
   };
 
-  const calLandPrice = (value) => {
-    let raiArea = parseInt(value?.rai) * 400;
-    let nganArea = parseInt(value?.ngan) * 100;
-    let waArea = parseFloat(`${value?.wa}.${value?.subwa}`);
-    let landPrice =
-      value?.landprice &&
-      typeof value?.landprice === "string" &&
-      value?.landprice.includes(",")
-        ? parseInt(value?.landprice.replace(/,/g, ""))
-        : parseInt(value?.landprice)
-        ? parseInt(value?.landprice)
-        : null;
+  const calLandPrice = () => {
+    console.log("landData----->", landData);
+
+    let raiArea = parseInt(landData?.raiArea) * 400;
+    let nganArea = parseInt(landData?.nganArea) * 100;
+    let waArea = parseFloat(landData?.waArea);
+    let landPrice = parseFloat(landData?.landAmont);
     let totalArea = (raiArea + nganArea + waArea) * landPrice;
 
     console.log("raiArea + nganArea + waArea", raiArea + nganArea + waArea);
-    console.log("parseInt(value?.landprice)", landPrice);
     console.log("totalArea", totalArea);
 
     form.setFieldsValue({
       estimatedPrice: currencyFormatPoint(parseInt(totalArea)),
-      rai: value?.rai,
-      ngan: value?.ngan,
-      wa: waArea,
     });
-    setLandPrice(value);
   };
 
   const onChangeSelectLandDetail = (value) => {
@@ -364,8 +382,8 @@ const EstimateAssetsResult = ({
     let putDataInvestigate;
 
     let convertValues = parseFloat(values.wa).toFixed(2);
-    console.log("utm", dataDefualt.utm);
-    console.log("utm", landPrice?.utm);
+    // console.log("utm", dataDefualt.utm);
+    // console.log("utm", landPrice?.utm);
 
     let valueWa = values.wa ? convertValues.split(".")[0] : null;
     let valueSubWa = values.wa ? convertValues.split(".")[1] : null;
@@ -387,13 +405,9 @@ const EstimateAssetsResult = ({
       ngan: values.ngan ? parseInt(values.ngan) : null,
       wa: valueWa ? parseInt(valueWa) : null,
       subwa: valueSubWa ? parseInt(valueSubWa) : null,
-      utm: dataDefualt.utm
-        ? dataDefualt.utm
-        : landPrice?.utm
-        ? landPrice?.utm
-        : null,
-      latitude: landPrice?.parcellat ? landPrice?.parcellat : null,
-      longitude: landPrice?.parcellon ? landPrice?.parcellon : null,
+      utm: values.utm ? values.utm : dataDefualt.utm,
+      latitude: valueLat,
+      longitude: valueLon,
     };
 
     console.log("postDataInvestigate---->", putDataInvestigate);
@@ -595,8 +609,8 @@ const EstimateAssetsResult = ({
             />
           </Form.Item>
         </Tooltip>
-        {dataDefualt.property_type_id === 1 ? (
-          <>
+        {/* {dataDefualt.property_type_id === 1 ? ( */}
+        {/* <>
             <Tooltip
               placement="bottom"
               title={landPrice?.utm ? "คลิกเพื่อเข้าสู่เว็บ กรมที่ดิน" : null}
@@ -642,22 +656,42 @@ const EstimateAssetsResult = ({
                     {dataDefualt.lon ? dataDefualt.lon : landPrice?.parcellon}
                   </a>
                 ) : null}
+                <Input />
               </Form.Item>
             </Tooltip>
           </>
-        ) : (
-          <>
-            <Form.Item label="ตำแหน่ง" name="latlon">
-              <Input
-                placeholder="8.17240819, 99.03230145"
-                onChange={(e) => onChangeInputLatLon(e.target.value)}
-              />
-            </Form.Item>
-          </>
-        )}
+        ) : ( */}
+        <>
+          <Form.Item label="เลขระหว่าง" name="utm">
+            <Input
+              placeholder="กรุณาใส่เลขระหว่าง"
+              // onChange={(e) => onChangeInputLatLon(e.target.value)}
+            />
+          </Form.Item>
+          <Form.Item label="ตำแหน่ง" name="latlon">
+            <Input
+              placeholder="ตัวอย่าง : 8.17240819, 99.03230145"
+              onChange={(e) => onChangeInputLatLon(e.target.value)}
+            />
+          </Form.Item>
+        </>
+        <Form.Item label="ราคา/ตารางวา" name="landAmont">
+          <InputNumber
+            suffix="บาท"
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+            size="large"
+            placeholder="ใส่ราคา"
+            style={{ width: "100%", color: "black" }}
+            onChange={onChangeLandAmont}
+          />
+        </Form.Item>
+
         {dataDefualt.property_type_id === 1 ? (
           <div style={{ textAlign: "center", marginBottom: "20px" }}>
-            <Button style={{ color: "blue" }} onClick={checkLandPrice}>
+            <Button style={{ color: "blue" }} onClick={calLandPrice}>
               เช็คราคาประเมิน
             </Button>
           </div>
@@ -683,11 +717,17 @@ const EstimateAssetsResult = ({
         </Form.Item>
         {dataDefualt.mortgage_balance ? (
           <>
-            <Form.Item label="เจ้าหนี้จำนอง" name="mortgage">
-              {dataDefualt.mortgagee}
+            <Form.Item label="เจ้าหนี้จำนอง/ขายฝาก" name="mortgage">
+              {dataDefualt.mortgagee} ติด{dataDefualt.mortgage_type}
             </Form.Item>
-            <Form.Item label="ยอดหนี้จำนอง" name="mortgageBalance">
+            <Form.Item label="ยอดหนี้จำนอง/ขายฝาก" name="mortgageBalance">
               {currencyFormatComma(dataDefualt.mortgage_balance)} {"บาท"}
+            </Form.Item>
+            <Form.Item label="วันที่ยอดหนี้จำนอง/ขายฝาก" name="mortgage">
+              {convertDateThai(dataDefualt.mortgage_start_date)}
+            </Form.Item>
+            <Form.Item label="วันที่ไถ่ถอน" name="mortgageBalance">
+              {convertDateThai(dataDefualt.mortgage_end_date)}
             </Form.Item>
           </>
         ) : null}

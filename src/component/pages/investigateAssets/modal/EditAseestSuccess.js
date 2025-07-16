@@ -3,13 +3,11 @@ import {
   Button,
   Form,
   Input,
-  Select,
   Modal,
   Card,
   message,
   Spin,
   Radio,
-  Checkbox,
   Tooltip,
   DatePicker,
   Image,
@@ -35,6 +33,8 @@ import {
   FileWordOutlined,
 } from "@ant-design/icons";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import Dragger from "antd/es/upload/Dragger";
+import DateInput from "../../../../hook/DateInput";
 
 const EditAssetsSuccess = ({
   open,
@@ -63,10 +63,14 @@ const EditAssetsSuccess = ({
   const [radioRefAsset, setRadioRefAsset] = useState();
   const [dataLandDetailList, setDataLandDetailList] = useState(null);
   const [imageList, setImageList] = useState([]);
+  const [fileList, setFileList] = useState([]);
+  const [capturedImages, setCapturedImages] = useState([]);
+  const [inputType, setInputType] = useState("manual"); // หรือ "manual"
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
-    { label: "ติดภาระ", value: 1 },
+    { label: "ติดภาระจำนอง", value: 1 },
+    { label: "ติดภาระขายฝาก", value: 2 },
   ];
 
   const optionsSequestrateStatus = [
@@ -169,7 +173,7 @@ const EditAssetsSuccess = ({
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/asset_${dataDefualt?.CONTNO}_${dataIndex?.CUSTOMER_ID}_${dataIndex?.deed_number}_${dataIndex?.province}_${dataIndex?.district}`
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataIndex?.CUSTOMER_ID}_${dataIndex?.deed_number}_${dataIndex?.province}_${dataIndex?.district}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -236,13 +240,15 @@ const EditAssetsSuccess = ({
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -264,10 +270,6 @@ const EditAssetsSuccess = ({
       message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
     }
   }
-
-  const onChangeInputOwnerAssetLaw = (value) => {
-    console.log(value);
-  };
 
   const onChangeInputOwner = (value) => {
     console.log(value);
@@ -340,10 +342,6 @@ const EditAssetsSuccess = ({
     }
   };
 
-  const onChangeSelectInvestigatorAsset = (value) => {
-    console.log(`selected ${value}`);
-  };
-
   const onChangeInputMemo = (value) => {
     console.log(value);
   };
@@ -387,6 +385,7 @@ const EditAssetsSuccess = ({
       seize_date: values.judgmentCreditorDate
         ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
         : null,
+      fileList: fileList,
     };
 
     console.log("postDataInvestigate---->", putDataInvestigate);
@@ -394,9 +393,75 @@ const EditAssetsSuccess = ({
     sendStatus(putDataInvestigate, dataIndex);
   };
 
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+      );
+    },
+    beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
+
+      // // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      // const newFile = new File(
+      //   [file],
+      //   `สืบทรัพย์_${dataDefualt?.CONTNO}.${
+      //     fileType.includes("pdf") ? "pdf" : file.name.split(".").pop()
+      //   }`,
+      //   { type: fileType }
+      // );
+
+      // console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "xlsx" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "docx" }]);
+      }
+
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+  };
+
   const sendStatus = async (putDataInvestigate, dataIndex) => {
     setLoading(true);
-
     try {
       console.log("investigateStatus ", putDataInvestigate);
       await axios
@@ -407,6 +472,18 @@ const EditAssetsSuccess = ({
           if (resQuery.status === 200) {
             console.log(resQuery.data);
             message.success(`อัพเดทข้อมูลสำเร็จ`);
+            if (putDataInvestigate.fileList.length > 0) {
+              console.log(putDataInvestigate.fileList);
+              handleUploadAllImage(
+                putDataInvestigate.fileList,
+                putDataInvestigate
+              ); // ส่งไฟล์ไปอัปโหลดทีละตัว
+            } else {
+              console.warn(
+                "⚠️ ไม่มีไฟล์ใน fileList สำหรับ",
+                putDataInvestigate.CUSTOMER_ID
+              );
+            }
             handleEdit(putDataInvestigate, dataIndex);
             return resQuery.data;
           } else {
@@ -425,6 +502,41 @@ const EditAssetsSuccess = ({
       setLoading(false);
       handleCancel();
     }
+  };
+
+  const handleUploadAllImage = (fileList, item) => {
+    const formData = new FormData();
+
+    fileList.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    setLoading(true);
+
+    axios
+      .post(
+        `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${item?.CUSTOMER_ID}_${item?.deed_number}_${item?.province}_${item?.district}`,
+        formData,
+        {
+          headers: {
+            "content-type": "multipart/form-data",
+          },
+        }
+      )
+      .then((res) => {
+        console.log(res);
+        setLoading(false);
+      })
+      .catch((err) => {
+        Modal.error({
+          title: "ผิดพลาด",
+          content: err.message,
+          centered: true,
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -553,7 +665,7 @@ const EditAssetsSuccess = ({
           <Input onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)} />
         </Form.Item> */}
         <Form.Item
-          label="ติดภาระจำนอง"
+          label="ติดภาระจำนอง/ขายฝาก"
           name="mortgageStatus"
           rules={[
             {
@@ -563,7 +675,7 @@ const EditAssetsSuccess = ({
           ]}
         >
           <Radio.Group
-            label="ติดภาระจำนอง"
+            label="ติดภาระจำนอง/ขายฝาก"
             name="mortgageStatus"
             options={optionsMortgageStatus}
             onChange={onChangeMortgageStatus}
@@ -571,10 +683,10 @@ const EditAssetsSuccess = ({
           />
         </Form.Item>
 
-        {dataIndex.mortgagee || mortgageStatus === 1 ? (
+        {dataIndex.mortgagee || mortgageStatus === 1 || mortgageStatus === 2 ? (
           <>
             <Form.Item
-              label="เจ้าหนี้จำนอง"
+              label="เจ้าหนี้จำนอง/ขายฝาก"
               name="mortgagee"
               rules={[
                 {
@@ -587,7 +699,7 @@ const EditAssetsSuccess = ({
             </Form.Item>
 
             <Form.Item
-              label="ยอดหนี้จำนอง"
+              label="ยอดหนี้จำนอง/ขายฝาก"
               name="mortgageBalance"
               rules={[
                 {
@@ -601,6 +713,55 @@ const EditAssetsSuccess = ({
                 onChange={(e) => onChangeMortgageBalance(e.target.value)}
               />
             </Form.Item>
+            <Form.Item label="วันที่ทำสัญญา">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="contractDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="contractDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
+            </Form.Item>
+            <Form.Item label="กำหนดไถ่ถอน">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="dueDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="dueDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
+            </Form.Item>
+
             <Form.Item
               label="พอเฉลี่ย"
               name="averageStatus"
@@ -821,6 +982,135 @@ const EditAssetsSuccess = ({
                     )}
                   </div>
                 ))}
+              </Image.PreviewGroup>
+            </div>
+          </Form.Item>
+        ) : null}
+
+        <Form.Item
+          label="อัปโหลดไฟล์/รูปภาพ"
+          name="imageUrlFile"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาเลือกผู้สืบทรัพย์ !",
+            },
+          ]}
+        >
+          <Dragger
+            {...props}
+            style={{
+              width: "300px", // กำหนดความกว้าง
+              height: "200px", // กำหนดความสูง
+              margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+            }}
+          >
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined style={{ color: "blue" }} />
+            </p>
+            <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+            <p className="ant-upload-hint">
+              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
+            </p>
+          </Dragger>
+        </Form.Item>
+        {capturedImages.length > 0 ? (
+          <Form.Item label="อัปโหลดไฟล์เพิ่มเติม" name={"imageFile"}>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "16px",
+                justifyContent: "center",
+                padding: "10px", // เพิ่ม padding เพื่อไม่ให้ชิดขอบเกินไป
+              }}
+            >
+              <Image.PreviewGroup>
+                {capturedImages?.map((image, index) => {
+                  if (!image || !image.type) return null;
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        position: "relative", // ให้ปุ่มลบอยู่บนสุด
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textAlign: "center",
+                        background: "#f8f8f8",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      {/* แสดงไอคอนตามประเภทไฟล์ */}
+                      {image.type.includes("pdf") ? (
+                        <FilePdfOutlined
+                          style={{ fontSize: "40px", color: "red" }}
+                        />
+                      ) : image.type.includes("xlsx") ? (
+                        <FileExcelOutlined
+                          style={{ fontSize: "40px", color: "green" }}
+                        />
+                      ) : image.type.includes("docx") ? (
+                        <FileWordOutlined
+                          style={{ fontSize: "40px", color: "blue" }}
+                        />
+                      ) : (
+                        <Image
+                          src={image.url}
+                          alt={`Captured ${index}`}
+                          width="150px"
+                        />
+                      )}
+
+                      {/* ลิงก์ดาวน์โหลด */}
+                      {image.url && (
+                        <a
+                          style={{
+                            display: "block",
+                            marginTop: "8px",
+                            color: "#007bff",
+                            textDecoration: "none",
+                            fontWeight: "bold",
+                          }}
+                          href={image.url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          คลิกเพื่อดาวน์โหลด
+                        </a>
+                      )}
+
+                      {/* ปุ่มลบ */}
+                      <button
+                        type="button"
+                        onClick={() => deleteImg(index)}
+                        style={{
+                          position: "absolute",
+                          top: "-5px",
+                          right: "-5px",
+                          background: "red",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
               </Image.PreviewGroup>
             </div>
           </Form.Item>

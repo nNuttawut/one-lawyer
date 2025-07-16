@@ -463,16 +463,16 @@ const UpdateReplyEms = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 {`${dataDefault?.brand} ${dataDefault?.register_no}`}
               </Form.Item>
               <Form.Item label="ค้างงวด" name="overdue">
-                {`${dataDefault?.overdue_installment_count} งวด`}
+                {`${dataDefault?.overdue_installment_count || "-"} งวด`}
               </Form.Item>
               <Form.Item label="ยอดเงินค้าง" name="overdue">
                 {`${currencyFormatPoint(
-                  dataDefault?.overdue_installment_amount
+                  dataDefault?.overdue_installment_amount || 0
                 )} บาท`}
               </Form.Item>
               <Form.Item label="ค่าติดตาม" name="follow">
                 {`${currencyFormatComma(
-                  dataDefault?.dept_collection_fees
+                  dataDefault?.dept_collection_fees || 0
                 )} บาท`}
               </Form.Item>
               <Form.Item

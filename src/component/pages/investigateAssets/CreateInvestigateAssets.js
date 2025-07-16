@@ -14,11 +14,7 @@ import {
 import Search from "antd/es/input/Search";
 import React, { useEffect, useState } from "react";
 import DetailModal from "../detail/DetailModal";
-import {
-  FormOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from "@ant-design/icons";
+import { FormOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
 import {
@@ -97,6 +93,8 @@ const Main = () => {
   const filterData = (data) => {
     if (data) {
       let filteredData;
+      console.log("data", data);
+
       if (userCompany === "3") {
         filteredData = data.filter((item) => {
           const branch = item.LOCAT;
@@ -118,7 +116,10 @@ const Main = () => {
         });
       }
 
-      const newData = filteredData.filter((item) => !item.investigation_status);
+      const newData = filteredData.filter(
+        (item) => !item.investigation_status || item.investigation_status > 4
+      );
+      console.log("filteredData", filteredData);
 
       const sortedData = newData.sort((a, b) => {
         // ถ้า a ไม่มี judge_date ให้เอาไว้ล่าง
@@ -127,7 +128,7 @@ const Main = () => {
         if (a.judge_date && !b.judge_date) return -1;
         // ถ้าทั้งคู่มี judge_date ให้เปรียบเทียบปกติ (ล่าสุดก่อน)
         if (a.judge_date && b.judge_date) {
-          return new Date(b.judge_date) - new Date(a.judge_date);
+          return new Date(a.judge_date) - new Date(b.judge_date);
         }
         return 0; // ถ้าทั้งคู่เป็น null
       });
@@ -175,7 +176,7 @@ const Main = () => {
 
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
-        const date = dayjs(item.DATE, "YYYY-MM-DD");
+        const date = dayjs(item.judge_date, "YYYY-MM-DD");
         const itemDate = date.valueOf();
         if (itemDate >= timestampStart && itemDate <= timestampEnd) {
           return item;
@@ -225,19 +226,30 @@ const Main = () => {
         ? "blue"
         : record.investigation_status === 2
         ? "green"
-        : null;
+        : "blue";
 
     return (
       <Tag color={color} key={record.id} style={{ textAlign: "center" }}>
+        {record.investigation_status < 3 ? "สืบหลังฟ้อง" : "สืบก่อนฟ้อง"}
+        <br />
         {record.investigation_status === 0
           ? "ไม่เจอทรัพย์"
           : record.investigation_status === 1
           ? "รอประเมินทรัพย์"
           : record.investigation_status === 2
           ? "เจอทรัพย์"
+          : record.investigation_status === 5
+          ? "ดำเนินการ"
+          : record.investigation_status === 6
+          ? "ไม่เจอทรัพย์"
+          : record.investigation_status === 7
+          ? "เจอทรัพย์"
           : null}
+
         <p style={{ color: "red" }}>
-          สืบครั้งที่ {record.investigation_log_count}
+          {record.investigation_status === 5
+            ? null
+            : "สืบครั้งที่" + record.investigation_log_count}
         </p>
       </Tag>
     );
@@ -247,7 +259,7 @@ const Main = () => {
     return (
       <>
         <Option value={4}>
-          <span style={{ marginRight: 8 }}>🕒</span>
+          <span style={{ marginRight: 8 }}>🗂️</span>
           ทั้งหมด
         </Option>
         <Option value={1}>
@@ -316,6 +328,8 @@ const Main = () => {
       color = "blue";
     } else if (record.investigation_status === 2) {
       color = "green";
+    } else {
+      color = "blue";
     }
     const formattedDate = record.investigation_date
       ? convertDateThai(recordDate)
@@ -362,7 +376,7 @@ const Main = () => {
       .subtract(remainingMonths, "month")
       .diff(recordDate, "day");
 
-    if (remainingMonths >= 1) {
+    if (remainingMonths >= 1 || yearsDifference > 0) {
       color = "orange";
     } else if (remainingMonths < 1) {
       color = "blue";
@@ -457,6 +471,11 @@ const Main = () => {
       // },
       // defaultSortOrder: "ascend", // กำหนดการเรียงลำดับเริ่มต้น
       // sortDirections: ["ascend", "descend"], // เพิ่มการรองรับการสลับลำดับ
+    },
+    {
+      title: "ผู้รับผิดชอบ",
+      align: "center",
+      render: (record) => <>{record?.LAWYER_NNAME || null}</>,
     },
   ];
 

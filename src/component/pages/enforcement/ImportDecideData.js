@@ -115,7 +115,7 @@ const Main = () => {
       companySelect = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          item.ROLE_ID === 3 &&
+          (item.ROLE_ID === 3 || item.ROLE_ID === 4 || item.ROLE_ID === 2) &&
           item.ACTIVE_STATUS === 1
       );
     }

@@ -15,8 +15,7 @@ import {
   Image,
   InputNumber,
 } from "antd";
-import { HEADERS_EXPORT, POST_CALCULATE_LAND } from "../../../API/apiUrls";
-import axios from "axios";
+
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import GeoLand from "../../../../hook/GeoLand";
 import TextArea from "antd/es/input/TextArea";
@@ -30,6 +29,7 @@ import {
   FileWordOutlined,
 } from "@ant-design/icons";
 import Dragger from "antd/es/upload/Dragger";
+import DateInput from "../../../../hook/DateInput";
 
 const EditAssetsDetail = ({
   open,
@@ -46,8 +46,14 @@ const EditAssetsDetail = ({
   const COMPANY = parseInt(localStorage.getItem("COMPANY_ID"));
   const [currencyFormatComma] = CurrencyFormat();
   const [assistantOption, setAssistantOption] = useState();
-  const [setLoadingDataProvice, dataProvice, dataDistrict, setDataSearch] =
-    GeoLand();
+  const [
+    setLoadingDataProvice,
+    dataProvice,
+    dataDistrict,
+    setDataSearch,
+    dataSubDistrict,
+    setDataSearchSubDistrict,
+  ] = GeoLand();
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [averageStatus, setAverageStatus] = useState(null);
@@ -71,10 +77,14 @@ const EditAssetsDetail = ({
   const [radioTimeType, setRadioTimeType] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [capturedImages, setCapturedImages] = useState([]);
+  const [subDistrict, setSubDistrict] = useState(null);
+  const [dataSubDistrictList, setDataSubDistrictList] = useState(null);
+  const [inputType, setInputType] = useState("manual"); // หรือ "manual"
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
-    { label: "ติดภาระ", value: 1 },
+    { label: "ติดภาระจำนอง", value: 1 },
+    { label: "ติดภาระขายฝาก", value: 2 },
   ];
 
   const optionsSequestrateStatus = [
@@ -154,7 +164,7 @@ const EditAssetsDetail = ({
       investigatorAsset: dataIndex.investigator_user_id,
       memo: dataIndex.mark,
       // urlFile: dataIndex.investigate_filepath,
-      judgmentCreditorDate: dayjs(dataIndex.seize_date),
+      judgmentCreditorDateManual: dayjs(dataIndex.seize_date),
       mortgagee: dataIndex.mortgagee,
       mortgageBalance: currencyFormatComma(dataIndex.mortgage_balance),
       investigateAssetsTime: dataIndex.investigation_type_id,
@@ -169,6 +179,16 @@ const EditAssetsDetail = ({
       AddrEnforce: dataIndex?.legal_execution_office
         ? dataIndex?.legal_execution_office
         : null,
+      assetSubDistrict: dataIndex.sub_district,
+      zipcode: dataIndex.zipcode,
+      investigateAssetsDateManual: dataIndex.investigation_date,
+      contractDateManual: dataIndex.mortgage_start_date,
+      dueDateManual: dataIndex.mortgage_end_date,
+      utm: dataIndex.utm,
+      latlon:
+        dataIndex.latitude && dataIndex.longitude
+          ? `${dataIndex.latitude},${dataIndex.longitude}`
+          : null,
     });
 
     let ralationDataIndex = optionsRalation.filter(
@@ -198,8 +218,18 @@ const EditAssetsDetail = ({
     }
     if (dataDistrict) {
       setOptionDistrict();
+      setDataSearchSubDistrict(dataIndex.district);
     }
-  }, [lawyersList, dataProvice, dataDistrict, loadLandDetailList]);
+    if (dataSubDistrict) {
+      setOptionSubDistrict();
+    }
+  }, [
+    lawyersList,
+    dataProvice,
+    dataDistrict,
+    dataSubDistrict,
+    loadLandDetailList,
+  ]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -252,13 +282,15 @@ const EditAssetsDetail = ({
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -272,8 +304,8 @@ const EditAssetsDetail = ({
     console.log(dataProvice);
 
     const optionsProvice = dataProvice.map((item) => ({
-      value: item.pvcode,
-      label: item.pvnamethai,
+      value: item.prov_code,
+      label: item.prov_desc,
     }));
     setDataProviceList(optionsProvice);
   };
@@ -281,21 +313,42 @@ const EditAssetsDetail = ({
   const setOptionDistrict = () => {
     console.log("dataDistrict", dataDistrict);
     const optionsDistrict = dataDistrict.map((item) => ({
-      value: item.amcode,
-      label: item.amnamethai,
+      value: item.dist_code,
+      label: item.dist_desc,
     }));
     setDataDistrictList(optionsDistrict);
+  };
+
+  const setOptionSubDistrict = () => {
+    console.log("dataSubDistrict", dataSubDistrict);
+    const optionsSubDistrict = dataSubDistrict.map((item) => ({
+      value: item.sub_dist_code,
+      label: item.sub_dist_desc,
+      code: item.code,
+    }));
+    setDataSubDistrictList(optionsSubDistrict);
+  };
+
+  const onChangeSelectDistrictAsset = (value) => {
+    console.log(`selected District ${value}`);
+    setDataSearchSubDistrict(value);
+    setResultData({ ...resultData, dist_code: value });
+    form.setFieldsValue({
+      assetSubDistrict: null,
+    });
+    setSubDistrict(null);
+  };
+
+  const onChangeSelectSubDistrictAsset = (value, data) => {
+    console.log(`selected District ${value}`);
+    console.log("data", data);
+    setSubDistrict(data);
   };
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
     close(false);
     setIsModal(false);
-  };
-
-  const onChangeInputInvestigateDate = (date, dateSting) => {
-    console.log(date);
-    console.log(dateSting);
   };
 
   const onChangeInputDeed = (value) => {
@@ -345,46 +398,8 @@ const EditAssetsDetail = ({
     }
   };
 
-  const onChangeInputOwnerAssetLaw = (value) => {
-    console.log(value);
-  };
-
-  const onChangeInputOwner = (value) => {
-    console.log(value);
-  };
-
   const onChangeInputPreferenceCreditor = (value) => {
     console.log(value);
-  };
-
-  const onChangeMortgageBalance = (value) => {
-    console.log(value);
-    let inputValue = value;
-
-    isNotNumber(inputValue.replace(/,/g, ""));
-    if (inputValue.length >= 4) {
-      var rawValue = inputValue.replace(/,/g, ""); // Remove existing commas
-      let intValue = parseInt(rawValue);
-      let formattedValue =
-        intValue >= 1000 ? currencyFormatComma(intValue) : rawValue;
-      let setAverage = landPrice
-        ? parseInt(landPrice.replace(/,/g, "")) - intValue
-        : 0;
-      console.log("serAverage", setAverage);
-      form.setFieldsValue({
-        mortgageBalance: formattedValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
-      console.log("formattedValue", formattedValue);
-    } else {
-      let setAverage = landPrice
-        ? parseInt(landPrice.replace(/,/g, "")) - value
-        : 0;
-      form.setFieldsValue({
-        mortgageBalance: inputValue,
-        averageStatus: setAverage > 1 ? 1 : 0,
-      });
-    }
   };
 
   const onChangeMortgageStatus = ({ target: { value } }) => {
@@ -431,11 +446,6 @@ const EditAssetsDetail = ({
     form.setFieldsValue({
       assetDistrict: null,
     });
-  };
-
-  const onChangeSelectDistrictAsset = (value) => {
-    console.log(`selected District ${value}`);
-    setResultData({ ...resultData, amcode: value });
   };
 
   const onChangeSelectInvestigatorAsset = (value) => {
@@ -487,9 +497,9 @@ const EditAssetsDetail = ({
 
     postDataInvestigate = {
       CUSTOMER_ID: values.customerAsset,
-      investigation_date: dayjs(values.investigateAssetsDate).format(
-        "YYYY-MM-DD"
-      ),
+      investigation_date: values.investigateAssetsDateManual
+        ? values.investigateAssetsDateManual
+        : dayjs(values.investigateAssetsDatePicker).format("YYYY-MM-DD"),
       owner: values?.ownerAsset ? values?.ownerAsset : null,
       possessor: values.possessorAsset,
       estimated_price:
@@ -503,10 +513,10 @@ const EditAssetsDetail = ({
       property_type_id: values.assetPropotyType,
       investigator_user_id: values.investigatorAsset,
       deed_number: values.deed,
-      sub_district: null,
+      sub_district: values.assetSubDistrict,
       district: values.assetDistrict,
       province: values.assetProvince,
-      zipcode: null,
+      zipcode: values.zipcode,
       mortgagee: values?.mortgagee ? values?.mortgagee : null,
       sequestrate_status:
         values?.sequestrateStatus === 1
@@ -534,10 +544,11 @@ const EditAssetsDetail = ({
       lawyer_seize_id: null,
       seize_status: null,
       seize_status_mark: null,
-      seize_date: values.judgmentCreditorDate
-        ? dayjs(values.judgmentCreditorDate).format("YYYY-MM-DD")
+      seize_date: values.sequestrateStatus
+        ? values.judgmentCreditorDateManual
+          ? values.judgmentCreditorDateManual
+          : dayjs(values.judgmentCreditorDatePicker).format("YYYY-MM-DD")
         : null,
-
       sale_announcement_mark: null,
       investigation_fees: null,
       investigation_fees_payment_status: null,
@@ -552,14 +563,25 @@ const EditAssetsDetail = ({
       wa: valueWa ? parseInt(valueWa) : null,
       subwa: valueSubWa ? parseInt(valueSubWa) : null,
       utm: values.utm ? values.utm : null,
-      lat: values.latlon ? parseFloat(valueLat) : null,
-      lon: values.latlon ? parseFloat(valueLon) : null,
+      latitude: values.latlon ? parseFloat(valueLat) : null,
+      longitude: values.latlon ? parseFloat(valueLon) : null,
       fileList: fileList,
       capturedImages: capturedImages,
       estimated_enforce_price: values?.estimatedEnforcePrice
         ? values?.estimatedEnforcePrice
         : null,
       legal_execution_office: values?.AddrEnforce ? values?.AddrEnforce : null,
+      mortgage_type: values.mortgageStatus === 0 ? null : values.mortgageStatus,
+      mortgage_start_date: values.mortgageStatus
+        ? values.contractDateManual
+          ? values.contractDateManual
+          : dayjs(values.contractDatePicker).format("YYYY-MM-DD")
+        : null,
+      mortgage_end_date: values.mortgageStatus
+        ? values.dueDateManual
+          ? values.dueDateManual
+          : dayjs(values.dueDatePicker).format("YYYY-MM-DD")
+        : null,
     };
 
     console.log("postDataInvestigate---->", postDataInvestigate);
@@ -655,12 +677,10 @@ const EditAssetsDetail = ({
         onFinishFailed={onFinishFailed}
         initialValues={{
           memo: null,
-          investigateAssetsDate: dayjs(),
         }}
       >
         <Form.Item
           label="วันที่สืบทรัพย์"
-          name="investigateAssetsDate"
           rules={[
             {
               required: true,
@@ -668,7 +688,28 @@ const EditAssetsDetail = ({
             },
           ]}
         >
-          <DatePicker onChange={onChangeInputInvestigateDate} />
+          <Radio.Group
+            value={inputType}
+            onChange={(e) => setInputType(e.target.value)}
+            style={{ marginBottom: 8 }}
+          >
+            <Radio value="picker">เลือกจากปฏิทิน</Radio>
+            <Radio value="manual">กรอกเอง</Radio>
+          </Radio.Group>
+
+          {inputType === "picker" ? (
+            <Form.Item name="investigateAssetsDatePicker" noStyle>
+              <DatePicker
+                format="DD/MM/YYYY"
+                style={{ width: "100%" }}
+                placeholder="เลือกวันที่"
+              />
+            </Form.Item>
+          ) : (
+            <Form.Item name="investigateAssetsDateManual" noStyle>
+              <DateInput />
+            </Form.Item>
+          )}
         </Form.Item>
         <Form.Item
           label="ห้วงเวลาการฟ้อง"
@@ -843,7 +884,30 @@ const EditAssetsDetail = ({
             style={{ width: "100%" }}
           />
         </Form.Item>
-
+        <Form.Item
+          label="ตำบล"
+          name="assetSubDistrict"
+          rules={[
+            {
+              required: true,
+              message: "กรุณาระบุตำบล !",
+            },
+          ]}
+        >
+          <Select
+            showSearch
+            placeholder="เลือกตำบล"
+            optionFilterProp="label"
+            onChange={(value, data) =>
+              onChangeSelectSubDistrictAsset(value, data)
+            }
+            options={dataSubDistrictList}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+        <Form.Item label="รหัสไปษณีย์" name="zipcode">
+          {subDistrict?.code || dataIndex.zipcode}
+        </Form.Item>
         <Form.Item label="ไร่" name="rai">
           <Input
             min={0}
@@ -885,7 +949,12 @@ const EditAssetsDetail = ({
             />
           </Form.Item>
         </Tooltip>
-
+        <Form.Item label="เลขระหว่าง" name="utm">
+          <Input placeholder="กรุณากรอกเลขระหว่าง" style={{ width: "100%" }} />
+        </Form.Item>
+        <Form.Item label="ตำแหน่ง" name="latlon">
+          <Input placeholder="ตัวอย่าง : 8.17240819, 99.03230145" />
+        </Form.Item>
         <Form.Item label="ราคาประเมิน" name="estimatedPrice">
           <Input
             name="estimatedPrice"
@@ -895,11 +964,11 @@ const EditAssetsDetail = ({
           />
         </Form.Item>
 
-        <Form.Item label="ผู้ถือกรรมสิทธิ์" name="ownerAsset">
+        {/* <Form.Item label="ผู้ถือกรรมสิทธิ์" name="ownerAsset">
           <Input onChange={(e) => onChangeInputOwnerAssetLaw(e.target.value)} />
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item
-          label="ติดภาระจำนอง"
+          label="ติดภาระจำนอง/ขายฝาก"
           name="mortgageStatus"
           rules={[
             {
@@ -909,7 +978,7 @@ const EditAssetsDetail = ({
           ]}
         >
           <Radio.Group
-            label="ติดภาระจำนอง"
+            label="ติดภาระจำนอง/ขายฝาก"
             name="mortgageStatus"
             options={optionsMortgageStatus}
             onChange={onChangeMortgageStatus}
@@ -920,7 +989,7 @@ const EditAssetsDetail = ({
         {mortgageStatus ? (
           <>
             <Form.Item
-              label="เจ้าหนี้จำนอง"
+              label="เจ้าหนี้จำนอง/ขายฝาก"
               name="mortgagee"
               rules={[
                 {
@@ -929,11 +998,11 @@ const EditAssetsDetail = ({
                 },
               ]}
             >
-              <Input onChange={(e) => onChangeInputOwner(e.target.value)} />
+              <Input name="mortgagee" />
             </Form.Item>
 
             <Form.Item
-              label="ยอดหนี้จำนอง"
+              label="ยอดหนี้จำนอง/ขายฝาก"
               name="mortgageBalance"
               rules={[
                 {
@@ -942,10 +1011,65 @@ const EditAssetsDetail = ({
                 },
               ]}
             >
-              <Input
+              <InputNumber
                 name="estimatedPrice"
-                onChange={(e) => onChangeMortgageBalance(e.target.value)}
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="จำนวนเงินที่จำเลยต้องชำระ"
+                style={{ width: "100%", color: "black" }}
               />
+            </Form.Item>
+            <Form.Item label="วันที่ทำสัญญา">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="contractDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="contractDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
+            </Form.Item>
+            <Form.Item label="กำหนดไถ่ถอน">
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="dueDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="dueDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
             </Form.Item>
           </>
         ) : null}
@@ -999,7 +1123,6 @@ const EditAssetsDetail = ({
             </Form.Item>
             <Form.Item
               label="วันที่โดนอายัด"
-              name="judgmentCreditorDate"
               rules={[
                 {
                   required: true,
@@ -1007,7 +1130,28 @@ const EditAssetsDetail = ({
                 },
               ]}
             >
-              <DatePicker name="judgmentCreditorDate" />
+              <Radio.Group
+                value={inputType}
+                onChange={(e) => setInputType(e.target.value)}
+                style={{ marginBottom: 8 }}
+              >
+                <Radio value="picker">เลือกจากปฏิทิน</Radio>
+                <Radio value="manual">กรอกเอง</Radio>
+              </Radio.Group>
+
+              {inputType === "picker" ? (
+                <Form.Item name="judgmentCreditorDatePicker" noStyle>
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    style={{ width: "100%" }}
+                    placeholder="เลือกวันที่"
+                  />
+                </Form.Item>
+              ) : (
+                <Form.Item name="judgmentCreditorDateManual" noStyle>
+                  <DateInput />
+                </Form.Item>
+              )}
             </Form.Item>
             <Tooltip
               placement="bottom"

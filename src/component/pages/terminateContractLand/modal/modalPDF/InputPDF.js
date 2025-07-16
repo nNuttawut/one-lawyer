@@ -31,14 +31,19 @@ const InputPDF = ({ dataCus, arrData, dateQuery }) => {
     if (userCompany === "3") {
       console.log("if");
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       console.log("else");
 
       companySelect = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     }
 

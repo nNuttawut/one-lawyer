@@ -148,11 +148,24 @@ const Main = () => {
   }, [arrow]);
 
   const setOptionCompany = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
+    let options;
+    if (userCompany === "3") {
+      options = companiesListCompany
+        .filter((item) => item.id === 3)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    } else {
+      options = companiesListCompany
+        .filter((item) => item.id === 1 || item.id === 2)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    }
     setCompaniesOption(options);
     loadSelectCompany(options);
   };
@@ -160,14 +173,19 @@ const Main = () => {
   const setOptionLawyer = () => {
     let companySelect = null;
 
-    if (dataArr.COMPANY_ID === 3) {
+    if (userCompany === "3") {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          (item.ROLE_ID === 3 || item.ROLE_ID === 4 || item.ROLE_ID === 2) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelect = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          (item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const options = companySelect.map((item) => ({
@@ -1476,7 +1494,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record).startOf("day");
+    const recordDate = dayjs(record);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี

@@ -32,6 +32,7 @@ import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
 import {
   ENFORCEMENT,
+  STATUS_PROCESS_PROCESS,
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 
@@ -158,9 +159,9 @@ const CreateAdvanePayment = ({
     } finally {
       setLoading(false);
       handleCancel();
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
   };
 
@@ -256,7 +257,7 @@ const CreateAdvanePayment = ({
 
         setPutInvestigateSeize.push({
           ...item,
-          seize_status: STATUS_PROCESS_SUCCESSFUL,
+          seize_status: STATUS_PROCESS_PROCESS,
         });
       });
     } catch (error) {
@@ -266,6 +267,7 @@ const CreateAdvanePayment = ({
 
     console.log("setPutInvestigate", setPutInvestigateSeize);
     console.log("setDataExpense---->", setPreExpenseSend);
+
     sendData(setPutInvestigateSeize, setPreExpenseSend, dataReference);
   };
 
@@ -307,11 +309,6 @@ const CreateAdvanePayment = ({
       "ไม่พบประเภทสัญญา"
     );
   };
-
-  console.log("dataExpense", dataExpense);
-
-  console.log("prop--->", dataPropertyList);
-  console.log("company,", company);
 
   const formDataSet = () => {
     return (

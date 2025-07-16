@@ -9,6 +9,7 @@ import {
   message,
   Spin,
   List,
+  Popconfirm,
 } from "antd";
 import {
   baseUrl,
@@ -34,6 +35,7 @@ import {
   STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
 import { INDICT } from "../../../../utils/constant/StatusConstant";
+import { color } from "framer-motion";
 
 const CreateAdvanePayment = ({
   open,
@@ -58,6 +60,7 @@ const CreateAdvanePayment = ({
   const [arrow, setArrow] = useState("Show");
   const [dataPropertyList, setDataPropertyList] = useState([]);
   const [editPayment, setEditPayment] = useState();
+  const [totalAll, setTotalAll] = useState(0);
 
   useEffect(() => {
     setIsModal(open);
@@ -66,6 +69,20 @@ const CreateAdvanePayment = ({
       console.log("loadData---->", dataDefault);
     }
   }, [isModal]);
+
+  useEffect(() => {
+    const total = dataPropertyList.reduce((sum, item) => {
+      return (
+        sum +
+        (Number(item?.fee || 0) +
+          Number(item?.stamp_cost || 0) +
+          Number(item?.document_cost || 0) +
+          Number(item?.delivery_of_summons || 0))
+      );
+    }, 0);
+
+    setTotalAll(total);
+  }, [dataPropertyList]);
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -263,6 +280,10 @@ const CreateAdvanePayment = ({
       }
     });
 
+    // const totalWithdraw = setPreExpense.reduce((sum, item) => {
+    //   return sum + Number(item.withdraw || 0);
+    // }, 0);
+
     console.log("putLawsuit---->", setPutLawsuit);
     console.log("setDataExpense---->", setPreExpense);
     console.log("dataReference", dataReference);
@@ -298,6 +319,14 @@ const CreateAdvanePayment = ({
 
       setDataPropertyList(result);
     }
+  };
+
+  const confirm = () => {
+    form.submit(); // ส่งฟอร์มเมื่อกด "ยืนยัน"
+  };
+
+  const cancel = () => {
+    message.success("ยกเลิกทำรายการ");
   };
 
   const formDataSet = () => {
@@ -378,7 +407,7 @@ const CreateAdvanePayment = ({
                           {currencyFormatPoint(item?.stamp_cost)} บาท
                         </p>
                         <p>
-                          ค่าส่งจดหมาย{" "}
+                          ค่าส่งหมาย{" "}
                           {currencyFormatPoint(item?.delivery_of_summons)} บาท
                         </p>
                         <p>
@@ -399,20 +428,16 @@ const CreateAdvanePayment = ({
                       </>
                     }
                   />
-                  <div>
-                    {" "}
-                    {item?.investigation_type_id === 1
-                      ? "ก่อนฟ้อง"
-                      : item?.investigation_type_id === 2
-                      ? "หลังฟ้อง"
-                      : null}
-                  </div>
                 </List.Item>
               )}
             />
           </Form.Item>
         </>
-
+        <Form.Item label="ยอดเบิกทั้งสิ้น" name="totalAll">
+          <p style={{ color: totalAll > 50000 ? "red" : "green" }}>
+            {currencyFormatPoint(totalAll)} {" บาท"}
+          </p>
+        </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}
@@ -426,10 +451,23 @@ const CreateAdvanePayment = ({
           >
             ปิด
           </Button>
-
-          <Button style={{ color: "green" }} htmlType="submit">
-            บันทึก
-          </Button>
+          <Popconfirm
+            placement="topLeft"
+            title="บันทึกการเบิกทดรองคำฟ้อง"
+            description={
+              totalAll > 50000
+                ? `มียอดเบิกเกินกำหนด จำนวน ${currencyFormatPoint(
+                    totalAll - 50000
+                  )} บาท ท่านต้องการจะยืนยันการทำรายการหรือไม่ ?`
+                : `ยอดเบิกทั้งสิ้น ${currencyFormatPoint(totalAll)} ยืนยัน ?`
+            }
+            onConfirm={confirm}
+            onCancel={() => cancel()}
+            okText="ยืนยัน"
+            cancelText="ปิด"
+          >
+            <Button style={{ color: "green" }}>บันทึก</Button>
+          </Popconfirm>
         </div>
       </Form>
     );

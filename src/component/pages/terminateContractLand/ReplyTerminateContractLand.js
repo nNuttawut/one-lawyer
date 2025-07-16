@@ -200,7 +200,7 @@ const Main = () => {
       }
 
       const sortEms = filteredData.sort((a, b) => {
-        const dateComparison = dayjs(b.datetime) - dayjs(a.datetime);
+        const dateComparison = dayjs(b.created_date) - dayjs(a.created_date);
         //เรียงจาก วันที่ก่อน
         if (dateComparison !== 0) return dateComparison;
         //ถ้าวันที่เท่ากันให้เรียงจาก parcel
@@ -286,7 +286,7 @@ const Main = () => {
     if (startDate) {
       const selectSearch = selectData.filter(
         (item) =>
-          item.datetime.includes(dayjs(startDate).format("YYYY-MM-DD")) &&
+          item.created_date.includes(dayjs(startDate).format("YYYY-MM-DD")) &&
           selectCallback
       );
       console.log(dayjs(startDate).format("YYYY-MM-DD"));
@@ -511,7 +511,7 @@ const Main = () => {
           renderOption(data.contract_schema),
           renderOption(data.pay_type),
           data.account_type,
-          convertDateThaiShort(data.datetime), // วันที่ส่ง
+          convertDateThaiShort(data.created_date), // วันที่ส่ง
           data.contract_no,
           data.customer_fullname,
           data.customer_type_id === 0
@@ -870,9 +870,20 @@ const Main = () => {
 
     let dataExport = [];
     if (selectedRows.length > 0) {
-      dataExport = selectedRows;
+      const sortEms = selectedRows.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+
+      dataExport = sortEms;
     } else {
-      dataExport = arrayTable;
+      const sortEms = arrayTable.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+      dataExport = sortEms;
     }
 
     let rowIndex = 12; // เริ่มที่แถวที่ 12
@@ -1044,7 +1055,7 @@ const Main = () => {
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      saveAs(blob, `นำส่งไปษณีย์(มือ) ${dayjs().format("DD-MM-YYYY")}.xlsx`);
+      saveAs(blob, `นำส่งไปษณีย์(ที่ดิน) ${dayjs().format("DD-MM-YYYY")}.xlsx`);
     });
   };
 
@@ -1135,7 +1146,7 @@ const Main = () => {
       render: (text, record) => (
         <>
           {record.contract_no ? record.contract_no : null} <br />
-          {renderType(record.contract_schema)}
+          {/* {renderType(record.contract_schema)} */}
         </>
       ),
     },

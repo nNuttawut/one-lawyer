@@ -86,6 +86,7 @@ const Main = () => {
         // ดึงข้อมูลเฉพาะคอลัมน์ตาม header ที่ต้องการ
         const filteredData = sheetData.map((row) => ({
           contract_schema: row["สัญญา"] || "", // เลขที่สัญญา
+          pay_type: row["ประเภทจ่าย"] || "", // เลขที่สัญญา
           datetime: row["วันออกจดหมาย"] || "",
           contract_no: row["เลขที่สัญญา"] || "", // เลขที่สัญญา
           account_type: row["ประเภทบัญชี"] || "", // เลขที่สัญญา

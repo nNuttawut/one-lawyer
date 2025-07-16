@@ -144,7 +144,7 @@ const Main = () => {
       }
 
       let dataUse;
-      if (userCompany === 3) {
+      if (userCompany === "3") {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {

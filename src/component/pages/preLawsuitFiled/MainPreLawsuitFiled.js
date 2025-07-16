@@ -86,6 +86,9 @@ const Main = () => {
   const loadData = async (data) => {
     setLoading(true);
     console.log(data);
+
+    //  baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + INDICT,
+    // "http://localhost:8080/lawyer/dev/api/jobs/" + INDICT,
     try {
       const response = await axios.get(
         baseUrl + GET_JOB_IN_PROGRESS_BY_STATUS + INDICT,
@@ -143,19 +146,22 @@ const Main = () => {
         });
       }
 
-      setSearchEdit(filteredData);
-
       const newData = filteredData.filter(
+        (item) =>
+          item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2"
+      );
+
+      const newDataShow = filteredData.filter(
         (item) =>
           (item.LAWYER_ID === userId || ROLE_ID === "1" || ROLE_ID === "2") &&
           item.MAIN_STATUS_ID === item.STATUS_ID
       );
-
-      setArrayTable(newData);
-      setDataArr(newData);
-      setTableLength(newData.length);
-      console.log("newData", newData);
-      console.log("Length of filtered data:", newData.length);
+      setSearchEdit(newData);
+      setArrayTable(newDataShow);
+      setDataArr(newDataShow);
+      setTableLength(newDataShow.length);
+      console.log("newData", newDataShow);
+      console.log("Length of filtered data:", newDataShow.length);
     } else {
       console.error("data is not an array or is undefined");
       setTableLength(0);
@@ -173,13 +179,15 @@ const Main = () => {
         ((item.CONTNO && item.CONTNO.includes(value)) ||
           (item.CUSTOMER_FNAME && item.CUSTOMER_FNAME.includes(value)) ||
           (item.CUSTOMER_LNAME && item.CUSTOMER_LNAME.includes(value))) &&
-        item.LAWYER_ID === userId
+        (item.LAWYER_ID === userId || ROLE_ID === "1")
     );
 
     if (value) {
       setArrayTable(result);
+      setTableLength(result.length);
     } else {
       setArrayTable(dataArr);
+      setTableLength(dataArr.length);
     }
   };
 
@@ -260,28 +268,21 @@ const Main = () => {
     // คำนวณส่วนที่เหลือหลังจากคำนวณปีและเดือนแล้ว (คำนวณวันที่เหลือ)
     const remainingDays = today.diff(recordDate, "day");
 
-    if (record.LOAN_TYPE_ID === 1) {
-      color =
-        remainingDays > 30 && record.PROCESS_ID === 1
-          ? "green"
-          : record.PROCESS_ID === 3
-          ? "blue"
-          : "red";
-    } else {
-      color =
-        remainingDays > 60 && record.PROCESS_ID === 1
-          ? "green"
-          : record.PROCESS_ID === 3
-          ? "blue"
-          : "red";
-    }
+    color =
+      record.MAIN_STATUS_ID !== record.STATUS_ID && record.PROCESS_ID === 3
+        ? "green"
+        : record.MAIN_STATUS_ID === record.STATUS_ID && record.PROCESS_ID === 3
+        ? "blue"
+        : "red";
 
     const formattedDate = record.DATE ? convertDateThai(recordDate) : null;
     return (
       <Tag color={color} key={daysDifference} style={{ textAlign: "center" }}>
         {formattedDate}
         <br />
-        {
+        {(record.MAIN_STATUS_ID === record.STATUS_ID &&
+          record.PROCESS_ID === 3) ||
+        record.PROCESS_ID === 1 ? (
           <span>
             {record.LOAN_TYPE_ID === 1 && remainingDays > 30
               ? "เกิน"
@@ -290,7 +291,7 @@ const Main = () => {
               : null}{" "}
             {remainingDays} วัน
           </span>
-        }
+        ) : null}
       </Tag>
     );
   };
@@ -402,8 +403,7 @@ const Main = () => {
                 expandable={{
                   expandedRowRender: (record) => (
                     <p style={{ margin: 0 }}>
-                      {record.PROCESS_ID !== 3 &&
-                      record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                      {record.PROCESS_ID === 1 ? (
                         <Button
                           name="create"
                           style={{
@@ -419,8 +419,7 @@ const Main = () => {
                             style={{ color: "blue", fontSize: "16px" }}
                           />
                         </Button>
-                      ) : record.PROCESS_ID === 3 &&
-                        record.MAIN_STATUS_ID === record.STATUS_ID ? (
+                      ) : record.PROCESS_ID === 3 ? (
                         <>
                           {/* <Button
                             name="formPrint"
@@ -451,21 +450,10 @@ const Main = () => {
                               style={{ color: "orange", fontSize: "16px" }}
                             />
                           </Button>
-                          <Button
-                            name="updateStatus"
-                            style={{ boxShadow: "0 4px 3px" }}
-                            onClick={() => {
-                              setIsModalUpdate(true);
-                              setDataModal(record);
-                            }}
-                          >
-                            <SyncOutlined
-                              style={{ color: "green", fontSize: "16px" }}
-                            />
-                          </Button>
                         </>
                       ) : null}
-                      {record.MAIN_STATUS_ID !== record.STATUS_ID ? (
+                      {record.MAIN_STATUS_ID !== record.STATUS_ID &&
+                      record.PROCESS_ID === 3 ? (
                         <Button
                           name="EditupdateStatus"
                           style={{ boxShadow: "0 4px 3px" }}
@@ -476,6 +464,20 @@ const Main = () => {
                         >
                           <SyncOutlined
                             style={{ color: "orange", fontSize: "16px" }}
+                          />
+                        </Button>
+                      ) : record.MAIN_STATUS_ID === record.STATUS_ID &&
+                        record.PROCESS_ID === 3 ? (
+                        <Button
+                          name="updateStatus"
+                          style={{ boxShadow: "0 4px 3px" }}
+                          onClick={() => {
+                            setIsModalUpdate(true);
+                            setDataModal(record);
+                          }}
+                        >
+                          <SyncOutlined
+                            style={{ color: "green", fontSize: "16px" }}
                           />
                         </Button>
                       ) : null}

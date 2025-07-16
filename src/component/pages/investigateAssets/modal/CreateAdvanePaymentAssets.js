@@ -1,22 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  Card,
-  message,
-  Spin,
-  List,
-} from "antd";
+import { Button, Form, Input, Modal, Card, message, Spin, List } from "antd";
 import {
   baseUrl,
   HEADERS_EXPORT,
   POST_EXPENSES,
   POST_EXPENSES_REFERENCE,
-  PUT_JUDGE,
-  PUT_LAWSUIT_DETAIL,
 } from "../../../API/apiUrls";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -25,13 +13,8 @@ import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 // import EditAdvancePaymentDetail from "./EditAdvancePaymentDetail";
 import {
-  DELIVERY_OF_SUMMONS,
-  DOCUMENT_COST,
-  FEE_COURT,
   PAYADVANCE_STATUS_PROCESS,
-  STAMP_COST,
   STATUS_WITHDRAW_PROCESS,
-  STATUS_WITHDRAW_SUCCESSFUL,
 } from "../../../../utils/constant/ExpenseType";
 import { optionsLone } from "../../../../utils/constant/LoanTypeConstant";
 import ExpenseList from "./ExpenseList";
@@ -170,6 +153,8 @@ const CreateAdvanePayment = ({
       },
     });
   };
+  console.log("prop--->", dataPropertyList);
+  console.log("company,", company);
 
   const onFinish = (values) => {
     console.log("values", values);
@@ -268,9 +253,6 @@ const CreateAdvanePayment = ({
     );
   };
 
-  console.log("prop--->", dataPropertyList);
-  console.log("company,", company);
-
   const formDataSet = () => {
     return (
       <Form
@@ -334,13 +316,14 @@ const CreateAdvanePayment = ({
                   title={
                     <>
                       <p>
-                        {item.CONTNO} {item.possessor}
+                        {item.CONTNO} {item.CUSTOMER_TNAME}
+                        {item.CUSTOMER_FNAME} {item.CUSTOMER_LNAME}
                         {item.mark}
                       </p>
-                      <p style={{ color: "orange" }}>
+                      {/* <p style={{ color: "orange" }}>
                         เลขโฉนด {item.deed_number} {item.dist_desc} จังหวัด
                         {item.prov_desc}
-                      </p>
+                      </p> */}
                     </>
                   }
                   description={

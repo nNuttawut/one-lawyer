@@ -25,11 +25,13 @@ const Main = () => {
   const [roleList, setLoadingDataRole] = RoleSelect();
   const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
   const userId = parseInt(localStorage.getItem("USER_ID"));
+  const userCompany = localStorage.getItem("COMPANY_ID");
   const [userData, setUserData] = useState(null);
   // ดึงค่าจาก localStorage
   const [loading, setLoading] = useState();
   const [roleOption, setRoleOption] = useState(null);
   const [companiesOption, setCompaniesOption] = useState(null);
+  const [companie, setCompanie] = useState(null);
   const [dataComfirm, setDataComfirm] = useState({});
 
   useEffect(() => {
@@ -78,12 +80,21 @@ const Main = () => {
   };
 
   const setOptionCompanies = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
+    const options = companiesListCompany
+      .filter((item) => item.id === 1 || item.id === 2 || item.id === 3)
+      .map((item) => ({
+        value: item.id,
+        label: item.company_name,
+        address: item.address,
+      }));
     setCompaniesOption(options);
+    let companieDefualt = options?.find(
+      (item) => item.value === parseInt(userCompany)
+    );
+    form.setFieldsValue({
+      COMPANY_SHOW: companieDefualt?.label,
+    });
+    setCompanie(companieDefualt);
   };
 
   const setDataDefualt = (data) => {
@@ -93,11 +104,11 @@ const Main = () => {
         FNAME: data?.FNAME ? data?.FNAME : "-",
         LNAME: data?.LNAME ? data?.LNAME : "-",
         NNAME: data?.NNAME ? data?.NNAME : "-",
-        LICENCE_NO: data?.LICENCE_NO_LAWYERS ? data?.LICENCE_NO_LAWYERS : "-",
-        COMPANY_ID: data?.COMPANY_ID ? data?.COMPANY_ID : "-",
+        LICENCE_NO: data?.LICENCE_NO ? data?.LICENCE_NO : "-",
+        COMPANY_SHOW: data?.COMPANY_ID,
         ROLE_ID: data?.ROLE_ID ? data?.ROLE_ID : "-",
         ACTIVE_STATUS: data?.ACTIVE_STATUS,
-        bookBank: data?.book_bank ? data?.book_bank : "-",
+        bookBank: data?.book_bank,
       });
     }
   };
@@ -112,6 +123,7 @@ const Main = () => {
 
   const onFinish = (values) => {
     console.log("Success:", values);
+    console.log("userData:", userData);
     setDataComfirm({
       ...userData,
       USERNAME: values?.USERNAME,
@@ -119,11 +131,11 @@ const Main = () => {
       FNAME: values.FNAME,
       LNAME: values.LNAME,
       NNAME: values.NNAME,
-      LICENCE_NO: values.LICENCE_NO ? values.LICENCE_NO : null,
-      COMPANY_ID: values.COMPANY_ID,
+      LICENCE_NO: values.LICENCE_NO ? values.LICENCE_NO : userData.LICENCE_NO,
+      COMPANY_ID: values.COMPANY_ID ? values.COMPANY_ID : companie.value,
       ROLE_ID: values.ROLE_ID,
       ACTIVE_STATUS: values.ACTIVE_STATUS,
-      book_bank: values.bookBank,
+      book_bank: values.book_Bank ? values.book_Bank : userData.book_bank,
     });
   };
 
@@ -143,15 +155,12 @@ const Main = () => {
             localStorage.setItem("COMPANY_ID", dataComfirm?.COMPANY_ID);
             localStorage.setItem("ACTIVE_STATUS", dataComfirm?.ACTIVE_STATUS);
             localStorage.setItem("ACTIVE_STATUS", dataComfirm?.line_uid);
-            setLoading(false);
           } else if (res.status === 201) {
             message.error("ลงทะเบียนใหม่");
             console.log("ลงทะเบียนใหม่");
-            setLoading(false);
           } else {
             message.error("ไม่สามารถส่งข้อมูลได้");
             console.log("ไม่สามารถส่งข้อมูลได้");
-            setLoading(false);
           }
         })
         .catch((err) => {
@@ -161,7 +170,6 @@ const Main = () => {
       console.error("Error fetching data:", error);
       message.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล");
     } finally {
-      setLoading(false);
       setTimeout(() => {
         window.location.reload();
       }, 1000);
@@ -236,15 +244,18 @@ const Main = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="บัญชีธนาคาร" name="bookBank">
+          {/* <Form.Item label="บัญชีธนาคาร" name="bookBank">
             <Input />
           </Form.Item>
           {userData.ROLE_ID === 3 ? (
             <Form.Item label="ใบอนุญาติทนาย" name="LICENCE_NO">
               <Input />
             </Form.Item>
-          ) : null}
-          <Form.Item label="บริษัทที่สังกัด" name="COMPANY_ID">
+          ) : null} */}
+          <Form.Item label="บริษัทที่สังกัดปัจจุบัน">
+            {companie?.label}
+          </Form.Item>
+          <Form.Item label="เปลี่ยนบริษัทที่สังกัด" name="COMPANY_ID">
             <Select
               showSearch
               style={{

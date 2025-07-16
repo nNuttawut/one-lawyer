@@ -2,7 +2,6 @@ import dayjs from "dayjs";
 import "dayjs/locale/th"; // import ภาษาไทย
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
-
 dayjs.locale("th"); // ตั้งค่าภาษาเป็นไทย
 
 const DateCustom = () => {

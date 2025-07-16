@@ -67,10 +67,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
     dataDefault?.LOAN_TYPE_ID ? dataDefault?.LOAN_TYPE_ID : 2
   );
 
-  console.log("dataDefault------>", dataDefault);
-  console.log("dataLoadLawSuit---->", dataLoadLawSuit);
-  console.log("dataLoadLoan----->", dataLoadLoan);
-
   useEffect(() => {
     setIsModal(open);
     if (isModal) {
@@ -99,6 +95,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       subject:
         loanType === 2 || loanType === 5
           ? "บอกกล่าวบังคับจำนอง"
+          : loanType === 7
+          ? "ยักยอกทรัพย์"
+          : loanType === 8
+          ? "ฉ้อโกง"
           : loanType === 6
           ? "ผิดสัญญาเช่าซื้อ, สัญญาค้ำประกัน, เรียกค่าเสียหาย (ฟ้องส่วนต่าง)"
           : "ผิดสัญญาเช่าซื้อ, สัญญาค้ำประกัน, เรียกค่าเสียหาย",
@@ -216,13 +216,12 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       } else {
         calFeeCourt = values.intigationFounds * 0.02;
       }
+      let guarantorFee = dataLoadLoan?.GUARANTORS?.length * 10;
 
-      console.log();
-
-      if (loanType === 1) {
-        calStampDuty = values.intigationFounds / 1000;
+      if (loanType === 1 || loanType === 8) {
+        calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000 + guarantorFee;
       } else {
-        calStampDuty = values.intigationFounds / 2000;
+        calStampDuty = dataLoadLoan?.LOAN?.NCSHPRC / 2000 + guarantorFee;
       }
 
       if (calStampDuty > 10000) {
@@ -233,12 +232,11 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
       if (dataForm.dateCourt) {
         form.setFieldsValue({
-          feeCourt: Math.round(calFeeCourt),
-          stampDuty:
-            (loanType !== 2 && loanType !== 5) ||
-            (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
-              ? Math.ceil(calStampDuty)
-              : 0,
+          feeCourt:
+            loanType === 1 || loanType === 8
+              ? Math.round(calFeeCourt) + 100
+              : Math.round(calFeeCourt),
+          stampDuty: Math.ceil(calStampDuty) || 0,
         });
       }
 
@@ -326,7 +324,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
         USER_ID: dataDefault.LAWYER_ID,
         LOAN_ID: dataDefault.id,
         MEMO: values.memo,
-        DATE: dataForm.dateCourt,
+        DATE: dataDefault.DATE,
         PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
         LOAN_TYPE_ID: values.loanType,
       };
@@ -507,7 +505,7 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       }
       let calStampDuty;
 
-      if (loanType === 1) {
+      if (loanType === 1 || loanType === 8) {
         // calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000;
         calStampDuty = result / 1000;
       } else {
@@ -528,12 +526,14 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("calStampDuty----->", calStampDuty);
 
       form.setFieldsValue({
-        intigationFounds: result,
+        intigationFounds: 0,
         // lossBenefit: lossBenefitValue,  เปลี่ยนไปใช้ แบบ 0 ก่อน
         lossBenefit: 0,
-        feeCourt: Math.round(calFeeCourt),
-        stampDuty:
-          loanType !== 2 || loanType !== 5 ? Math.ceil(calStampDuty) : 0,
+        stampDuty: 0,
+        feeCourt: 0,
+        // feeCourt: Math.round(calFeeCourt),
+        // stampDuty:
+        //   loanType !== 2 || loanType !== 5 ? Math.ceil(calStampDuty) : 0,
       });
 
       setDataForm((prev) => ({
@@ -760,7 +760,54 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
               </p>
             </Form.Item>
             {loanType === 1 || loanType === 4 || loanType === 6 ? (
-              <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+              <>
+                <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+                  <InputNumber
+                    suffix="บาท"
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    size="large"
+                    placeholder="กรุณาใส่ค่าขาดประโยชน์"
+                    style={{ width: "100%", color: "black" }}
+                    onChange={(value) => onChangeInpuutLossBenefit(value)}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="จำนวนทุนทรัพย์"
+                  name="intigationFounds"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    suffix="บาท"
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    size="large"
+                    placeholder="กรุณาใส่จำนวนทุนทรัพย์"
+                    style={{ width: "100%", color: "black" }}
+                    onChange={(value) => onChangeInputLitigationFunds(value)}
+                  />
+                </Form.Item>
+              </>
+            ) : (
+              <Form.Item
+                label="จำนวนทุนทรัพย์"
+                name="intigationFounds"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                  },
+                ]}
+              >
                 <InputNumber
                   suffix="บาท"
                   formatter={(value) =>
@@ -768,42 +815,21 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   }
                   parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
                   size="large"
-                  placeholder="กรุณาใส่ค่าขาดประโยชน์"
+                  placeholder="กรุณาใส่จำนวนทุนทรัพย์"
                   style={{ width: "100%", color: "black" }}
-                  onChange={(value) => onChangeInpuutLossBenefit(value)}
+                  onChange={(value) => onChangeInputLitigationFunds(value)}
                 />
               </Form.Item>
-            ) : null}
-            {/* <Form.Item label="คำนวณทุนทรัพย์โดยประมาณ">
+            )}
+
+            <Form.Item label="คำนวณค่าธรรมเนียม">
               <Button
                 style={{ color: "blue" }}
                 htmlType="submit"
-                onClick={() => setButtonCalFounds(true)}
+                onClick={() => setButtonCal(true)}
               >
                 คำนวณ
               </Button>
-            </Form.Item> */}
-            <Form.Item
-              label="จำนวนทุนทรัพย์"
-              name="intigationFounds"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาใส่จำนวนทุนทรัพย์ !",
-                },
-              ]}
-            >
-              <InputNumber
-                suffix="บาท"
-                formatter={(value) =>
-                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-                size="large"
-                placeholder="กรุณาใส่จำนวนทุนทรัพย์"
-                style={{ width: "100%", color: "black" }}
-                onChange={(value) => onChangeInputLitigationFunds(value)}
-              />
             </Form.Item>
             <Form.Item
               label="ค่าธรรมเนียมศาล"
@@ -830,9 +856,10 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
             {loanType === 1 ||
             loanType === 3 ||
             loanType === 4 ||
-            loanType === 6 ? (
+            loanType === 6 ||
+            loanType === 8 ? (
               <Form.Item
-                label="ค่าอากรสแตมป์"
+                label="ค่าอากรสแตมป์(รวมคนค้ำแล้ว)"
                 name="stampDuty"
                 rules={[
                   {
@@ -897,15 +924,6 @@ const CreateDocument = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 style={{ width: "100%", color: "black" }}
                 onChange={(value) => documentCost(value)}
               />
-            </Form.Item>
-            <Form.Item label="คำนวณค่าธรรมเนียม">
-              <Button
-                style={{ color: "blue" }}
-                htmlType="submit"
-                onClick={() => setButtonCal(true)}
-              >
-                คำนวณ
-              </Button>
             </Form.Item>
           </>
         ) : null}

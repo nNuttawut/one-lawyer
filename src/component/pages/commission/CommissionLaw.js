@@ -60,7 +60,7 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const userCompany = localStorage.getItem("COMPANY_ID");
-  const [lawyerId, setLawyerId] = useState(2);
+  const [lawyerId, setLawyerId] = useState(userCompany === "3" ? 10 : 3);
   const [lawyersOption, setLawyersOption] = useState();
   const [statusId, setStatusId] = useState("all");
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -97,14 +97,19 @@ const Main = () => {
   const setOption = () => {
     let companySelect = null;
 
-    if (dataArr.COMPANY_ID === 3) {
+    if (userCompany === "3") {
       companySelect = lawyersList.filter(
-        (item) => item.COMPANY_ID === 3 && item.ROLE_ID === 3
+        (item) =>
+          item.COMPANY_ID === 3 &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelect = lawyersList.filter(
         (item) =>
-          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) && item.ROLE_ID === 3
+          (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
+          item.ROLE_ID === 3 &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const options = companySelect.map((item) => ({
@@ -829,14 +834,18 @@ const Main = () => {
     {
       title: "จำนวนเงิน",
       align: "center",
-      // render: (record) => <>{currencyFormatNoPoint(record.attorney_fees)}</>,
-      render: (record) => (
-        <>
-          {record.LOAN_TYPE_ID === 2 || record.LOAN_TYPE_ID === 5
-            ? "2,500"
-            : "3,500"}
-        </>
-      ),
+      render: (record) => <>{currencyFormatComma(record.attorney_fees)}</>,
+      // render: (record) => (
+      //   <>
+      //     {userCompany === "3"
+      //       ? record.LOAN_TYPE_ID === 2 || record.LOAN_TYPE_ID === 5
+      //         ? "2,000"
+      //         : "3,000"
+      //       : record.LOAN_TYPE_ID === 2 || record.LOAN_TYPE_ID === 5
+      //       ? "2,500"
+      //       : "3,500"}
+      //   </>
+      // ),
     },
     {
       title: "สถานะการอนุมัติ",

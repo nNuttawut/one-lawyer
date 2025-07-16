@@ -63,7 +63,8 @@ const ExpenseList = ({ open, close, dataDefault, handleEdit }) => {
           item.id === 13 ||
           item.id === 14 ||
           item.id === 15 ||
-          item.id === 16
+          item.id === 16 ||
+          item.id === 25
       )
       .map((item) => ({
         value: item.id,

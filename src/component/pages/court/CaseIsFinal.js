@@ -207,7 +207,7 @@ const Main = () => {
     if (!record.DATE) {
       return null;
     }
-    const recordDate = dayjs(record.DATE).startOf("day");
+    const recordDate = dayjs(record.DATE);
     const today = dayjs().startOf("day");
     const toDate = dayjs(recordDate).add(15, "days");
     const daysDifference = today.diff(toDate, "days");

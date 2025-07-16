@@ -25,7 +25,7 @@ import {
 import * as XLSX from "xlsx";
 import axios from "axios";
 import FailedImport from "./modal/FailedImport";
-import { POST_LOAN_DB2 } from "../../API/apiUrls";
+import { HEADERS_EXPORT_BEN, POST_LOAN_DB2 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import ExcelJS from "exceljs";
@@ -90,7 +90,13 @@ const Main = () => {
     let value = `'${queryContno}'`;
     try {
       await axios
-        .post(POST_LOAN_DB2, { CONTNO: value })
+        .post(
+          POST_LOAN_DB2,
+          { CONTNO: value },
+          {
+            headers: HEADERS_EXPORT_BEN,
+          }
+        )
         .then(async (resQuery) => {
           if (resQuery.status === 200 && resQuery.data) {
             setDataCheck(resQuery.data);
@@ -217,7 +223,9 @@ const Main = () => {
 
     try {
       await axios
-        .post(POST_LOAN_DB2, data)
+        .post(POST_LOAN_DB2, data, {
+          headers: HEADERS_EXPORT_BEN,
+        })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
             console.log("resQuery", resQuery.data);
@@ -339,6 +347,7 @@ const Main = () => {
       worksheet.columns = [
         { header: "ลำดับ", key: "no", width: 10 },
         { header: "สัญญา", key: "data_type", width: 10 },
+        { header: "ประเภทจ่าย", key: "forCode", width: 10 },
         { header: "วันออกจดหมาย", key: "date", width: 15 },
         { header: "ประเภทบัญชี", key: "accType", width: 15 },
         { header: "เลขที่สัญญา", key: "contno", width: 20 },
@@ -367,7 +376,8 @@ const Main = () => {
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
-          userCompany === "3" ? "ksm" : data.DATA_TYPE,
+          userCompany === "3" ? "ksm" : data.LOAN.DATA_TYPE,
+          2,
           dayjs().format("YYYY-MM-DD"), // วันที่ส่ง
           "repurchase",
           data.CONTNO,

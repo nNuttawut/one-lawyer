@@ -593,7 +593,7 @@ const InvestigateAssets = ({
                 }}
               >
                 {item.mortgagee
-                  ? `เจ้าหนี้จำนอง ${
+                  ? `เจ้าหนี้จำนอง/ขายฝาก ${
                       item.mortgagee
                     } จำนวน ${currencyFormatComma(item.mortgage_balance)} บาท`
                   : null}

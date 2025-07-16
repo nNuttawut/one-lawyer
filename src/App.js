@@ -2,6 +2,7 @@ import React from "react";
 import "./assets/styles/main.css";
 import "./assets/styles/responsive.css";
 import Main from "./component/ui/Main";
+// import { HashRouter as Router } from "react-router-dom";
 import { BrowserRouter as Router } from "react-router-dom";
 
 import LogIn from "./component/pages/userManage/LogIn";

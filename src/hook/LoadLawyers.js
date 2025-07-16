@@ -46,6 +46,8 @@ const LoadLawyers = () => {
 
     try {
       await axios
+
+        // .get("http://localhost:8080/lawyer/api/loans/notics/count", {
         .get(baseUrl + GET_JOB_COUNT, {
           headers: HEADERS_EXPORT,
         })

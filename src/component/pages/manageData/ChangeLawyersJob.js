@@ -9,6 +9,7 @@ import {
   Select,
   Checkbox,
   Popconfirm,
+  notification,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect } from "react";
@@ -29,10 +30,16 @@ import {
   GET_JOB_IN_PROGRESS_BY_STATUS,
   PUT_LAWSUIT_DETAIL,
   GET_LAWSUIT_LIST,
+  POST_STATUS,
 } from "../../API/apiUrls";
 import MotionHoc from "../../../utils/MotionHoc";
 import { Link } from "react-router-dom";
-import { NOTICE } from "../../../utils/constant/StatusConstant";
+import {
+  INDICT,
+  NOTICE,
+  optionsSatus,
+  STATUS_PROCESS_PROGRESS,
+} from "../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
 
 const Main = () => {
@@ -51,8 +58,6 @@ const Main = () => {
   const ROLE_ID = localStorage.getItem("ROLE_ID");
   const companyId = localStorage.getItem("COMPANY_ID");
   const [dataRecord, setDataRecord] = useState();
-  const [lawsuitData, setLawsuitData] = useState();
-  const [lawsuitSend, setLawsuitSend] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -176,7 +181,7 @@ const Main = () => {
     }
   };
 
-  const insertDataOne = async (id, lawsuitId) => {
+  const insertDataStatusIndect = async (id, lawsuitId) => {
     setLoading(true);
     const data = dataSend.find((item) => item.LOAN_ID === id);
     // const lawsuit = lawsuitSend.find((item) => item.id === lawsuitId);
@@ -215,63 +220,113 @@ const Main = () => {
       message.success(
         `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
       );
-      window.location.reload();
+      // window.location.reload();
     }
   };
 
-  const onChangeSelect = (value, lawsuitId, id) => {
-    console.log(`selected ${value} lawsuitId ${lawsuitId} id ${id}`);
-    onApporvedData(value, lawsuitId, id);
+  const insertDataStatusNotice = async (id) => {
+    setLoading(true);
+    const data = dataSend.find((item) => item.LOAN_ID === id);
+    let filteredData;
+    let setSucess = 0;
+    let dataApprove = data;
+    if (data) {
+      try {
+        filteredData = dataArr.find((item) => item.id === id);
+        console.log("filteredData-->", filteredData);
+        await axios
+          .post(baseUrl + POST_STATUS, dataApprove, { headers: HEADERS_EXPORT })
+          .then((resQuery) => {
+            if (resQuery.status === 200) {
+              const dataToUpdate = {
+                ...filteredData,
+                LAWYER_ID: dataApprove.USER_ID,
+              };
+              setSucess += 1;
+              handleChangeStatus(dataToUpdate);
+              return resQuery.data;
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+            message.error(`งานถูกมอบหมายให้ทนายแล้ว`);
+            return null;
+          });
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        message.error("กรุณาเลือกทนาย");
+        setLoading(false);
+      } finally {
+        setLoading(false);
+
+        if (data) {
+          if (data.USER_ID && setSucess > 0) {
+            message.success(
+              `มอบหมายงานให้ทนายเสร็จสิ้น ${filteredData.CONTNO} สัญญา`
+            );
+          }
+        }
+      }
+    } else {
+      message.error(`กรุณาเลือกทนาย`);
+      setLoading(false);
+    }
   };
 
-  const onApporvedData = (userId, lawsuitId, id, lawType) => {
-    console.log(
-      `selected ${userId} lawsuitId ${lawsuitId} id ${id} lawType ${lawType} `
-    );
+  const onChangeSelect = (value, record, id) => {
+    console.log(`selected ${value} lawsuitId ${record} id ${id}`);
+    onApporvedData(value, record, id);
+  };
 
-    const ownData = arrayTable.filter((item) => item.id === id);
+  const onApporvedData = (userId, record, id) => {
+    const ownData = arrayTable?.filter((item) => item.id === id);
     console.log("ownData", ownData);
+    if (record?.MAIN_STATUS_ID === 2) {
+      setDataSend((prevFailedData) => {
+        // สร้างอาร์เรย์ใหม่โดยไม่รวม item LOAN_ID เหมือนกัน
+        const updatedData = prevFailedData?.filter(
+          (item) => item.LOAN_ID !== id
+        );
+        // เพิ่มข้อมูลใหม่เข้า array
+        console.log("updatedData1", updatedData);
+        //เปลี่ยน body และ put lawsuit ด้วย
+        const newItem = {
+          id: record?.WORK_LOG_ID,
+          USER_ID: userId,
+          LOAN_ID: id,
+          LOAN_TYPE_ID: record?.LOAN_TYPE_ID,
+          LAW_TYPE_ID: record?.LAW_TYPE_ID,
+          PROCESS_ID: STATUS_PROCESS_PROGRESS,
+          MEMO: "เปลี่ยนทนายทำคำฟ้อง",
+          DATE: dayjs().format("YYYY-MM-DD"),
+        };
 
-    setDataSend((prevFailedData) => {
-      // สร้างอาร์เรย์ใหม่โดยไม่รวม item LOAN_ID เหมือนกัน
-      const updatedData = prevFailedData.filter((item) => item.LOAN_ID !== id);
-      // เพิ่มข้อมูลใหม่เข้า array
-      console.log("updatedData1", updatedData);
-      //เปลี่ยน body และ put lawsuit ด้วย
-      const newItem = {
-        id: ownData[0]?.WORK_LOG_ID,
-        USER_ID: userId,
-        LOAN_ID: id,
-        LOAN_TYPE_ID: ownData[0]?.LOAN_TYPE_ID,
-        LAW_TYPE_ID: ownData[0]?.LAW_TYPE_ID,
-        MEMO: null,
-        DATE: dayjs(ownData[0]?.DATE).format("YYYY-MM-DD"),
-      };
+        // Return อัพเดท array
+        return [...updatedData, newItem];
+      });
+    } else if (record?.MAIN_STATUS_ID === 1) {
+      console.log("ownData?.MAIN_STATUS_ID === 1 ", ownData);
+      setDataSend((prevFailedData) => {
+        // สร้างอาร์เรย์ใหม่โดยไม่รวม item LOAN_ID เหมือนกัน
+        const updatedData = prevFailedData.filter(
+          (item) => item.LOAN_ID !== id
+        );
+        // เพิ่มข้อมูลใหม่เข้า array
+        const newItem = {
+          MAIN_STATUS_ID: INDICT,
+          USER_ID: userId,
+          LOAN_ID: id,
+          LOAN_TYPE_ID: record?.LOAN_TYPE_ID,
+          LAW_TYPE_ID: record?.LAW_TYPE_ID,
+          MEMO: "เปลี่ยนทนายทำคำฟ้อง",
+          DATE: dayjs().format("YYYY-MM-DD"),
+          PROCESS_ID: STATUS_PROCESS_PROGRESS,
+        };
 
-      // Return อัพเดท array
-      return [...updatedData, newItem];
-    });
-
-    // const ownLawsuit = lawsuitData.find((item) => item.id === lawsuitId);
-
-    // setLawsuitSend((prevFailedData) => {
-    //   // สร้างอาร์เรย์ใหม่โดย **ลบ item ที่มี id ตรงกับ lawsuitId**
-    //   const updatedData = prevFailedData.filter(
-    //     (item) => item.id !== lawsuitId
-    //   );
-
-    //   // เพิ่มข้อมูลใหม่ที่อัปเดตแล้วเข้าไป
-    //   const newItem = {
-    //     ...ownLawsuit, // ใช้ Object จริง ๆ
-    //     USER_ID: userId, // เพิ่ม USER_ID เข้าไป
-    //   };
-
-    //   console.log("updatedData:", updatedData);
-    //   console.log("newItem:", newItem);
-
-    //   // Return อัพเดท array ใหม่
-    //   return [...updatedData, newItem];
-    // });
+        // Return อัพเดท array
+        return [...updatedData, newItem];
+      });
+    }
   };
 
   const search = (event) => {
@@ -284,8 +339,24 @@ const Main = () => {
     setArrayTable(result);
   };
 
-  const confirmInsertOne = (id, lawsuitId) => {
-    insertDataOne(id, lawsuitId);
+  const confirmInsertOne = (id, lawsuitId, record) => {
+    const status = optionsSatus.find(
+      (item) => item.value === record.MAIN_STATUS_ID
+    );
+    console.log(status);
+
+    console.log("id,sss", record);
+    if (record.MAIN_STATUS_ID === 2) {
+      insertDataStatusIndect(id, lawsuitId);
+    } else if (record.MAIN_STATUS_ID === 1) {
+      insertDataStatusNotice(id);
+    } else {
+      notification.error({
+        message: "ไม่สามารถทำรายการได้!",
+        description: `สถานะสัญญาปัจจุบัน "${status.label}" หากมีข้อส่งสัยโปรดติดต่อ IT`,
+        duration: 10,
+      });
+    }
   };
 
   const cancel = (e) => {
@@ -319,15 +390,17 @@ const Main = () => {
       (item) => item.LOAN_ID !== data.id
     );
 
-    setDataSend(dataChangeSatatus);
+    setDataSend([]);
     setDataArr(result);
     console.log("dataChangeSatatus--->", dataChangeSatatus);
     console.log("result--->", result);
 
     const newData = result.filter((item) => item.MAIN_STATUS_ID === null);
-    setArrayTable(newData);
+    setArrayTable(result);
     console.log("newData--->", newData);
   };
+
+  console.log("dataSend---->", dataSend);
 
   useEffect(() => {
     if (dataFunc) {
@@ -455,9 +528,7 @@ const Main = () => {
             placeholder="เลือกทนายรับงาน"
             showSearch
             optionFilterProp="label"
-            onChange={(value) =>
-              onChangeSelect(value, record.LAWSUIT_ID, record.id)
-            }
+            onChange={(value) => onChangeSelect(value, record, record.id)}
             options={lawyersOption}
             style={{ width: "100%" }}
           />
@@ -472,7 +543,9 @@ const Main = () => {
           <Popconfirm
             title="มอบงานให้ทนาย"
             description="คุณต้องการมอบงานให้ทนายตามข้อมูลนี้ใช่หรือไม่ ?"
-            onConfirm={() => confirmInsertOne(record.id, record.LAWSUIT_ID)}
+            onConfirm={() =>
+              confirmInsertOne(record.id, record.LAWSUIT_ID, record)
+            }
             onCancel={cancel}
             okText="ยืนยัน"
             cancelText="ยกเลิก"
@@ -485,7 +558,10 @@ const Main = () => {
       ),
     },
   ];
-  if (ROLE_ID === "1") {
+
+  if ((companyId === "3" && ROLE_ID === "3") || ROLE_ID === "4") {
+    return <Card>ไม่มีสิทธ์เข้าถึงข้อมูล</Card>;
+  } else {
     return (
       <>
         <Card>
@@ -519,12 +595,6 @@ const Main = () => {
           <DetailModal open={isModal} close={setIsModal} dataRec={dataRecord} />
         ) : null}
       </>
-    );
-  } else {
-    return (
-      <Card>
-        <p>ติดต่อ IT</p>
-      </Card>
     );
   }
 };

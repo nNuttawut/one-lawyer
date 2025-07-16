@@ -19,7 +19,10 @@ import { PrinterOutlined, SearchOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import dayjs from "dayjs";
-import { POST_TERMINATE_CONTRACT_RECORD } from "../../API/apiUrls";
+import {
+  HEADERS_EXPORT_BEN,
+  POST_TERMINATE_CONTRACT_RECORD,
+} from "../../API/apiUrls";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import DateCustom from "../../../hook/DateCustom";
@@ -58,7 +61,7 @@ const Main = () => {
   const optionsForPay = [
     { value: "116", label: "จดหมายส่งผู้คนค้ำ(116)" },
     { value: "119", label: "บอกเลิกสัญญา(119)" },
-    { value: "129", label: "ค่าบอกเลิกสัญญา(No ems)(129)", disabled: true },
+    { value: "129", label: "ค่าบอกเลิกสัญญา(ems)(129)" },
   ];
 
   useEffect(() => {
@@ -67,6 +70,7 @@ const Main = () => {
       optionsContract = [{ value: "rpsl", label: "ksm" }];
     } else {
       optionsContract = [
+        { value: "lsfhp", label: "สัญญา 1" },
         { value: "vsfhp", label: "สัญญา 2" },
         { value: "psfhp", label: "สัญญา 3" },
         { value: "rpsl", label: "สัญญา 3(ใหม่)" },
@@ -112,13 +116,15 @@ const Main = () => {
     } else {
       optionsGCodeData = [
         {
-          label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
-          title: "บอกเลิกสัญญาคนค้ำ(116)",
+          label: <span>ค่าบอกเลิกสัญญา(ems)(129)</span>,
+          title: "",
           options: [
             { value: "411", label: "411" },
+            { value: "412", label: "412" },
             { value: "413", label: "413" },
             { value: "421", label: "421" },
             { value: "422", label: "422" },
+            { value: "423", label: "423" },
             { value: "431", label: "431" },
             { value: "432", label: "432" },
             { value: "433", label: "433" },
@@ -243,9 +249,7 @@ const Main = () => {
         console.log("5");
         let dataFilter = arrData.filter(
           (item) =>
-            values.includes(item.GCODE) &&
-            selectedContract === item.DATA_TYPE &&
-            item.cusType > 0
+            values.includes(item.GCODE) && selectedContract === item.DATA_TYPE
         );
         setArrayTable(dataFilter);
         setTableLength(dataFilter.length);
@@ -265,8 +269,6 @@ const Main = () => {
   };
 
   const handleChange = (startDate, endDate) => {
-    console.log("sssss");
-
     console.log(endDate[0]);
     console.log(endDate[1]);
 
@@ -294,11 +296,17 @@ const Main = () => {
     setLoading(true);
     try {
       await axios
-        .post(POST_TERMINATE_CONTRACT_RECORD, {
-          date1: dayjs(datePicker1).format("YYYY-MM-DD"),
-          date2: dayjs(datePicker2).format("YYYY-MM-DD"),
-          DATA_TYPE: selectedContract,
-        })
+        .post(
+          POST_TERMINATE_CONTRACT_RECORD,
+          {
+            date1: dayjs(datePicker1).format("YYYY-MM-DD"),
+            date2: dayjs(datePicker2).format("YYYY-MM-DD"),
+            DATA_TYPE: selectedContract,
+          },
+          {
+            headers: HEADERS_EXPORT_BEN,
+          }
+        )
         .then(async (res) => {
           if (res.status === 200) {
             console.log("setLawsuitData", res.data);
@@ -408,12 +416,22 @@ const Main = () => {
       console.log("data------->", value);
       console.log("forPaySelect---->", selectedContract);
 
-      setArrData(filteredData);
+      let dataNoUse = filteredData.filter(
+        (item) =>
+          item.CONTNO?.substring(0, 1) !== "5" &&
+          item.CONTNO?.substring(0, 1) !== "6" &&
+          item.CONTNO?.substring(0, 1) !== "7"
+      );
+
+      console.log("dataNoUse", dataNoUse);
+
+      setArrData(dataNoUse);
+
       let dataFilter;
 
       if (forPaySelect === "116") {
         console.log("if");
-        dataFilter = filteredData.filter(
+        dataFilter = dataNoUse.filter(
           (item) =>
             (forPaySelect.includes(item.FORCODE) ||
               item.FORCODE.includes("115")) &&
@@ -422,12 +440,20 @@ const Main = () => {
         );
       } else {
         console.log("else");
-
-        dataFilter = filteredData.filter(
-          (item) =>
-            forPaySelect.includes(item.FORCODE) &&
-            selectedContract === item.DATA_TYPE
-        );
+        if (selectedContract === "lsfhp") {
+          dataFilter = dataNoUse.filter(
+            (item) =>
+              forPaySelect.includes(item.FORCODE) &&
+              selectedContract === item.DATA_TYPE &&
+              item.cusType === 0
+          );
+        } else {
+          dataFilter = dataNoUse.filter(
+            (item) =>
+              forPaySelect.includes(item.FORCODE) &&
+              selectedContract === item.DATA_TYPE
+          );
+        }
       }
       console.log("dataFilter--->", dataFilter);
       if (dataFilter?.length === 0) {
@@ -551,15 +577,15 @@ const Main = () => {
         { header: "ประเภทจ่าย", key: "forCode", width: 10 },
         { header: "ประเภทบัญชี", key: "gCode", width: 10 },
         { header: "รอบวันออกจดหมายในระบบ", key: "date", width: 20 },
-        { header: "เลขที่สัญญา", key: "contno", width: 20 },
-        { header: "ชื่อลูกค้า", key: "cusName", width: 30 },
-        { header: "ประเภทลูกค้า", key: "cusType", width: 10 },
-        { header: "zipcode", key: "zipcode", width: 10 },
         { header: "ยี่ห้อ", key: "type", width: 15 },
         { header: "ทะเบียน", key: "regNo", width: 15 },
         { header: "ค้างงวด", key: "overdue", width: 15 },
         { header: "เงินค้าง", key: "arrears", width: 20 },
         { header: "ค่าทวงถาม", key: "letter", width: 15 },
+        { header: "ประเภทลูกค้า", key: "cusType", width: 10 },
+        { header: "เลขที่สัญญา", key: "contno", width: 20 },
+        { header: "ชื่อลูกค้า", key: "cusName", width: 30 },
+        { header: "zipcode", key: "zipcode", width: 10 },
         { header: "ems จดหมาย", key: "emsNo", width: 25 },
         { header: "ems ใบตอบกลับ", key: "emsResponeNo", width: 25 },
       ];
@@ -583,15 +609,15 @@ const Main = () => {
           parseInt(data.FORCODE),
           data.GCODE,
           dayjs(data.DOCDT).format("YYYY-MM-DD"), // วันที่ส่ง
-          data.CONTNO,
-          data.NAME,
-          data.cusType,
-          data.address.ZIP,
           data.TYPE,
           data.REGNO,
           data.EXP_PRD,
           data.TOTPRC - data.SMPAY,
           data.LETTER,
+          data.cusType,
+          data.CONTNO,
+          data.NAME,
+          data.address.ZIP,
         ]);
       });
 
@@ -747,23 +773,22 @@ const Main = () => {
                 value={forPaySelect}
                 size="large"
               />
-              <Select
-                style={{
-                  width: selectedGCode.length > 0 ? "auto" : "150px",
-                  marginBottom: "5px",
-                }}
-                mode="multiple"
-                allowClear
-                value={selectedGCode} // ใช้ state ในการควบคุมค่า
-                popupMatchSelectWidth={false}
-                onChange={handleChangeGCode}
-                options={optionsGCode}
-                placeholder="เลือกประเภท"
-                size="large"
-              />
             </Col>
             <Col span={"12"} style={{ textAlign: "end" }}>
-              <Space size={16} style={{ marginTop: "10px" }}>
+              <Space size={16} style={{ marginTop: "5px" }}>
+                <Select
+                  style={{
+                    width: selectedGCode.length > 0 ? "auto" : "150px",
+                  }}
+                  mode="multiple"
+                  allowClear
+                  value={selectedGCode} // ใช้ state ในการควบคุมค่า
+                  popupMatchSelectWidth={false}
+                  onChange={handleChangeGCode}
+                  options={optionsGCode}
+                  placeholder="เลือกประเภท"
+                  size="large"
+                />
                 <Search
                   placeholder="ค้นหาสัญญา"
                   enterButton
@@ -774,27 +799,10 @@ const Main = () => {
                   }}
                   size="large"
                 />
-                <Tooltip placement="bottom" title="บันทึกข้อมูล Excel">
-                  <Button
-                    type="text"
-                    icon={
-                      <PrinterOutlined
-                        style={{ fontSize: "24px", color: "green" }}
-                      />
-                    }
-                    onClick={onClickDownload}
-                    style={{
-                      boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                      borderRadius: "8px",
-                      padding: "10px",
-                      backgroundColor: "#f0fdf4",
-                    }}
-                  />
-                </Tooltip>
               </Space>
             </Col>
             <Col
-              span={24}
+              span={16}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -829,6 +837,33 @@ const Main = () => {
                   ค้นหา
                 </Button>
               </Space>
+            </Col>
+            <Col
+              span={8}
+              style={{
+                textAlign: "end",
+                marginTop: "10px",
+              }}
+            >
+              <Tooltip placement="bottom" title="บันทึกข้อมูล Excel">
+                <Button
+                  type="text"
+                  icon={
+                    <PrinterOutlined
+                      style={{ fontSize: "24px", color: "green" }}
+                    />
+                  }
+                  onClick={onClickDownload}
+                  style={{
+                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    backgroundColor: "#f0fdf4",
+                  }}
+                >
+                  พิมพ์
+                </Button>
+              </Tooltip>
             </Col>
           </Row>
           <Row>

@@ -21,6 +21,7 @@ import {
   EditOutlined,
   PrinterOutlined,
   DownloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import MotionHoc from "../../../utils/MotionHoc";
 import { baseUrl, GET_CANCEL, HEADERS_EXPORT } from "../../API/apiUrls";
@@ -68,6 +69,12 @@ const Main = () => {
     pageSize: 15,
   });
   const [postOfficeTypeSelect, setPostOfficeTypeSelect] = useState(1);
+  const [optionsDataType, setOptionsDataType] = useState();
+  const { RangePicker } = DatePicker;
+  const [selectedGCode, setSelectedGCode] = useState([]);
+  const [selectedContract, setSelectedContract] = useState();
+  const [datePickerStart, setDatePickerStart] = useState();
+  const [datePickerEnd, setDatePickerEnd] = useState();
 
   const optionSelectCallback = [
     { value: "all", label: "ทั้งหมด" },
@@ -75,31 +82,77 @@ const Main = () => {
     { value: 2, label: "ตอบกลับ" },
   ];
 
-  // const optionSelectCode = [
-  //   { value: "all", label: "ทั้งหมด" },
-  //   {
-  //     label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
-  //     title: "บอกเลิกสัญญาคนค้ำ(116)",
-  //     options: [
-  //       { value: "P21", label: "P21" },
-  //       { value: "P22", label: "P22" },
-  //       { value: "P23", label: "P23" },
-  //       { value: "P31", label: "P31" },
-  //       { value: "P32", label: "P32" },
-  //       { value: "P33", label: "P33" },
-  //       { value: "P41", label: "P41" },
-  //     ],
-  //   },
-  //   {
-  //     label: <span>บอกเลิกสัญญาผู้เช่าซื้อ(119)</span>,
-  //     title: "บอกเลิกสัญญาผู้เช่าซื้อ(119)",
-  //     options: [
-  //       { value: "P11", label: "P11" },
-  //       { value: "P12", label: "P12" },
-  //       { value: "P13", label: "P13" },
-  //     ],
-  //   },
-  // ];
+  const optionsForPay = [
+    { value: "116", label: "จดหมายส่งผู้คนค้ำ(116)" },
+    { value: "119", label: "บอกเลิกสัญญา(119)" },
+    { value: "129", label: "ค่าบอกเลิกสัญญา(ems)(129)" },
+  ];
+
+  useEffect(() => {
+    let optionsContract = [];
+    if (userCompany === "3") {
+      optionsContract = [{ value: "ksm", label: "ksm" }];
+    } else {
+      optionsContract = [
+        { value: "lsfhp", label: "สัญญา 1" },
+        { value: "vsfhp", label: "สัญญา 2" },
+        { value: "psfhp", label: "สัญญา 3" },
+        { value: "rpsl", label: "สัญญา 3(ใหม่)" },
+        { value: "sfhp", label: "สัญญา 8" },
+      ];
+    }
+
+    setOptionsDataType(optionsContract);
+  }, []);
+
+  const optionSelectCode = [
+    {
+      label: <span>บอกเลิกสัญญาคนค้ำ(116)</span>,
+      title: "บอกเลิกสัญญาคนค้ำ(116)",
+      options: [
+        { value: "P21", label: "P21" },
+        { value: "P22", label: "P22" },
+        { value: "P23", label: "P23" },
+        { value: "P31", label: "P31" },
+        { value: "P32", label: "P32" },
+        { value: "P33", label: "P33" },
+        { value: "P41", label: "P41" },
+      ],
+    },
+    {
+      label: <span>บอกเลิกสัญญาผู้เช่าซื้อ(119)</span>,
+      title: "บอกเลิกสัญญาผู้เช่าซื้อ(119)",
+      options: [
+        { value: "P11", label: "P11" },
+        { value: "P12", label: "P12" },
+        { value: "P13", label: "P13" },
+      ],
+    },
+    {
+      label: <span>ค่าบอกเลิกสัญญา(ems)(129)</span>,
+      title: "ค่าบอกเลิกสัญญา(ems)(129)",
+      options: [
+        { value: "411", label: "411" },
+        { value: "412", label: "412" },
+        { value: "413", label: "413" },
+        { value: "421", label: "421" },
+        { value: "422", label: "422" },
+        { value: "423", label: "423" },
+        { value: "431", label: "431" },
+        { value: "432", label: "432" },
+        { value: "433", label: "433" },
+        { value: "441", label: "441" },
+        { value: "442", label: "442" },
+        { value: "443", label: "443" },
+        { value: "451", label: "451" },
+        { value: "452", label: "452" },
+        { value: "453", label: "453" },
+        { value: "461", label: "461" },
+        { value: "462", label: "462" },
+        { value: "463", label: "463" },
+      ],
+    },
+  ];
 
   const mergedArrow = useMemo(() => {
     if (arrow === "Hide") {
@@ -126,7 +179,7 @@ const Main = () => {
       });
       if (response.data) {
         if (response.data) {
-          console.log(response.data);
+          console.log("response.data", response.data);
 
           filterDataLawyer(mergeDataWithGuarantors(response.data));
           // setSearchEdit(response.data);
@@ -188,6 +241,7 @@ const Main = () => {
       function isEnglishOnly(str) {
         return /^[A-Za-z]+$/.test(str); // เช็คว่า str เป็นตัวอักษรภาษาอังกฤษทั้งหมด
       }
+      console.log("data", data);
 
       let filteredData;
 
@@ -239,7 +293,7 @@ const Main = () => {
 
       console.log(sortEms);
       let i = 1;
-      const preData = filteredData.map((item) => ({
+      const preData = sortEms.map((item) => ({
         ...item,
         no: i++,
       }));
@@ -260,70 +314,6 @@ const Main = () => {
     } else {
       // เมื่อแถวถูกยุบ, ให้ลบ key ของแถวนั้นออกจาก expandedRowKeys
       setExpandedRowKeys([]);
-    }
-  };
-
-  const search = (event) => {
-    console.log("query--->", event.target.value);
-    onSearch(event.target.value);
-  };
-
-  const onSearch = (value) => {
-    let result = dataArr.filter(
-      (item) =>
-        (item.contract_no && item.contract_no.includes(value)) ||
-        (item.customer_fullname && item.customer_fullname.includes(value)) ||
-        (item.register_no && item.register_no.includes(value)) ||
-        (item.parcel_no && item.parcel_no.includes(value)) ||
-        (item.parcel_no_response && item.parcel_no_response.includes(value))
-    );
-
-    let resultReturn = dataArr
-      .filter((item) => item.parcel_no_response === value) // กรองเฉพาะค่าที่ตรงกับ value
-      .map((item) => item.parcel_no_response); // ดึงเฉพาะค่าที่ต้องการออกมาฃ
-
-    if (value.length === 13 && result.length > 0 && resultReturn[0] === value) {
-      setIsModalUpdateEms(true);
-      setDataModal(result[0]);
-      console.log("result---->", result);
-    }
-    if (value) {
-      setArrayTable(result);
-    } else {
-      setArrayTable(dataArr);
-    }
-  };
-
-  const onSearchByDate = (startDate) => {
-    console.log(startDate);
-
-    let selectData;
-    if (selectCallback === 2) {
-      selectData = dataArr.filter(
-        (item) => item.status === 1 || item.status === 2 || item.status === 3
-      );
-    } else if (selectCallback === 3) {
-      selectData = dataArr.filter((item) => item.status === selectCallback);
-    } else if (selectCallback === 1) {
-      selectData = dataArr.filter((item) => !item.status);
-    } else {
-      selectData = dataArr;
-    }
-
-    if (startDate) {
-      const selectSearch = selectData.filter(
-        (item) =>
-          item?.datetime?.includes(dayjs(startDate).format("YYYY-MM-DD")) &&
-          selectCallback
-      );
-      console.log(dayjs(startDate).format("YYYY-MM-DD"));
-
-      console.log(selectSearch);
-      setArrayTable(selectSearch);
-      setTableLength(selectSearch.length);
-    } else {
-      setArrayTable(selectData);
-      setTableLength(selectData.length);
     }
   };
 
@@ -370,24 +360,172 @@ const Main = () => {
     }
   };
 
+  const search = (event) => {
+    console.log("query--->", event.target.value);
+    onSearch(event.target.value);
+  };
+
+  const onSearch = (value) => {
+    let result = dataArr.filter(
+      (item) =>
+        (item.contract_no && item.contract_no.includes(value)) ||
+        (item.customer_fullname && item.customer_fullname.includes(value)) ||
+        (item.register_no && item.register_no.includes(value)) ||
+        (item.parcel_no && item.parcel_no.includes(value)) ||
+        (item.parcel_no_response && item.parcel_no_response.includes(value))
+    );
+
+    let resultReturn = dataArr
+      .filter((item) => item.parcel_no_response === value) // กรองเฉพาะค่าที่ตรงกับ value
+      .map((item) => item.parcel_no_response); // ดึงเฉพาะค่าที่ต้องการออกมาฃ
+
+    if (value.length === 13 && result.length > 0 && resultReturn[0] === value) {
+      setIsModalUpdateEms(true);
+      setDataModal(result[0]);
+      console.log("result---->", result);
+    }
+    if (value) {
+      setArrayTable(result);
+    } else {
+      setArrayTable(dataArr);
+    }
+  };
+
+  const onSearchByDate = (date, stringDate) => {
+    const start = dayjs(stringDate[0], "YYYY-MM-DD");
+    const end = dayjs(stringDate[1], "YYYY-MM-DD");
+
+    const timestampStart = start.valueOf();
+    const timestampEnd = end.valueOf();
+    console.log("selectCallback", selectCallback);
+    setDatePickerStart(timestampStart);
+    setDatePickerEnd(timestampEnd);
+  };
+
   const handleChangeSelect = (value) => {
     console.log(`selected ${value}`);
     setSelectCallback(value);
-    let selectData;
-    if (value === 2) {
-      selectData = dataArr.filter(
+  };
+
+  const handleChangeContract = (value) => {
+    console.log(`selected ${value}`);
+    setSelectedContract(value);
+    setSelectedGCode([]);
+  };
+
+  const handleChangeGCode = (values) => {
+    console.log(values);
+    setSelectedGCode(values); // อัปเดตค่าที่เลือกใน Select ด้านล่าง
+  };
+
+  const handleDataBySearch = () => {
+    let selectCallbackData;
+    let dataResult;
+    console.log("selectCallback", selectCallback);
+    console.log("selectedContract", selectedContract);
+    console.log("selectedGCode", selectedGCode);
+    console.log("datePickerStart", datePickerStart);
+    console.log("datePickerEnd", datePickerEnd);
+
+    if (selectCallback === 2) {
+      console.log("ตอบกลับ");
+
+      selectCallbackData = dataArr.filter(
         (item) => item.status === 1 || item.status === 2 || item.status === 3
       );
-    } else if (value === 3) {
-      selectData = dataArr.filter((item) => item.status === value);
-    } else if (value === 1) {
-      selectData = dataArr.filter((item) => !item.status);
+    } else if (selectCallback === 1) {
+      console.log("รอดำเนินการ");
+      selectCallbackData = dataArr.filter((item) => !item.status);
     } else {
-      selectData = dataArr;
+      console.log("ทั้งหมด");
+      selectCallbackData = dataArr;
     }
 
-    setArrayTable(selectData);
-    setTableLength(selectData.length);
+    if (selectedContract && selectedGCode.length > 0 && datePickerStart) {
+      console.log("1: มีทุกตัว");
+      dataResult = selectCallbackData.filter((item) => {
+        const date = dayjs(item.datetime, "YYYY-MM-DD").valueOf();
+        return (
+          date >= datePickerStart &&
+          date <= datePickerEnd &&
+          item.contract_schema === selectedContract &&
+          selectedGCode.includes(item.account_type)
+        );
+      });
+    } else if (
+      selectedContract &&
+      selectedGCode.length > 0 &&
+      !datePickerStart
+    ) {
+      console.log("2: มี selectedContract และ selectedGCode");
+      dataResult = selectCallbackData.filter(
+        (item) =>
+          item.contract_schema === selectedContract &&
+          selectedGCode.includes(item.account_type)
+      );
+    } else if (
+      selectedContract &&
+      selectedGCode.length === 0 &&
+      datePickerStart
+    ) {
+      console.log("3: มี selectedContract และ datePickerStart");
+      dataResult = selectCallbackData.filter((item) => {
+        const date = dayjs(item.datetime, "YYYY-MM-DD").valueOf();
+        return (
+          date >= datePickerStart &&
+          date <= datePickerEnd &&
+          item.contract_schema === selectedContract
+        );
+      });
+    } else if (
+      !selectedContract &&
+      selectedGCode.length > 0 &&
+      datePickerStart
+    ) {
+      console.log("4: มี selectedGCode และ datePickerStart");
+      dataResult = selectCallbackData.filter((item) => {
+        const date = dayjs(item.datetime, "YYYY-MM-DD").valueOf();
+        return (
+          date >= datePickerStart &&
+          date <= datePickerEnd &&
+          selectedGCode.includes(item.account_type)
+        );
+      });
+    } else if (
+      selectedContract &&
+      selectedGCode.length === 0 &&
+      !datePickerStart
+    ) {
+      console.log("5: มีแค่ selectedContract");
+      dataResult = selectCallbackData.filter(
+        (item) => item.contract_schema === selectedContract
+      );
+    } else if (
+      !selectedContract &&
+      selectedGCode.length > 0 &&
+      !datePickerStart
+    ) {
+      console.log("6: มีแค่ selectedGCode");
+      dataResult = selectCallbackData.filter((item) =>
+        selectedGCode.includes(item.account_type)
+      );
+    } else if (
+      !selectedContract &&
+      selectedGCode.length === 0 &&
+      datePickerStart
+    ) {
+      console.log("7: มีแค่ datePickerStart");
+      dataResult = selectCallbackData.filter((item) => {
+        const date = dayjs(item.datetime, "YYYY-MM-DD").valueOf();
+        return date >= datePickerStart && date <= datePickerEnd;
+      });
+    } else {
+      console.log("8: ไม่มีอะไรเลย");
+      dataResult = selectCallbackData;
+    }
+
+    setArrayTable(dataResult);
+    setTableLength(dataResult.length);
   };
 
   //ทำ render record ของตาราถ้าใช้ logic เยอะ
@@ -441,6 +579,7 @@ const Main = () => {
       { value: 116, label: "จดหมายส่งผู้คนค้ำ(116)" },
       { value: 119, label: "บอกเลิกสัญญา(119)" },
       { value: 129, label: "ค่าบอกเลิกสัญญา(No ems)(129)" },
+      { value: "lsfhp", label: "สัญญา 1" },
       { value: "vsfhp", label: "สัญญา 2" },
       { value: "psfhp", label: "สัญญา 3" },
       { value: "rpsl", label: "สัญญา 3(ใหม่)" },
@@ -496,6 +635,7 @@ const Main = () => {
     const workbook = new ExcelJS.Workbook();
 
     // กำหนดประเภท GCODE ที่ต้องการแยก (ไม่ซ้ำกัน)
+
     const uniqueGCodes = [
       ...new Set(arrayTable.map((data) => data.account_type)),
     ];
@@ -870,9 +1010,20 @@ const Main = () => {
 
     let dataExport = [];
     if (selectedRows.length > 0) {
-      dataExport = selectedRows;
+      const sortEms = selectedRows.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+
+      dataExport = sortEms;
     } else {
-      dataExport = arrayTable;
+      const sortEms = arrayTable.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+      dataExport = sortEms;
     }
 
     let rowIndex = 12; // เริ่มที่แถวที่ 12
@@ -1257,7 +1408,7 @@ const Main = () => {
                 style={{
                   width: "auto",
                   marginRight: "10px",
-                  marginBottom: "5px",
+                  marginBottom: "10px",
                 }}
                 onChange={handleChangeSelect}
                 popupMatchSelectWidth={false}
@@ -1265,15 +1416,35 @@ const Main = () => {
                 value={selectCallback}
                 size="large"
               />
+              <Select
+                style={{
+                  width: "auto",
+                  marginRight: "10px",
+                  marginBottom: "10px",
+                }}
+                onChange={handleChangeContract}
+                popupMatchSelectWidth={false}
+                options={optionsDataType}
+                value={selectedContract}
+                size="large"
+                placeholder="เลือกสัญญา"
+              />
+              <Select
+                style={{
+                  width: selectedGCode.length > 0 ? "auto" : "150px",
+                }}
+                mode="multiple"
+                allowClear
+                value={selectedGCode} // ใช้ state ในการควบคุมค่า
+                popupMatchSelectWidth={false}
+                onChange={handleChangeGCode}
+                options={optionSelectCode}
+                placeholder="เลือกประเภท"
+                size="large"
+              />
             </Col>
-            <Col span={"12"} style={{ textAlign: "end", marginBottom: "10px" }}>
-              <Space direction="vertical" size={12}>
-                <DatePicker
-                  size="large"
-                  style={{ marginRight: "10px" }}
-                  onChange={onSearchByDate}
-                />
-              </Space>
+            <Col span={"12"} style={{ textAlign: "end", marginBottom: "5px" }}>
+              <Space direction="vertical" size={12}></Space>
               <Search
                 placeholder="ค้นหาสัญญา"
                 onChange={search}
@@ -1285,13 +1456,45 @@ const Main = () => {
               />
             </Col>
             <Col
-              span={24}
+              span={12}
+              style={{
+                textAlign: "start",
+              }}
+            >
+              <RangePicker
+                size="large"
+                style={{
+                  width: 310,
+                  borderRadius: "8px",
+                  border: "1px solid #d9d9d9",
+                  padding: "6px 12px",
+                  marginRight: "10px",
+                }}
+                onChange={onSearchByDate}
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                size="large"
+                style={{
+                  fontSize: "16px",
+                  borderRadius: "8px",
+                  padding: "6px 16px",
+                }}
+                onClick={handleDataBySearch}
+              >
+                ค้นหา
+              </Button>
+            </Col>
+            <Col
+              span={12}
               style={{
                 display: "flex", // ใช้ Flexbox
                 justifyContent: "flex-end", // จัดไปที่มุมขวาสุด
                 alignItems: "center", // จัดให้อยู่ในแนวเดียวกัน (แนวตั้ง)
                 gap: "10px", // ระยะห่างระหว่าง Switch และ Icon
                 marginBottom: "10px",
+                textAlign: "end",
               }}
             >
               <Radio.Group

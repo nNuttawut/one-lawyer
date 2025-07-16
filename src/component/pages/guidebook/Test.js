@@ -1,13 +1,28 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Input, message, Modal, Space, Spin, Table } from "antd";
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Space,
+  Spin,
+  Table,
+  Upload,
+} from "antd";
 import {
   baseUrl,
   GET_ALL_LOAN,
   HEADERS_EXPORT,
+  HEADERS_EXPORT_BEN,
   POST_LOAN_DB2,
 } from "../../API/apiUrls";
-import { DownloadOutlined, PlayCircleOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  PlayCircleOutlined,
+  ImportOutlined,
+} from "@ant-design/icons";
+import * as XLSX from "xlsx";
 
 const FileUpload = () => {
   const userId = localStorage.getItem("USER_ID");
@@ -16,6 +31,7 @@ const FileUpload = () => {
   const [sqlData, setSqlData] = useState();
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState();
+  const [importLoad, setImportLoad] = useState(true);
 
   const loadData = async () => {
     console.log("loadData");
@@ -85,7 +101,9 @@ const FileUpload = () => {
 
         const payload = { CONTNO: contnoString };
 
-        const resQuery = await axios.post(POST_LOAN_DB2, payload);
+        const resQuery = await axios.post(POST_LOAN_DB2, payload, {
+          headers: HEADERS_EXPORT_BEN,
+        });
 
         if (resQuery.status === 200) {
           console.log("✅ resQuery", resQuery.data);
@@ -233,11 +251,77 @@ const FileUpload = () => {
     message.success("ดาวน์โหลดสำเร็จ");
   };
 
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const arrayBuffer = event.target.result;
+      const workbook = XLSX.read(new Uint8Array(arrayBuffer), {
+        type: "array",
+      });
+      const allData = [];
+
+      workbook.SheetNames.forEach((sheetName) => {
+        const sheet = workbook.Sheets[sheetName];
+        const sheetData = XLSX.utils.sheet_to_json(sheet);
+
+        const filteredData = sheetData.map((row) => ({
+          id: row["id"] || null,
+          customer_type_id: row["customer_type_id"] || null,
+          dept_collection_fees: row["dept_collection_fees"] || null,
+        }));
+
+        allData.push(...filteredData);
+      });
+
+      // 🔽 สร้าง SQL ทีละบรรทัดตามข้อมูล
+      const sqlStatements = allData.map((row) => {
+        return `UPDATE ratecoll_lawyer.work_cancel_contract SET customer_type_id=${
+          row.customer_type_id ?? "NULL"
+        }, dept_collection_fees=${
+          row.dept_collection_fees ?? "NULL"
+        } WHERE id=${row.id};`;
+      });
+      console.log("allData", allData);
+
+      const sqlGenExcel = sqlStatements.join("\n");
+
+      console.log("✅ SQL Generated:", sqlGenExcel);
+      setSqlData({ sqlGenExcel });
+      message.success("สร้าง SQL สำเร็จ");
+    };
+    console.log("setSqlData", setSqlData);
+
+    reader.readAsArrayBuffer(file);
+    return false;
+  };
+
+  const uploadProps = {
+    customRequest: ({ file, onSuccess, fileList }) => {
+      handleFileUpload(file);
+      if (file.status !== "uploading") {
+        console.log(file, fileList);
+      } else {
+        onSuccess(); // Call onSuccess when the file is handled
+      }
+    },
+    showUploadList: importLoad,
+  };
+
   if (userId) {
     return (
       <Spin spinning={loading} size="large" tip=" Loading... ">
         <div style={{ padding: "1rem" }}>
           <Space wrap size="middle">
+            <Upload {...uploadProps}>
+              <Button
+                style={{ color: "green", marginRight: "5px" }}
+                icon={<ImportOutlined />}
+              >
+                นำเข้า Excel
+              </Button>
+            </Upload>
+
             <Button type="primary" onClick={() => loadData()}>
               📥 โหลดข้อมูลจาก DB
             </Button>

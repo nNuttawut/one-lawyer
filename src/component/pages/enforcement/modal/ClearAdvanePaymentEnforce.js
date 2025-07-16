@@ -310,7 +310,7 @@ const ClearAdvanePaymentCourt = ({
     dataset = dataDefault.expenseList.map((item) => {
       // หาค่าที่ตรงกับ item.id
       let matchedValue = values[item.id];
-      if (values[item.id]) {
+      if (values[item.id] || values[item.id] === 0) {
         return {
           ...item,
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
@@ -359,20 +359,6 @@ const ClearAdvanePaymentCourt = ({
       setBtnOn(false);
     }
   };
-
-  // const handleInputChange = (value, contno, description, LAWSUIT_ID) => {
-  //   console.log(value, contno, description, LAWSUIT_ID);
-  //   checkItem(value);
-  //   // อัปเดตค่าลงใน state
-  //   setInputValues((prev) => ({
-  //     ...prev,
-  //     [contno]: {
-  //       ...prev[contno],
-  //       [description]: value,
-  //       LAWSUIT_ID: LAWSUIT_ID,
-  //     },
-  //   }));
-  // };
 
   const handleInputChange = (value, contno, description, LAWSUIT_ID) => {
     console.log(value, contno, description, LAWSUIT_ID);
@@ -752,8 +738,8 @@ const ClearAdvanePaymentCourt = ({
                     </div>
                   </Form.Item>
                 ) : null}
-                <Form.Item
-                  label="บัญชีบริษัท"
+                {/* <Form.Item
+                  label="ของบริษัท"
                   name="memo"
                   style={{ width: "95%" }}
                 >
@@ -764,7 +750,7 @@ const ClearAdvanePaymentCourt = ({
                   <p style={{ color: "red" }}>
                     กรุณาตรวจสอบโดยละเอียดก่อนทำรายการ !
                   </p>
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"

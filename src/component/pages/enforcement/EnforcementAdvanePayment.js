@@ -12,6 +12,7 @@ import {
   Select,
   Flex,
   Tooltip,
+  notification,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
@@ -167,7 +168,7 @@ const Main = () => {
       }
 
       let dataUse;
-      if (userCompany === 3) {
+      if (userCompany === "3") {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
@@ -187,11 +188,24 @@ const Main = () => {
   };
 
   const setOptionCompany = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
+    let options;
+    if (userCompany === "3") {
+      options = companiesListCompany
+        .filter((item) => item.id === 3)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    } else {
+      options = companiesListCompany
+        .filter((item) => item.id === 1 || item.id === 2)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    }
 
     console.log("options", options);
     setCompaniesOption(options);
@@ -199,7 +213,14 @@ const Main = () => {
   };
 
   const loadSelectCompany = (value) => {
-    const selectedOption = value.find((option) => option.value === 2);
+    let userCompany;
+    if (userCompany === "3") {
+      userCompany = 3;
+    } else {
+      userCompany = 2;
+    }
+    const selectedOption = value.find((option) => option.value === userCompany);
+
     if (selectedOption) {
       console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
       setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
@@ -417,46 +438,96 @@ const Main = () => {
         item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
     );
 
-    console.log(
-      "checkData",
-      checkUserClearAdvanceMoney,
-      checkUserClearAdvanceLeasing
+    const checkUserBill = checkClearAdvance?.filter(
+      (item) =>
+        item.pay_status_id !== PAYADVANCE_STATUS_SUCCESS &&
+        item.pay_status_id !== PAYADVANCE_STATUS_NOT_APPROVED &&
+        item.reference_no?.substring(0, 1) !== "8"
     );
-    if (companieSelect === 1) {
+
+    if (companieSelect.value === 1) {
       if (checkUserClearAdvanceLeasing) {
+        console.log("1");
+
         setIsModalCreateAdvanePaymentCourt(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
-    } else if (companieSelect === 2) {
+    } else if (companieSelect.value === 2) {
+      console.log("2");
       if (checkUserClearAdvanceMoney) {
         setIsModalCreateAdvanePaymentCourt(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
     } else {
       if (checkUserClearAdvanceKSM) {
+        console.log("3");
         setIsModalCreateAdvanePaymentCourt(true);
       } else {
-        message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+        if (checkUserBill?.length > 0) {
+          notification.error({
+            message: "ยังไม่เคลียร์รายการที่เบิก !",
+            description: (
+              <div>
+                <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+                  {checkUserBill.map((item, index) => (
+                    <li key={index}>{item.reference_no}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+
+            duration: 5,
+          });
+        }
       }
     }
   };
 
   const handleCheckContno = () => {
-    let checkContno = selectedRows.every(
-      (item) =>
-        selectedRows[0]?.CONTNO === item.CONTNO &&
-        selectedRows[0]?.legal_execution_office === item.legal_execution_office
-    );
+    let checkContno = selectedRows.every((item) => item.legal_execution_office);
 
     if (checkContno) {
-      renderCheckClearAdvance();
+      setIsModalCreateAdvanePaymentCourt(true);
+      // renderCheckClearAdvance();
     } else {
-      message.error("กรุณาเลือกเลขสัญญาและกรมบังคับคดีให้เหมือนกัน");
+      // message.error("กรุณาเลือกเลขสัญญาและกรมบังคับคดีให้เหมือนกัน");
+      notification.error({
+        message: "กรุณาเลือกเลขสัญญาและกรมบังคับคดีให้เหมือนกัน !",
+        duration: 5,
+      });
     }
-
-    console.log("checkContno", checkContno);
   };
 
   const columns = [

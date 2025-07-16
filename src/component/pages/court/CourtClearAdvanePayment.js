@@ -292,7 +292,7 @@ const Main = () => {
     }
 
     let color;
-    const recordDate = dayjs(date).startOf("day");
+    const recordDate = dayjs(date);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี

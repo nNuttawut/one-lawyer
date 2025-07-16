@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
 import dayjs from "dayjs";
+import LoadCompanies from "../../../../hook/LoadCompanies";
 
 const ClearAdvanePaymentCourt = ({
   open,
@@ -42,6 +43,9 @@ const ClearAdvanePaymentCourt = ({
   const [fileTranferMoney, setFileTranferMoney] = useState([]);
   const [fileListLoad, setFileListLoad] = useState([]);
   const [fileTranferMoneyLoad, setFileTranferMoneyLoad] = useState([]);
+  const [companiesListCompany, setLoadingDataCompany] = LoadCompanies();
+  const [companiesOption, setCompaniesOption] = useState(null);
+  const [companieSelect, setCompanieSelect] = useState();
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -53,6 +57,7 @@ const ClearAdvanePaymentCourt = ({
       renderDataDetail(dataDefault);
       loadImagesProduct();
       loadImagesProductTranferMoney();
+      setLoadingDataCompany(true);
       console.log(dataDefault);
       form.setFieldsValue({
         // imageReplyFile: dataDefault.file_path,
@@ -97,6 +102,46 @@ const ClearAdvanePaymentCourt = ({
 
     // ตั้งค่า state สำหรับ render
     setDataRender(groupedArray);
+  };
+
+  useEffect(() => {
+    if (companiesListCompany) {
+      setOptionCompany();
+    }
+  }, [companiesListCompany]);
+
+  const setOptionCompany = () => {
+    const options = companiesListCompany.map((item) => ({
+      value: item.id,
+      label: item.company_name,
+      address: item.address,
+      bank: item.bank,
+    }));
+    setCompaniesOption(options);
+    loadSelectCompany(options);
+    console.log("options", options);
+  };
+
+  const loadSelectCompany = (value) => {
+    console.log("value", value);
+
+    const checkCompanie = dataDefault.reference_no.substring(1, 2);
+    let checkValue;
+    if (checkCompanie === "L") {
+      checkValue = 1;
+    } else if (checkCompanie === "M") {
+      checkValue = 2;
+    } else {
+      checkValue = 3;
+    }
+    console.log("checkValue", checkValue);
+
+    const selectedOption = value.find((option) => option.value === checkValue);
+    console.log("selectedOption", selectedOption);
+
+    if (selectedOption) {
+      setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
+    }
   };
 
   const onChangeInputMemo = (value) => {
@@ -271,7 +316,7 @@ const ClearAdvanePaymentCourt = ({
     dataset = dataDefault.expenseList.map((item) => {
       // หาค่าที่ตรงกับ item.id
       let matchedValue = values[item.id];
-      if (values[item.id]) {
+      if (values[item.id] || values[item.id] === 0) {
         return {
           ...item,
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
@@ -320,20 +365,6 @@ const ClearAdvanePaymentCourt = ({
       setBtnOn(false);
     }
   };
-
-  // const handleInputChange = (value, contno, description, LAWSUIT_ID) => {
-  //   console.log(value, contno, description, LAWSUIT_ID);
-  //   checkItem(value);
-  //   // อัปเดตค่าลงใน state
-  //   setInputValues((prev) => ({
-  //     ...prev,
-  //     [contno]: {
-  //       ...prev[contno],
-  //       [description]: value,
-  //       LAWSUIT_ID: LAWSUIT_ID,
-  //     },
-  //   }));
-  // };
 
   const handleInputChange = (value, contno, description, LAWSUIT_ID) => {
     console.log(value, contno, description, LAWSUIT_ID);
@@ -696,6 +727,19 @@ const ClearAdvanePaymentCourt = ({
                     </div>
                   </Form.Item>
                 ) : null}
+                {/* <Form.Item
+                  label="ของบริษัท"
+                  name="memo"
+                  style={{ width: "95%" }}
+                >
+                  <p style={{ color: "blue", fontSize: "16px" }}>
+                    {companieSelect?.bank}
+                  </p>
+
+                  <p style={{ color: "red" }}>
+                    กรุณาตรวจสอบโดยละเอียดก่อนทำรายการ !
+                  </p>
+                </Form.Item> */}
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"

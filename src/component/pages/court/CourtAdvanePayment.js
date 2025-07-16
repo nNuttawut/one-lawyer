@@ -12,6 +12,7 @@ import {
   Select,
   Flex,
   Tooltip,
+  notification,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useEffect, useMemo, useState } from "react";
@@ -22,7 +23,6 @@ import { Link } from "react-router-dom";
 import {
   baseUrl,
   GET_EXPENSES_REFERENCE,
-  GET_JOB_IN_PROGRESS_BY_STATUS,
   GET_JUDGE_LIST,
   HEADERS_EXPORT,
 } from "../../API/apiUrls";
@@ -30,10 +30,8 @@ import axios from "axios";
 import DateCustom from "../../../hook/DateCustom";
 import dayjs from "dayjs";
 import LoadCompanies from "../../../hook/LoadCompanies";
-import { JUDGEMENT } from "../../../utils/constant/StatusConstant";
 import CreateAdvanePaymentCourt from "./modal/CreateAdvanePaymentCourt";
 import { optionsLone } from "../../../utils/constant/LoanTypeConstant";
-import { blue } from "@mui/material/colors";
 import { optionsLocat } from "../../../utils/constant/LocatOption";
 import {
   PAYADVANCE_STATUS_NOT_APPROVED,
@@ -60,7 +58,9 @@ const Main = () => {
   const [searchEdit, setSearchEdit] = useState(null);
   // const [expandedRowKeys, setExpandedRowKeys] = useState([]);
   const [companiesOption, setCompaniesOption] = useState(null);
-  const [companieSelect, setCompanieSelect] = useState();
+  const [companieSelect, setCompanieSelect] = useState(
+    userCompany === "3" ? 3 : 2
+  );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [arrow, setArrow] = useState("Show");
@@ -139,8 +139,6 @@ const Main = () => {
   };
 
   const filterData = (data) => {
-    console.log("data", data);
-
     if (Array.isArray(data)) {
       const preData = data.filter(
         (item) =>
@@ -172,13 +170,15 @@ const Main = () => {
       }
 
       let dataUse;
-      if (userCompany === 3) {
+      if (userCompany === "3") {
         dataUse = filteredData.filter((item) => item.COMPANY_ID === 3);
         setDataArr(dataUse);
       } else {
-        let dataCheck = filteredData.filter((item) => item.COMPANY_ID !== 3);
-        dataUse = filteredData.filter((item) => item.COMPANY_ID === 2);
-        setDataArr(dataCheck);
+        let dataFilter = filteredData.filter((item) => item.COMPANY_ID !== 3);
+        dataUse = filteredData.filter(
+          (item) => item.COMPANY_ID === 2 || item.COMPANY_ID === 5
+        );
+        setDataArr(dataFilter);
       }
 
       setArrayTable(dataUse);
@@ -192,19 +192,39 @@ const Main = () => {
   };
 
   const setOptionCompany = () => {
-    const options = companiesListCompany.map((item) => ({
-      value: item.id,
-      label: item.company_name,
-      address: item.address,
-    }));
-
+    let options;
+    if (userCompany === "3") {
+      options = companiesListCompany
+        .filter((item) => item.id === 3)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    } else {
+      options = companiesListCompany
+        .filter((item) => item.id === 1 || item.id === 2)
+        .map((item) => ({
+          value: item.id,
+          label: item.company_name,
+          address: item.address,
+        }));
+    }
     console.log("options", options);
     setCompaniesOption(options);
     loadSelectCompany(options);
   };
 
   const loadSelectCompany = (value) => {
-    const selectedOption = value.find((option) => option.value === 2);
+    let userCompany;
+    if (userCompany === "3") {
+      userCompany = 3;
+    } else {
+      userCompany = 2;
+    }
+    const selectedOption = value.find((option) => option.value === userCompany);
+    console.log("selectedOption", selectedOption);
+
     if (selectedOption) {
       console.log("Selected Option:", selectedOption); // แสดงข้อมูลทั้งหมด
       setCompanieSelect(selectedOption); // เก็บข้อมูลทั้งหมดใน state
@@ -213,6 +233,14 @@ const Main = () => {
 
   const onChangeSelect = (value) => {
     console.log(`selected ${value} `);
+
+    let companyValue;
+
+    if (value === 1) {
+      companyValue = 4;
+    } else if (value === 2) {
+      companyValue = 5;
+    }
 
     const selectedOption = companiesOption.find(
       (option) => option.value === value
@@ -224,7 +252,9 @@ const Main = () => {
     }
 
     const dataUse = dataArr.filter(
-      (item) => item.COMPANY_ID === selectedOption.value
+      (item) =>
+        item.COMPANY_ID === selectedOption.value ||
+        item.COMPANY_ID === companyValue
     );
     setSelectedRowKeys([]);
     setSelectedRows([]);
@@ -241,13 +271,22 @@ const Main = () => {
   const onSearch = (value) => {
     console.log(companieSelect);
 
+    let companyValue;
+
+    if (companieSelect.value === 1) {
+      companyValue = 4;
+    } else if (companieSelect.value === 2) {
+      companyValue = 5;
+    }
+
     let result = arrayTable.filter(
       (item) =>
         ((item.CONTNO && item.CONTNO.includes(value)) ||
           (item.customer_name && item.customer_name.includes(value)) ||
           (item.customer_lastname && item.customer_lastname.includes(value))) &&
         item.USER_ID === userId &&
-        item.COMPANY_ID === companieSelect.value
+        (item.COMPANY_ID === companieSelect.value ||
+          item.COMPANY_ID === companyValue)
     );
 
     console.log("result", result);
@@ -269,11 +308,26 @@ const Main = () => {
     const timestampStart = start.valueOf();
     const timestampEnd = end.valueOf();
 
+    let companyValue;
+
+    if (companieSelect === 1) {
+      companyValue = 4;
+    } else if (companieSelect === 2) {
+      companyValue = 5;
+    }
+
     if (startDate && endDate) {
       const selectSearch = dataArr.filter((item) => {
         const date = dayjs(item.date_of_plaint, "YYYY-MM-DD");
         const itemDate = date.valueOf();
-        if (itemDate >= timestampStart && itemDate <= timestampEnd) {
+        if (
+          itemDate >= timestampStart &&
+          itemDate <= timestampEnd &&
+          item.USER_ID === userId &&
+          !item.fee_payment_status &&
+          (item.COMPANY_ID === companieSelect.value ||
+            item.COMPANY_ID === companyValue)
+        ) {
           return item;
         } else {
           return null;
@@ -325,7 +379,7 @@ const Main = () => {
       return null;
     }
     let color;
-    const recordDate = dayjs(record.judge_date).startOf("day");
+    const recordDate = dayjs(record.judge_date);
     const today = dayjs().startOf("day");
 
     // คำนวณความแตกต่างในหน่วยปี
@@ -375,19 +429,128 @@ const Main = () => {
     );
   };
 
-  const renderCheckClearAdvance = () => {
-    const checkUserClearAdvance = checkClearAdvance?.every(
-      (item) =>
-        item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
-        item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
-    );
+  // const renderCheckClearAdvance = () => {
+  //   const checkUserClearAdvance = checkClearAdvance?.every(
+  //     (item) =>
+  //       item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+  //       item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+  //   );
 
-    console.log("checkData", checkUserClearAdvance);
-    if (checkUserClearAdvance) {
-      setIsModalCreateAdvanePaymentCourt(true);
-    } else {
-      message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
-    }
+  //   console.log("checkData", checkUserClearAdvance);
+  //   if (checkUserClearAdvance) {
+  //     setIsModalCreateAdvanePaymentCourt(true);
+  //   } else {
+  //     message.error("ยังไม่เคลียร์รายการที่เบิก โปรดติดต่อการเงิน");
+  //   }
+  // };
+
+  const renderCheckClearAdvance = () => {
+    console.log("checkClearAdvance-----=>", checkClearAdvance);
+
+    setIsModalCreateAdvanePaymentCourt(true);
+
+    // const checkBillClearMonney = checkClearAdvance?.filter((item) => {
+    //   return item.reference_no?.substring(1, 2) === "M";
+    // });
+
+    // const checkBillClearLeassing = checkClearAdvance?.filter((item) => {
+    //   return item.reference_no?.substring(1, 2) === "L";
+    // });
+
+    // const checkBillClearKSM = checkClearAdvance?.filter((item) => {
+    //   return item.reference_no?.substring(1, 2) === "K";
+    // });
+
+    // const checkUserClearAdvanceMoney = checkBillClearMonney?.every(
+    //   (item) =>
+    //     item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+    //     item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    // );
+
+    // const checkUserClearAdvanceLeasing = checkBillClearLeassing?.every(
+    //   (item) =>
+    //     item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+    //     item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    // );
+
+    // const checkUserClearAdvanceKSM = checkBillClearKSM?.every(
+    //   (item) =>
+    //     item.pay_status_id === PAYADVANCE_STATUS_SUCCESS ||
+    //     item.pay_status_id === PAYADVANCE_STATUS_NOT_APPROVED
+    // );
+
+    // const checkUserBill = checkClearAdvance?.filter(
+    //   (item) =>
+    //     item.pay_status_id !== PAYADVANCE_STATUS_SUCCESS &&
+    //     item.pay_status_id !== PAYADVANCE_STATUS_NOT_APPROVED
+    // );
+
+    // if (companieSelect.value === 1) {
+    //   if (checkUserClearAdvanceLeasing) {
+    //     console.log(checkUserClearAdvanceLeasing);
+
+    //     setIsModalCreateAdvanePaymentCourt(true);
+    //   } else {
+    //     if (checkUserBill?.length > 0) {
+    //       notification.error({
+    //         message: "ยังไม่เคลียร์รายการที่เบิก !",
+    //         description: (
+    //           <div>
+    //             <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+    //               {checkUserBill.map((item, index) => (
+    //                 <li key={index}>{item.reference_no}</li>
+    //               ))}
+    //             </ul>
+    //           </div>
+    //         ),
+
+    //         duration: 5,
+    //       });
+    //     }
+    //   }
+    // } else if (companieSelect.value === 2) {
+    //   if (checkUserClearAdvanceMoney) {
+    //     setIsModalCreateAdvanePaymentCourt(true);
+    //   } else {
+    //     if (checkUserBill?.length > 0) {
+    //       notification.error({
+    //         message: "ยังไม่เคลียร์รายการที่เบิก !",
+    //         description: (
+    //           <div>
+    //             <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+    //               {checkUserBill.map((item, index) => (
+    //                 <li key={index}>{item.reference_no}</li>
+    //               ))}
+    //             </ul>
+    //           </div>
+    //         ),
+
+    //         duration: 5,
+    //       });
+    //     }
+    //   }
+    // } else {
+    //   if (checkUserClearAdvanceKSM) {
+    //     setIsModalCreateAdvanePaymentCourt(true);
+    //   } else {
+    //     if (checkUserBill?.length > 0) {
+    //       notification.error({
+    //         message: "ยังไม่เคลียร์รายการที่เบิก !",
+    //         description: (
+    //           <div>
+    //             <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+    //               {checkUserBill.map((item, index) => (
+    //                 <li key={index}>{item.reference_no}</li>
+    //               ))}
+    //             </ul>
+    //           </div>
+    //         ),
+
+    //         duration: 5,
+    //       });
+    //     }
+    //   }
+    // }
   };
 
   const columns = [

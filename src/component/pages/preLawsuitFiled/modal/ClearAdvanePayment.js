@@ -45,6 +45,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
   const [fileTranferMoneyLoad, setFileTranferMoneyLoad] = useState([]);
   const [companieSelect, setCompanieSelect] = useState();
   const [companiesOption, setCompaniesOption] = useState(null);
+  const [statusPayment, setStatusPayment] = useState(null);
 
   const handleCancel = () => {
     console.log("Clicked cancel button");
@@ -311,7 +312,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
     dataset = dataDefault.expenseList.map((item) => {
       // หาค่าที่ตรงกับ item.id
       let matchedValue = values[item.id];
-      if (values[item.id]) {
+      if (values[item.id] || values[item.id] === 0) {
         return {
           ...item,
           pay: matchedValue || 0, // ถ้าไม่มีค่าให้กำหนดเป็น 0
@@ -322,6 +323,8 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
         };
       }
     });
+    console.log("setdataSend", setdataSend);
+    console.log("dataset", dataset);
 
     const checkData = dataset.filter((item) => item); // กรองค่า null, undefined, false ออก
     setdataSend.push(...checkData);
@@ -737,8 +740,8 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     </div>
                   </Form.Item>
                 ) : null}
-                <Form.Item
-                  label="บัญชีบริษัท"
+                {/* <Form.Item
+                  label="ของบริษัท"
                   name="memo"
                   style={{ width: "95%" }}
                 >
@@ -749,7 +752,7 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   <p style={{ color: "red" }}>
                     กรุณาตรวจสอบโดยละเอียดก่อนทำรายการ !
                   </p>
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item
                   label="หมายเหตุ"
                   name="memo"
@@ -771,7 +774,13 @@ const ClearAdvanePayment = ({ open, close, dataDefault, funcUpdateStatus }) => {
                   {btnOn ||
                   fileList?.length > 0 ||
                   fileTranferMoney?.length > 0 ? (
-                    <Button style={{ color: "green" }} htmlType="submit">
+                    <Button
+                      style={{ color: "green" }}
+                      htmlType="submit"
+                      onClick={() => {
+                        setStatusPayment(0);
+                      }}
+                    >
                       บันทึก
                     </Button>
                   ) : null}

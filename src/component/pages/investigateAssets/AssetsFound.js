@@ -90,10 +90,14 @@ const Main = () => {
   const filterData = (data) => {
     if (data) {
       const newData = data.filter((item) => item.investigation_status === 1);
-      console.log("newDataLawsuit 11", newData);
+      console.log("newDataLawsuit 11", newData, userCompany);
+
+      console.log(data);
 
       let filteredData;
       if (userCompany === "3") {
+        console.log('userCompany === "3"');
+
         filteredData = newData.filter((item) => {
           const branch = item.LOCAT;
           // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
@@ -106,6 +110,7 @@ const Main = () => {
           );
         });
       } else {
+        console.log('userCompany !== "3"');
         filteredData = newData.filter((item) => {
           const branch = item.LOCAT;
           if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข

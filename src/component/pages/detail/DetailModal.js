@@ -202,7 +202,7 @@ const DetailModal = ({ open, close, dataRec }) => {
             status="error"
             items={[
               {
-                title: "ส่ง notice",
+                title: "ส่ง notice/เบิกเลิก",
                 status: dataDetail?.STATUS1 === "1" ? "finish" : "wait",
                 icon: <AlertOutlined />,
               },
@@ -1167,7 +1167,7 @@ const DetailModal = ({ open, close, dataRec }) => {
                 ? dataDetail?.investigateProperty[0]?.preference_creditor
                 : "-"}
             </Form.Item>
-            <Form.Item label="ยอดหนี้จำนอง" name="mortgageBalance">
+            <Form.Item label="ยอดหนี้จำนอง/ขายฝาก" name="mortgageBalance">
               {dataDetail?.investigateProperty[0]?.mortgage_balance
                 ? currencyFormatNoPoint(
                     dataDetail?.investigateProperty[0]?.mortgage_balance

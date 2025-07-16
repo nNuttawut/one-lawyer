@@ -11,6 +11,7 @@ import {
   Tooltip,
   Modal,
   DatePicker,
+  Upload,
 } from "antd";
 import Search from "antd/es/input/Search";
 import React, { useState, useEffect, useMemo } from "react";
@@ -21,11 +22,12 @@ import {
   CloseCircleOutlined,
   FileExcelOutlined,
   PrinterOutlined,
+  ImportOutlined,
 } from "@ant-design/icons";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import FailedImport from "./modal/FailedImport";
-import { POST_LOAN_DB2 } from "../../API/apiUrls";
+import { HEADERS_EXPORT_BEN, POST_LOAN_DB2 } from "../../API/apiUrls";
 import DateCustom from "../../../hook/DateCustom";
 import CurrencyFormat from "../../../hook/CurrencyFormat";
 import ExcelJS from "exceljs";
@@ -56,7 +58,7 @@ const Main = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [dataSearch, setDataSearch] = useState(0);
   const [dataCheck, setDataCheck] = useState([]);
-  const [dateQuery, setDateQuery] = useState(dayjs());
+  const [dateQuery, setDateQuery] = useState();
   const [dataSync, setDataSynce] = useState(null);
 
   const onQuery = () => {
@@ -71,7 +73,13 @@ const Main = () => {
     let value = `'${queryContno}'`;
     try {
       await axios
-        .post(POST_LOAN_DB2, { CONTNO: value })
+        .post(
+          POST_LOAN_DB2,
+          { CONTNO: value },
+          {
+            headers: HEADERS_EXPORT_BEN,
+          }
+        )
         .then(async (resQuery) => {
           if (resQuery.status === 200 && resQuery.data) {
             setDataCheck(resQuery.data);
@@ -172,6 +180,7 @@ const Main = () => {
       key: index + 1,
     }));
   };
+
   const filterData = (value) => {
     console.log(value);
     setArrayTable(value);
@@ -225,7 +234,9 @@ const Main = () => {
 
     try {
       await axios
-        .post(POST_LOAN_DB2, data)
+        .post(POST_LOAN_DB2, data, {
+          headers: HEADERS_EXPORT_BEN,
+        })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
             console.log("resQuery", resQuery.data);
@@ -257,21 +268,6 @@ const Main = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const uploadProps = {
-    customRequest: ({ file, onSuccess, fileList }) => {
-      setTimeout(() => {
-        message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
-      }, 1000);
-      handleFileUpload(file);
-      if (file.status !== "uploading") {
-        console.log(file, fileList);
-      } else {
-        onSuccess(); // Call onSuccess when the file is handled
-      }
-    },
-    showUploadList: arrayTable?.length > 0 ? false : true,
   };
 
   const confirmModal = () => {
@@ -347,6 +343,7 @@ const Main = () => {
       worksheet.columns = [
         { header: "ลำดับ", key: "no", width: 10 },
         { header: "สัญญา", key: "data_type", width: 10 },
+        { header: "ประเภทจ่าย", key: "forCode", width: 10 },
         { header: "วันออกจดหมาย", key: "date", width: 15 },
         { header: "ประเภทบัญชี", key: "accType", width: 15 },
         { header: "เลขที่สัญญา", key: "contno", width: 20 },
@@ -377,7 +374,8 @@ const Main = () => {
       filteredData.forEach((data, index) => {
         worksheet.addRow([
           index + 1,
-          userCompany === "3" ? "ksm" : data.DATA_TYPE,
+          userCompany === "3" ? "ksm" : data.LOAN.DATA_TYPE,
+          3,
           dateQuery, // วันที่ส่ง
           "cancelLand",
           data.CONTNO,
@@ -411,7 +409,7 @@ const Main = () => {
     // ดาวน์โหลดไฟล์
     saveAs(
       blob,
-      `รายงานบอกเลิกสัญญา(มือ) ${dayjs().format("YYYY_MM_DD")}.xlsx`
+      `รายงานบอกเลิกสัญญา(ที่ดิน) ${dayjs().format("YYYY_MM_DD")}.xlsx`
     );
   };
 
@@ -538,12 +536,27 @@ const Main = () => {
     },
   ];
 
+  const uploadProps = {
+    customRequest: ({ file, onSuccess, fileList }) => {
+      setTimeout(() => {
+        message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
+      }, 1000);
+      handleFileUpload(file);
+      if (file.status !== "uploading") {
+        console.log(file, fileList);
+      } else {
+        onSuccess(); // Call onSuccess when the file is handled
+      }
+    },
+    showUploadList: arrayTable?.length > 0 ? false : true,
+  };
+
   return (
     <>
       <Card>
         <Spin spinning={loading} size="large" tip=" Loading... ">
           <Row>
-            <Col span={"12"} style={{ textAlign: "start" }}>
+            <Col span={"4"} style={{ textAlign: "start" }}>
               <Popconfirm
                 title="เลขสัญญาที่ค้นหาไม่เจอ"
                 description="ต้องการดูเลขสัญญาที่ค้นหาไม่เจอใช่หรือไม่ ?"
@@ -558,24 +571,36 @@ const Main = () => {
               </Popconfirm>
             </Col>
 
-            <Col span={"24"} style={{ textAlign: "end" }}>
-              <Space direction="vertical" size={12}>
-                <Tooltip
-                  placement="bottom"
-                  title="วันที่คิดดอกเบี้ยถึง"
-                  arrow={mergedArrow}
+            <Col span={"20"} style={{ textAlign: "end" }}>
+              <Upload {...uploadProps}>
+                <Button
+                  style={{
+                    color: "green",
+                    marginRight: "10px",
+                    marginBottom: "10px",
+                  }}
+                  icon={<ImportOutlined />}
                 >
-                  <DatePicker
-                    size="large"
-                    style={{
-                      marginRight: "10px",
-                      marginBottom: "10px",
-                    }}
-                    defaultValue={dateQuery}
-                    onChange={handleChangeDate}
-                  />
-                </Tooltip>
-              </Space>
+                  นำเข้าสัญญา
+                </Button>
+              </Upload>
+
+              <Tooltip
+                placement="bottom"
+                title="วันที่คิดดอกเบี้ยถึง"
+                arrow={mergedArrow}
+              >
+                <DatePicker
+                  size="large"
+                  style={{
+                    marginRight: "10px",
+                    marginBottom: "10px",
+                  }}
+                  // defaultValue={dateQuery}
+                  onChange={handleChangeDate}
+                />
+              </Tooltip>
+
               <Search
                 placeholder="ค้นหาสัญญา"
                 onSearch={onQuery}

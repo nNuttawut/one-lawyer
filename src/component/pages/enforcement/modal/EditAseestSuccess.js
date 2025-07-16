@@ -69,7 +69,8 @@ const EditAssetsSuccess = ({
 
   const optionsMortgageStatus = [
     { label: "ไม่ติดภาระ", value: 0 },
-    { label: "ติดภาระ", value: 1 },
+    { label: "ติดภาระจำนอง", value: 1 },
+    { label: "ติดภาระขายฝาก", value: 2 },
   ];
 
   const optionsSequestrateStatus = [
@@ -173,7 +174,7 @@ const EditAssetsSuccess = ({
     await axios
       .get(
         baseUrl +
-          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/asset_${dataDefualt?.CONTNO}_${dataIndex?.CUSTOMER_ID}_${dataIndex?.deed_number}_${dataIndex?.province}_${dataIndex?.district}`
+          `/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${dataIndex?.CUSTOMER_ID}_${dataIndex?.deed_number}_${dataIndex?.province}_${dataIndex?.district}`
       )
       .then((response) => {
         console.log("ImageList", response.data);
@@ -236,13 +237,15 @@ const EditAssetsSuccess = ({
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -591,7 +594,7 @@ const EditAssetsSuccess = ({
         </Form.Item>
 
         <Form.Item
-          label="ติดภาระจำนอง"
+          label="ติดภาระจำนอง/ขายฝาก"
           name="mortgageStatus"
           rules={[
             {
@@ -601,7 +604,7 @@ const EditAssetsSuccess = ({
           ]}
         >
           <Radio.Group
-            label="ติดภาระจำนอง"
+            label="ติดภาระจำนอง/ขายฝาก"
             name="mortgageStatus"
             options={optionsMortgageStatus}
             onChange={onChangeMortgageStatus}
@@ -609,10 +612,10 @@ const EditAssetsSuccess = ({
           />
         </Form.Item>
 
-        {mortgageStatus === 1 ? (
+        {mortgageStatus === 1 || mortgageStatus === 2 ? (
           <>
             <Form.Item
-              label="เจ้าหนี้จำนอง"
+              label="เจ้าหนี้จำนอง/ขายฝาก"
               name="mortgagee"
               rules={[
                 {
@@ -625,7 +628,7 @@ const EditAssetsSuccess = ({
             </Form.Item>
 
             <Form.Item
-              label="ยอดหนี้จำนอง"
+              label="ยอดหนี้จำนอง/ขายฝาก"
               name="mortgageBalance"
               rules={[
                 {

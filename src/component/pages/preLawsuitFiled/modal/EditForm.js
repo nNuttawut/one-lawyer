@@ -61,7 +61,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("dataLoadLawSuit?--->", dataLoadLawSuit);
 
       form.setFieldsValue({
-        dateCourt: dayjs(dataDefault.DATE),
+        dateCourt: dayjs(dataLoadLawSuit?.date_of_plaint),
         court: dataLoadLawSuit?.provincial_court,
         subject: dataLoadLawSuit?.subject,
         trackingFee: dataLoadLawSuit?.tracking_fee
@@ -72,22 +72,22 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
           : 0,
         lossBenefit: dataLoadLawSuit?.lack_of_benefits
           ? currencyFormatNoPoint(dataLoadLawSuit?.lack_of_benefits)
-          : null,
+          : 0,
         intigationFounds: dataLoadLawSuit?.litigation_funds
           ? currencyFormatNoPoint(dataLoadLawSuit?.litigation_funds)
-          : null,
+          : 0,
         feeCourt: dataLoadLawSuit?.fee
           ? currencyFormatComma(dataLoadLawSuit?.fee)
-          : null,
+          : 0,
         stampDuty: dataLoadLawSuit?.stamp_cost
           ? currencyFormatComma(dataLoadLawSuit?.stamp_cost)
-          : null,
+          : 0,
         docShipingCost: dataLoadLawSuit?.delivery_of_summons
           ? currencyFormatComma(dataLoadLawSuit?.delivery_of_summons)
-          : null,
+          : 0,
         documentCost: dataLoadLawSuit?.document_cost
           ? currencyFormatComma(dataLoadLawSuit?.document_cost)
-          : null,
+          : 0,
       });
 
       let dateCurrent = dayjs(dataDefault.DATE);
@@ -237,41 +237,6 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
   };
 
   const onFinish = (values) => {
-    let intTrackingFee =
-      values?.trackingFee &&
-      typeof values.trackingFee === "string" &&
-      values.trackingFee.includes(",")
-        ? parseInt(values.trackingFee.replace(/,/g, ""))
-        : parseInt(values.trackingFee)
-        ? parseInt(values.trackingFee)
-        : 0;
-
-    let intLostbenefit =
-      values?.lossBenefit && typeof values.lossBenefit === "string"
-        ? values.lossBenefit.includes(",")
-          ? parseInt(values.lossBenefit.replace(/,/g, ""))
-          : parseInt(values.lossBenefit)
-        : parseInt(values.lossBenefit);
-
-    console.log("intLostbenefit---->", intLostbenefit);
-    let intSuspensionAmount =
-      values?.suspensionAmount &&
-      typeof values.suspensionAmount === "string" &&
-      values.suspensionAmount.includes(",")
-        ? parseInt(values.suspensionAmount.replace(/,/g, ""))
-        : parseInt(values.suspensionAmount)
-        ? parseInt(values.suspensionAmount)
-        : 0;
-
-    let valueIntigationFounds =
-      values?.intigationFounds &&
-      typeof values.intigationFounds === "string" &&
-      values.intigationFounds.includes(",")
-        ? parseInt(values.intigationFounds.replace(/,/g, ""))
-        : parseInt(values.intigationFounds)
-        ? parseInt(values.intigationFounds)
-        : 0;
-
     let calFeeCourt;
     let calStampDuty;
     let balance;
@@ -279,50 +244,60 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
 
     console.log("Success:", values);
 
-    if (buttonCalFounds) {
-      console.log("intTrackingFee", intTrackingFee);
-      console.log("intLostbenefit", intLostbenefit);
-      console.log("intSuspensionAmount", intSuspensionAmount);
+    // if (buttonCalFounds) {
+    //   if (
+    //     (dataDefault?.LOAN_TYPE_ID !== 2 && dataDefault?.LOAN_TYPE_ID !== 5) ||
+    //     (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
+    //   ) {
+    //     balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
+    //     calIntigationFounds =
+    //       balance + values.intTrackingFee - values.intSuspensionAmount;
+    //   } else {
+    //     balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
+    //     calIntigationFounds =
+    //       balance +
+    //       values.intTrackingFee +
+    //       values.intLostbenefit -
+    //       values.intSuspensionAmount;
+    //   }
 
-      if (
-        (dataDefault?.LOAN_TYPE_ID !== 2 && dataDefault?.LOAN_TYPE_ID !== 5) ||
-        (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
-      ) {
-        balance = dataLoadLoan?.LOAN?.NCSHPRC - dataLoadLoan?.LOAN?.SMPAY;
-        calIntigationFounds = balance + intTrackingFee - intSuspensionAmount;
-      } else {
-        balance = dataLoadLoan?.LOAN?.TOTPRC - dataLoadLoan?.LOAN?.SMPAY;
-        calIntigationFounds =
-          balance + intTrackingFee + intLostbenefit - intSuspensionAmount;
-      }
+    //   console.log("calIntigationFounds--->", calIntigationFounds);
+    //   if (calIntigationFounds < 0) {
+    //     calIntigationFounds = 0;
+    //     message.error("ไม่สามารถคำนวณได้เนื่องจากมีค่าติดลบ");
+    //   }
 
-      console.log("calIntigationFounds--->", calIntigationFounds);
-      if (calIntigationFounds < 0) {
-        calIntigationFounds = 0;
-        message.error("ไม่สามารถคำนวณได้เนื่องจากมีค่าติดลบ");
-      }
+    //   form.setFieldsValue({
+    //     intigationFounds: currencyFormatComma(calIntigationFounds),
+    //     feeCourt: 0,
+    //     stampDuty: 0,
+    //   });
 
-      form.setFieldsValue({
-        intigationFounds: currencyFormatComma(calIntigationFounds),
-        feeCourt: 0,
-        stampDuty: 0,
-      });
-
-      setButtonCalFounds(false);
-    }
+    //   setButtonCalFounds(false);
+    // }
     if (buttonCal) {
-      console.log("values.intigationFounds--->", valueIntigationFounds);
+      console.log("values.intigationFounds--->", values.IntigationFounds);
 
-      if (valueIntigationFounds < 300000) {
-        calFeeCourt = valueIntigationFounds * 0.02;
+      if (values.intigationFounds <= 300000) {
+        calFeeCourt = values.intigationFounds * 0.02;
         if (calFeeCourt > 1000) {
           calFeeCourt = 1000;
         }
       } else {
-        calFeeCourt = valueIntigationFounds * 0.02;
+        calFeeCourt = values.intigationFounds * 0.02;
+      }
+      console.log("dataLoadLoan?.LOAN?", dataLoadLoan);
+
+      let guarantorFee = dataLoadLoan?.GUARANTORS?.length * 10;
+      if (loanType === 1) {
+        calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 1000 + guarantorFee;
+      } else {
+        calStampDuty = dataLoadLoan?.LOAN?.NCSHPRC / 2000 + guarantorFee;
       }
 
-      calStampDuty = dataLoadLoan?.LOAN?.TOTPRC / 2000;
+      if (calStampDuty > 10000) {
+        calStampDuty = 10000;
+      }
       if (calStampDuty > 10000) {
         calStampDuty = 10000;
       }
@@ -330,13 +305,11 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       console.log("calFeeCourt", Math.round(calFeeCourt));
 
       form.setFieldsValue({
-        feeCourt: currencyFormatComma(calFeeCourt),
-        stampDuty:
-          (dataDefault?.LOAN_TYPE_ID !== 2 &&
-            dataDefault?.LOAN_TYPE_ID !== 5) ||
-          (values.LOAN_TYPE_ID !== 2 && values.LOAN_TYPE_ID !== 5)
-            ? Math.round(calStampDuty)
-            : 0,
+        feeCourt:
+          loanType === 1
+            ? Math.round(calFeeCourt) + 100
+            : Math.round(calFeeCourt),
+        stampDuty: Math.ceil(calStampDuty) || 0,
       });
 
       setButtonCal(false);
@@ -348,9 +321,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         LOAN_ID: dataDefault.id,
         MEMO: values.memo ? values.memo : dataDefault.MEMO,
         PROCESS_ID: dataDefault.PROCESS_ID,
-        DATE: dataForm.dateCourt
-          ? dataForm.dateCourt
-          : dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
+        DATE: dayjs(dataDefault.DATE).format("YYYY-MM-DD"),
         LOAN_TYPE_ID: values.loanType,
       };
 
@@ -401,7 +372,9 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
         //     : parseInt(values.docShipingCost)
         //     ? parseInt(values.docShipingCost)
         //     : 0,
-        date_of_plaint: dataForm.dateCourt,
+        date_of_plaint: values.dateCourt
+          ? dayjs(values.dateCourt).format("YYYY-MM-DD")
+          : dayjs(dataLoadLawSuit.date_of_plaint).format("YYYY-MM-DD"),
         lack_of_benefits:
           values?.lossBenefit &&
           typeof values.lossBenefit === "string" &&
@@ -516,258 +489,6 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
     handleLossPay(dateString);
   };
 
-  const onChangeTrackingFee = (value) => {
-    console.log(value);
-    let inputValue = value;
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        trackingFee: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        trackingFee: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        trackingFee: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        trackingFee: parseFloat(rawValue),
-      });
-    }
-  };
-
-  const onChangeSuspensionAmount = (value) => {
-    let inputValue = value;
-    console.log(value);
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        suspensionAmount: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        suspensionAmount: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        suspensionAmount: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        suspensionAmount: parseFloat(rawValue),
-      });
-    }
-  };
-
-  const onChangeInpuutLossBenefit = (value) => {
-    let inputValue = value;
-    console.log(value);
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        lossBenefit: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        lossBenefit: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        lossBenefit: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        lossBenefit: parseFloat(rawValue),
-      });
-    }
-  };
-
-  const onChangeInputLitigationFunds = (value) => {
-    let inputValue = value;
-    console.log(value);
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        intigationFounds: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        intigationFounds: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        intigationFounds: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        intigationFounds: parseFloat(rawValue),
-      });
-    }
-  };
-
-  const stampDutyCost = (value) => {
-    let inputValue = value;
-    console.log(value);
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        stampDuty: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        stampDuty: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        stampDuty: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        stampDuty: parseFloat(rawValue),
-      });
-    }
-  };
-
-  const feeCourt = (value) => {
-    let inputValue = value;
-    console.log(value);
-    isNotNumber(inputValue.replace(/,/g, ""));
-
-    // ตัดเครื่องหมาย , ออก
-    let rawValue = inputValue.replace(/,/g, "");
-
-    // ตรวจสอบว่าเป็นตัวเลขหรือไม่
-    if (isNaN(rawValue)) {
-      return; // ถ้าไม่ใช่ตัวเลขก็ไม่ทำการอะไร
-    }
-
-    // หากค่ามากกว่าหรือเท่ากับ 1000 ก็จะทำการจัดรูปแบบ
-    if (parseInt(rawValue) >= 1000) {
-      let intValue = parseInt(rawValue);
-      let formattedValue = currencyFormatComma(intValue); // แสดงผลแบบมี comma
-      console.log("formattedValue", formattedValue);
-
-      form.setFieldsValue({
-        feeCourt: formattedValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        feeCourt: parseFloat(rawValue), // ใช้ค่าที่ไม่ได้มีเครื่องหมาย , เพื่อการคำนวณ
-      });
-    } else {
-      // หากค่าน้อยกว่า 1000 ก็ไม่ต้องจัดรูปแบบ
-      form.setFieldsValue({
-        feeCourt: inputValue.includes(",")
-          ? inputValue.replace(",", "")
-          : inputValue,
-      });
-
-      setDataForm({
-        ...dataForm,
-        feeCourt: parseFloat(rawValue),
-      });
-    }
-  };
-
   const onChangeSelectLoanType = (value) => {
     console.log(`selected ${value} `);
     setLoanType(value);
@@ -791,13 +512,6 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
       nopay: differenceMonth,
     }));
   };
-
-  function isNotNumber(value) {
-    const regex = /^\d+$/; // กำหนดให้ตรงกับตัวเลขทั้งหมด
-    if (!regex.test(value)) {
-      message.error("กรุณากรอกข้อมูลเป็นตัวเลขเท่านั้น");
-    }
-  }
 
   const setLawType = () => {
     let result = dataDefault
@@ -933,12 +647,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             },
           ]}
         >
-          <Input
-            suffix="บาท"
-            autoComplete="off"
-            name="trackingFee"
-            onChange={(e) => onChangeTrackingFee(e.target.value)}
-          />
+          <Input suffix="บาท" autoComplete="off" name="trackingFee" />
         </Form.Item>
         <Form.Item
           label="เบี้ยตั้งพัก"
@@ -950,12 +659,7 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
             },
           ]}
         >
-          <Input
-            suffix="บาท"
-            autoComplete="off"
-            name="suspensionAmount"
-            onChange={(e) => onChangeSuspensionAmount(e.target.value)}
-          />
+          <Input suffix="บาท" autoComplete="off" name="suspensionAmount" />
         </Form.Item>
         <Form.Item label="ผิดนัดชำระจำนวน" name="noPay">
           <p>{dataForm?.nopay ? dataForm?.nopay + " งวด" : "-"}</p>
@@ -983,41 +687,74 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
                     ) + " บาท"}
               </p>
             </Form.Item>
-            {dataDefault.LOAN_TYPE_ID === 1 ? (
-              <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
-                <Input
+            {loanType === 1 || loanType === 4 || loanType === 6 ? (
+              <>
+                <Form.Item label="ค่าขาดประโยชน์" name="lossBenefit">
+                  <InputNumber
+                    suffix="บาท"
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    size="large"
+                    placeholder="กรุณาใส่ค่าขาดประโยชน์"
+                    style={{ width: "100%", color: "black" }}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label="จำนวนทุนทรัพย์"
+                  name="intigationFounds"
+                  rules={[
+                    {
+                      required: true,
+                      message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    suffix="บาท"
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                    size="large"
+                    placeholder="กรุณาใส่จำนวนทุนทรัพย์"
+                    style={{ width: "100%", color: "black" }}
+                  />
+                </Form.Item>
+              </>
+            ) : (
+              <Form.Item
+                label="จำนวนทุนทรัพย์"
+                name="intigationFounds"
+                rules={[
+                  {
+                    required: true,
+                    message: "กรุณาใส่จำนวนทุนทรัพย์ !",
+                  },
+                ]}
+              >
+                <InputNumber
                   suffix="บาท"
-                  autoComplete="off"
-                  name="lossBenefit"
-                  onChange={(e) => onChangeInpuutLossBenefit(e.target.value)}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="กรุณาใส่จำนวนทุนทรัพย์"
+                  style={{ width: "100%", color: "black" }}
                 />
               </Form.Item>
-            ) : null}
-            <Form.Item label="คำนวณทุนทรัพย์โดยประมาณ">
+            )}
+
+            <Form.Item label="คำนวณค่าธรรมเนียม">
               <Button
                 style={{ color: "blue" }}
                 htmlType="submit"
-                onClick={() => setButtonCalFounds(true)}
+                onClick={() => setButtonCal(true)}
               >
                 คำนวณ
               </Button>
-            </Form.Item>
-            <Form.Item
-              label="จำนวนทุนทรัพย์"
-              name="intigationFounds"
-              rules={[
-                {
-                  required: true,
-                  message: "กรุณาใส่จำนวนทุนทรัพย์ !",
-                },
-              ]}
-            >
-              <Input
-                suffix="บาท"
-                autoComplete="off"
-                name="intigationFounds"
-                onChange={(e) => onChangeInputLitigationFunds(e.target.value)}
-              />
             </Form.Item>
             <Form.Item
               label="ค่าธรรมเนียมศาล"
@@ -1029,86 +766,89 @@ const EditFrom = ({ open, close, dataDefault, funcUpdateStatus }) => {
                 },
               ]}
             >
-              <Input
+              <InputNumber
                 suffix="บาท"
-                autoComplete="off"
-                name="feeCourt"
-                onChange={(e) => feeCourt(e.target.value)}
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณาใส่ค่าธรรมเนียมศาล"
+                style={{ width: "100%", color: "black" }}
               />
             </Form.Item>
-            {loanType !== 2 && loanType !== 5 ? (
+            {loanType === 1 ||
+            loanType === 3 ||
+            loanType === 4 ||
+            loanType === 6 ? (
               <Form.Item
-                label="ค่าอากรสแตมป์"
+                label="ค่าอากรสแตมป์(รวมคนค้ำแล้ว)"
                 name="stampDuty"
                 rules={[
                   {
                     required: true,
-                    message: "กรุณาใส่ค่าอากรสแตมป์ !",
+                    message: "กรุณาใส่ค่าค่าอากรสแตมป์ !",
                   },
                 ]}
               >
-                <Input
+                <InputNumber
                   suffix="บาท"
-                  name="stampDuty"
-                  onChange={(e) => stampDutyCost(e.target.value)}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                  }
+                  parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                  size="large"
+                  placeholder="กรุณาใส่ค่าค่าอากรสแตมป์"
+                  style={{ width: "100%", color: "black" }}
                 />
               </Form.Item>
             ) : null}
+            <Form.Item
+              label="ค่าส่งหมาย"
+              name="docShipingCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าส่งหมาย !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกค่าส่งหมาย"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => docShipingCost(value)}
+              />
+            </Form.Item>
+            <Form.Item
+              label="ค่าจัดทำเอกสาร"
+              name="documentCost"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณากรอกค่าจัดทำเอกสาร !",
+                },
+              ]}
+            >
+              <InputNumber
+                suffix="บาท"
+                formatter={(value) =>
+                  `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                size="large"
+                placeholder="กรุณากรอกจัดทำเอกสารไม่มีใส่ 0"
+                style={{ width: "100%", color: "black" }}
+                onChange={(value) => documentCost(value)}
+              />
+            </Form.Item>
           </>
         ) : null}
-        <Form.Item
-          label="ค่าส่งหมาย"
-          name="docShipingCost"
-          rules={[
-            {
-              required: true,
-              message: "กรุณากรอกค่าส่งหมาย !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณากรอกค่าส่งหมาย"
-            style={{ width: "100%", color: "black" }}
-            onChange={(value) => docShipingCost(value)}
-          />
-        </Form.Item>
-        <Form.Item
-          label="ค่าจัดทำเอกสาร"
-          name="documentCost"
-          rules={[
-            {
-              required: true,
-              message: "กรุณากรอกค่าจัดทำเอกสาร !",
-            },
-          ]}
-        >
-          <InputNumber
-            suffix="บาท"
-            formatter={(value) =>
-              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            }
-            parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
-            size="large"
-            placeholder="กรุณากรอกจัดทำเอกสาร"
-            style={{ width: "100%", color: "black" }}
-            onChange={(value) => documentCost(value)}
-          />
-        </Form.Item>
-        <Form.Item label="คำนวณค่าธรรมเนียม">
-          <Button
-            style={{ color: "blue" }}
-            htmlType="submit"
-            onClick={() => setButtonCal(true)}
-          >
-            คำนวณ
-          </Button>
-        </Form.Item>
         <Form.Item label="หมายเหตุ" name="memo">
           <TextArea
             rows={5}

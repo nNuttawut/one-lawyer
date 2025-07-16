@@ -84,27 +84,27 @@ const Main = () => {
 
   const filterData = (data) => {
     if (data) {
-      let filteredData;
-      if (userCompany === "3") {
-        filteredData = data.filter((item) => {
-          const branch = item.LOCAT;
-          // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
-          if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
+      let filteredData = data;
+      // if (userCompany === "3") {
+      //   filteredData = data.filter((item) => {
+      //     const branch = item.LOCAT;
+      //     // ถ้า branch เป็น null หรือ undefined ให้ return true ไปเลย (หรือ false ก็ได้ ขึ้นกับความต้องการ)
+      //     if (!branch) return true; // หรือ false ก็ได้ ถ้าอยาก "กรองออก"
 
-          // ถ้า branch มีค่า → เช็กตามปกติ
-          return (
-            !optionsLocat.some((opt) => branch.includes(opt.label)) ||
-            item.CONTNO.includes("UD")
-          );
-        });
-      } else {
-        filteredData = data.filter((item) => {
-          const branch = item.LOCAT;
-          if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
+      //     // ถ้า branch มีค่า → เช็กตามปกติ
+      //     return (
+      //       !optionsLocat.some((opt) => branch.includes(opt.label)) ||
+      //       item.CONTNO.includes("UD")
+      //     );
+      //   });
+      // } else {
+      //   filteredData = data.filter((item) => {
+      //     const branch = item.LOCAT;
+      //     if (!branch) return false; // ไม่มี branch ไม่ผ่านเงื่อนไข
 
-          return optionsLocat.some((opt) => branch.includes(opt.label));
-        });
-      }
+      //     return optionsLocat.some((opt) => branch.includes(opt.label));
+      //   });
+      // }
 
       const newData = filteredData.filter(
         (item) => item.estimated_price === null

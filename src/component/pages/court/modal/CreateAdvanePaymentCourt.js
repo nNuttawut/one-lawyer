@@ -271,7 +271,8 @@ const CreateAdvanePayment = ({
     console.log("setPutJudgement", setPutJudgement);
     console.log("setDataExpense---->", setPreExpenseSend);
     console.log("dataReference--->", dataReference);
-
+    // funcUpdateStatus([...setPutJudgement]);
+    // handleCancel();
     sendData(setPutJudgement, setPreExpenseSend, dataReference);
   };
 

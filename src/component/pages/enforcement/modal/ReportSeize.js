@@ -33,6 +33,8 @@ import LoadLawyers from "../../../../hook/LoadLawyers";
 import {
   PARAM_PUBLIC,
   SELL_ASSETS,
+  STATUS_PROCESS_PROCESS,
+  STATUS_PROCESS_PROGRESS,
   STATUS_PROCESS_SUCCESSFUL,
 } from "../../../../utils/constant/StatusConstant";
 import Dragger from "antd/es/upload/Dragger";
@@ -42,7 +44,13 @@ import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import CheckGovermentOfficer from "../../../../hook/CeckGovermentOfficer";
 import EditAseestSuccess from "./EditAseestSuccess";
 
-const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+const ReportSeize = ({
+  open,
+  close,
+  dataDefualt,
+  funcUpdateStatus,
+  status,
+}) => {
   const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [
     currencyFormat,
@@ -114,13 +122,15 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -168,11 +178,10 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     }
   };
 
-  const sendStatus = async (preData, sellStatus, putStatus) => {
+  const sendStatus = async (preData, putStatus, sellStatus) => {
     setLoading(true);
 
     try {
-      // ใช้ map() เพื่อสร้าง Promise array
       const promises = preData.map(async (item) => {
         console.log("กำลังส่งข้อมูล:", item);
 
@@ -208,26 +217,31 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       } else {
         message.warning("บางรายการอัพเดทไม่สำเร็จ");
       }
-      await axios
-        .post(baseUrl + POST_STATUS, sellStatus, {
-          headers: HEADERS_EXPORT,
-        })
-        .then(async (res) => {
-          if (res.status === 200) {
-            console.log("resQuery", res.data);
-          } else {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-            console.log("ไม่สามารถส่งข้อมูลได้");
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-          if (err.status > 400) {
-            message.error("ไม่สามารถส่งข้อมูลได้");
-          }
-        });
 
-      handleUploadAllImage();
+      if (sellStatus) {
+        await axios
+          .post(baseUrl + POST_STATUS, sellStatus, {
+            headers: HEADERS_EXPORT,
+          })
+          .then(async (res) => {
+            if (res.status === 200) {
+              console.log("resQuery", res.data);
+            } else {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+              console.log("ไม่สามารถส่งข้อมูลได้");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            if (err.status > 400) {
+              message.error("ไม่สามารถส่งข้อมูลได้");
+            }
+          });
+
+        handleUploadAllImage();
+      } else {
+        handleCancel();
+      }
     } catch (error) {
       console.error("เกิดข้อผิดพลาดในการอัพเดทข้อมูล:", error);
       message.error("อัพเดทข้อมูลล้มเหลว");
@@ -300,27 +314,39 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
       LOAN_ID: dataDefualt.id,
       MEMO: values.memo,
       DATE: dataDefualt.DATE,
-      PROCESS_ID: STATUS_PROCESS_SUCCESSFUL,
+      PROCESS_ID:
+        status === STATUS_PROCESS_PROCESS
+          ? STATUS_PROCESS_SUCCESSFUL
+          : STATUS_PROCESS_PROCESS,
       LOAN_TYPE_ID: dataDefualt.LOAN_TYPE_ID,
     };
+
     console.log("sellStatus", sellStatus);
     console.log("putStatus", putStatus);
 
-    if (fileList?.length > 0) {
-      if (selectedAssets?.length > 0) {
+    if (status === STATUS_PROCESS_PROGRESS) {
+      preData = selectedAssets.map((asset) => ({
+        ...asset, // คัดลอกข้อมูลเดิมของ asset
+        ...initData, // เพิ่มข้อมูลของ initData เข้าไป
+      }));
+      console.log("preData 1", preData);
+
+      sendStatus(preData, putStatus);
+    } else if (fileList?.length > 0 && status === STATUS_PROCESS_PROCESS) {
+      if (selectedAssets?.length > 0 || status === STATUS_PROCESS_PROCESS) {
         console.log("selectedAssets--->", selectedAssets);
         preData = selectedAssets.map((asset) => ({
           ...asset, // คัดลอกข้อมูลเดิมของ asset
           ...initData, // เพิ่มข้อมูลของ initData เข้าไป
         }));
-        console.log("preData", preData);
+        console.log("preData 2", preData);
 
-        sendStatus(preData, sellStatus, putStatus);
+        sendStatus(preData, putStatus, sellStatus);
       } else {
         message.error("กรุณาเลือกแปลงที่อยู่ในรายงานบันทึกการยึด");
       }
     } else {
-      message.error("กรุณาอัปโหลดรูปภาพ");
+      message.error("กรุณาอัพโหลดรูปภาพ");
     }
   };
 
@@ -494,18 +520,20 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             ? `${currencyFormatComma(dataLoadLawSuit?.judge?.judgement)} บาท`
             : "-"}
         </Form.Item>
-        <Form.Item
-          label="วันที่รายงานยึด"
-          name="investigateAssetsDate"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาเลือกวันที่รายงานยึด",
-            },
-          ]}
-        >
-          <DatePicker onChange={onChangeSeizeDate} />
-        </Form.Item>
+        {status === STATUS_PROCESS_PROCESS ? (
+          <Form.Item
+            label="วันที่รายงานยึด"
+            name="investigateAssetsDate"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาเลือกวันที่รายงานยึด",
+              },
+            ]}
+          >
+            <DatePicker onChange={onChangeSeizeDate} />
+          </Form.Item>
+        ) : null}
         {/* <Form.Item
           label="สำนักงานบังคับคดี"
           name="addrEnforce"
@@ -597,7 +625,7 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                         }}
                       >
                         {item.mortgagee
-                          ? `เจ้าหนี้จำนอง ${
+                          ? `เจ้าหนี้จำนอง/ขายฝาก ${
                               item.mortgagee
                             } จำนวน ${currencyFormatComma(
                               item.mortgage_balance
@@ -795,33 +823,35 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             )}
           />
         </Form.Item>
-        <Form.Item
-          label="อัปโหลดไฟล์/รูปภาพ"
-          name="imageUrlFile"
-          rules={[
-            {
-              required: true,
-              message: "กรุณาอัปโหลดไฟล์/รูปภาพ !",
-            },
-          ]}
-        >
-          <Dragger
-            {...props}
-            style={{
-              width: "460px", // กำหนดความกว้าง
-              height: "200px", // กำหนดความสูง
-              margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
-            }}
+        {status === STATUS_PROCESS_PROCESS ? (
+          <Form.Item
+            label="อัปโหลดไฟล์/รูปภาพ"
+            name="imageUrlFile"
+            rules={[
+              {
+                required: true,
+                message: "กรุณาอัปโหลดไฟล์/รูปภาพ !",
+              },
+            ]}
           >
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined style={{ color: "blue" }} />
-            </p>
-            <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
-            <p className="ant-upload-hint">
-              รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
-            </p>
-          </Dragger>
-        </Form.Item>
+            <Dragger
+              {...props}
+              style={{
+                width: "460px", // กำหนดความกว้าง
+                height: "200px", // กำหนดความสูง
+                margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+              }}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined style={{ color: "blue" }} />
+              </p>
+              <p className="ant-upload-text">กรุณาคลิกหรือลากเพื่อเลือกไฟล์</p>
+              <p className="ant-upload-hint">
+                รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
+              </p>
+            </Dragger>
+          </Form.Item>
+        ) : null}
         {capturedImages.length > 0 ? (
           <Form.Item label="ไฟล์ที่ต้องการบันทึก" name={"imageFile"}>
             <div
@@ -936,18 +966,19 @@ const ReportSeize = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           >
             ปิด
           </Button>
-
-          <Popconfirm
-            placement="topLeft"
-            title="อัพเดทข้อมูล"
-            description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
-            onConfirm={confirm}
-            onCancel={() => cancel()}
-            okText="ยืนยัน"
-            cancelText="ปิด"
-          >
-            <Button style={{ color: "green" }}>บันทึก</Button>
-          </Popconfirm>
+          {selectedAssets?.length > 0 || fileList.length > 0 ? (
+            <Popconfirm
+              placement="topLeft"
+              title="อัพเดทข้อมูล"
+              description="กรุณาตรวจสอบข้อมูลให้เรียบร้อย !"
+              onConfirm={confirm}
+              onCancel={() => cancel()}
+              okText="ยืนยัน"
+              cancelText="ปิด"
+            >
+              <Button style={{ color: "green" }}>บันทึก</Button>
+            </Popconfirm>
+          ) : null}
         </div>
       </Form>
     );

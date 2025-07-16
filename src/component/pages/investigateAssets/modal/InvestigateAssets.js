@@ -15,6 +15,7 @@ import {
   Row,
   Col,
   Popconfirm,
+  Image,
 } from "antd";
 import {
   baseUrl,
@@ -32,11 +33,25 @@ import EditAssetsDetail from "./EditAssetDetail";
 import { Link } from "react-router-dom";
 import DateCustom from "../../../../hook/DateCustom";
 import { PARAM_PUBLIC } from "../../../../utils/constant/StatusConstant";
+import CurrencyFormat from "../../../../hook/CurrencyFormat";
+import Dragger from "antd/es/upload/Dragger";
+import {
+  InboxOutlined,
+  FilePdfOutlined,
+  FileExcelOutlined,
+  FileWordOutlined,
+} from "@ant-design/icons";
 
 const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
+  const [
+    currencyFormat,
+    currencyFormatComma,
+    currencyFormatPoint,
+    currencyFormatNoPoint,
+  ] = CurrencyFormat();
   const userId = parseInt(localStorage.getItem("USER_ID"));
   const [form] = Form.useForm();
-  const [convertDateThai] = DateCustom();
+  const [convertDateThai, convertDateThaiShort] = DateCustom();
   const [setupGovernmentOfficerList, governmentOfficers] =
     CeckGovermentOfficer();
   const { TextArea } = Input;
@@ -45,7 +60,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [dataLoadLoan, setDataLoadLoan] = useState(null);
   const [checkLenght, setCheckLenght] = useState([]);
   const [arrow, setArrow] = useState("Show");
-  const [radioStatus, setRadioStatus] = useState(null);
+  const [radioStatus, setRadioStatus] = useState();
   const [dataLoadLawSuit, setDataLoadLawSuit] = useState(null);
   const [checked, setChecked] = useState(false);
   const [checkedGuarantors, setCheckedGuarantors] = useState([]);
@@ -53,6 +68,8 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const [isModalEditAssetsDetail, setIsModalEditAssetsDetail] = useState(false);
   const [dataPropertyList, setDataPropertyList] = useState([]);
   const [dataEdit, setDataEdit] = useState();
+  const [fileList, setFileList] = useState([]);
+  const [capturedImages, setCapturedImages] = useState([]);
 
   const optionsInvestigate = [
     { label: "ไม่เจอทรัพย์", value: 0 },
@@ -150,6 +167,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             console.log("resQuery", res);
             funcUpdateStatus({
               ...dataDefualt,
+              investigation_log_count: dataDefualt.investigation_log_count + 1,
               investigation_status: radioStatus,
               investigation_date: postDataInvestigate.investigation_date,
             });
@@ -165,17 +183,22 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
             message.error("ไม่สามารถส่งข้อมูลได้");
           }
         });
-      if (radioStatus === 1) {
+      if (radioStatus === 1 && fileList.length === 0) {
         dataPropertyList.forEach((item) => {
           console.log("📌 อัปโหลดไฟล์ของ:", item.CUSTOMER_ID);
+          console.log("1");
 
           if (item.fileList.length > 0) {
             console.log(item.fileList);
+            console.log("11");
             handleUploadAllImage(item.fileList, item); // ส่งไฟล์ไปอัปโหลดทีละตัว
           } else {
             console.warn("⚠️ ไม่มีไฟล์ใน fileList สำหรับ", item.CUSTOMER_ID);
           }
         });
+      } else if (radioStatus === 0 && fileList.length > 0) {
+        console.log("2");
+        handleUploadAllImage(fileList); // ส่งไฟล์ไปอัปโหลดทีละตั
       }
 
       if (governmentOfficerData?.length > 0) {
@@ -222,19 +245,20 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
     fileList.forEach((file) => {
       formData.append("files", file);
     });
-
+    let fileName;
+    if (radioStatus === 1) {
+      fileName = `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${item?.CUSTOMER_ID}_${item?.deed_number}_${item?.province}_${item?.district}`;
+    } else if (radioStatus === 0) {
+      fileName = `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}`;
+    }
     setLoading(true);
 
     axios
-      .post(
-        `${baseUrl}/files/lawyer/investigate-property/${PARAM_PUBLIC}/${dataDefualt?.CONTNO}_${item?.CUSTOMER_ID}_${item?.deed_number}_${item?.province}_${item?.district}`,
-        formData,
-        {
-          headers: {
-            "content-type": "multipart/form-data",
-          },
-        }
-      )
+      .post(fileName, formData, {
+        headers: {
+          "content-type": "multipart/form-data",
+        },
+      })
       .then((res) => {
         console.log(res);
         setLoading(false);
@@ -337,9 +361,10 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
         "YYYY-MM-DD"
       ),
       mark: values.memo,
-      commission: null,
+      commission: radioStatus === 1 ? 1000 : 300,
       property_list: dataPropertyList,
     };
+    console.log("postDataInvestigate--->", postDataInvestigate);
 
     if (result?.length > 0) {
       const hasNullValues = result.some(
@@ -351,10 +376,40 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
       if (!hasNullValues) {
         console.log("checkValue---->xxx", hasNullValues);
-        sendStatus(postDataInvestigate, result);
+        console.log("radioStatus", radioStatus);
+        console.log(fileList.length > 0);
+
+        if (radioStatus === 0 && fileList.length > 0) {
+          console.log("1");
+
+          sendStatus(postDataInvestigate, result);
+        } else if (radioStatus === 1 && fileList.length === 0) {
+          console.log("2");
+          if (dataPropertyList.length > 0) {
+            sendStatus(postDataInvestigate, result);
+          } else {
+            message.error("กรุณาเพิ่มทรัพย์");
+          }
+        } else {
+          message.error("กรุณาอัปรูปภาพ");
+          console.log("3");
+        }
       }
     } else {
-      sendStatus(postDataInvestigate);
+      if (radioStatus === 0 && fileList.length > 0) {
+        sendStatus(postDataInvestigate);
+        console.log("4");
+      } else if (radioStatus === 1 && fileList.length === 0) {
+        if (dataPropertyList.length > 0) {
+          sendStatus(postDataInvestigate);
+          console.log("5");
+        } else {
+          message.error("กรุณาเพิ่มทรัพย์");
+        }
+      } else {
+        message.error("กรุณาอัปรูปภาพ");
+        console.log("6");
+      }
     }
   };
 
@@ -557,7 +612,78 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
 
   const onChangeInvestiGateResult = ({ target: { value } }) => {
     setRadioStatus(value);
+    if (value === 1) {
+      setFileList([]);
+      setCapturedImages([]);
+    }
     console.log(value);
+  };
+
+  const props = {
+    multiple: true,
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+      setCapturedImages(
+        (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+      );
+    },
+    beforeUpload: (file) => {
+      const isLt5M = file.size / 1024 / 1024 < 5.1;
+
+      if (!isLt5M) {
+        message.error(`❌ ไฟล์ "${file.name}" มีขนาดเกิน 5 MB`);
+        return false;
+      }
+
+      const fileType = file.type; // ตรวจสอบ MIME type
+      const imgUrl = URL.createObjectURL(file); // สร้าง URL ของไฟล์ที่อัปโหลด
+
+      // // แปลง Blob เป็น File ที่มีชื่อไฟล์ถูกต้อง
+      // const newFile = new File(
+      //   [file],
+      //   `สืบทรัพย์_${dataDefualt?.CONTNO}.${
+      //     fileType.includes("pdf") ? "pdf" : file.name.split(".").pop()
+      //   }`,
+      //   { type: fileType }
+      // );
+
+      // console.log("ไฟล์ที่ได้:", newFile, "ประเภท:", fileType);
+
+      // ตรวจสอบประเภทและแยกเก็บใน state
+      if (fileType.startsWith("image/")) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "image" }]);
+      } else if (fileType === "application/pdf") {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "pdf" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "xlsx" }]);
+      } else if (
+        fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        setCapturedImages((prev) => [...prev, { url: imgUrl, type: "docx" }]);
+      }
+
+      setFileList((prev) => [...prev, file]); // อัปเดตรายการไฟล์
+
+      return false; // ป้องกันการอัปโหลดไฟล์อัตโนมัติ
+    },
+
+    fileList,
+  };
+
+  const deleteImg = (index) => {
+    setCapturedImages(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
+    setFileList(
+      (prev) => prev.filter((_, i) => i !== index) // ลบรูปที่เลือกออก
+    );
   };
 
   const confirm = () => {
@@ -571,7 +697,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           span: 6,
         }}
         wrapperCol={{
-          span: 14,
+          span: 16,
         }}
         form={form}
         layout="horizontal"
@@ -637,7 +763,7 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
               label="ทรัพย์ที่สืบเจอ"
               name="assetsFound"
               labelCol={{ span: 6 }} // กำหนดความกว้างของ label
-              wrapperCol={{ span: 14 }} // กำหนดความกว้างของ input หรือ content
+              wrapperCol={{ span: 16 }} // กำหนดความกว้างของ input หรือ content
             >
               <List
                 header={
@@ -671,26 +797,65 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                     <List.Item.Meta
                       title={
                         <Link onClick={() => handleEdit(item, index)}>
-                          {item.possessor} <br /> สืบเมื่อ{" "}
-                          {convertDateThai(item.investigation_date)}
+                          {item?.possessor} <br /> สืบเมื่อ{" "}
+                          {convertDateThai(item?.investigation_date)}
                         </Link>
                       }
                       description={
                         <>
                           <p
                             style={{ color: "orange" }}
-                          >{`เลขโฉนด ${item.deed_number} อำเภอ ${item.district_desc} จังหวัด${item.province_desc}`}</p>
+                          >{`เลขโฉนด ${item?.deed_number} ${item?.district_desc} จังหวัด${item?.province_desc}`}</p>
                           <p
                             style={{ color: "red" }}
-                          >{`หมายเหตุ ${item.mark}`}</p>
+                          >{`หมายเหตุ ${item?.mark}`}</p>
+
+                          <p
+                            style={{
+                              color: item?.mortgagee ? "red" : "lightgreen",
+                            }}
+                          >
+                            {item?.mortgagee
+                              ? `ติด${item?.mortgage_type} ${
+                                  item?.mortgagee
+                                } จำนวน ${currencyFormatComma(
+                                  item?.mortgage_balance
+                                )} บาท`
+                              : null}
+                          </p>
+                          <p
+                            style={{
+                              color: "red",
+                            }}
+                          >
+                            {item?.mortgage_start_date
+                              ? `วันที่ทำสัญญา ${convertDateThaiShort(
+                                  item?.mortgage_start_date
+                                )}, วันครบกำหนด ${convertDateThaiShort(
+                                  item?.mortgage_end_date
+                                )}`
+                              : null}
+                          </p>
+                          <p
+                            style={{
+                              color: item.sequestrate_status
+                                ? "red"
+                                : "lightgreen",
+                            }}
+                          >
+                            {item.sequestrate_status
+                              ? `ติดอายัดจาก ${item.preference_creditor}`
+                              : null}
+                          </p>
                         </>
                       }
                     />
+
                     <div>
                       {" "}
-                      {item.investigation_type_id === 1
+                      {item?.investigation_type_id === 1
                         ? "ก่อนฟ้อง"
-                        : item.investigation_type_id === 2
+                        : item?.investigation_type_id === 2
                         ? "หลังฟ้อง"
                         : null}
                     </div>
@@ -698,6 +863,140 @@ const InvestigateAssets = ({ open, close, dataDefualt, funcUpdateStatus }) => {
                 )}
               />
             </Form.Item>
+          </>
+        ) : radioStatus === 0 ? (
+          <>
+            {" "}
+            <Form.Item
+              label="อัปโหลดไฟล์/รูปภาพ"
+              name="imageUrlFile"
+              rules={[
+                {
+                  required: true,
+                  message: "กรุณาอัปโหลดไฟล์/รูปภาพ !",
+                },
+              ]}
+            >
+              <Dragger
+                {...props}
+                style={{
+                  width: "300px", // กำหนดความกว้าง
+                  height: "200px", // กำหนดความสูง
+                  margin: "0 auto", // กำหนดให้อยู่ตรงกลาง
+                }}
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined style={{ color: "blue" }} />
+                </p>
+                <p className="ant-upload-text">
+                  กรุณาคลิกหรือลากเพื่อเลือกไฟล์
+                </p>
+                <p className="ant-upload-hint">
+                  รองรับการอัปโหลดแบบเดี่ยวหรือแบบกลุ่ม ขนาดไม่เกิน 5 MB/ไฟล์
+                </p>
+              </Dragger>
+            </Form.Item>
+            {capturedImages.length > 0 ? (
+              <Form.Item label="ไฟล์ที่ต้องการบันทึก" name={"imageFile"}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "16px",
+                    justifyContent: "center",
+                    padding: "10px", // เพิ่ม padding เพื่อไม่ให้ชิดขอบเกินไป
+                  }}
+                >
+                  <Image.PreviewGroup>
+                    {capturedImages?.map((image, index) => {
+                      if (!image || !image.type) return null;
+
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            position: "relative", // ให้ปุ่มลบอยู่บนสุด
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            textAlign: "center",
+                            background: "#f8f8f8",
+                            borderRadius: "8px",
+                            padding: "10px",
+                            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                          }}
+                        >
+                          {/* แสดงไอคอนตามประเภทไฟล์ */}
+                          {image.type.includes("pdf") ? (
+                            <FilePdfOutlined
+                              style={{ fontSize: "40px", color: "red" }}
+                            />
+                          ) : image.type.includes("xlsx") ? (
+                            <FileExcelOutlined
+                              style={{ fontSize: "40px", color: "green" }}
+                            />
+                          ) : image.type.includes("docx") ? (
+                            <FileWordOutlined
+                              style={{ fontSize: "40px", color: "blue" }}
+                            />
+                          ) : (
+                            <Image
+                              src={image.url}
+                              alt={`Captured ${index}`}
+                              width="150px"
+                            />
+                          )}
+
+                          {/* ลิงก์ดาวน์โหลด */}
+                          {image.url && (
+                            <a
+                              style={{
+                                display: "block",
+                                marginTop: "8px",
+                                color: "#007bff",
+                                textDecoration: "none",
+                                fontWeight: "bold",
+                              }}
+                              href={image.url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              คลิกเพื่อดาวน์โหลด
+                            </a>
+                          )}
+
+                          {/* ปุ่มลบ */}
+                          <button
+                            type="button"
+                            onClick={() => deleteImg(index)}
+                            style={{
+                              position: "absolute",
+                              top: "-5px",
+                              right: "-5px",
+                              background: "red",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "50%",
+                              width: "24px",
+                              height: "24px",
+                              fontSize: "14px",
+                              fontWeight: "bold",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </Image.PreviewGroup>
+                </div>
+              </Form.Item>
+            ) : null}
           </>
         ) : null}
 

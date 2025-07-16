@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 
 const AppoointmentData = ({ open, close, dataRec, date, panel }) => {
   const [convertDateThai] = DateCustom();
+  const ROLE_ID = localStorage.getItem("ROLE_ID");
 
   const renderData = () => {
     const sortedData = dataRec.sort(
@@ -87,11 +88,17 @@ const AppoointmentData = ({ open, close, dataRec, date, panel }) => {
                     item.customer_lastname ? item.customer_lastname : ""
                   }` || "ไม่ระบุ"}
                 </Descriptions.Item>
+
                 <Descriptions.Item label="สถานะ">
                   <Tag color={renderColor(item.consideration_date).color}>
                     {renderColor(item.consideration_date).status}
                   </Tag>
                 </Descriptions.Item>
+                {ROLE_ID === "1" || ROLE_ID === "2" ? (
+                  <Descriptions.Item label="เจ้าของคดี">
+                    {item.NNAME}
+                  </Descriptions.Item>
+                ) : null}
               </Descriptions>
               {index !== dataRec.length - 1 && <Divider />}
             </List.Item>

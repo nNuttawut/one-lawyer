@@ -17,7 +17,6 @@ import {
   Col,
   Row,
   InputNumber,
-  Upload,
   Popconfirm,
 } from "antd";
 import {
@@ -188,17 +187,20 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
   const setOptionAssistant = () => {
     console.log("lawyersList", lawyersList);
     let companySelectAssistant = null;
+
     if (COMPANY === 1 || COMPANY === 2) {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           (item.COMPANY_ID === 1 || item.COMPANY_ID === 2) &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     } else {
       companySelectAssistant = lawyersList.filter(
         (item) =>
           item.COMPANY_ID === 3 &&
-          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4)
+          (item.ROLE_ID === 2 || item.ROLE_ID === 3 || item.ROLE_ID === 4) &&
+          item.ACTIVE_STATUS === 1
       );
     }
     const optionsAssistant = companySelectAssistant.map((item) => ({
@@ -537,7 +539,11 @@ const UpdateStatus = ({ open, close, dataDefualt, funcUpdateStatus }) => {
           ...dataLawsuit,
           attorney_fees:
             dataLawsuit?.LOAN_TYPE_ID === 2 || dataLawsuit?.LOAN_TYPE_ID === 5
-              ? 2500
+              ? COMPANY === 3
+                ? 2000
+                : 2500
+              : COMPANY === 3
+              ? 3000
               : 3500,
           mark: values.memo,
           trial_money_cleared_datetime: dayjs(values.enforceCaseDate).format(

@@ -1,14 +1,4 @@
-import {
-  Button,
-  Form,
-  Modal,
-  Card,
-  Spin,
-  message,
-  Image,
-  Divider,
-  Empty,
-} from "antd";
+import { Modal, Card, Spin, Image, Divider, Empty } from "antd";
 import axios from "axios";
 
 import { useEffect, useState } from "react";
@@ -114,9 +104,15 @@ const BillTranfer = ({ open, close, dataDefault }) => {
                     >
                       {image.url.includes("pdf") ? (
                         <>
-                          <FilePdfOutlined
-                            style={{ fontSize: "40px", color: "red" }}
-                          />
+                          <a
+                            href={image.url}
+                            download
+                            style={{ display: "inline-block" }}
+                          >
+                            <FilePdfOutlined
+                              style={{ fontSize: "40px", color: "red" }}
+                            />
+                          </a>
                           {image.url ? (
                             <a
                               style={{
@@ -127,15 +123,21 @@ const BillTranfer = ({ open, close, dataDefault }) => {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              คลิกเพื่อดาวน์โหลด
+                              คลิกเพื่อดาวน์โหลด {index + 1}
                             </a>
                           ) : null}
                         </>
                       ) : image.url.includes(".xlsx") ? (
                         <>
-                          <FileExcelOutlined
-                            style={{ fontSize: "40px", color: "green" }}
-                          />
+                          <a
+                            href={image.url}
+                            download
+                            style={{ display: "inline-block" }}
+                          >
+                            <FileExcelOutlined
+                              style={{ fontSize: "40px", color: "green" }}
+                            />
+                          </a>
                           {image.url ? (
                             <a
                               style={{
@@ -152,9 +154,15 @@ const BillTranfer = ({ open, close, dataDefault }) => {
                         </>
                       ) : image.url.includes(".docx") ? (
                         <>
-                          <FileWordOutlined
-                            style={{ fontSize: "40px", color: "blue" }}
-                          />
+                          <a
+                            href={image.url}
+                            download
+                            style={{ display: "inline-block" }}
+                          >
+                            <FileWordOutlined
+                              style={{ fontSize: "40px", color: "blue" }}
+                            />
+                          </a>
                           {image.url ? (
                             <a
                               style={{

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import DateCustom from "../../../../hook/DateCustom";
 import CurrencyFormat from "../../../../hook/CurrencyFormat";
 import axios from "axios";
-import { POST_DETAIL_PAYMENT } from "../../../API/apiUrls";
+import { HEADERS_EXPORT_BEN, POST_DETAIL_PAYMENT } from "../../../API/apiUrls";
 import dayjs from "dayjs";
 
 import { faMapLocationDot, faCarSide } from "@fortawesome/free-solid-svg-icons";
@@ -75,11 +75,17 @@ const PrintCancel = ({
     setLoading(true);
     try {
       await axios
-        .post(POST_DETAIL_PAYMENT, {
-          contno: queryContno,
-          todate: dayjs(dateQuery).format("YYYY-MM-DD"),
-          type: typeValue,
-        })
+        .post(
+          POST_DETAIL_PAYMENT,
+          {
+            contno: queryContno,
+            todate: dayjs(dateQuery).format("YYYY-MM-DD"),
+            type: typeValue,
+          },
+          {
+            headers: HEADERS_EXPORT_BEN,
+          }
+        )
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
             console.log("resQuery", resQuery.data);

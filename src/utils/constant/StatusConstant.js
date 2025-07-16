@@ -1,5 +1,5 @@
 export const listStatus = {
-  NOTICE: [1, "ส่งจดหมายเตือน"],
+  NOTICE: [1, "ส่งจดหมายเตือน/ออกบอกเลิก"],
   INDICT: [2, "ส่งคำฟ้อง"],
   AWAITING_JUDMENT: [3, "รอพิพากษา"],
   JUDGEMENT: [4, "พิพากษา"],
@@ -13,6 +13,7 @@ export const listStatus = {
   TIMEOUT: [12, "หมดอายุความ"],
   WITHDRAW_CASE: [13, "ถอนฟ้อง"],
   BAD_DEBTOR: [14, "ลูกหนี้สูญ"],
+  PRE_INVESTIGATE: [15, "สืบทรัพย์ก่อนฟ้อง"],
 };
 
 export const getSelectOptions = (list) =>
@@ -38,6 +39,7 @@ export const FINISH = 11;
 export const TIMEOUT = 12;
 export const WITHDRAW_CASE = 13;
 export const BAD_DEBTOR = 14;
+export const PRE_INVESTIGATE = 15;
 
 export const STATUS_PROCESS_PROGRESS = 1;
 export const STATUS_PROCESS_UNSUCCESSFUL = 2;

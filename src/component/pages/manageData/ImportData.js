@@ -24,11 +24,11 @@ import * as XLSX from "xlsx";
 import axios from "axios";
 import FailedImport from "./modal/FailedImport";
 import {
-  GET_LOAN_FROM_SERVER_IBM,
   POST_LOAN_IN_LAWYERS_DB,
   HEADERS_EXPORT,
   baseUrl,
   POST_LOAN_DB2,
+  HEADERS_EXPORT_BEN,
 } from "../../API/apiUrls";
 
 const Main = () => {
@@ -73,13 +73,23 @@ const Main = () => {
       companyUse = "2";
     }
     try {
-      await axios
-        .post(POST_LOAN_DB2, { CONTNO: contno })
+      await axios;
+      axios
+        .post(
+          POST_LOAN_DB2,
+          { CONTNO: contno },
+          {
+            headers: HEADERS_EXPORT_BEN,
+          }
+        )
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
             setArrayTable(resQuery.data);
             console.log("resQuery", resQuery.data);
             setLoading(false);
+            if (!resQuery.data) {
+              message.error("สัญญาไม่ถูกต้อง โปรดตรวจสอบสัญญา");
+            }
           } else {
             setArrayTable([]);
             message.error("ไม่มีเลขที่สัญญาที่ค้นหา");
@@ -114,7 +124,9 @@ const Main = () => {
 
     try {
       await axios
-        .post(POST_LOAN_DB2, data)
+        .post(POST_LOAN_DB2, data, {
+          headers: HEADERS_EXPORT_BEN,
+        })
         .then(async (resQuery) => {
           if (resQuery.status === 200) {
             setArrayTable(resQuery.data);
@@ -122,6 +134,9 @@ const Main = () => {
             console.log("resQuery", resQuery.data);
             checkData(resQuery.data);
             setLoading(false);
+            if (!resQuery.data) {
+              message.error("สัญญาไม่ถูกต้อง โปรดตรวจสอบสัญญา");
+            }
           } else if (resQuery.data === "Contract No. Not Found") {
             console.log(`Contract No. Not Found`);
 
@@ -178,6 +193,22 @@ const Main = () => {
     return false;
   };
 
+  const uploadProps = {
+    customRequest: ({ file, onSuccess, fileList }) => {
+      message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
+      setFailedData([]);
+      setMissedData([]);
+      setDuplicateData([]);
+      handleFileUpload(file);
+      if (file.status !== "uploading") {
+        console.log(file, fileList);
+      } else {
+        onSuccess(); // Call onSuccess when the file is handled
+      }
+    },
+    showUploadList: arrayTable?.length > 0 ? false : true,
+  };
+
   const insertData = async () => {
     setLoading(true);
     let duplicate = 0;
@@ -212,8 +243,6 @@ const Main = () => {
               console.log(`มีเลขสัญญาอยู่ในระบบแล้ว`);
               duplicate += 1;
               duplicateContracts.push(item.LOAN.CONTNO);
-              console.log("ssssssssss----->", item.LOAN.CONTNO);
-
               return null;
             } else {
               console.log(`นำเข้าข้อมูลไม่สำเร็จ`);
@@ -242,7 +271,6 @@ const Main = () => {
       message.loading(
         `✅ สำเร็จ: ${success}, ❌ ซ้ำ: ${duplicate}, ⚠️ ล้มเหลว: ${failed}`
       );
-
       setFailedData(failedContracts);
       setDuplicateData(duplicateContracts);
     } catch (error) {
@@ -266,22 +294,6 @@ const Main = () => {
     }
   };
 
-  const uploadProps = {
-    customRequest: ({ file, onSuccess, fileList }) => {
-      message.warning(`ไม่ควร import สัญญาได้เกิน 100 สัญญาต่อครั้ง`);
-      setFailedData([]);
-      setMissedData([]);
-      setDuplicateData([]);
-      handleFileUpload(file);
-      if (file.status !== "uploading") {
-        console.log(file, fileList);
-      } else {
-        onSuccess(); // Call onSuccess when the file is handled
-      }
-    },
-    showUploadList: arrayTable?.length > 0 ? false : true,
-  };
-
   const confirm = (e) => {
     console.log("eeeee", e);
     let deleteItem = arrayTable.filter((item) => {
@@ -303,6 +315,7 @@ const Main = () => {
   const confirmInsert = () => {
     insertData(arrayTable);
   };
+
   const cancelInsert = () => {
     message.error("ยกเลิกการนำเข้าข้อมูล");
   };
@@ -336,7 +349,9 @@ const Main = () => {
   };
 
   const confirmModal = () => {
-    if (!data) {
+    console.log("data", data, duplicateData, failedData);
+
+    if (!data && !duplicateData && !failedData) {
       return message.error("ไม่มีข้อมูล");
     } else {
       setIsModalFailed(true);

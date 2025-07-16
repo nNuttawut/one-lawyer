@@ -870,9 +870,20 @@ const Main = () => {
 
     let dataExport = [];
     if (selectedRows.length > 0) {
-      dataExport = selectedRows;
+      const sortEms = selectedRows.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+
+      dataExport = sortEms;
     } else {
-      dataExport = arrayTable;
+      const sortEms = arrayTable.sort((a, b) => {
+        return a.parcel_no.localeCompare(b.parcel_no, undefined, {
+          numeric: true,
+        });
+      });
+      dataExport = sortEms;
     }
 
     let rowIndex = 12; // เริ่มที่แถวที่ 12
